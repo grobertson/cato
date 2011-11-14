@@ -17,8 +17,6 @@ namespace Web {
 		
 		protected System.Web.UI.HtmlControls.HtmlForm form1;
 		
-		protected System.Web.UI.WebControls.Label lblErrorMessage;
-		
 		protected System.Web.UI.WebControls.Label lblMessage;
 		
 		protected System.Web.UI.WebControls.Panel pnlLogin;
@@ -94,5 +92,7 @@ namespace Web {
 		protected System.Web.UI.WebControls.HiddenField hidUpdateLater;
 		
 		protected System.Web.UI.WebControls.HiddenField hidID;
+		
+		protected System.Web.UI.WebControls.Label lblErrorMessage;
 	}
 }

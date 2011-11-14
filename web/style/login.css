@@ -9,19 +9,18 @@ body
 {
 	margin-left: auto;
 	margin-right: auto;
-	width: 75%;
+	width: 60%;
 }
 #container
 {
-	margin-top: 20px;
 	padding-top: 20px;
-	height: 240px;
+	height: 175px;
 	background-image: url(../images/login-banner.gif);
 	background-repeat: no-repeat;
-	background-position: -30px; /* shorten it a bit */
+	background-position: -175px 30%; /* shorten it a bit */
 	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 	border-radius: 6px 6px 6px 6px;
-	width: 900px;
+	width: 700px;
 }
 #loginbox
 {
@@ -36,8 +35,13 @@ body
 }
 .loginerror
 {
+	margin-top: 20px;
+	padding: 20px;
 	font-weight: normal;
-	color: #FFAAAA;
+	color: #EE4444;
+	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 6px 6px 6px 6px;
+	width: 86%;
 }
 .pointer
 {

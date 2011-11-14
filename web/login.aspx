@@ -27,6 +27,12 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $('#txtLoginUser').focus();
+			
+			if ($("#lblErrorMessage").text() != "")
+				$(".loginerror").show();
+			else
+				$(".loginerror").hide();
+			
         });
     </script>
 </head>
@@ -38,9 +44,6 @@
         </div>
         <div id="container">
             <div id="loginbox">
-                <div class="loginerror">
-                    <asp:Label ID="lblErrorMessage" runat="server" />
-                </div>
                 <asp:Label ID="lblMessage" runat="server" />
                 <asp:Panel ID="pnlLogin" runat="server">
                     <table style="width: 100%;">
@@ -246,6 +249,9 @@
                     </table>
                 </asp:Panel>
             </div>
+        </div>
+        <div class="loginerror">
+            <asp:Label ID="lblErrorMessage" runat="server" />
         </div>
     </div>
     </form>

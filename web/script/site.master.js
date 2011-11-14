@@ -80,7 +80,7 @@ function updateHeartbeat() {
         },
         error: function (response) {
             //nothing to do here but throw you back to the login page.
-            location.href = "../login.aspx?msg=Server+Session+has+expired+(7)."
+            location.href = "../login.aspx?msg=Server+Session+has+expired+(7).+Please+log+in+again."
             //&err=" + escape(response.responseText.replace(/(\r\n|\n|\r)/gm, ""));
         }
     });

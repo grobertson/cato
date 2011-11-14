@@ -103,7 +103,7 @@ namespace acUI
             }
             else
             {
-                Logout("Your Session has expired. (Session)");
+                Logout("Your Session has expired. (Session) Please log in again.");
                 return null;
             }
         }
@@ -250,7 +250,7 @@ namespace acUI
         {
             object o = GetSessionObject("user_full_name", "Security");
             if (o == null)
-                Logout("Server Session has expired (3).");
+                Logout("Server Session has expired (3). Please log in again.");
             if (o != null)
                 return o.ToString();
             else
@@ -260,7 +260,7 @@ namespace acUI
         {
             object o = GetSessionObject("user_role", "Security");
             if (o == null)
-                Logout("Server Session has expired (4).");
+                Logout("Server Session has expired (4). Please log in again.");
             if (o != null)
                 return o.ToString();
             else
@@ -270,7 +270,7 @@ namespace acUI
         {
             object o = GetSessionObject("user_tags", "Security");
             if (o == null)
-                Logout("Server Session has expired (5).");
+                Logout("Server Session has expired (5). Please log in again.");
             if (o != null)
                 return o.ToString();
             else
@@ -284,7 +284,7 @@ namespace acUI
             string sUserID = CurrentUser.UserID;
             if (string.IsNullOrEmpty(sUserID))
             {
-                Logout("Server Session has expired (1).");
+                Logout("Server Session has expired (1). Please log in again.");
                 return "";
             }
             else
@@ -295,7 +295,7 @@ namespace acUI
             object o = GetSessionObject("user_id", "Security");
             if ((o == null))
             {
-                Logout("Server Session has expired (1).");
+                Logout("Server Session has expired (1). Please log in again.");
             }
             if (!(o == null))
             {
@@ -310,7 +310,7 @@ namespace acUI
         {
             object o = GetSessionObject("user_name", "Security");
             if (o == null)
-                Logout("Server Session has expired (2).");
+                Logout("Server Session has expired (2). Please log in again.");
             if (o != null)
                 return o.ToString();
             else
