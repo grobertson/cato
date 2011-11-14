@@ -986,11 +986,11 @@ namespace Web
             }
 
 
-
+			string sUsername = txtLoginUser.Text.Replace("'", "''").Replace(";", "");
 
             // make sure the username and password are correct, then update the users password and log them in.
             sSQL = "select user_id, status, failed_login_attempts, user_password, expiration_dt" +
-                    " from users where username='" + txtLoginUser.Text.Replace("'", "''").Replace(";", "") + "'";
+                    " from users where username='" + sUsername + "'";
             DataRow dr = null;
             if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
             {
@@ -1035,8 +1035,8 @@ namespace Web
                         }
                         else
                         {
-                            HttpContext.Current.Response.Redirect("login.aspx?msg=Password+updated,+you+may+now+log+in+with+the+new+password.", false);
-                            return;
+		                    //if we got here then we are successful.  Yaaayyyy!
+		                    LoginComplete(dr["user_id"].ToString(), sUsername, ref sErr);
                         }
 
                     }
