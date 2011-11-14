@@ -192,7 +192,7 @@ proc aws_Generic {product operation path command} {
 		set endpoint ""
 	}
 	output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS {$aws_region $endpoint}"
-	lappend region_endpoint $aws_region $endpoint
+	lappend region_endpoint $aws_region "$endpoint"
         set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
         set cmd "$x  call_aws $product \"$aws_region\" $operation"
 
@@ -335,7 +335,28 @@ proc get_aws_private_key {keyname} {
 proc gather_aws_system_info {instance_id user_id region} {
         set proc_name gather_aws_system_info
         package require tclcloud
-        set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS]
+        if {"$::CLOUD_TYPE" == "Eucalyptus"} {
+                if {"$region" > ""} {
+                        if {[array names ::CLOUD_ENDPOINTS "Eucalyptus,$region"] == ""} {
+                                error_out "Cloud region $region does not exist. Either create a Eucalyptus Cloud definition or enter an existing cloud name in the region field" 9999
+                        }
+                        set endpoint $::CLOUD_ENDPOINTS(Eucalyptus,$region)
+                        if {"$endpoint" == ""} {
+                                error_out "AWS error: Region $region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
+                        }
+                } else {
+                        set endpoint [lindex [array get ::CLOUD_ENDPOINTS Eucalyptus,*] 1]
+                        if {"$endpoint" == ""} {
+                                error_out "AWS error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+                        }
+                }
+        } else {
+                set endpoint ""
+        }
+
+        lappend region_endpoint $region $endpoint
+        set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
+
         set cmd "$x call_aws ec2 \"$region\" DescribeInstances "
         set params "InstanceId $instance_id"
         lappend cmd $params
@@ -359,14 +380,18 @@ proc gather_aws_system_info {instance_id user_id region} {
 	}
 	
         set keyname [[[$root selectNodes {//instancesSet/item/keyName}] childNode] data]
-        set security_group_id [[[$root selectNodes {//instancesSet/item/groupSet/item/groupId[1]}] childNode] data]
+        #catch {set security_group_id [[[$root selectNodes {//instancesSet/item/groupSet/item/groupId[1]}] childNode] data]}
         set platform_node [$root selectNodes {//instancesSet/item/platform}]
         if {"$platform_node"> ""} {
                 set platform [[[$root selectNodes {//instancesSet/item/platform}]  childNode] data]
         } else {
                 set platform "linux"
         }
-        set address [[[$root selectNodes {//instancesSet/item/dnsName}]  childNode] data]
+        if {"$::CLOUD_TYPE" == "Eucalyptus"} {
+		set address [[[$root selectNodes {//instancesSet/item/dnsName}]  childNode] data]
+	} else {
+		set address [[[$root selectNodes {//instancesSet/item/privateIpAddress}]  childNode] data]
+	}
         output "$instance_id state = $state, keyname = $keyname, platform = $platform, address = $address" 3
         $root delete
         $xmldoc delete
@@ -393,7 +418,7 @@ proc gather_aws_system_info {instance_id user_id region} {
         } else {
                 set ::system_arr($instance_id,private_key) ""
         }
-	set ::system_arr($instance_id,security_group) $security_group_id
+	#set ::system_arr($instance_id,security_group) $security_group_id
 	unset pk_pass
 	return $state
 }
