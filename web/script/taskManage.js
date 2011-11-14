@@ -272,9 +272,9 @@ function ExportTasks() {
         dataType: "json",
         success: function (msg) {
             //the return code might be a filename or an error.
-            //if it's valid, it will have a ".zip" in it.
+            //if it's valid, it will have a ".csk" in it.
             //otherwise we assume it's an error
-            if (msg.d.indexOf(".zip") > -1) {
+            if (msg.d.indexOf(".csk") > -1) {
                 //developer utility for renaming the file
                 //note: only works with one task at a time.
                 //var filename = RenameBackupFile(msg.d, ArrayString);
@@ -373,7 +373,7 @@ function RenameBackupFile(src_file_name, otid) {
 	x = $("tr[task_id='" + otid + "']").children()[2];
 	newname = $(x).text().trim().toLowerCase().replace(/ /g, "-");
 	
-	newname = newname + ".zip";
+	newname = newname + ".csk";
 
     $.ajax({
         type: "POST",
@@ -384,9 +384,9 @@ function RenameBackupFile(src_file_name, otid) {
         dataType: "json",
         success: function (msg) {
             //the return code might be a filename or an error.
-            //if it's valid, it will have a ".zip" in it.
+            //if it's valid, it will have a ".csk" in it.
             //otherwise we assume it's an error
-            if (msg.d.indexOf(".zip") > -1) {
+            if (msg.d.indexOf(".csk") > -1) {
             } else {
                 showAlert(msg.d);
             }

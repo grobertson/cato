@@ -464,7 +464,7 @@ namespace ImportExport
             {
                 //delete the zip if it's already there.  Just as a safety measure, 
                 //otherwise it will try to put it in itself.
-                File.Delete(sPath + sFileName + ".zip");
+                File.Delete(sPath + sFileName + ".csk");
 
                 // Depending on the directory this could be very large and would require more attention
                 // in a commercial package.
@@ -472,7 +472,7 @@ namespace ImportExport
 
                 // 'using' statements gaurantee the stream is closed properly which is a big source
                 // of problems otherwise.  Its exception safe as well which is great.
-                using (ZipOutputStream s = new ZipOutputStream(File.Create(sPath + sFileName + ".zip")))
+                using (ZipOutputStream s = new ZipOutputStream(File.Create(sPath + sFileName + ".csk")))
                 {
 
                     s.SetLevel(9); // 0 - store only to 9 - means best compression

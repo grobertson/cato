@@ -377,7 +377,7 @@
                 <div id="left_tooltip_box_inner">
                         <img src="../images/tooltip.png" alt="" />
                         <div id="help_text">
-                            Select an Export package to Import. This will be a .zip file format.</div>
+                            Select an Export package to Import. This will be a .csk file format.</div>
                 </div>
             </div>
         </div>

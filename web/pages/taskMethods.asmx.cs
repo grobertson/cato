@@ -2118,7 +2118,7 @@ namespace ACWebMethods
 				}
 				
 				if (sErr == "")
-					return sFileName + ".zip";
+					return sFileName + ".csk";
 				else
 					return sErr;
 			}
