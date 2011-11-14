@@ -92,10 +92,17 @@ namespace Web
 			//not able to perform the very first database hit.
 			//this line serves as an inital db hit, but we aren't trapping it
 			dc.TestDBConnection(ref sErr);
-			if(sErr != "")
-				Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
+			if(sErr != "") {
+				//there is a weird mysql error on initial startup.
+				//we're gonna try sleeping a bit then try again
+				System.Threading.Thread.Sleep(2000);
+				
+				dc.TestDBConnection(ref sErr);
+				if(sErr != "")
+					Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
+			}
 
-			
+
 			
 			//load the site.master.xml file into the session.  If it doesn't exist, we can't proceed.
 			try 
@@ -112,7 +119,7 @@ namespace Web
 					ui.SetSessionObject("site_master_xml", xSiteMaster, "Security");
 				}
 			} catch (Exception ex) {
-				lblErrorMessage.Text = "Error: ite master XML is invalid." + ex.Message;
+				lblErrorMessage.Text = "Error: Site master XML is invalid." + ex.Message;
 			}
 
 
@@ -136,48 +143,17 @@ namespace Web
 			
 			
 			
-
-			//get the login settings
-            sSQL = "select login_message, page_view_logging, report_view_logging, log_days" +
-				" from login_security_settings where id = 1";
-            DataRow dr = null;
-            if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+			//JUST get the login message here
+			string sLoginMessage = "Welcome to Cato";
+			sSQL = "select login_message from login_security_settings where id = 1";
+            if (dc.sqlGetSingleString(ref sLoginMessage, sSQL, ref sErr))
             {
-                lblErrorMessage.Text = "Error: Unable to connect to the database.<br /><br />" + sErr;
-                return;
-            }
-            if (dr != null)
-            {
-                //login message
-				string sLoginMessage = object.ReferenceEquals(dr["login_message"], DBNull.Value) ? "Welcome to Cato" : dr["login_message"].ToString();
-                lblMessage.Text = sLoginMessage;
+				lblMessage.Text = sLoginMessage;
 				//put it in the global
-                DatabaseSettings.AppInstance = sLoginMessage;
-				
-                //page view settings
-                //global_view_logging
-                if (dc.IsTrue(dr["page_view_logging"].ToString()))
-                    ui.SetSessionObject("page_view_logging", "true", "Security");
-                else
-                    ui.SetSessionObject("page_view_logging", "false", "Security");
-
-                //user page_view logging
-                if (dc.IsTrue(dr["report_view_logging"].ToString()))
-                    ui.SetSessionObject("report_view_logging", "true", "Security");
-                else
-                    ui.SetSessionObject("report_view_logging", "false", "Security");
-
-                //log depth
-                if (!string.IsNullOrEmpty(dr["log_days"].ToString()))
-                    ui.SetSessionObject("log_days", dr["log_days"].ToString(), "Security");
-                else
-                    ui.SetSessionObject("log_days", "90", "Security");
+				DatabaseSettings.AppInstance = sLoginMessage;
             }
-			else {
-				//this should never happen, if it does we weren't able to connect to the db but didn't have an error above?
-				lblErrorMessage.Text = "Warning: Unable to read the login settings table.";
-			}
-            //}
+			
+			//}
         }
 
         private bool LdapAuthenticate(string sUserID, string sDomain, string sUsername, string sPassword, ref string sErr)
@@ -364,7 +340,45 @@ namespace Web
                 return;
             }
 
+			
+			//get the login settings
+            sSQL = "select page_view_logging, report_view_logging, log_days" +
+				" from login_security_settings where id = 1";
+            DataRow drSettings = null;
+            if (!dc.sqlGetDataRow(ref drSettings, sSQL, ref sErr))
+            {
+                lblErrorMessage.Text = "Error: Unable to get logging settings.<br /><br />" + sErr;
+                return;
+            }
+            if (drSettings != null)
+            {
+                //page view settings
+                //global_view_logging
+                if (dc.IsTrue(drSettings["page_view_logging"].ToString()))
+                    ui.SetSessionObject("page_view_logging", "true", "Security");
+                else
+                    ui.SetSessionObject("page_view_logging", "false", "Security");
 
+                //user page_view logging
+                if (dc.IsTrue(drSettings["report_view_logging"].ToString()))
+                    ui.SetSessionObject("report_view_logging", "true", "Security");
+                else
+                    ui.SetSessionObject("report_view_logging", "false", "Security");
+
+                //log depth
+                if (!string.IsNullOrEmpty(drSettings["log_days"].ToString()))
+                    ui.SetSessionObject("log_days", drSettings["log_days"].ToString(), "Security");
+                else
+                    ui.SetSessionObject("log_days", "90", "Security");
+            }
+			else {
+				//this should never happen, if it does we weren't able to connect to the db but didn't have an error above?
+				lblErrorMessage.Text = "Warning: Unable to read the login settings table.";
+			}
+			
+			
+			
+			
             //The GUI does it's own security log table maintenance
             string sLogDays = (string)ui.GetSessionObject("log_days", "Security");
             if (string.IsNullOrEmpty(sLogDays)) sLogDays = "90";
