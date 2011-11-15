@@ -350,11 +350,11 @@ proc gather_aws_system_info {instance_id user_id region} {
                                 error_out "AWS error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
                         }
                 }
+		lappend region_endpoint $region $endpoint
         } else {
-                set endpoint ""
+                set region_endpoint ""
         }
 
-        lappend region_endpoint $region $endpoint
         set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
 
         set cmd "$x call_aws ec2 \"$region\" DescribeInstances "
@@ -387,11 +387,7 @@ proc gather_aws_system_info {instance_id user_id region} {
         } else {
                 set platform "linux"
         }
-        if {"$::CLOUD_TYPE" == "Eucalyptus"} {
-		set address [[[$root selectNodes {//instancesSet/item/dnsName}]  childNode] data]
-	} else {
-		set address [[[$root selectNodes {//instancesSet/item/privateIpAddress}]  childNode] data]
-	}
+	set address [[[$root selectNodes {//instancesSet/item/dnsName}]  childNode] data]
         output "$instance_id state = $state, keyname = $keyname, platform = $platform, address = $address" 3
         $root delete
         $xmldoc delete
