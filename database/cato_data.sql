@@ -6,8 +6,9 @@ INSERT INTO `logserver_settings` (`id`, `mode_off_on`, `loop_delay_sec`, `port`,
 
 INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('4d6f35fc-faa7-11e0-b2ec-12313d0024c3','us-east-1','Amazon AWS','us-east-1.amazonaws.com');
 INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('96e7d2c0-faa7-11e0-b2ec-12313d0024c3','us-west-1','Amazon AWS','us-west-1.amazonaws.com');
+INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('cdf6a49a-0fc3-11e1-a85b-fcf3c916131e','us-west-2','Amazon AWS','us-west-2.amazonaws.com');
 INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('a9f303bc-faa7-11e0-b2ec-12313d0024c3','eu-west-1','Amazon AWS','eu-west-1.amazonaws.com');
-INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('a9fe9bdc-faa7-11e0-b2ec-12313d0024c3','ap-southeast-1','Amazon AWS','ap-southeast-1.amazonaws.com');
+INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('e6ac7aa0-0fc3-11e1-a85b-fcf3c916131e','ap-southeast-1','Amazon AWS','ap-southeast-1.amazonaws.com');
 INSERT INTO `clouds` (cloud_id,cloud_name,provider,api_url) VALUES ('aa09974e-faa7-11e0-b2ec-12313d0024c3','ap-northeast-1','Amazon AWS','ap-northeast-1.amazonaws.com');
 
 INSERT INTO `lu_task_step_function_category` (`category_name`, `category_label`, `sort_order`, `description`, `icon`) VALUES ('aws_as','AWS AS','20.00','','icons/aws_32.png');
