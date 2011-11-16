@@ -1919,7 +1919,7 @@ namespace FunctionTemplates
 				//if the assetid is a guid, it means the user switched from another connection type... wipe it.
 				if (ui.IsGUID(sAssetID))
 	            {
-					SetNodeValueinCommandXML(sStepID, "asset", "");
+					SetNodeValueinCommandXML(sStepID, "//asset", "");
 					sAssetID = "";
 				}
 				
@@ -1940,6 +1940,9 @@ namespace FunctionTemplates
 
 				break;
 			default:
+				//clear out the cloud_name property... it's not relevant for these types
+				SetNodeValueinCommandXML(sStepID, "//cloud_name", "");
+				
 	            //ASSET
 	            //IF IT's A GUID...
 	            // get the asset name belonging to this asset_id
@@ -1956,7 +1959,7 @@ namespace FunctionTemplates
 	                if (sAssetName == "")
 	                {
 	                    //clear the bogus value
-	                    SetNodeValueinCommandXML(sStepID, "asset", "");
+	                    SetNodeValueinCommandXML(sStepID, "//asset", "");
 	                }
 	            }
 	            else
