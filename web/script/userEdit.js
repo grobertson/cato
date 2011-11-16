@@ -1,3 +1,18 @@
+//Copyright 2011 Cloud Sidekick
+// 
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+// 
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+//
+
 $(document).ready(function () {
     // clear the edit array
     $("#hidSelectedArray").val("");
@@ -10,12 +25,9 @@ $(document).ready(function () {
     $("#txtUserFullName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
     $("#txtUserEmail").keypress(function (e) { return restrictEntryToEmail(e, this); });
 
-    // nice, clear all checkboxes selected in a single line!
-    $(':input', ("#tblUserList")).attr('checked', false);
-
     //what happens when you click a user row
     $("[tag='selectable']").live("click", function () {
-        LoadEditDialog(0, $(this).attr("user_id"));
+        LoadEditDialog(0, $(this).parent().attr("user_id"));
     });
 
     // change action for dropdown list, saves a callback
@@ -66,8 +78,6 @@ $(document).ready(function () {
 });
 function pageLoad() {
     ManagePageLoad();
-
-    HilightSelectedUsers();
 
     // set a handler for cleanup 
     // when the user selects the x close instead of the button
@@ -129,34 +139,6 @@ function InitializeUserAdd() {
 
     ClearSelectedRows();
     clearEditDialog();
-}
-
-function HilightSelectedUsers() {
-    // run through the grid shown, and hilight any selected users
-    // and add something different for the user currently being edited
-    var editList = $("#hidSelectedArray").val();
-    var sEditUserID = $("#hidCurrentEditID").val();
-    $('#tblUserList TR').each(function (i, o) {
-        var myArray = new Array();
-        myArray = editList.split(',');
-        if (myArray.length > 0) {
-            var row = jQuery(this);
-            // should be a better way to select this
-            var firstParam = row.children("td:eq(1)").attr("user_id");
-            if (firstParam) {
-                if (firstParam.length == 36) {
-                    if (jQuery.inArray(firstParam, myArray) > -1) {
-                        //alert('chk_' + firstParam + ' ' + firstParam);
-                        $("#chk_" + firstParam).attr("checked", true);
-                        //$(':input', ("#chk_16B72991-497E-4963-9431-0B414BD067B2")).attr('checked', true);
-                        //$("input[name^='ctl_" + firstParam + "'] :checked");
-
-                    }
-                }
-
-            }
-        }
-    });
 }
 
 function DeleteItems() {

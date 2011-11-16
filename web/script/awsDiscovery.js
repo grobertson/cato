@@ -18,9 +18,6 @@
 
 //only fires on initial load of the page.
 $(document).ready(function () {
-    // nice, clear all checkboxes selected in a single line!
-    $(':input', (".jtable")).attr('checked', false);
-
     //check/uncheck all checkboxes
     $("#chkAll").live("click", function () {
         if (this.checked) {
@@ -234,9 +231,4 @@ function Save() {
         }
     });
 
-}
-function ClearSelectedRows() {
-    $("#hidSelectedArray").val("");
-    $("#lblItemsSelected").html("0");
-    $(':input', (".jtable")).attr('checked', false);
 }

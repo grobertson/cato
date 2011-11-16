@@ -1,10 +1,11 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="userEdit.aspx.cs" Inherits="Web.pages.userEdit"
     MasterPageFile="~/pages/site.master" %>
 
-<asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
+<asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/userEdit.js"></script>
     <script type="text/javascript" src="../script/objectTag.js"></script>
+			
     <style type="text/css">
         .li_assets
         {
@@ -15,7 +16,8 @@
             list-style: none;
         }
     </style>
-    <!-- End testing -->
+</asp:Content>
+<asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div style="display: none;">
         <input id="hidPageSaveType" type="hidden" value="batch" />
         <input id="hidMode" type="hidden" name="hidMode" />
@@ -59,55 +61,55 @@
                     <asp:Repeater ID="rpUsers" runat="server">
                         <HeaderTemplate>
                             <tr>
-                                <td class="chkboxcolumn">
+                                <th class="chkboxcolumn">
                                     <input type="checkbox" class="chkbox" id="chkAll" />
-                                </td>
-                                <td sortcolumn="status" width="80px">
+                                </th>
+                                <th sortcolumn="status" width="80px">
                                     <img id="imgUpstatus" src="../images/UpArrow.gif" class="hidden" alt="" />
                                     <img id="imgDownstatus" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Status
-                                </td>
-                                <td sortcolumn="full_name" width="235px">
+                                </th>
+                                <th sortcolumn="full_name" width="235px">
                                     <img id="imgUpfull_name" src="../images/UpArrow.gif" class="hidden" alt="" />
                                     <img id="imgDownfull_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     User
-                                </td>
-                                <td sortcolumn="username">
+                                </th>
+                                <th sortcolumn="username">
                                     <img id="imgUpusername" src="../images/UpArrow.gif" class="hidden" alt="" />
                                     <img id="imgDownusername" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Login
-                                </td>
-                                <td sortcolumn="role" width="95px">
+                                </th>
+                                <th sortcolumn="role" width="95px">
                                     <img id="imgUprole" src="../images/UpArrow.gif" class="hidden" alt="" />
                                     <img id="imgDownrole" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Role
-                                </td>
-                                <td sortcolumn="last_login_dt" width="150px">
+                                </th>
+                                <th sortcolumn="last_login_dt" width="150px">
                                     <img id="imgUplast_login_dt" src="../images/UpArrow.gif" class="hidden" alt="" />
                                     <img id="imgDownlast_login_dt" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Last Login
-                                </td>
+                                </th>
                             </tr>
                         </HeaderTemplate>
                         <ItemTemplate>
-                            <tr>
+                            <tr user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>">
                                 <td class="chkboxcolumn">
                                     <input type="checkbox" class="chkbox" id="chk_<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>"
                                         user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>" tag="chk" />
                                 </td>
-                                <td tag="selectable" user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>">
+                                <td tag="selectable">
                                     <%# (((System.Data.DataRowView)Container.DataItem)["status"]) %>
                                 </td>
-                                <td tag="selectable" user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>">
+                                <td tag="selectable">
                                     <%# (((System.Data.DataRowView)Container.DataItem)["full_name"]) %>
                                 </td>
-                                <td tag="selectable" user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>">
+                                <td tag="selectable">
                                     <%# (((System.Data.DataRowView)Container.DataItem)["username"]) %>
                                 </td>
-                                <td tag="selectable" user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>">
+                                <td tag="selectable">
                                     <%# (((System.Data.DataRowView)Container.DataItem)["role"]) %>
                                 </td>
-                                <td tag="selectable" user_id="<%# (((System.Data.DataRowView)Container.DataItem)["user_id"]) %>">
+                                <td tag="selectable">
                                     <%# (((System.Data.DataRowView)Container.DataItem)["last_login_dt"]) %>
                                 </td>
                             </tr>
