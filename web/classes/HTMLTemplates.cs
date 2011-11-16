@@ -1871,6 +1871,8 @@ namespace FunctionTemplates
             if (xConnName == null) return "Error: XML does not contain conn_name";
             XElement xConnType = xd.XPathSelectElement("//conn_type");
             if (xConnType == null) return "Error: XML does not contain conn_type";
+            XElement xCloudName = xd.XPathSelectElement("//cloud_name");
+			string sCloudName = (xCloudName == null ? "" : xCloudName.Value);
 
             string sAssetID = xAsset.Value;
             string sConnName = xConnName.Value;
@@ -1914,12 +1916,26 @@ namespace FunctionTemplates
 			switch (sConnType)
             {
 			case "ssh - ec2":
+				//if the assetid is a guid, it means the user switched from another connection type... wipe it.
+				if (ui.IsGUID(sAssetID))
+	            {
+					SetNodeValueinCommandXML(sStepID, "asset", "");
+					sAssetID = "";
+				}
+				
 	            sHTML += " to Instance " + Environment.NewLine;
 	            sHTML += "<input type=\"text\" " +
 	                CommonAttribs(sStepID, sFunction, true, "asset", "") +
 	                " class=\"code w400px\"" +
 	                " is_required=\"true\"" +
 	                " value=\"" + sAssetID + "\"" + " />"
+	                + Environment.NewLine;
+
+	            sHTML += " in Cloud " + Environment.NewLine;
+	            sHTML += "<input type=\"text\" " +
+	                CommonAttribs(sStepID, sFunction, true, "cloud_name", "") +
+	                " class=\"code w400px\"" +
+	                " value=\"" + sCloudName + "\"" + " />"
 	                + Environment.NewLine;
 
 				break;
