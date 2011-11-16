@@ -49,6 +49,12 @@ $(document).ready(function () {
 
     // sorting the list
     $(".col_header").live("click", function () {
+    	//IMPORTANT!
+    	//usually, the first column is the "select all" checkbox.
+    	//we don't want it firing a post here, so exit if this contains a chkAll control.
+    	if ($(this).find("#chkAll").length > 0)
+    		return;
+    	
         // ok how to determine the sort direction
         // if the column clicked is the same as the last time
         // then reverse the order
@@ -241,7 +247,7 @@ function clearEditDialog() {
 
 
 //this is some array management stuff used for the multiple edit chains
-//and for IE compatibility evidently.  Thank Stan but I'm not sure what you did here.
+//and for IE compatibility evidently.  Thanks Stan but I'm not sure what you did here.
 Array.prototype.remove = function (s) {
     var i = IsInArray(this, s);
     if (i != -1) this.splice(i, 1);
