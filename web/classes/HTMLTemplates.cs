@@ -5924,7 +5924,7 @@ namespace FunctionTemplates
 
         #endregion
 
-        DataTable getConnectionTypes(ref string sErr)
+        public DataTable getConnectionTypes(ref string sErr)
         {
             try
             {

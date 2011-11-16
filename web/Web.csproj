@@ -325,6 +325,12 @@
     <Compile Include="pages\cloudEdit.aspx.designer.cs">
       <DependentUpon>cloudEdit.aspx</DependentUpon>
     </Compile>
+    <Compile Include="pages\assetEdit.aspx.cs">
+      <DependentUpon>assetEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="pages\assetEdit.aspx.designer.cs">
+      <DependentUpon>assetEdit.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -423,7 +429,6 @@
     <Content Include="script\superfish\superfish.js" />
     <Content Include="script\superfish\supersubs.js" />
     <Content Include="script\taskedit\taskEdit.js" />
-    <Content Include="script\taskedit\taskEditAttributes.js" />
     <Content Include="script\taskedit\taskEditCodeblock.js" />
     <Content Include="script\taskedit\taskEditCommandSpecific.js" />
     <Content Include="script\taskedit\taskEditDebug.js" />
@@ -500,5 +505,7 @@
     <Content Include="pages\importReconcile.aspx" />
     <Content Include="pages\cloudEdit.aspx" />
     <Content Include="script\cloudEdit.js" />
+    <Content Include="script\assetEdit.js" />
+    <Content Include="pages\assetEdit.aspx" />
   </ItemGroup>
 </Project>

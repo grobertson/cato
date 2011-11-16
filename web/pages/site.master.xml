@@ -42,6 +42,8 @@
 		<menu roles="developer" label="Tasks" icon="../images/advanced.png">
 			<item roles="developer" label="Manage Tasks" icon="../images/icons/manage_auto_task_24.png" onclick="showPleaseWait();" href="../pages/taskManage.aspx">
 			</item>
+			<item roles="developer" label="Manage Assets" icon="../images/icons/manage_asset_24.png" onclick="showPleaseWait();" href="../pages/assetEdit.aspx">
+			</item>
 		</menu>
 		<menu roles="developer user" label="Ecosystems" icon="../images/display.png">
 			<item roles="developer" label="Manage EcoTemplates" icon="../images/icons/ecotemplates_24.png" onclick="showPleaseWait();" href="../pages/ecoTemplateManage.aspx">
