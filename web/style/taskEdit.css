@@ -143,57 +143,6 @@
 	margin: 0px 0px 5px 0px;
 }
 
-.atribute_add_title
-{
-	border-bottom: solid 1px #000;
-	background-image: url( 'task_edit/bg-panel-header.gif' );
-	padding: 2px 0px 2px 4px;
-	margin: 0px 0px 5px 0px;
-	display: block;
-}
-.attribute_groups
-{
-	overflow: auto;
-}
-.attribute_group
-{
-	border: 1px solid #D3D3D3;
-	background: #FFF;
-	color: #555555;
-	margin: 4px 4px 4px 4px;
-}
-.attribute_title
-{
-	background-color: #eeeeee;
-	margin: 1px 4px 0px 0px;
-}
-.attribute
-{
-	margin: 0px 0px 0px 4px;
-}
-.attribute_and
-{
-	margin: 0px 0px 0px 4px;
-	font-style: italic;
-}
-.attribute_or
-{
-	margin: 0px 0px 0px 10px;
-}
-.attribute_group_title
-{
-	background-color: #DDD;
-	height: 20px;
-}
-.attribute_group_remove_btn
-{
-	cursor: pointer;
-	float: right;
-}
-.attribute_remove_btn
-{
-	cursor: pointer;
-}
 .value_picker
 {
 	position: absolute;

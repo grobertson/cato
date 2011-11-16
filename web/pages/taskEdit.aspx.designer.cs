@@ -95,10 +95,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.HiddenField hidParamDelete;
 		
-		protected System.Web.UI.WebControls.HiddenField hidAddAttributeID;
-		
-		protected System.Web.UI.WebControls.HiddenField hidAddToAttributeGroupID;
-		
 		protected System.Web.UI.WebControls.HiddenField hidDebugActiveInstance;
 		
 		protected System.Web.UI.WebControls.HiddenField hidV3;

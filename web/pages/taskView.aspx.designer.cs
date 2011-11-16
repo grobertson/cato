@@ -51,10 +51,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Label lblDescription;
 		
-		protected System.Web.UI.WebControls.Repeater rpAttributeGroups;
-		
-		protected System.Web.UI.WebControls.Repeater rpGroupAttributes;
-		
 		protected System.Web.UI.WebControls.PlaceHolder phSteps;
 		
 		protected System.Web.UI.WebControls.Label lblCurrentVersion;

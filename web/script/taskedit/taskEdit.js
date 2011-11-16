@@ -24,7 +24,6 @@ $(document).ready(function () {
     $("#toolbox .category").disableSelection();
     $("#toolbox .function").disableSelection();
     $(".step_common_button").disableSelection();
-    $("#toolbox .attribute_picker_attribute").disableSelection();
 
     //specific field validation and masking
     $("#ctl00_phDetail_txtTaskCode").keypress(function (e) { return restrictEntryCustom(e, this, /[a-zA-Z0-9 _\-]/); });

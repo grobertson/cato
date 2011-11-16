@@ -173,37 +173,6 @@
             -->
         </div>
         <hr />
-        <div id="div_attributes" class="">
-            <h3>
-                Asset Attributes</h3>
-            <div>
-                <div id="attribute_groups">
-                    <asp:Repeater ID="rpAttributeGroups" runat="server" OnItemDataBound="rpAttributeGroups_ItemDataBound">
-                        <ItemTemplate>
-                            <div class="view_attribute_group">
-                                <div class="view_attribute_group_title">
-                                    &nbsp;
-                                </div>
-                                <div>
-                                    <asp:Repeater ID="rpGroupAttributes" runat="server">
-                                        <ItemTemplate>
-                                            <div class="qview_attribute">
-                                                <div class="qview_attribute_title">
-                                                    <%#(((System.Data.DataRowView)Container.DataItem)["attribute_name"])%>
-                                                    ::
-                                                    <%#(((System.Data.DataRowView)Container.DataItem)["attribute_value"])%>
-                                                </div>
-                                            </div>
-                                        </ItemTemplate>
-                                    </asp:Repeater>
-                                </div>
-                            </div>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </div>
-            </div>
-        </div>
-        <hr />
         <div id="div_steps" class="">
             <h3>
                 Steps</h3>

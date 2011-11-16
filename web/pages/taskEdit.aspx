@@ -36,8 +36,7 @@
                             id="tab_commands" linkto="div_commands" class="ui-state-default ui-corner-top toolbox_tab">Commands</span>
                 <!--<<span
                             id="tab_registry" linkto="div_registry" class="ui-state-default ui-corner-top toolbox_tab"
-                            style="padding-left: 7px; padding-right: 7px;" runat="server">Registry</span>span id="tab_attributes" linkto="div_attributes" class="ui-state-default ui-corner-top toolbox_tab"
-                    style="padding-left: 7px; padding-right: 7px;">Attributes</span><span
+                            style="padding-left: 7px; padding-right: 7px;" runat="server">Registry</span><span
                                 id="tab_tags" linkto="div_tags" class="ui-state-default ui-corner-top toolbox_tab">Tags</span>-->
             </div>
             <div id="div_details" class="toolbox_panel">
@@ -321,8 +320,6 @@
         <asp:HiddenField ID="hidStepDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidCodeblockDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidParamDelete" runat="server"></asp:HiddenField>
-        <asp:HiddenField ID="hidAddAttributeID" runat="server"></asp:HiddenField>
-        <asp:HiddenField ID="hidAddToAttributeGroupID" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidDebugActiveInstance" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidV3" runat="server"></asp:HiddenField>
     </div>

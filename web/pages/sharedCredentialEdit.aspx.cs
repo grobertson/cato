@@ -42,8 +42,6 @@ namespace Web.pages
             if (!Page.IsPostBack)
             {
                 BindList();
-                //FillAttributeDDL();
-                //FillOwnersDDL();
             }
         }
 

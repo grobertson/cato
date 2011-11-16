@@ -215,25 +215,6 @@ namespace Web.pages
             }
         }
 
-        #region "DataBound"
-        protected void rpAttributeGroups_ItemDataBound(object sender, RepeaterItemEventArgs e)
-        {
-            RepeaterItem item = e.Item;
-            if ((item.ItemType == ListItemType.Item) ||
-                (item.ItemType == ListItemType.AlternatingItem))
-            {
-
-                Repeater rp = (Repeater)item.FindControl("rpGroupAttributes");
-                DataRowView drv = (DataRowView)item.DataItem;
-
-                rp.DataSource = drv.CreateChildView("GroupAttributes");
-                rp.DataBind();
-
-            }
-        }
-        #endregion
-
-
         protected override void Render(HtmlTextWriter Output)
         {
             string sHTML = "";

@@ -196,8 +196,6 @@ namespace Web.pages
             //Submitted, Processing, Queued, Completed, Error and Cancelled
             try
             {
-                //string sAssetID = txtTestAsset.Attributes["asset_id"].ToString();
-
                 //get the last 'done' instance.
                 string sSQL = "select ti.task_status, ti.submitted_dt, ti.started_dt, ti.completed_dt, ti.ce_node, ti.pid," +
                     " t.task_name, a.asset_name, u.full_name, si.schedule_instance_name" +
@@ -652,19 +650,6 @@ namespace Web.pages
                 DataRowView drv = (DataRowView)item.DataItem;
 
                 rp.DataSource = drv.CreateChildView("CatFuncs");
-                rp.DataBind();
-            }
-        }
-        protected void rpAttributeGroups_ItemDataBound(object sender, RepeaterItemEventArgs e)
-        {
-            RepeaterItem item = e.Item;
-            if ((item.ItemType == ListItemType.Item) ||
-                (item.ItemType == ListItemType.AlternatingItem))
-            {
-                Repeater rp = (Repeater)item.FindControl("rpGroupAttributes");
-                DataRowView drv = (DataRowView)item.DataItem;
-
-                rp.DataSource = drv.CreateChildView("GroupAttributes");
                 rp.DataBind();
             }
         }

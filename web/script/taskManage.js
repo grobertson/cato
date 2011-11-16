@@ -338,7 +338,6 @@ function OnFailure(error, userContext, methodName) {
 }
 
 
-//sAttributesArray sTaskName
 function SaveNewTask() {
     var bSave = true;
     var strValidationError = '';

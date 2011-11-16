@@ -8,7 +8,6 @@
         <input id="hidMode" type="hidden" name="hidMode" />
         <input id="hidEditCount" type="hidden" name="hidEditCount" />
         <input id="hidCurrentEditID" type="hidden" name="hidCurrentEditID" />
-        <input id="hidCurrentAttributeGroupEditing" type="hidden" name="hidCurrentAttributeGroupEditing" />
         <input id="hidSelectedArray" type="hidden" name="hidSelectedArray" />
         <asp:HiddenField ID="hidSortColumn" runat="server" />
         <asp:HiddenField ID="hidSortDirection" runat="server" />

@@ -52,30 +52,6 @@
 	height: 85px;
 }
 
-.view_attribute_groups
-{
-	background: #EEEEEE;
-}
-.view_attribute_group
-{
-	border: 1px solid #D3D3D3;
-	background: #FFF;
-	color: #555555;
-	margin: 4px 4px 4px 4px;
-}
-.view_attribute
-{
-	margin: 0px 0px 0px 10px;
-}
-.view_attribute_group_title
-{
-	background-color: #DDD;
-	height: 20px;
-}
-.view_attribute_groups
-{
-	background: #EEEEEE;
-}
 .view_parameters
 {
 	border: 1px solid #D3D3D3;

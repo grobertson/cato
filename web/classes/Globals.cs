@@ -38,7 +38,6 @@ namespace Globals
         DashWidget = 11,
         FileReader = 14,
         MessageTemplate = 18,
-        AssetAttribute = 22,
         Parameter = 34,
         Credential = 35,
         Domain = 36,
