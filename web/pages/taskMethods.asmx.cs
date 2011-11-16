@@ -121,26 +121,32 @@ namespace ACWebMethods
                         XElement xFoundNode = null;
                         ArrayList aMissingNodes = new ArrayList();
 
-                        //of course this skips the full path, but we've already determined it's no good.
-                        string sWorkXPath = sXPath;
-                        while (sWorkXPath.LastIndexOf("/") > -1)
-                        {
-                            aMissingNodes.Add(sWorkXPath.Substring(sWorkXPath.LastIndexOf("/") + 1));
-                            sWorkXPath = sWorkXPath.Substring(0, sWorkXPath.LastIndexOf("/"));
+                        //if there are no slashes we'll just add this one explicitly as a child of root
+						if (sXPath.IndexOf("/") == -1) {
+							xRoot.Add(new XElement(sXPath));
+						}
+						else {
+							//and if there are break it down
+							string sWorkXPath = sXPath;
+	                        while (sWorkXPath.LastIndexOf("/") > -1)
+	                        {
+	                            aMissingNodes.Add(sWorkXPath.Substring(sWorkXPath.LastIndexOf("/") + 1));
+	                            sWorkXPath = sWorkXPath.Substring(0, sWorkXPath.LastIndexOf("/"));
+	
+	                            xFoundNode = xRoot.XPathSelectElement(sWorkXPath);
+	                            if (xFoundNode != null)
+	                            {
+	                                //Found one! stop looping
+	                                break;
+	                            }
+	                        }
 
-                            xFoundNode = xRoot.XPathSelectElement(sWorkXPath);
-                            if (xFoundNode != null)
-                            {
-                                //Found it! stop looping
-                                break;
-                            }
-                        }
-
-                        //now that we know where to start (xFoundNode), we can use that as a basis for adding
-                        foreach (string sNode in aMissingNodes)
-                        {
-                            xFoundNode.Add(new XElement(sNode));
-                        }
+							//now that we know where to start (xFoundNode), we can use that as a basis for adding
+	                        foreach (string sNode in aMissingNodes)
+	                        {
+	                            xFoundNode.Add(new XElement(sNode));
+	                        }
+						}
 
                         //now we should be good to stick the value on the final node.
                         XElement xNode = xRoot.XPathSelectElement(sXPath);

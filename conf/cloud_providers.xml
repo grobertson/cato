@@ -127,17 +127,17 @@
 			<products>
 				<product name="eucalyptus" label="Eucalyptus" api_protocol="HTTP" api_version="2009-03-01" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>
-						<type id="eucalyptus_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
+						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
 							<property name="Domain" label="" xpath="domain" short_list="1" sort_order="2" />
 						</type>
-						<type id="eucalyptus_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
+						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
 							<property name="ImageId" label="" xpath="imageId" id_field="1" short_list="1" sort_order="1" />
 							<property name="ImageType" label="" xpath="imageType" short_list="1" sort_order="3" />
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="eucalyptus_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="//instancesSet/item" request_record_filter="InstanceId">
+						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="//instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Architecture" label="" xpath="architecture" short_list="1" sort_order="9" />
 							<property name="DNS Name" label="" xpath="dnsName" short_list="1" sort_order="1" />
@@ -149,21 +149,21 @@
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="instanceState/name" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="eucalyptus_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="//keySet/item">
+						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="//keySet/item">
 							<property name="KeyName" label="" xpath="keyName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Fingerprint" label="" xpath="keyFingerprint" short_list="1" sort_order="2" />
 						</type>
-						<type id="eucalyptus_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
+						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
 							<property name="GroupId" label="" xpath="groupId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="3" />
 							<property name="GroupName" label="" xpath="groupName" short_list="1" sort_order="2" />
 						</type>
-						<type id="eucalyptus_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
+						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="status" has_icon="1" short_list="1" sort_order="2" />
 							<property name="VolumeId" label="" xpath="volumeId" short_list="1" sort_order="3" />
 						</type>
-						<type id="eucalyptus_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="volumeSet/item">
+						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="volumeSet/item">
 							<property name="VolumeId" label="" xpath="volumeId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Device" label="" xpath="attachmentSet/item/device" short_list="1" sort_order="6" />
 							<property name="Size" label="" xpath="size" short_list="1" sort_order="5" />

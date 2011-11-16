@@ -3165,6 +3165,109 @@ namespace ACWebMethods
         }
         #endregion
 
-    }
+		#region "Asset"
+		[WebMethod(EnableSession = true)]
+        public string wmAssetSearch(string sSearchText, bool bAllowMultiSelect)
+        {
+            try
+            {
+                dataAccess dc = new dataAccess();
+                acUI.acUI ui = new acUI.acUI();
+                string sErr = "";
+                string sWhereString = " where 1=1 and a.asset_status ='Active'";
+
+                if (sSearchText.Length > 0)
+                {
+                    sSearchText = sSearchText.Replace("'", "''").Trim();
+
+                    //split on spaces
+                    int i = 0;
+                    string[] aSearchTerms = sSearchText.Split(' ');
+                    for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                    {
+
+                        //if the value is a guid, it's an existing task.
+                        //otherwise it's a new task.
+                        if (aSearchTerms[i].Length > 0)
+                        {
+                            sWhereString += " and (a.asset_name like '%" + aSearchTerms[i] + "%' " +
+                                "or a.port like '%" + aSearchTerms[i] + "%' " +
+                                "or a.address like '%" + aSearchTerms[i] + "%' " +
+                                "or a.connection_type like '%" + aSearchTerms[i] + "%' " +
+                                "or a.db_name like '%" + aSearchTerms[i] + "%') ";
+                        }
+                    }
+                }
+
+                //limit the results to the users 'tags' unless they are a super user
+                if (!ui.UserIsInRole("Developer") && !ui.UserIsInRole("Administrator"))
+                {
+                    sWhereString += " and a.asset_id in (" +
+                        "select distinct at.object_id" +
+                        " from object_tags ut" +
+                        " join object_tags at on ut.tag_name = at.tag_name" +
+                        " and ut.object_type = 1 and at.object_type = 2" +
+                        " where ut.object_id = '" + ui.GetSessionUserID() + "'" +
+                        ")";
+                }
+
+                string sSQL = "select a.asset_id, a.asset_name, a.port, a.address, a.db_name, a.connection_type, ac.username, " +
+                        " case when a.is_connection_system = '1' then 'Yes' else 'No' end as is_connection_system " +
+                        " from asset a " +
+                        " left outer join asset_credential ac " +
+                        " on ac.credential_id = a.credential_id " +
+                        sWhereString +
+                        " order by a.asset_name";
+
+                DataTable dt = new DataTable();
+                if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+                {
+                    throw new Exception(sErr);
+                }
+
+                string sHTML = "";
+                if (dt.Rows.Count == 0)
+                {
+                    sHTML += "No results found";
+                }
+                else
+                {
+                    int iRowsToGet = dt.Rows.Count;
+                    if (iRowsToGet >= 100)
+                    {
+                        sHTML += "<div>Search found " + dt.Rows.Count + " results. Displaying the first 100.</div>";
+                        iRowsToGet = 99;
+                    }
+                    sHTML += "<ul id=\"search_asset_ul\" class=\"search_dialog_ul\">";
+
+                    for (int i = 0; i < iRowsToGet; i++)
+                    {
+                        sHTML += "<li class=\"search_dialog_value\" tag=\"asset_picker_row\" asset_id=\"" + dt.Rows[i]["asset_id"].ToString() + "\" asset_name=\"" + dt.Rows[i]["asset_name"].ToString() + "\">";
+
+                        sHTML += "<div class=\"search_dialog_value_name\">";
+                        if (bAllowMultiSelect)
+                            sHTML += "<input type='checkbox' name='assetcheckboxes' id='assetchk_" + dt.Rows[i]["asset_id"].ToString() + "' value='assetchk_" + dt.Rows[i]["asset_id"].ToString() + "'>";
+                        sHTML += "<span>" + dt.Rows[i]["asset_name"].ToString() + "</span>";
+                        sHTML += "</div>";
+
+                        sHTML += "<span class=\"search_dialog_value_inline_item\">Address: " + dt.Rows[i]["address"].ToString() + "</span>";
+                        sHTML += "<span class=\"search_dialog_value_inline_item\"> Connection Type: " + dt.Rows[i]["connection_type"].ToString() + "</span>";
+                        sHTML += "</li>";
+                    }
+                }
+                sHTML += "</ul>";
+
+                return sHTML;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+		#endregion
+	
+	}
 
 }

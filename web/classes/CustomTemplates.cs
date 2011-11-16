@@ -65,9 +65,8 @@ namespace FunctionTemplates
         public string GetEcosystemObjects(string sStepID, string sFunction, XDocument xd)
         {
             XElement xObjectType = xd.XPathSelectElement("//object_type");
-            if (xObjectType == null) return "Error: XML does not contain status";
-            string sObjectType = xObjectType.Value;
-
+            string sObjectType = (xObjectType == null ? "" : xObjectType.Value);
+			
             string sHTML = "";
 
             sHTML += "Select Object Type:" + Environment.NewLine;
@@ -88,30 +87,56 @@ namespace FunctionTemplates
 			}
 			
 			
-            sHTML += "</select> <br />" + Environment.NewLine;
+            sHTML += "</select>" + Environment.NewLine;
+
+            XElement xCloudFilter = xd.XPathSelectElement("//cloud_filter");
+            string sCloudFilter = (xCloudFilter == null ? "" : xCloudFilter.Value);
+            sHTML += "Cloud Filter: " + Environment.NewLine + "<input type=\"text\" " +
+            CommonAttribs(sStepID, sFunction, false, "cloud_filter", "") +
+            " help=\"Enter all or part of a cloud name to filter the results.\" value=\"" + sCloudFilter + "\" />" + Environment.NewLine;
 
             XElement xResultName = xd.XPathSelectElement("//result_name");
-            string sResultName = xResultName.Value;
-            sHTML += "<br>Result Variable: " + Environment.NewLine + "<input type=\"text\" " +
+            string sResultName = (xResultName == null ? "" : xResultName.Value);
+            sHTML += "<br />Result Variable: " + Environment.NewLine + "<input type=\"text\" " +
             CommonAttribs(sStepID, sFunction, false, "result_name", "") +
-            " help=\"\" value=\"" + sResultName + "\" />" + Environment.NewLine;
+            " help=\"This variable array will contain the ID of each Ecosystem Object.\" value=\"" + sResultName + "\" />" + Environment.NewLine;
+
+            XElement xCloudName = xd.XPathSelectElement("//cloud_name");
+            string sCloudName = (xCloudName == null ? "" : xCloudName.Value);
+            sHTML += " Cloud Name Variable: " + Environment.NewLine + "<input type=\"text\" " +
+            CommonAttribs(sStepID, sFunction, false, "cloud_name", "") +
+            " help=\"This variable array will contain the name of the Cloud for each Ecosystem Object.\" value=\"" + sCloudName + "\" />" + Environment.NewLine;
 
             return sHTML;
         }
         public string GetEcosystemObjects_View(string sStepID, string sFunction, XDocument xd)
         {
-            //XElement xMessage = xd.XPathSelectElement("//message");
-            //if (xMessage == null) return "Error: XML does not contain message";
+            XElement xObjectType = xd.XPathSelectElement("//object_type");
+            string sObjectType = (xObjectType == null ? "" : xObjectType.Value);
+			
+			XElement xCloudFilter = xd.XPathSelectElement("//cloud_filter");
+            string sCloudFilter = (xCloudFilter == null ? "" : xCloudFilter.Value);
 
-            //string sMessage = ui.SafeHTML(xMessage.Value);
-            //string sHTML = "";
+            XElement xResultName = xd.XPathSelectElement("//result_name");
+            string sResultName = (xResultName == null ? "" : xResultName.Value);
 
-            //sHTML += "Log Message: <br />" + Environment.NewLine;
-            //sHTML += "<div class=\"codebox\">" + sMessage + "</div>" + Environment.NewLine;
+            XElement xCloudName = xd.XPathSelectElement("//cloud_name");
+            string sCloudName = (xCloudName == null ? "" : xCloudName.Value);
+			
+			string sHTML = "";
 
-            //return sHTML;
-            return "View for Get Ecosystem Objects not implemented.";
-        }
+            sHTML += "Object Type: " + Environment.NewLine;
+            sHTML += "<span class=\"code\">" + sObjectType + "</span>" + Environment.NewLine;
+            sHTML += "Cloud Filter: " + Environment.NewLine;
+            sHTML += "<span class=\"code\">" + sCloudFilter + "</span>" + Environment.NewLine;
+            sHTML += "<br />Result Variable:" + Environment.NewLine;
+            sHTML += "<span class=\"code\">" + sResultName + "</span>" + Environment.NewLine;
+            sHTML += "Cloud Name Variable:" + Environment.NewLine;
+            sHTML += "<span class=\"code\">" + sCloudName + "</span>" + Environment.NewLine;
+
+
+            return sHTML;
+		}
 
     }
 }
