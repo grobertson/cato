@@ -438,63 +438,6 @@ CREATE TABLE `poller_settings` (
   `app_instance` varchar(1024) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `schedule` (
-  `schedule_id` varchar(36) NOT NULL DEFAULT '',
-  `schedule_name` varchar(255) NOT NULL DEFAULT '',
-  `schedule_desc` varchar(255) DEFAULT '',
-  `status` varchar(50) NOT NULL,
-  `recurring` int(11) NOT NULL,
-  `start_dt` datetime DEFAULT NULL,
-  `stop_dt` datetime DEFAULT NULL,
-  `months` varchar(27) DEFAULT NULL,
-  `days_mon_wk_all` int(11) DEFAULT NULL,
-  `days` varchar(84) DEFAULT NULL,
-  `hours` varchar(62) DEFAULT NULL,
-  `minutes` varchar(172) DEFAULT NULL,
-  PRIMARY KEY (`schedule_id`),
-  UNIQUE KEY `schedule_IX_sched_name` (`schedule_name`(64))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `schedule_instance` (
-  `schedule_instance` bigint(20) NOT NULL AUTO_INCREMENT,
-  `schedule_instance_name` varchar(255) NOT NULL DEFAULT '',
-  `schedule_id` varchar(36) NOT NULL DEFAULT '',
-  `status` varchar(16) DEFAULT NULL,
-  `run_dt` datetime DEFAULT NULL,
-  `ran_dt` datetime DEFAULT NULL,
-  PRIMARY KEY (`schedule_instance`),
-  KEY `schedule_instance_IX_schedule_instance` (`status`,`run_dt`),
-  KEY `FK_schedule_instance_schedule` (`schedule_id`),
-  CONSTRAINT `FK_schedule_instance_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedule` (`schedule_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `schedule_object` (
-  `schedule_id` varchar(36) NOT NULL DEFAULT '',
-  `object_id` varchar(36) NOT NULL DEFAULT '',
-  `object_type` int(11) NOT NULL,
-  `commented` int(11) NOT NULL,
-  `ecosystem_id` varchar(36) DEFAULT NULL,
-  PRIMARY KEY (`schedule_id`,`object_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `schedule_object_asset` (
-  `schedule_id` varchar(36) NOT NULL DEFAULT '',
-  `object_id` varchar(36) NOT NULL DEFAULT '',
-  `asset_id` varchar(36) NOT NULL DEFAULT '',
-  PRIMARY KEY (`schedule_id`,`object_id`,`asset_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `scheduler_settings` (
   `id` int(11) NOT NULL,
   `mode_off_on` varchar(3) NOT NULL,
