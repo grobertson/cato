@@ -49,25 +49,35 @@ proc get_object_types {} {
 
 
 }
-proc add_new_objects {objects object_type ecosystem_id} {
+proc add_new_objects {objects cloud_id object_type ecosystem_id} {
 	
 	foreach object_id $objects {
-		set sql "insert into ecosystem_object (ecosystem_id, ecosystem_object_id, ecosystem_object_type, added_dt) values ('$ecosystem_id','$object_id','$object_type',now())"
+		set sql "insert into ecosystem_object (ecosystem_id, cloud_id, ecosystem_object_id, ecosystem_object_type, added_dt) values ('$ecosystem_id', '$cloud_id', '$object_id','$object_type',now())"
 		::mysql::exec $::CONN $sql
 		output "Adding $object_id of type $object_type to $ecosystem_id" 
 	}
 }
-proc remove_old_objects {objects object_type ecosystem_id} {
+proc remove_old_objects {objects object_type ecosystem_id cloud_id} {
 	
 	foreach object_id $objects {
-		set sql "delete from ecosystem_object where ecosystem_id = '$ecosystem_id' and ecosystem_object_type = '$object_type' and ecosystem_object_id = '$object_id'" 
+		set sql "delete from ecosystem_object where ecosystem_id = '$ecosystem_id' and ecosystem_object_type = '$object_type' and ecosystem_object_id = '$object_id' and cloud_id = '$cloud_id'" 
 		::mysql::exec $::CONN $sql
-		output "Deleting $object_id of type $object_type from $ecosystem_id" 
+		output "Deleting $object_id of type $object_type from $ecosystem_id and cloud id $cloud_id" 
 	}
+}
+proc get_clouds {} {
+
+	unset -nocomplain ::cloud_arr
+	set sql "select cloud_id, provider, cloud_name, api_url from clouds"
+	set  clouds [::mysql::sel $::CONN $sql -list]
+	foreach cloud $clouds {
+		lappend ::cloud_arr([lindex $cloud 0]) [lindex $cloud 1] [lindex $cloud 2] [lindex $cloud 3]
+	}
+	#output "[parray ::cloud_arr]"
 }
 proc get_ecosystems {} {
 
-	set sql "select d.ecosystem_name, d.ecosystem_id, d.account_id from ecosystem d join ecosystem_object do on d.ecosystem_id = do.ecosystem_id join cloud_account ca on ca.account_id = d.account_id where ca.provider = 'Amazon AWS' order by account_id"
+	set sql "select d.ecosystem_name, d.ecosystem_id, d.account_id from ecosystem d join ecosystem_object do on d.ecosystem_id = do.ecosystem_id join cloud_account ca on ca.account_id = d.account_id order by account_id"
 	set  ::ECOSYSTEMS [::mysql::sel $::CONN $sql -list]
 	#output $::ECOSYSTEMS
 }
@@ -75,17 +85,19 @@ proc get_ecosystem_objects {ecosystem} {
 
 	set ecosystem_id [lindex $ecosystem 1]
 
-	set sql "select do.ecosystem_object_id, do.ecosystem_object_type from ecosystem_object do where do.ecosystem_id = '$ecosystem_id' order by do.ecosystem_object_type"
+	set sql "select do.ecosystem_object_id, do.ecosystem_object_type, do.cloud_id from ecosystem_object do where do.ecosystem_id = '$ecosystem_id' order by do.ecosystem_object_type"
 	set  objects [::mysql::sel $::CONN $sql -list]
 	foreach object $objects {
-		lappend obj_arr([lindex $object 1]) [lindex $object 0]
+		lappend obj_arr([lindex $object 1]+[lindex $object 2]) [lindex $object 0]
 	}	
-	foreach object_type [array names obj_arr] {
+	foreach object_type_cloud_id [array names obj_arr] {
 		#output "object type is $object_type and objects are >$obj_arr($object_type)<"
-		set old_objects [get_object_status $object_type [lindex $ecosystem 2] $obj_arr($object_type)]
+		set object_type [lindex [split $object_type_cloud_id "+"] 0]
+		set cloud_id [lindex [split $object_type_cloud_id "+"] 1]
+		set old_objects [get_object_status $object_type $cloud_id [lindex $ecosystem 2] $obj_arr($object_type_cloud_id)]
 		#output "old objects are $old_objects"
 		if {"$old_objects" > ""} {
-			remove_old_objects $old_objects $object_type $ecosystem_id
+			remove_old_objects $old_objects $object_type $ecosystem_id $cloud_id
 		}
 	}
 }
@@ -115,11 +127,11 @@ proc check_ecosystem_objects {} {
 		set ::AS_XML ""
 		set ::EC2_INSTANCES ""
 		get_ecosystem_objects $ecosystem
-		check_as_instances [lindex $ecosystem 1]
+		#check_as_instances [lindex $ecosystem 1]
 		unset ::AS_XML ::EC2_INSTANCES
 	}
 }
-proc get_object_status {object_type account_id objects} {
+proc get_object_status {object_type cloud_id account_id objects} {
 
 	get_account_creds $account_id	
 	set counter 0
@@ -149,16 +161,22 @@ proc get_object_status {object_type account_id objects} {
 	#	
 	#}
 	if {"$object_type" == "aws_ec2_instance"} {
-		lappend params Filter.1.Name instance-state-name Filter.1.Value.1 pending Filter.1.Value.2 running Filter.1.Value.3 shutting-down Filter.1.Value.4 stopping Filter.1.Value.5 stopped
+		#lappend params Filter.1.Name instance-state-name Filter.1.Value.1 pending Filter.1.Value.2 running Filter.1.Value.3 shutting-down Filter.1.Value.4 stopping Filter.1.Value.5 stopped
 	}
 	#output "$account_id = $::OBJECT_TYPES($object_type)"
 	if {$one_at_atime == 0} {
-		set ::ACCOUNT_HANDLE [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS]
-		set cmd "$::ACCOUNT_HANDLE call_aws [lindex $::OBJECT_TYPES($object_type) 0] {} [lindex $::OBJECT_TYPES($object_type) 1]"
+		if {"[lindex $::cloud_arr($cloud_id) 0]" == "Eucalyptus"} {
+			lappend region_endpoint [lindex $::cloud_arr($cloud_id) 1] "[lindex $::cloud_arr($cloud_id) 2]/services/Eucalyptus"
+		} else {
+			set region_endpoint ""
+		}
+		set ::ACCOUNT_HANDLE [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
+		#output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
+		set cmd "$::ACCOUNT_HANDLE call_aws [lindex $::OBJECT_TYPES($object_type) 0] [lindex $::cloud_arr($cloud_id) 1] [lindex $::OBJECT_TYPES($object_type) 1]"
 		lappend cmd $params
+		#output $cmd
 		set return_val [eval $cmd]
 		$::ACCOUNT_HANDLE destroy
-		
 	}
 	foreach object $objects {
 		set results [parse_results [lindex $::OBJECT_TYPES($object_type) 3] $return_val]
@@ -199,16 +217,15 @@ proc check_as_instances {ecosystem_id} {
 		set new_instances [::struct::set intersect $::EC2_INSTANCES $as_instances]
 		##output "new instances = $new_instances"
 		if {"$new_instances" > ""} {
-			add_new_objects $new_instances aws_ec2_instance $ecosystem_id
+			add_new_objects $new_instances $cloud_id aws_ec2_instance $ecosystem_id
 		}
 	}
 	
 }
 proc get_account_creds {account_id} {
 	if {"$::ACCOUNT_ID" != "$account_id"} {	
-		set sql "select login_id, login_password from cloud_account where account_id = '$account_id' and provider = 'Amazon AWS'"
+		set sql "select login_id, login_password, provider from cloud_account where account_id = '$account_id'"
 		set creds [::mysql::sel $::CONN $sql -list]
-		set ::ACCOUNT_CREDS $creds
 		set ::ACCOUNT_ID $account_id
 		set ::CLOUD_LOGIN_ID [lindex [lindex $creds 0] 0]
 		set ::CLOUD_LOGIN_PASS [decrypt_string [lindex [lindex $creds 0] 1] $::SITE_KEY]
@@ -227,9 +244,9 @@ proc initialize_process {} {
 }
 proc main_process {} {
 
-	set ::ACCOUNT_CREDS ""
 	set ::ACCOUNT_ID ""
 	get_ecosystems
+	get_clouds
 	check_ecosystem_objects
 }	
 main 

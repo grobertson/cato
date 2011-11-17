@@ -144,10 +144,11 @@ proc gather_account_info {account_id} {
 	set ::CLOUD_LOGIN_ID [lindex $row 2]
 	set ::CLOUD_LOGIN_PASS [decrypt_string [lindex $row 3] $::SITE_KEY]
 	if {"$::CLOUD_TYPE" == "Eucalyptus"} {
-		set sql "select cloud_name, api_url from clouds where provider = '$::CLOUD_TYPE'"
+		set sql "select cloud_name, api_url,cloud_id from clouds where provider = '$::CLOUD_TYPE'"
 		$::db_query $::CONN $sql
 		while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]/services/Eucalyptus"
+			set ::CLOUD_IDS($::CLOUD_TYPE,[lindex $row 0]) [lindex $row 2]
 		}
 	}
 }
@@ -215,33 +216,34 @@ proc aws_Generic {product operation path command} {
 	
 	if {"$::ECOSYSTEM_ID" > ""} {
 		output "got a ecosystem, operation is $operation"
+		set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,$aws_region)
 		switch $operation {
 			RunJobFlow {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_emr_jobflow {//JobFlowId} {} {} $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_emr_jobflow {//JobFlowId} {} {} $cloud_id $aws_region
 			}
 			RunInstances {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_instance {//instancesSet/item/instanceId} $instance_role $x $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_instance {//instancesSet/item/instanceId} $instance_role $x $cloud_id $aws_region
 			}
 			CreateAutoScalingGroup {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_as_group {//AutoScalingGroupName} {} {} $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_as_group {//AutoScalingGroupName} {} {} $cloud_id $aws_region
 			}
 			CreateDomain {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_sdb_domain {//DomainName} {} {} $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_sdb_domain {//DomainName} {} {} $cloud_id $aws_region
 			}
 			CreateKeyPair {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_keypair {//keyName} {} {} $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_keypair {//keyName} {} {} $cloud_id $aws_region
 			}
 			CreateSecurityGroup {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_ec2_security_group {//GroupName} {} {} $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_ec2_security_group {//GroupName} {} {} $cloud_id $aws_region
 			}
 			CreateLoadBalancer {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_elb_balancer {//LoadBalancerName} {} {} $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_elb_balancer {//LoadBalancerName} {} {} $cloud_id $aws_region
 			}
 			AllocateAddress {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_address {//publicIp} {} {} $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_address {//publicIp} {} {} $cloud_id $aws_region
 			}
 			CreateDBInstance {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_rds_instance {//DBInstance/DBInstanceIdentifier} {} {} $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_rds_instance {//DBInstance/DBInstanceIdentifier} {} {} $cloud_id $aws_region
 			}
 		}
 	} 
@@ -252,7 +254,7 @@ proc aws_Generic {product operation path command} {
 	$x destroy
 }
 
-proc register_ecosystem_object {result ecosystem_id object_type path role api_conn $region} {
+proc register_ecosystem_object {result ecosystem_id object_type path role api_conn cloud_id region} {
 	set proc_name register_ecosystem_object
         set xmldoc [dom parse -simple $result]
         set root [$xmldoc documentElement]
@@ -268,7 +270,7 @@ proc register_ecosystem_object {result ecosystem_id object_type path role api_co
 	set instances [$root selectNodes $path]
 	output "instances is $instances"
 	foreach instance $instances {
-		set sql "insert into ecosystem_object (ecosystem_id, ecosystem_object_id, ecosystem_object_type, added_dt) values ('$ecosystem_id','[$instance asText]','$object_type',$::getdate)"
+		set sql "insert into ecosystem_object (ecosystem_id, cloud_id, ecosystem_object_id, ecosystem_object_type, added_dt) values ('$ecosystem_id', '$cloud_id', '[$instance asText]','$object_type',$::getdate)"
 		$::db_exec $::CONN $sql
 		if {"$role" > ""} {
 			set the_arg ""
@@ -614,6 +616,7 @@ proc initialize {} {
 	set ::INLOOP 0
 	set ::SENSITIVE ""
 	set ::CLOUD_ENDPOINTS() ""
+	set ::CLOUD_IDS() ""
 	set ::runtime_arr(_AWS_REGION,1) ""
 
 	#set ::FILTER_BUFFER 0
