@@ -150,15 +150,16 @@ namespace Web.pages
 
         private void BindClouds()
         {
-            sSQL = "select cloud_id, cloud_name" +
-				" from clouds" +
-				" where provider = '" + ui.GetSelectedCloudProviderName() + "'";
+			Provider oProvider = ui.GetSelectedCloudProvider();
+	        if (oProvider == null)
+                ui.RaiseError(Page, "Unable to get Cloud Provider.", false, sErr);
 
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+            DataTable dt = oProvider.GetAllCloudsAsDataTable();
+            if (dt == null) {
                 ui.RaiseError(Page, "Unable to get Clouds for selected Cloud Account.", false, sErr);
-
+				return;
+			}
+			
             ddlClouds.DataSource = dt;
             ddlClouds.DataValueField = "cloud_id";
             ddlClouds.DataTextField = "cloud_name";

@@ -1,6 +1,14 @@
 <root>
 	<providers>
-		<provider name="Amazon AWS" test_product="ec2" test_object="aws_ec2_security_group">
+		<provider name="Amazon AWS" test_product="ec2" test_object="aws_ec2_security_group" user_defined_clouds="false">
+			<clouds>
+				<cloud id="us-east-1" api_url="us-east-1.amazonaws.com"></cloud>
+				<cloud id="us-west-1" api_url="us-west-1.amazonaws.com"></cloud>
+				<cloud id="us-west-2" api_url="us-west-2.amazonaws.com"></cloud>
+				<cloud id="eu-west-1" api_url="eu-west-1.amazonaws.com"></cloud>
+				<cloud id="ap-southeast-1" api_url="ap-southeast-1.amazonaws.com"></cloud>
+				<cloud id="ap-northeast-1" api_url="ap-northeast-1.amazonaws.com"></cloud>
+			</clouds>
 			<products>
 				<product name="ec2" label="EC2" api_protocol="HTTPS" api_version="2010-05-15" api_url_prefix="ec2">
 					<object_types>
@@ -123,7 +131,7 @@
 				</product>-->
 			</products>
 		</provider>
-		<provider name="Eucalyptus" test_product="eucalyptus" test_object="eucalyptus_security_group">
+		<provider name="Eucalyptus" test_product="eucalyptus" test_object="eucalyptus_security_group" user_defined_clouds="true">
 			<products>
 				<product name="eucalyptus" label="Eucalyptus" api_protocol="HTTP" api_version="2009-03-01" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>

@@ -1147,7 +1147,33 @@ namespace acUI
         {
             return (CloudProviders) GetSessionObject("cloud_providers", "Security");
 		}
-
+		//this one shoves the Cloud Providers xml into the session
+        public void SetCloudProviders(ref string sErr)
+        {
+			//load the cloud_providers.xml file into the session.  If it doesn't exist, we can't proceed.
+			try 
+			{
+				XDocument xProviders = XDocument.Load(HttpContext.Current.Server.MapPath("~/conf/cloud_providers.xml"));
+				
+				if (xProviders == null)
+				{
+					sErr = "Error: Cloud Providers XML file is missing or unreadable.";
+				}
+				else 
+				{
+					CloudProviders cp = new CloudProviders(xProviders);
+					SetSessionObject("cloud_providers", cp, "Security");
+				}
+			} catch (Exception ex) {
+				sErr = "Error: Unable to load Cloud Providers XML." + ex.Message;
+			}
+		}
+		//this one takes a modified Cloud Providers class and puts it into the session
+        public void UpdateCloudProviders(CloudProviders cp)
+        {
+            SetSessionObject("cloud_providers", cp, "Security");
+		}
+		
 //        public string GetCloudObjectTypes()
 //        {
 //            object o = GetSessionObject("cloud_object_types", "Cloud");

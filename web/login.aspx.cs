@@ -123,23 +123,10 @@ namespace Web
 			}
 
 
-			//load the cloud_providers.xml file into the session.  If it doesn't exist, we can't proceed.
-			try 
-			{
-				XDocument xProviders = XDocument.Load(HttpContext.Current.Server.MapPath("~/conf/cloud_providers.xml"));
-				
-				if (xProviders == null)
-				{
-					lblErrorMessage.Text = "Error: Cloud Providers XML file is missing or unreadable.";
-				}
-				else 
-				{
-					CloudProviders cp = new CloudProviders(xProviders);
-					ui.SetSessionObject("cloud_providers", cp, "Security");
-				}
-			} catch (Exception ex) {
-				lblErrorMessage.Text = "Error: Unable to load Cloud Providers XML." + ex.Message;
-			}
+			ui.SetCloudProviders(ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+				lblErrorMessage.Text = "Error: Unable to load Cloud Providers XML." + sErr;
+
 			
 			
 			
