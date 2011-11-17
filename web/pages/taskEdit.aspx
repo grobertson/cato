@@ -343,15 +343,6 @@
             <span>Are you sure you want to delete this Codeblock and all the Steps it contains?</span>
         </p>
     </div>
-    <div id="dataset_template_change_confirm" title="Apply Template" class="hidden ui-state-highlight">
-        <p>
-            <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span>
-            <span>Are you sure you want to apply this template?<br />
-                All existing Keys and Values for this step will be replaced.</span>
-            <input type="hidden" id="dataset_template_id" value="" />
-            <input type="hidden" id="dataset_step_id" value="" />
-        </p>
-    </div>
     <div id="asset_picker_dialog" title="Select an Asset" class="hidden ui-state-highlight">
         <center>
             <span style="padding-left: 15px; padding-top: 5px; font-weight: bold;">Enter search
@@ -407,15 +398,6 @@
             <img id="key_picker_close_btn" class="pointer" alt="" src="../images/icons/fileclose.png" /></span>
         <div id="key_picker_keys">
             No keys have been defined for this Command type.
-        </div>
-    </div>
-    <div id="dataset_template_picker" class="ui-widget-content ui-corner-all value_picker hidden">
-        <span class="ui-state-default value_picker_title">
-            <img src="../images/icons/connect_no.png" alt="" />
-            Select a Template &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <img id="template_picker_close_btn" class="pointer" alt="" src="../images/icons/fileclose.png" /></span>
-        <div id="template_picker_templates">
-            No templates have been defined for this Command type.
         </div>
     </div>
     <div id="codeblock_picker" class="ui-widget-content ui-corner-all value_picker hidden">

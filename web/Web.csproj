@@ -169,7 +169,6 @@
     </Compile>
     <None Include="pages\luCompareTemplates.xml" />
     <None Include="pages\luConnectionType.xml" />
-    <None Include="pages\luDatasetTemplates.xml" />
     <None Include="pages\luGlobalVariable.xml" />
     <None Include="pages\luWmiNamespaces.xml" />
     <Compile Include="pages\notAllowed.aspx.designer.cs">

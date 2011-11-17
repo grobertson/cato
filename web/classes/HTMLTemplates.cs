@@ -1358,9 +1358,6 @@ namespace FunctionTemplates
         {
             string sHTML = "";
 
-            // Draw the template selector
-            sHTML += "Select Template (optional) ";
-            sHTML += "<button onclick=\"return false;\" class=\"template_picker_btn pointer elipse_btn\" step_id=\"" + sStepID + "\">...</button><br/>";
             sHTML += DrawKeyValueSection(sStepID, sFunction, xd, true, true, "Key", "Value");
 
             return sHTML;
