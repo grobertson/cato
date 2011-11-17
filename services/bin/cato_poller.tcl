@@ -28,8 +28,8 @@ proc start_submitted_tasks {get_num} {
 		from tv_task_instance ti
 		join task t on t.task_id = ti.task_id
 		where ti.task_status = 'Submitted'
+			and ti.ce_node = $::INSTANCE_ID
 		order by task_instance asc limit $get_num"
-#			and ti.ce_node = $::INSTANCE_ID
 	::mysql::sel $::CONN $sql
 	set ii 0
 	while {[string length [set row [::mysql::fetch $::CONN]]] > 0} {
@@ -85,16 +85,16 @@ proc kill_ce_pid {pid} {
 proc check_processing {} {
 	set proc_name check_processing
 	set sql "select distinct pid from tv_task_instance where ce_node = $::INSTANCE_ID and task_status = 'Processing' and pid is not null"
-	::mysql::sel $::CONN $sql
-	set pids_db [::mysql::fetch $::CONN]
+	set pids_db [::mysql::sel $::CONN $sql -list]
 	#get a ps list
-	#set pids_os [exec -ignorestderr ps U$::tcl_platform(user) -opid,command | grep command_engine.tcl 2>@ stderr]
 	set pids_os ""
-	#output "ps U$::tcl_platform(user) -opid,command | grep command_engine.tcl | grep -v grep | grep -v PID"
+	catch {set pids_os [exec -ignorestderr ps U$::tcl_platform(user) -opid | grep "$::HOME/services/bin/cato_task_engine.tcl" | grep -v grep]} errmsg
+	if {"$errmsg" ne "child process exited abnormally"} {
 
-	foreach the_pid $pids_db {
-		if {[lsearch "$pids_os" [lindex $the_pid 0]] == -1} {
-			update_to_error [lindex $the_pid 0]
+		foreach the_pid $pids_db {
+			if {[lsearch "$pids_os" [lindex $the_pid 0]] == -1} {
+				update_to_error [lindex $the_pid 0]
+			}
 		}
 	}
 }
@@ -143,8 +143,7 @@ proc get_settings {} {
 proc get_aborting {} {
 	set proc_name get_aborting
 	set sql "select task_instance, pid from tv_task_instance where ce_node = $::INSTANCE_ID and task_status = 'Aborting' order by task_instance asc"
-	::mysql::sel $::CONN $sql
-	set rows [::mysql::fetch $::CONN]
+	set rows [::mysql::sel $::CONN $sql -list]
 	foreach row $rows {
 		output "cancelling -> $row"
 		if {"[lindex $row 1]" > ""} {

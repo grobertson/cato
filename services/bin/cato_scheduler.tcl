@@ -214,6 +214,43 @@ proc expand_schedules {} {
 	}
 
 }
+proc balance_task_instances {} {
+
+	set sql "select id from tv_application_registry where app_name = 'cato_poller' and master = 1 order by load_value asc limit 1"
+	::mysql::sel $::CONN $sql
+	set row [::mysql::fetch $::CONN]
+	set id [lindex $row 0]
+	if {"$id" ne ""} {	
+		set sql "update task_instance set ce_node = $id where task_status = 'Submitted' and ce_node is NULL"
+		::mysql::exec $::CONN $sql
+	}
+}
+proc manage_poller_nodes {} {
+
+	# get the poller loop value in seconds
+	set sql "select loop_delay_sec from poller_settings"
+	::mysql::sel $::CONN $sql
+	set row [::mysql::fetch $::CONN]
+	set poller_delay [lindex $row 0]
+
+	#turn poller off if the heartbeat is longer than twice the poller loop
+	set sql "update application_registry set master = 0 
+		where time_to_sec(timediff(now(),heartbeat)) > ($poller_delay * 2)
+		and master = 1 and app_name = 'cato_poller'"
+	::mysql::exec $::CONN $sql
+
+	#turn it back on if the heartbeat is current
+	set sql "update application_registry set master = 1 
+		where time_to_sec(timediff(now(),heartbeat)) <= ($poller_delay * 2)
+		and master = 0 and app_name = 'cato_poller'"
+	::mysql::exec $::CONN $sql
+
+	#check for submitted tasks that are assigned a non-master ce node, meaning they are orphaned
+	set sql "update task_instance set ce_node = NULL, task_status = 'Submitted' where task_status in ('Staged','Submitted') and ce_node is not null
+		 and ce_node not in (select id from tv_application_registry where app_name = 'cato_poller' and master = 1)"
+	::mysql::exec $::CONN $sql
+
+}
 proc get_settings {} {
 	
 	set ::PREVIOUS_MODE ""
@@ -253,6 +290,8 @@ proc main_process {} {
 
 	expand_schedules
 	check_schedules
+	balance_task_instances
+	manage_poller_nodes
 }
 main
 exit 0
