@@ -63,7 +63,8 @@ namespace Web.pages
 			if (cp != null)
 			{
 				foreach (Provider p in cp.Values) {
-					sOptionHTML += "<option value=\"" + p.Name + "\">" + p.Name + "</option>";
+					if (p.UserDefinedClouds)
+						sOptionHTML += "<option value=\"" + p.Name + "\">" + p.Name + "</option>";
 				}
 			}
 		
@@ -173,7 +174,6 @@ namespace Web.pages
 
             try
             {
-
                 dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 
                 sSql = "delete from clouds where cloud_id in (" + sDeleteArray + ")";
@@ -192,7 +192,12 @@ namespace Web.pages
                 throw new Exception(ex.Message);
             }
 
-            // if we made it here, so save the logs
+			//reget the cloud providers class in the session
+			ui.SetCloudProviders(ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+				throw new Exception("Error: Unable to load Cloud Providers XML." + sErr);
+
+			// if we made it here, so save the logs
             foreach (DataRow dr in dt.Rows)
             {
                 ui.WriteObjectDeleteLog(Globals.acObjectTypes.Cloud, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["provider"].ToString() + " Cloud Deleted.");
@@ -253,11 +258,16 @@ namespace Web.pages
 	                oTrans.Command.CommandText = sSql;
 	                if (!oTrans.ExecUpdate(ref sErr))
 	                    throw new Exception("Error creating cloud: " + sErr);
+
+					oTrans.Commit();
+
+					//update the cloud providers class in the session
+					CloudProviders cp = ui.GetCloudProviders();
+					cp[sProvider].RefreshClouds();
+					ui.UpdateCloudProviders(cp);
 	                
 					ui.WriteObjectAddLog(Globals.acObjectTypes.Cloud, sCloudID, sCloudName, "Cloud Created");                
 				}
-
-                oTrans.Commit();
            }
             catch (Exception ex)
             {

@@ -187,7 +187,8 @@ namespace Globals
 		//the constructor requires an XDocument
 		public CloudProviders (XDocument xProviders)
 		{
-
+			dataAccess dc = new dataAccess();
+			
 			if (xProviders == null) {
 				throw new Exception ("Error: Invalid or missing Cloud Providers XML.");
 			} else {
@@ -199,6 +200,47 @@ namespace Globals
 					pv.Name = xProvider.Attribute ("name").Value;
 					pv.TestProduct = (xProvider.Attribute ("test_product") == null ? "" : xProvider.Attribute ("test_product").Value);
 					pv.TestObject = (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value);
+					pv.UserDefinedClouds = (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "true" ? true : false));
+					
+					IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
+					
+					//if this provider has hardcoded clouds... get them
+					if (xClouds != null) {
+						if (xClouds.Count() > 0) {
+							foreach (XElement xCloud in xProvider.XPathSelectElements("clouds/cloud"))
+			                {
+								if (xCloud.Attribute("id") == null) 
+									throw new Exception("Cloud Providers XML: All Clouds must have the 'id' attribute.");
+								if (xCloud.Attribute("api_url") == null) 
+									throw new Exception("Cloud Providers XML: All Products must have the 'api_url' attribute.");
+								
+								Cloud c = new Cloud(pv, xCloud.Attribute("id").Value, xCloud.Attribute("id").Value, xCloud.Attribute("api_url").Value);
+								pv.Clouds.Add(c.ID, c);
+							}
+						} else {
+							//the XML doesn't have any clouds!!! we should check the database.
+							string sErr = "";
+							string sSQL = "select cloud_id, cloud_name, api_url" +
+				                " from clouds" +
+				                " where provider = '" + pv.Name + "'" + 
+								" order by cloud_name";
+				
+				            DataTable dt = new DataTable();
+				            if (dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				            {
+				                foreach (DataRow dr in dt.Rows)
+				                {
+									Cloud c = new Cloud(pv, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString());
+									pv.Clouds.Add(c.ID, c);
+								}
+							}
+							else 
+							{
+								throw new Exception("Error building Cloud object: " + sErr);	
+							}
+
+						}
+					}
 					
 					//get the cloudobjecttypes for this provider.					
 					foreach (XElement xProduct in xProvider.XPathSelectElements("products/product"))
@@ -275,7 +317,10 @@ namespace Globals
 		public string Name { get; set; }
 		public string TestProduct { get; set; }
 		public string TestObject { get; set; }
+		public bool UserDefinedClouds { get; set; }
 		
+		//Provider CONTAINS a named dictionary of Clouds;
+		public Dictionary<string, Cloud> Clouds = new Dictionary<string, Cloud>();
 		//Provider CONTAINS a named dictionary of Products;
 		public Dictionary<string, Product> Products = new Dictionary<string, Product>();
 		
@@ -310,6 +355,48 @@ namespace Globals
 				}
 			}
 			return cots;
+		}
+		public DataTable GetAllCloudsAsDataTable()
+		{
+			DataTable dt = new DataTable();
+	        dt.Columns.Add("cloud_id");
+		    dt.Columns.Add("cloud_name");
+		    dt.Columns.Add("api_url");
+		    dt.Columns.Add("provider", typeof(Provider));
+			
+			foreach (Cloud c in this.Clouds.Values)
+	        {
+				dt.Rows.Add(c.ID, c.Name, c.APIUrl, this);
+			}
+			
+			return dt;
+		}
+		public void RefreshClouds() {
+			this.Clouds.Clear();
+			
+			dataAccess dc = new dataAccess();
+			
+			string sErr = "";
+			string sSQL = "select cloud_id, cloud_name, api_url" +
+                " from clouds" +
+                " where provider = '" + this.Name + "'" + 
+				" order by cloud_name";
+
+            DataTable dt = new DataTable();
+            if (dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+					Cloud c = new Cloud(this, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString());
+					this.Clouds.Add(c.ID, c);
+				}
+			}
+			else 
+			{
+				throw new Exception("Error building Cloud object: " + sErr);	
+			}
+			
+			return;
 		}
 	}
 
@@ -397,41 +484,78 @@ namespace Globals
 		//the default constructor
 		public Cloud(string sCloudID)
         {
-            //get the cloud from the db
+			if (string.IsNullOrEmpty(sCloudID))
+				throw new Exception("Error building Cloud object: Cloud ID is required.");	
+			
+            //get the cloud from the CloudProvider Class -OR- the database
+			//if sCloudID is a guid, it's a database cloud... otherwise we assume its a hardcoded cloud
             dataAccess dc = new dataAccess();
 			acUI.acUI ui = new acUI.acUI();
 			
             string sErr = "";
-
-            string sSQL = "select cloud_name, provider, api_url" +
-                " from clouds" +
-                " where cloud_id = '" + sCloudID + "'";
-
-            DataRow dr = null;
-            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                if (dr != null)
-                {
-					ID = sCloudID;
-					Name = dr["cloud_name"].ToString();
-					APIUrl = dr["api_url"].ToString();
-					
-					CloudProviders cp = ui.GetCloudProviders();
-					if (cp != null) {
-						Provider p = cp[dr["provider"].ToString()];
-						Provider = p;
+			
+			if (ui.IsGUID(sCloudID)) {
+				//it's a guid... look it up
+	            string sSQL = "select cloud_name, provider, api_url" +
+	                " from clouds" +
+	                " where cloud_id = '" + sCloudID + "'";
+	
+	            DataRow dr = null;
+	            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+	            {
+	                if (dr != null)
+	                {
+						ID = sCloudID;
+						Name = dr["cloud_name"].ToString();
+						APIUrl = dr["api_url"].ToString();
+						
+						CloudProviders cp = ui.GetCloudProviders();
+						if (cp != null) {
+							Provider p = cp[dr["provider"].ToString()];
+							Provider = p;
+						}
+					}
+					else 
+					{
+						throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
 					}
 				}
 				else 
 				{
-					throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
+					throw new Exception("Error building Cloud object: " + sErr);	
 				}
 			}
 			else 
 			{
-				throw new Exception("Error building Cloud object: " + sErr);	
+				//it's not a guid, must be a name we can look up in the xml
+				//we have to spin all the providers and clouds looking for it, and will return it if found.
+				CloudProviders cp = ui.GetCloudProviders();
+				if (cp != null)
+				{
+					foreach (Provider p in cp.Values) {
+						Dictionary<string, Cloud> cs = p.Clouds;
+						foreach (Cloud c in cs.Values) {
+							if (c.ID == sCloudID) {
+								ID = c.ID;
+								Name = c.Name;
+								APIUrl = c.APIUrl;
+								Provider = c.Provider;
+								return;
+							}				
+						}
+					}
+				}
+
 			}
         }
+
+		//an override constructor (manual creation)
+		public Cloud(Provider p, string sID, string sName, string sAPIUrl) {
+			ID = sID;
+			Name = sName;
+			APIUrl = sAPIUrl;
+			Provider = p;
+		}
 		
         public bool IsValidForCalls()
         {
