@@ -489,66 +489,58 @@ namespace Globals
 			if (string.IsNullOrEmpty(sCloudID))
 				throw new Exception("Error building Cloud object: Cloud ID is required.");	
 			
-            //get the cloud from the CloudProvider Class -OR- the database
-			//if sCloudID is a guid, it's a database cloud... otherwise we assume its a hardcoded cloud
             dataAccess dc = new dataAccess();
 			acUI.acUI ui = new acUI.acUI();
 			
-            string sErr = "";
+            //search for the sCloudID in the CloudProvider Class -AND- the database
+			CloudProviders cp = ui.GetCloudProviders();
+			if (cp != null) {
+				throw new Exception("Error building Cloud object: Unable to GetCloudProviders.");	
+			}
 			
-			if (ui.IsGUID(sCloudID)) {
-				//it's a guid... look it up
-	            string sSQL = "select cloud_name, provider, api_url" +
-	                " from clouds" +
-	                " where cloud_id = '" + sCloudID + "'";
-	
-	            DataRow dr = null;
-	            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-	            {
-	                if (dr != null)
-	                {
-						ID = sCloudID;
-						Name = dr["cloud_name"].ToString();
-						APIUrl = dr["api_url"].ToString();
-						
-						CloudProviders cp = ui.GetCloudProviders();
-						if (cp != null) {
-							Provider p = cp[dr["provider"].ToString()];
-							Provider = p;
-						}
-					}
-					else 
-					{
-						throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
-					}
+			//check the CloudProvider class first
+			foreach (Provider p in cp.Values) {
+				Dictionary<string, Cloud> cs = p.Clouds;
+				foreach (Cloud c in cs.Values) {
+					if (c.ID == sCloudID) {
+						ID = c.ID;
+						Name = c.Name;
+						APIUrl = c.APIUrl;
+						Provider = c.Provider;
+						return;
+					}				
 				}
-				else 
-				{
-					throw new Exception("Error building Cloud object: " + sErr);	
+			}
+			
+			//if we are here it didn't find it... check the database
+			string sErr = "";
+            string sSQL = "select cloud_name, provider, api_url" +
+                " from clouds" +
+                " where cloud_id = '" + sCloudID + "'";
+
+            DataRow dr = null;
+            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+            {
+                if (dr != null)
+                {
+					ID = sCloudID;
+					Name = dr["cloud_name"].ToString();
+					APIUrl = dr["api_url"].ToString();
+					
+					Provider p = cp[dr["provider"].ToString()];
+					Provider = p;
+					return;
 				}
 			}
 			else 
 			{
-				//it's not a guid, must be a name we can look up in the xml
-				//we have to spin all the providers and clouds looking for it, and will return it if found.
-				CloudProviders cp = ui.GetCloudProviders();
-				if (cp != null)
-				{
-					foreach (Provider p in cp.Values) {
-						Dictionary<string, Cloud> cs = p.Clouds;
-						foreach (Cloud c in cs.Values) {
-							if (c.ID == sCloudID) {
-								ID = c.ID;
-								Name = c.Name;
-								APIUrl = c.APIUrl;
-								Provider = c.Provider;
-								return;
-							}				
-						}
-					}
-				}
-
+				throw new Exception("Error building Cloud object: " + sErr);	
 			}
+			
+			//well, if we got here we have a problem... the ID provided wasn't found anywhere.
+			//this should never happen, so bark about it.
+			throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
+
         }
 
 		//an override constructor (manual creation)
