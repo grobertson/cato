@@ -63,14 +63,14 @@ namespace Web.pages
                 //get debug information
                 if (!GetDebug(ref sErr))
                 {
-                    sErr = "Error getting Debugging information.<br />" + sErr;
+                    ui.RaiseError(Page, "Error getting Debugging information.<br />" + sErr, true, "");
                     return;
                 }
 
                 //codeblocks
                 if (!GetCodeblocks(ref sErr))
                 {
-                    sErr = "Unable to continue.  Could not retrieve Codeblocks. " + sErr;
+                    ui.RaiseError(Page, "Unable to continue.  Could not retrieve Codeblocks. " + sErr, true, "");
                     return;
                 }
 
@@ -83,7 +83,8 @@ namespace Web.pages
 
                 if (!GetSteps(sCodeblockName, ref sErr))
                 {
-                    return;
+                    ui.RaiseError(Page, "Error getting Steps.<br />" + sErr, true, "");
+					return;
                 }
             }
         }

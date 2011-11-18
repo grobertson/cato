@@ -34,9 +34,7 @@ namespace Web.pages
     public partial class cloudAPITester : System.Web.UI.Page
     {
         acUI.acUI ui = new acUI.acUI();
-        dataAccess dc = new dataAccess();
 
-        string sSQL = "";
         string sErr = "";
 
         protected void Page_Load(object sender, EventArgs e)
