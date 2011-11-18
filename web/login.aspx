@@ -121,7 +121,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                    Password Confirm:
+                                    Confirm:
                                 </td>
                                 <td>
                                     <asp:TextBox ID="txtResetPasswordConfirm" Width="250px" runat="server" TextMode="Password" />
@@ -180,7 +180,7 @@
                         </tr>
                         <tr>
                             <td>
-                                New Password Confirm:
+                                Confirm:
                             </td>
                             <td>
                                 <asp:TextBox ID="txtNewPasswordConfirm" Width="200px" runat="server" TextMode="Password" />
@@ -231,7 +231,7 @@
                         </tr>
                         <tr>
                             <td>
-                                New Password Confirm:
+                                Confirm:
                             </td>
                             <td>
                                 <asp:TextBox ID="txtWarningNewPasswordConfirm" Width="200px" runat="server" TextMode="Password" />
