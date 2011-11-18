@@ -143,10 +143,24 @@ proc gather_account_info {account_id} {
 	set ::CLOUD_TYPE [lindex $row 1]
 	set ::CLOUD_LOGIN_ID [lindex $row 2]
 	set ::CLOUD_LOGIN_PASS [decrypt_string [lindex $row 3] $::SITE_KEY]
+	
+	# here is the logic I use for finding the clouds
+	# 1) check the XML first... this xpath isn't perfect but it's close
+	#		//provider[name='$::CLOUD_TYPE']/clouds
+	
+	# 2a) if that xpath has results, then you can use those clouds.
+	# 2b) if it finds nothing, *then* do the database query to check there.
+	
+	# I don't know if it will work for you, but in the GUI I load the xml file into a DOM object variable at startup.
+	# from that point forward, I never load the file again, I just reference that global ::CLOUD_PROVIDERS xml document.
+	
 	set sql "select cloud_name, api_url,cloud_id from clouds where provider = '$::CLOUD_TYPE'"
 	$::db_query $::CONN $sql
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 		if {"$::CLOUD_TYPE" eq "Eucalyptus"} {
+			# NSC: the /services/Eucalyptus is the api_uri from the Product under the provider in the XML
+			# the dynamic endpoint will be product/api_url_prefix + cloud/api_url + product/api_uri
+			# if you do it this way, you shouldn't need this case statement at all and *hopefully* it will work for OpenStack too.
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]/services/Eucalyptus"
 		} else {
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]"
