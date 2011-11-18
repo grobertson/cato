@@ -279,10 +279,9 @@ namespace Web.pages
             {
                 //get the last 'done' instance.
                 string sSQL = "select ti.task_status, ti.submitted_dt, ti.started_dt, ti.completed_dt, ti.ce_node, ti.pid," +
-                    " t.task_name, a.asset_name, u.full_name, si.schedule_instance_name" +
+                    " t.task_name, a.asset_name, u.full_name" +
                     " from tv_task_instance ti" +
                     " join task t on ti.task_id = t.task_id" +
-                    " left outer join tv_schedule_instance si on ti.schedule_instance = si.schedule_instance" +
                     " left outer join users u on ti.submitted_by = u.user_id" +
                     " left outer join asset a on ti.asset_id = a.asset_id" +
                     " where ti.task_instance = (" +

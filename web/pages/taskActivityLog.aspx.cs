@@ -106,8 +106,7 @@ namespace Web.pages
                                 "or t.version like '%" + txtSearch.Text.Replace("'", "''") + "%' " +
                                 "or u.username like '%" + txtSearch.Text.Replace("'", "''") + "%' " +
                                 "or u.full_name like '%" + txtSearch.Text.Replace("'", "''") + "%' " +
-                                "or d.ecosystem_name like '%" + txtSearch.Text.Replace("'", "''") + "%' " +
-                                "or si.schedule_instance_name like '%" + txtSearch.Text.Replace("'", "''") + "%') ";
+                                "or d.ecosystem_name like '%" + txtSearch.Text.Replace("'", "''") + "%') ";
             }
 
             if (txtStartDate.Text.Length == 0)
@@ -165,7 +164,7 @@ namespace Web.pages
 
             sSQL = "select ti.task_instance, t.task_id, t.task_code, a.asset_name," +
                     " ti.pid as process_id, ti.task_status, t.task_name," +
-                    " ifnull(u.full_name, s.schedule_name) as started_by," +
+                    " ifnull(u.full_name, '') as started_by," +
                     " t.version, u.full_name, ar.hostname as ce_name, ar.platform as ce_type," +
                     " d.ecosystem_name, d.ecosystem_id," +
                     " convert(ti.submitted_dt, CHAR(20)) as submitted_dt," +
@@ -177,9 +176,7 @@ namespace Web.pages
                     " left outer join application_registry ar on ti.ce_node = ar.id" +
                     " left outer join ecosystem d on ti.ecosystem_id = d.ecosystem_id" +
                     " left join users u on u.user_id = ti.submitted_by" +
-                    " left join schedule_instance si on ti.schedule_instance = si.schedule_instance" +
                     " left join asset a on a.asset_id = ti.asset_id" +
-                    " left join schedule s on si.schedule_id = s.schedule_id" +
                     sSearchString.Replace(";", "") + sWhereString + 
                     " order by ti.task_instance desc" +
                     " limit " + sNumRecords;

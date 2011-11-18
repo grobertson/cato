@@ -57,11 +57,6 @@ $(document).ready(function () {
     //whatever the current version is... change it's class in the list
     $("#v_" + $("#ctl00_phDetail_hidTaskID").val()).addClass("version_selected");
 
-    //SCHEDULE TOOLBOX
-    $("#div_schedules .schedule").live("click", function () {
-        location.href = "scheduleEdit.aspx?schedule_id=" + $(this).attr("schedule_id");
-    });
-
 });
 
 function tabWasClicked(tab) {

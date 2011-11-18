@@ -108,13 +108,12 @@ namespace Web.pages
             {
                 string sSQL = "select ti.task_instance, ti.task_id, '' as asset_id, ti.task_status, ti.submitted_by_instance, " +
                     " ti.submitted_dt, ti.started_dt, ti.completed_dt, ti.ce_node, ti.pid, ti.debug_level," +
-                    " t.task_name, t.version, '' as asset_name, u.full_name, si.schedule_instance_name," +
+                    " t.task_name, t.version, '' as asset_name, u.full_name," +
                     " ar.app_instance, ar.platform, ar.hostname," +
                     " t.concurrent_instances, t.queue_depth," +
                     " ti.ecosystem_id, d.ecosystem_name, ti.account_id, ca.account_name" +
                     " from tv_task_instance ti" +
                     " join task t on ti.task_id = t.task_id" +
-                    " left outer join tv_schedule_instance si on ti.schedule_instance = si.schedule_instance" +
                     " left outer join users u on ti.submitted_by = u.user_id" +
                     " left outer join tv_application_registry ar on ti.ce_node = ar.id" +
                     " left outer join cloud_account ca on ti.account_id = ca.account_id" +
@@ -176,12 +175,14 @@ namespace Web.pages
                     {
                         //launched by a user
                         lblSubmittedBy.Text = dr["full_name"].ToString();
-                    }
-                    else if (!dr["schedule_instance_name"].Equals(System.DBNull.Value))
-                    {
-                        //launched by scheduler
-                        lblSubmittedBy.Text = " Schedule (" + dr["schedule_instance_name"].ToString() + ")";
-                    }
+                    } else {
+						lblSubmittedBy.Text = "Scheduler";
+					}
+//                    else if (!dr["schedule_instance_name"].Equals(System.DBNull.Value))
+//                    {
+//                        //launched by scheduler
+//                        lblSubmittedBy.Text = " Schedule (" + dr["schedule_instance_name"].ToString() + ")";
+//                    }
 
                     //superusers AND those tagged with this Task can see the stop and resubmit button
                     if (ui.UserIsInRole("Developer") || ui.UserIsInRole("Administrator") || ui.UserAndObjectTagsMatch(dr["original_task_id"].ToString(), 3))
