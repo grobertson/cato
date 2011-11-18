@@ -670,17 +670,6 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `tv_schedule_instance` (
-  `schedule_instance` bigint(20),
-  `schedule_instance_name` varchar(255),
-  `schedule_id` varchar(36),
-  `status` varchar(16),
-  `run_dt` datetime,
-  `ran_dt` datetime
-) ENGINE=InnoDB */;
-SET character_set_client = @saved_cs_client;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
 /*!50001 CREATE TABLE `tv_task_instance` (
   `task_instance` bigint(20),
   `task_id` varchar(36),
@@ -713,19 +702,6 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
-/*!50001 DROP TABLE IF EXISTS `tv_schedule_instance`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER= CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `tv_schedule_instance` AS select `schedule_instance`.`schedule_instance` AS `schedule_instance`,`schedule_instance`.`schedule_instance_name` AS `schedule_instance_name`,`schedule_instance`.`schedule_id` AS `schedule_id`,`schedule_instance`.`status` AS `status`,`schedule_instance`.`run_dt` AS `run_dt`,`schedule_instance`.`ran_dt` AS `ran_dt` from `schedule_instance` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!50001 DROP TABLE IF EXISTS `tv_task_instance`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -749,7 +725,21 @@ SET character_set_client = @saved_cs_client;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50020 DEFINER= CURRENT_USER /*!50003 FUNCTION `FormatTextToHTML`(_str text) RETURNS text CHARSET latin1
-BEGIN	/*DECLARE @strFixed text	SET @strFixed = @str*/	SET _str = replace(_str, '<', '&lt;');	SET _str = replace(_str, '>', '&gt;');	SET _str = replace(_str, char(13,10 USING utf8), '<br />');	/*SET _str = replace(_str, char(13,10 USING utf8)+char(10 USING utf8), '<br />');*/	SET _str = replace(_str, char(13 USING utf8), '<br />');	SET _str = replace(_str, char(10 USING utf8), '<br />');	SET _str = replace(_str, '     ', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');	RETURN _str;END */;;
+BEGIN
+	/*DECLARE @strFixed text
+	SET @strFixed = @str*/
+
+	SET _str = replace(_str, '<', '&lt;');
+	SET _str = replace(_str, '>', '&gt;');
+	SET _str = replace(_str, char(13,10 USING utf8), '<br />');
+	/*SET _str = replace(_str, char(13,10 USING utf8)+char(10 USING utf8), '<br />');*/
+	SET _str = replace(_str, char(13 USING utf8), '<br />');
+	SET _str = replace(_str, char(10 USING utf8), '<br />');
+	SET _str = replace(_str, '     ', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+
+	RETURN _str;
+
+END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -777,7 +767,7 @@ DELIMITER ;;
 BEGIN
     DECLARE _task_instance text;
 
-		INSERT task_instance (
+	INSERT task_instance (
       task_status,
       submitted_dt,
       task_id,
@@ -803,20 +793,18 @@ BEGIN
     SELECT LAST_INSERT_ID() INTO _task_instance;
 
     #parameters
-if (_parameter_xml is not null) then 
-
-      INSERT task_instance_parameter (
-        task_instance,
-        parameter_xml
-      )
-      VALUES (
-        _task_instance,
-        _parameter_xml
-      );
-end if;
+    if (_parameter_xml is not null) then 
+          INSERT task_instance_parameter (
+            task_instance,
+            parameter_xml
+          )
+          VALUES (
+            _task_instance,
+            _parameter_xml
+          );
+    end if;
 
     SELECT _task_instance;
-
  END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
