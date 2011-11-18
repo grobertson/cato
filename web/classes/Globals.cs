@@ -211,10 +211,12 @@ namespace Globals
 			                {
 								if (xCloud.Attribute("id") == null) 
 									throw new Exception("Cloud Providers XML: All Clouds must have the 'id' attribute.");
+								if (xCloud.Attribute("name") == null) 
+									throw new Exception("Cloud Providers XML: All Clouds must have the 'name' attribute.");
 								if (xCloud.Attribute("api_url") == null) 
 									throw new Exception("Cloud Providers XML: All Products must have the 'api_url' attribute.");
 								
-								Cloud c = new Cloud(pv, xCloud.Attribute("id").Value, xCloud.Attribute("id").Value, xCloud.Attribute("api_url").Value);
+								Cloud c = new Cloud(pv, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value);
 								pv.Clouds.Add(c.ID, c);
 							}
 						} else {
