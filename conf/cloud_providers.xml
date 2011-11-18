@@ -2,12 +2,12 @@
 	<providers>
 		<provider name="Amazon AWS" test_product="ec2" test_object="aws_ec2_security_group" user_defined_clouds="false">
 			<clouds>
-				<cloud id="us-east-1" api_url="us-east-1.amazonaws.com"></cloud>
-				<cloud id="us-west-1" api_url="us-west-1.amazonaws.com"></cloud>
-				<cloud id="us-west-2" api_url="us-west-2.amazonaws.com"></cloud>
-				<cloud id="eu-west-1" api_url="eu-west-1.amazonaws.com"></cloud>
-				<cloud id="ap-southeast-1" api_url="ap-southeast-1.amazonaws.com"></cloud>
-				<cloud id="ap-northeast-1" api_url="ap-northeast-1.amazonaws.com"></cloud>
+				<cloud id="4d6f35fc-faa7-11e0-b2ec-12313d0024c3" name="us-east-1" api_url="us-east-1.amazonaws.com"></cloud>
+				<cloud id="96e7d2c0-faa7-11e0-b2ec-12313d0024c3" name="us-west-1" api_url="us-west-1.amazonaws.com"></cloud>
+				<cloud id="d05446c8-1231-11e1-beeb-12313b07caa6" name="us-west-2" api_url="us-west-2.amazonaws.com"></cloud>
+				<cloud id="a9f303bc-faa7-11e0-b2ec-12313d0024c3" name="eu-west-1" api_url="eu-west-1.amazonaws.com"></cloud>
+				<cloud id="a9fe9bdc-faa7-11e0-b2ec-12313d0024c3" name="ap-southeast-1" api_url="ap-southeast-1.amazonaws.com"></cloud>
+				<cloud id="aa09974e-faa7-11e0-b2ec-12313d0024c3" name="ap-northeast-1" api_url="ap-northeast-1.amazonaws.com"></cloud>
 			</clouds>
 			<products>
 				<product name="ec2" label="EC2" api_protocol="HTTPS" api_version="2010-05-15" api_url_prefix="ec2">
