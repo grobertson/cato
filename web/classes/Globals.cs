@@ -219,8 +219,11 @@ namespace Globals
 								Cloud c = new Cloud(pv, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value);
 								pv.Clouds.Add(c.ID, c);
 							}
-						} else {
-							//the XML doesn't have any clouds!!! we should check the database.
+						}
+						
+						//Let's also add any clouds that may be in the database...
+						//IF the "user_defined_clouds" flag is set.
+						if (pv.UserDefinedClouds) {
 							string sErr = "";
 							string sSQL = "select cloud_id, cloud_name, api_url" +
 				                " from clouds" +
@@ -240,7 +243,6 @@ namespace Globals
 							{
 								throw new Exception("Error building Cloud object: " + sErr);	
 							}
-
 						}
 					}
 					
