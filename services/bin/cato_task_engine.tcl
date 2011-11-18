@@ -143,13 +143,15 @@ proc gather_account_info {account_id} {
 	set ::CLOUD_TYPE [lindex $row 1]
 	set ::CLOUD_LOGIN_ID [lindex $row 2]
 	set ::CLOUD_LOGIN_PASS [decrypt_string [lindex $row 3] $::SITE_KEY]
-	if {"$::CLOUD_TYPE" == "Eucalyptus"} {
-		set sql "select cloud_name, api_url,cloud_id from clouds where provider = '$::CLOUD_TYPE'"
-		$::db_query $::CONN $sql
-		while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
+	set sql "select cloud_name, api_url,cloud_id from clouds where provider = '$::CLOUD_TYPE'"
+	$::db_query $::CONN $sql
+	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
+		if {"$::CLOUD_TYPE" eq "Eucalyptus"} {
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]/services/Eucalyptus"
-			set ::CLOUD_IDS($::CLOUD_TYPE,[lindex $row 0]) [lindex $row 2]
+		} else {
+			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]"
 		}
+		set ::CLOUD_IDS($::CLOUD_TYPE,[lindex $row 0]) [lindex $row 2]
 	}
 }
 proc aws_Generic {product operation path command} {
@@ -189,14 +191,14 @@ proc aws_Generic {product operation path command} {
 				error_out "AWS error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
 			}
 		}
+		lappend region_endpoint $aws_region "$endpoint"
 	} else {
-		set endpoint ""
+		lappend region_endpoint ""
 	}
-	output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS {$aws_region $endpoint}"
-	lappend region_endpoint $aws_region "$endpoint"
+	output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
         set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
         set cmd "$x  call_aws $product \"$aws_region\" $operation"
-
+output $cmd
 	lappend cmd $params
 	lappend cmd $version
 	if {$::DEBUG_LEVEL >= 3} {
@@ -216,34 +218,38 @@ proc aws_Generic {product operation path command} {
 	
 	if {"$::ECOSYSTEM_ID" > ""} {
 		output "got a ecosystem, operation is $operation"
-		set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,$aws_region)
+		if {"$aws_region" eq "" && "$::CLOUD_TYPE" eq "Amazon AWS"} {
+			set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,us-east-1)
+		} else {
+			set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,$aws_region)
+		}
 		switch $operation {
 			RunJobFlow {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_emr_jobflow {//JobFlowId} {} {} $cloud_id $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_emr_jobflow {//JobFlowId} {} {} $cloud_id
 			}
 			RunInstances {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_instance {//instancesSet/item/instanceId} $instance_role $x $cloud_id $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_instance {//instancesSet/item/instanceId} $instance_role $x $cloud_id
 			}
 			CreateAutoScalingGroup {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_as_group {//AutoScalingGroupName} {} {} $cloud_id $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_as_group {//AutoScalingGroupName} {} {} $cloud_id
 			}
 			CreateDomain {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_sdb_domain {//DomainName} {} {} $cloud_id $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_sdb_domain {//DomainName} {} {} $cloud_id
 			}
 			CreateKeyPair {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_keypair {//keyName} {} {} $cloud_id $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_keypair {//keyName} {} {} $cloud_id
 			}
 			CreateSecurityGroup {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_ec2_security_group {//GroupName} {} {} $cloud_id $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_ec2_security_group {//GroupName} {} {} $cloud_id
 			}
 			CreateLoadBalancer {
-				register_ecosystem_object $command $::ECOSYSTEM_ID aws_elb_balancer {//LoadBalancerName} {} {} $cloud_id $aws_region
+				register_ecosystem_object $command $::ECOSYSTEM_ID aws_elb_balancer {//LoadBalancerName} {} {} $cloud_id
 			}
 			AllocateAddress {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_address {//publicIp} {} {} $cloud_id $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_address {//publicIp} {} {} $cloud_id
 			}
 			CreateDBInstance {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_rds_instance {//DBInstance/DBInstanceIdentifier} {} {} $cloud_id $aws_region
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_rds_instance {//DBInstance/DBInstanceIdentifier} {} {} $cloud_id
 			}
 		}
 	} 
@@ -254,7 +260,7 @@ proc aws_Generic {product operation path command} {
 	$x destroy
 }
 
-proc register_ecosystem_object {result ecosystem_id object_type path role api_conn cloud_id region} {
+proc register_ecosystem_object {result ecosystem_id object_type path role api_conn cloud_id} {
 	set proc_name register_ecosystem_object
         set xmldoc [dom parse -simple $result]
         set root [$xmldoc documentElement]
