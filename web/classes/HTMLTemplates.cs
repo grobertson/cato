@@ -1229,12 +1229,18 @@ namespace FunctionTemplates
             //sHTML += "The following Command will be executed on Error:<br />" + Environment.NewLine;
             ////enable the dropzone for the Error action
             //sHTML += DrawDropZone(sStepID, sOnError, sFunction, "on_error", "", false);
-
-            //key/value pairs
-            sHTML += "<hr />";
-            sHTML += "Parameters:";
-            sHTML += DrawKeyValueSection(sStepID, sFunction, xd, true, false, "Input", "Value");
-
+			
+			
+			//edit parameters link - not available unless a task is selected
+			if (!string.IsNullOrEmpty(sActualTaskID)) {
+				sHTML += "<hr />";
+				sHTML += "<div class=\"fn_runtask_edit_parameters_btn pointer\"" +
+	                " task_id=\"" + sActualTaskID + "\"" +
+	                " step_id=\"" + sStepID + "\">" +
+	                "<img src=\"../images/icons/edit_16.png\"" +
+	                " alt=\"\" title=\"Edit Parameters\" /> Edit Parameters</div>";
+			}
+			
             return sHTML;
         }
         public string End(string sStepID, string sFunction, XDocument xd)

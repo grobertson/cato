@@ -430,6 +430,9 @@
             <input type="button" value="Cancel" onclick="CloseVersionDialog();return false;" />
         </center>
     </div>
+    <div id="fn_runtask_parameter_dialog" class="hidden" title="Task Parameters">
+       <div id="fn_runtask_parameter_dialog_params"></div>
+    </div>
     <div id="task_launch_dialog" title="Run Task">
         <div id="plan_edit_dialog" title="Edit Plan">
         </div>

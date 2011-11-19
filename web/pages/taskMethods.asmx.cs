@@ -2079,7 +2079,93 @@ namespace ACWebMethods
             }
         }
 
-        [WebMethod(EnableSession = true)]
+        [WebMethod()]
+        public string wmGetTaskIDFromName(string sTaskName)
+        {
+            dataAccess dc = new dataAccess();
+            try
+            {
+                //this expects taskname:version syntax
+                //if there is no : the default version is assumed
+                string sErr = "";
+                string sSQL = "";
+
+                string[] aTNV = sTaskName.Split(':');
+                if (aTNV.Length > 1)
+                {
+                    //there is a version
+                    sSQL = "select task_id" +
+                        " from task where task_name = '" + aTNV[0] + "'" +
+                        " and version = '" + aTNV[1] + "'";
+                }
+                else
+                {
+                    //there is not, default
+                    sSQL = "select task_id" +
+                        " from task where task_name = '" + aTNV[0] + "'" +
+                        " and default_version = 1";
+                }
+
+                string sID = "";
+
+                if (!string.IsNullOrEmpty(sSQL))
+                {
+                    dc.sqlGetSingleString(ref sID, sSQL, ref sErr);
+                    return sID;
+                }
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [WebMethod()]
+        public string wmGetTaskIDFromOTIDandVersion(string sOTID, string sVersion)
+        {
+            if (string.IsNullOrEmpty(sOTID))
+				return "";
+			
+			dataAccess dc = new dataAccess();
+            try
+            {
+                string sErr = "";
+                string sSQL = "";
+
+                if (!string.IsNullOrEmpty(sVersion))
+                {
+                    //there is a version
+                    sSQL = "select task_id" +
+                        " from task where original_task_id = '" + sOTID + "'" +
+                        " and version = '" + sVersion + "'";
+                }
+                else
+                {
+                    //there is not, default
+                    sSQL = "select task_id" +
+                        " from task where original_task_id = '" + sOTID + "'" +
+                        " and default_version = 1";
+                }
+
+                string sID = "";
+
+                if (!string.IsNullOrEmpty(sSQL))
+                {
+                    dc.sqlGetSingleString(ref sID, sSQL, ref sErr);
+                    return sID;
+                }
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+		[WebMethod(EnableSession = true)]
         public string wmGetTaskVersions(string sTaskID)
         {
             dataAccess dc = new dataAccess();
@@ -3279,6 +3365,31 @@ namespace ACWebMethods
                      " and t.default_version = 1" +
                      " where ea.action_id = '" + sID + "'";
             }
+			else  if (sType == "runtask")
+            {
+				//RunTask is actually a command type
+                //but it's very very similar to an Action.
+				//so... it handles it's params like an action... more or less.
+				
+				//HACK ALERT!  Since we are dealing with a unique case here where we have and need both the 
+				//step_id AND the target task_id, we're piggybacking a value in.
+				//the sID is the STEP_ID (which is kindof equivalient to the action)
+				//the sEcosystemID is the target TASK_ID
+				//yes, it's a hack I know... but better than adding another argument everywhere... sue me.
+				
+				//NOTE: plus, don't get confused... yes, run task references tasks by original id and version, but we already worked that out.
+				//the sEcosystemID passed in to this function is already resolved to an explicit task_id... it's the right one.
+
+				//get the parameters off the step itself.
+				//which is also goofy, as they are embedded *inside* the function xml of the step.
+				//but don't worry that's handled in here
+				sDefaultsXML = tm.wmGetObjectParameterXML(sType, sID, "");
+				
+				//now, we will want to get the parameters for the task *referenced by the command* down below
+				//but no sql is necessary to get the ID... we already know it!
+                sTaskID = sEcosystemID;
+				
+            }
             else if (sType == "instance")
             {
                 sDefaultsXML = tm.wmGetObjectParameterXML(sType, sID, sEcosystemID);
@@ -3309,7 +3420,8 @@ namespace ACWebMethods
                     " where schedule_id = '" + sID + "'";
             }
 
-            //if we didn't get a task id directly, use the SQL to look it up
+
+			//if we didn't get a task id directly, use the SQL to look it up
             if (string.IsNullOrEmpty(sTaskID))
                 if (!dc.sqlGetSingleString(ref sTaskID, sSQL, ref sErr))
                     throw new Exception(sErr);
@@ -3342,9 +3454,9 @@ namespace ACWebMethods
                 if (xDefDoc == null)
                     throw new Exception("Defaults XML data is invalid.");
 
-                XElement xDefParams = xDefDoc.XPathSelectElement("/parameters");
+                XElement xDefParams = xDefDoc.XPathSelectElement("//parameters");
                 if (xDefParams == null)
-                    throw new Exception("Defaults XML data does not contain 'parameters' root node.");
+                    throw new Exception("Defaults XML data does not contain 'parameters' node.");
             }
 
             //spin the nodes in the DEFAULTS xml, then dig in to the task XML and UPDATE the value if found.
@@ -3482,6 +3594,17 @@ namespace ACWebMethods
                     else
                         sSQL = "select parameter_xml from task_instance_parameter where task_instance = '" + sID + "'";
                 }
+                else if (sType == "runtask")
+                {
+					// in this case, sID is actually a *step_id* !
+					//sucks that MySql doesn't have decent XML functions... we gotta do string manipulation grr...
+                    sSQL = "select substring(function_xml," + 
+						" locate('<parameters>', function_xml)," +
+						" locate('</parameters>', function_xml) - locate('<parameters>', function_xml) + 13)" +
+						" as parameter_xml" +
+						" from task_step where step_id = '" + sID + "'";
+
+				}
                 else if (sType == "action")
                 {
                     sSQL = "select parameter_defaults from ecotemplate_action where action_id = '" + sID + "'";
@@ -3510,9 +3633,9 @@ namespace ACWebMethods
                     if (xDoc == null)
                         throw new Exception("Parameter XML data for [" + sType + ":" + sID + "] is invalid.");
 
-                    XElement xParams = xDoc.XPathSelectElement("/parameters");
+                    XElement xParams = xDoc.XPathSelectElement("//parameters");
                     if (xParams == null)
-                        throw new Exception("Parameter XML data for[" + sType + ":" + sID + "] does not contain 'parameters' root node.");
+                        throw new Exception("Parameter XML data for[" + sType + ":" + sID + "] does not contain 'parameters' node.");
 					
                     //NOTE: some values on this document may have a "encrypt" attribute.
 					//If so, we will:

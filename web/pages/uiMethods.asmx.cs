@@ -2299,8 +2299,10 @@ namespace ACWebMethods
         FOR UPDATING action parameters, again we spin the action XML, comparing to TASK PARAMETER xml, and only save DIFFERENCES!
         */
         [WebMethod(EnableSession = true)]
-        public void wmSaveActionParameterXML(string sActionID, string sActionDefaultsXML)
+        public void wmSaveDefaultParameterXML(Dictionary<string, string> args)
         {
+			//this web method accepts a json object as properties, which is received by .net as a Dictionary!
+			
             dataAccess dc = new dataAccess();
             
             acUI.acUI ui = new acUI.acUI();
@@ -2310,33 +2312,40 @@ namespace ACWebMethods
             {
                 string sUserID = ui.GetSessionUserID();
 
-                if (ui.IsGUID(sActionID) && ui.IsGUID(sUserID))
+                if (ui.IsGUID(args["sID"]) && ui.IsGUID(sUserID))
                 {
                     string sErr = "";
                     string sSQL = "";
-
+                    string sTaskID = "";
+					string sID = args["sID"];
+					string sType = args["sType"];
+					
                     //we encoded this in javascript before the ajax call.
                     //the safest way to unencode it is to use the same javascript lib.
                     //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                    sActionDefaultsXML = ui.unpackJSON(sActionDefaultsXML);
+                    string sXML = ui.unpackJSON(args["sXML"]);
 				
 					//we gotta peek into the XML and encrypt any newly keyed values
-					PrepareAndEncryptParameterXML(ref sActionDefaultsXML);				
+					PrepareAndEncryptParameterXML(ref sXML);				
 
 
                     //so, like when we read it, we gotta spin and compare, and build an XML that only represents *changes*
                     //to the defaults on the task.
-
-                    //what is the task associated with this action?
-                    sSQL = "select t.task_id" +
-                        " from ecotemplate_action ea" +
-                        " join task t on ea.original_task_id = t.original_task_id" +
-                        " and t.default_version = 1" +
-                        " where ea.action_id = '" + sActionID + "'";
-
-                    string sTaskID = "";
-                    if (!dc.sqlGetSingleString(ref sTaskID, sSQL, ref sErr))
-                        throw new Exception(sErr);
+					
+					if (sType == "action") {
+	                    //what is the task associated with this action?
+	                    sSQL = "select t.task_id" +
+	                        " from ecotemplate_action ea" +
+	                        " join task t on ea.original_task_id = t.original_task_id" +
+	                        " and t.default_version = 1" +
+	                        " where ea.action_id = '" + sID + "'";
+					} else if (sType == "runtask") {
+						sTaskID = args["sTaskID"];
+					}
+					
+					if (string.IsNullOrEmpty(sTaskID))
+						if (!dc.sqlGetSingleString(ref sTaskID, sSQL, ref sErr))
+							throw new Exception(sErr);
 
                     if (!ui.IsGUID(sTaskID))
                         throw new Exception("Unable to find Task ID for Action.");
@@ -2360,9 +2369,9 @@ namespace ACWebMethods
                     }
 
                     //we had the ACTION defaults handed to us
-                    if (!string.IsNullOrEmpty(sActionDefaultsXML))
+                    if (!string.IsNullOrEmpty(sXML))
                     {
-                        xADDoc = XDocument.Parse(sActionDefaultsXML);
+                        xADDoc = XDocument.Parse(sXML);
                         if (xADDoc == null)
                             throw new Exception("Action Defaults XML data is invalid.");
 
@@ -2485,16 +2494,24 @@ namespace ACWebMethods
                     //done
                     sOverrideXML = xADDoc.ToString(SaveOptions.DisableFormatting);
 
-                    //FINALLY, we have an XML that represents only the differences we wanna save.
-                    sSQL = "update ecotemplate_action set" +
-                        " parameter_defaults = '" + sOverrideXML + "'" +
-                        " where action_id = '" + sActionID + "'";
+					//FINALLY, we have an XML that represents only the differences we wanna save.
+					if (sType == "action") {
+						sSQL = "update ecotemplate_action set" +
+		                    " parameter_defaults = '" + sOverrideXML + "'" +
+		                    " where action_id = '" + sID + "'";
 
-
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                        throw new Exception("Unable to update Eco Template Action [" + sActionID + "]." + sErr);
-
-                    ui.WriteObjectChangeLog(Globals.acObjectTypes.EcoTemplate, sActionID, sActionID, "Action default parameters updated: [" + sOverrideXML + "]");
+						if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+	                        throw new Exception("Unable to update Action [" + sID + "]." + sErr);
+	
+						if (sType == "action")
+							ui.WriteObjectChangeLog(Globals.acObjectTypes.EcoTemplate, sID, sID, "Default parameters updated: [" + sOverrideXML + "]");
+					} else if (sType == "runtask") {
+						//WICKED!!!!
+						//I can use my super awesome xml functions!
+						FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
+						ft.RemoveFromCommandXML(sID, "//parameters");
+						ft.AddToCommandXML(sID, "//function", sOverrideXML);
+					}
                 }
                 else
                 {

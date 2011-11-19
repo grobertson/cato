@@ -19,6 +19,34 @@ $(document).ready(function () {
         //push an change event to it.
         $("#" + field_id_to_clear).change();
     });
+    
+    //the parameter edit dialog button for Run Task command
+    $(".fn_runtask_edit_parameters_btn").live("click", function () {
+        //trying globals!!!  Maybe we'll do this using AmplifyJS one day.
+        rt_task_id = $(this).attr("task_id");
+        rt_step_id = $(this).attr("step_id");
+                
+        ShowRunTaskParameterEdit();
+    });
+
+	//init dialogs
+    $("#fn_runtask_parameter_dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        height: 650,
+        width: 500,
+        open: function (event, ui) { $(".ui-dialog-titlebar-close", ui).hide(); },
+        buttons: {
+            "Save": function () {
+                SaveRunTaskParameters();
+                ClosePlanEditDialog();
+            },
+            "Cancel": function () {
+                CloseRunTaskParameterEdit();
+            }
+        }
+    });
+
 });
 
 //the SUBTASK command
@@ -561,3 +589,70 @@ $(document).ready(function () {
 });
 
 //End XML Node Array functions
+
+//FUNCTIONS for dealing with the very specific parameters for a Run Task command
+function ShowRunTaskParameterEdit() {
+    var task_parameter_xml = "";
+
+	if (rt_task_id != "") {
+	    $.ajax({
+	        async: false,
+	        type: "POST",
+	        url: "taskMethods.asmx/wmGetParameterXML",
+	        data: '{"sType":"runtask","sID":"' + rt_step_id + '","sFilterByEcosystemID":"' + rt_task_id + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function (retval) {
+	            if (retval.d != "")
+	                task_parameter_xml = $.parseXML(retval.d);
+	        },
+	        error: function (response) {
+	            showAlert(response.responseText);
+	        }
+	    });
+	
+	    var output = DrawParameterEditForm(task_parameter_xml);
+	    $("#fn_runtask_parameter_dialog_params").html(output);
+	
+	    //don't forget to bind the tooltips!
+	    bindParameterToolTips();
+	
+	    $("#fn_runtask_parameter_dialog").dialog('open');
+	} else {
+		showInfo("Unable to resolve the ID of the Task referenced by this command.");
+	}
+}
+function CloseRunTaskParameterEdit() {
+    $("#fn_runtask_parameter_dialog").dialog('close');
+}
+function SaveRunTaskParameters() {
+    $("#update_success_msg").text("Saving Defaults...");
+
+    //build the XML from the dialog
+    var parameter_xml = packJSON(buildXMLToSubmit());
+    //alert(parameter_xml);
+
+    var args = '{"sType":"runtask","sID":"' + rt_step_id + '","sTaskID":"' + rt_task_id + '","sXML":"' + parameter_xml + '"}';
+        
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "uiMethods.asmx/wmSaveDefaultParameterXML",
+        data: '{"args":' + args + '}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            $("#update_success_msg").text("Save Successful").fadeOut(2000);
+            CloseRunTaskParameterEdit();
+        },
+        error: function (response) {
+            $("#update_success_msg").fadeOut(2000);
+            showAlert(response.responseText);
+        }
+    });
+
+    $("#action_parameter_dialog").dialog('close');
+
+}
+
+//End Run Task Parameters

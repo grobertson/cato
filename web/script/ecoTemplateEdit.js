@@ -342,11 +342,13 @@ function SaveParameterDefaults() {
     var parameter_xml = packJSON(buildXMLToSubmit());
     //alert(parameter_xml);
 
+    var args = '{"sType":"action","sID":"' + action_id + '","sXML":"' + parameter_xml + '"}';
+        
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmSaveActionParameterXML",
-        data: '{"sActionID":"' + action_id + '","sActionDefaultsXML":"' + parameter_xml + '"}',
+        url: "uiMethods.asmx/wmSaveDefaultParameterXML",
+        data: '{"args":' + args + '}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
