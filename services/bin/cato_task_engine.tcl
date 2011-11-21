@@ -142,7 +142,11 @@ proc gather_account_info {account_id} {
 	set ::CLOUD_NAME [lindex $row 0]
 	set ::CLOUD_TYPE [lindex $row 1]
 	set ::CLOUD_LOGIN_ID [lindex $row 2]
-	set ::CLOUD_LOGIN_PASS [decrypt_string [lindex $row 3] $::SITE_KEY]
+	if {[lindex $row 3] > ""} {
+		set ::CLOUD_LOGIN_PASS [decrypt_string [lindex $row 3] $::SITE_KEY]
+	} else {
+		set ::CLOUD_LOGIN_PASS ""
+	}
 
         set clouds [get_clouds_provider $::CLOUD_TYPE]
         foreach cloud $clouds {
@@ -5128,7 +5132,7 @@ proc launch_run_task {} {
 	set handle [replace_variables_all [$root selectNodes string(handle)]]
 	set asset_id [replace_variables_all [$root selectNodes string(asset_id)]]
 	set wait_time [replace_variables_all [$root selectNodes string(time_to_wait)]]
-	set pair [$root selectNodes {//pair}]
+	set parameters [$root selectNodes {/function/parameters}]
 
 	#FIGURE OUT THE PARAMETERS
 	#will take the values from the command and put them in the task_instance_parameter table
@@ -5144,28 +5148,32 @@ proc launch_run_task {} {
 		array unset ::HANDLE_ARR #$handle.*
 	}
 
-	if {"$pair" > ""} {
-		output "Saving input parameters..." 2
-		#regsub -all "&" $pair "&amp;" pair
-		foreach node $pair {
-			set key [replace_variables_all [$node selectNodes string(key)]]
-			set val [string trim [$node selectNodes string(value)]]
-			if {[regexp {^\[\[.*,all\]\]$} $val] == 1 || [regexp {^\[\[.*,ALL\]\]$} $val] == 1} {
-				set var_name [string toupper [string range $val 2 [expr [string first ,all $val] - 1]]]
-				#output "var name is $var_name"
-				#output "runtime vars are [array get ::runtime_arr]" 
-				foreach {arr_key arr_val} [array get ::runtime_arr $var_name,*] {
-					set key_index [lindex [split $arr_key ,] 1]
-					#output "match at index $key_index"
-					$newroot appendXML "<parameter><key>$key,$key_index</key><value><!\[CDATA\[$arr_val\]\]></value></parameter>"
-				}
-			} else {
-				set val [replace_variables_all $val]
-				$newroot appendXML "<parameter><key>$key</key><value><!\[CDATA\[$val\]\]></value></parameter>"
-			}
-		}
+	#if {"$pair" > ""} {
+	#	output "Saving input parameters..." 2
+	#	#regsub -all "&" $pair "&amp;" pair
+	#	foreach node $pair {
+	#		set key [replace_variables_all [$node selectNodes string(key)]]
+	#		set val [string trim [$node selectNodes string(value)]]
+	#		if {[regexp {^\[\[.*,all\]\]$} $val] == 1 || [regexp {^\[\[.*,ALL\]\]$} $val] == 1} {
+	#			set var_name [string toupper [string range $val 2 [expr [string first ,all $val] - 1]]]
+	#			#output "var name is $var_name"
+	#			#output "runtime vars are [array get ::runtime_arr]" 
+	#			foreach {arr_key arr_val} [array get ::runtime_arr $var_name,*] {
+	#				set key_index [lindex [split $arr_key ,] 1]
+	#				#output "match at index $key_index"
+	#				$newroot appendXML "<parameter><key>$key,$key_index</key><value><!\[CDATA\[$arr_val\]\]></value></parameter>"
+	#			}
+	#		} else {
+	#			set val [replace_variables_all $val]
+	#			$newroot appendXML "<parameter><key>$key</key><value><!\[CDATA\[$val\]\]></value></parameter>"
+	#		}
+	#	}
+	#}
+	if {"$parameters" ne ""} {
+		set parameterXML [replace_variables_all [$parameters asXML]]
+	} else {
+		set parameterXML ""
 	}
-	set parameterXML [$newroot asXML]
 	#output "XML = $parameterXML"
 	#END PARAMETERS
 	
