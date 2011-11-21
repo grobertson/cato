@@ -60,15 +60,15 @@
 			</item>
 			<item roles="developer" label="Cloud API Tester" icon="../images/icons/api_tester_24.png" onclick="showPleaseWait();" href="../pages/cloudAPITester.aspx">
 			</item>
-			<item label="Set Login Defaults" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
+			<item label="Manage Systems" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
 			</item>
 			<item label="Manage Pollers" icon="../images/ldap_24.png" onclick="showPleaseWait();" href="../pages/pollerSettings.aspx">
-			</item>
-			<item roles="developer" label="Import a Backup File" icon="../images/icons/import_24.png" onclick="showPleaseWait();" href="../pages/importLoadFile.aspx">
 			</item>
 			<item label="Manage Notifications" icon="../images/notify_24.png" onclick="showPleaseWait();" href="../pages/notificationEdit.aspx">
 			</item>
 			<item label="Manage Scheduler" icon="../images/date.png" onclick="showPleaseWait();" href="../pages/schedulerSettings.aspx">
+			</item>
+			<item roles="developer" label="Import a Backup File" icon="../images/icons/import_24.png" onclick="showPleaseWait();" href="../pages/importLoadFile.aspx">
 			</item>
 			<item label="View Security Log" icon="../images/icons/password.png" onclick="openWindow('../pages/securityLogView.aspx', 'logView', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
 			</item>
