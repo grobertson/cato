@@ -143,24 +143,17 @@ proc gather_account_info {account_id} {
 	set ::CLOUD_TYPE [lindex $row 1]
 	set ::CLOUD_LOGIN_ID [lindex $row 2]
 	set ::CLOUD_LOGIN_PASS [decrypt_string [lindex $row 3] $::SITE_KEY]
-	
-	# here is the logic I use for finding the clouds
-	# 1) check the XML first... this xpath isn't perfect but it's close
-	#		//provider[name='$::CLOUD_TYPE']/clouds
-	
-	# 2a) if that xpath has results, then you can use those clouds.
-	# 2b) if it finds nothing, *then* do the database query to check there.
-	
-	# I don't know if it will work for you, but in the GUI I load the xml file into a DOM object variable at startup.
-	# from that point forward, I never load the file again, I just reference that global ::CLOUD_PROVIDERS xml document.
-	
+
+        set clouds [get_clouds_provider $::CLOUD_TYPE]
+        foreach cloud $clouds {
+                set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $cloud 1]) "[lindex $cloud 2]"
+                set ::CLOUD_IDS($::CLOUD_TYPE,[lindex $cloud 1]) [lindex $cloud 0]
+        }
+
 	set sql "select cloud_name, api_url,cloud_id from clouds where provider = '$::CLOUD_TYPE'"
 	$::db_query $::CONN $sql
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 		if {"$::CLOUD_TYPE" eq "Eucalyptus"} {
-			# NSC: the /services/Eucalyptus is the api_uri from the Product under the provider in the XML
-			# the dynamic endpoint will be product/api_url_prefix + cloud/api_url + product/api_uri
-			# if you do it this way, you shouldn't need this case statement at all and *hopefully* it will work for OpenStack too.
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]/services/Eucalyptus"
 		} else {
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]"
@@ -3257,7 +3250,7 @@ proc log_msg {command} {
 	insert_audit $::STEP_ID  "" $message ""
 }
 
-proc new_connection {connection_system conn_name conn_type} {
+proc new_connection {connection_system conn_name conn_type {cloud_name ""}} {
 	set proc_name new_connection
 	set db_type_flag ""
 	set asset_name $connection_system
@@ -3290,7 +3283,7 @@ proc new_connection {connection_system conn_name conn_type} {
 		}
 		for {set ii 0} {$ii < 20} {incr ii} {
 			sleep 1
-			set state [gather_aws_system_info $connection_system $user_id $::runtime_arr(_AWS_REGION,1)]
+			set state [gather_aws_system_info $connection_system $user_id $cloud_name]
 			if {"$state" == "running"} {
 				break
 			} elseif {"$state" == "pending"} {
@@ -3523,6 +3516,7 @@ proc new_connection_command {command} {
 	set conn_type [$::ROOT selectNodes string(conn_type)]
 	set conn_name [replace_variables_all [$::ROOT selectNodes string(conn_name)]]
 	set connection_system [replace_variables_all [$::ROOT selectNodes string(asset)]]
+	set cloud_name [replace_variables_all [$::ROOT selectNodes string(cloud_name)]]
 	del_xml_root
 	#output "$conn_type, $conn_name, $connection_system"
 
@@ -3531,7 +3525,7 @@ proc new_connection_command {command} {
 		insert_audit $::STEP_ID "" "A connection by the name $conn_name already exists, closing the previous one and openning a new connection" ""
 		release_connection $conn_name
 	}
-	new_connection $connection_system $conn_name $conn_type
+	new_connection $connection_system $conn_name $conn_type $cloud_name
 	insert_audit $::STEP_ID  "" "New connection named $conn_name to asset $connection_system created with a connection type $conn_type" ""
 }
 #####################################################
