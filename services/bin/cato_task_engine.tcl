@@ -202,7 +202,7 @@ proc aws_Generic {product operation path command} {
 	} else {
 		lappend region_endpoint ""
 	}
-	output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
+	#output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
         set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
         set cmd "$x  call_aws $product \"$aws_region\" $operation"
 output $cmd
