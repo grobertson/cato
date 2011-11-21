@@ -68,6 +68,12 @@ proc remove_old_objects {objects object_type ecosystem_id cloud_id} {
 proc get_clouds {} {
 
 	unset -nocomplain ::cloud_arr
+
+        set clouds [get_clouds_provider {Amazon AWS}]
+        foreach cloud $clouds {
+		lappend ::cloud_arr([lindex $cloud 0]) {Amazon AWS} [lindex $cloud 1] [lindex $cloud 2]
+        }
+
 	set sql "select cloud_id, provider, cloud_name, api_url from clouds"
 	set  clouds [::mysql::sel $::CONN $sql -list]
 	foreach cloud $clouds {
@@ -171,7 +177,7 @@ proc get_object_status {object_type cloud_id account_id objects} {
 			set region_endpoint ""
 		}
 		set ::ACCOUNT_HANDLE [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
-		#output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
+		output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
 		set cmd "$::ACCOUNT_HANDLE call_aws [lindex $::OBJECT_TYPES($object_type) 0] [lindex $::cloud_arr($cloud_id) 1] [lindex $::OBJECT_TYPES($object_type) 1]"
 		lappend cmd $params
 		#output $cmd
