@@ -152,7 +152,7 @@
 	border-width: 3px;
 	box-shadow: 5px 5px 5px #ccc;
 	overflow: auto;
-	z-index: 1000;
+	z-index: 3000;
 }
 .value_picker_title
 {

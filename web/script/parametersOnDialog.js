@@ -65,6 +65,9 @@ $(document).ready(function () {
 function DrawParameterEditForm(parameter_xml) {
     var output = "";
 
+	//this is used for a unique ID of every value field on the dialog
+	var uniq = 0;
+
     //not really xpath but it works!   an array of the <parameter> nodes 
     var $param = $(parameter_xml).find("parameter");
 
@@ -131,7 +134,7 @@ function DrawParameterEditForm(parameter_xml) {
 
                     	//the actual textarea
                     	//don't break it to multiple lines or it adds spaces!
-						output += "<textarea class=\"task_launch_parameter_value_input\" rows=\"1\" " + attr + ">" + $(v).text() + "</textarea>";
+						output += "<textarea id=\"v_" + uniq++ + "\" class=\"task_launch_parameter_value_input\" rows=\"1\" " + attr + ">" + $(v).text() + "</textarea>";
 
                                                                                                                                                 
                         //don't draw the 'x' on the first value... make at least one value required.
@@ -187,7 +190,7 @@ function DrawParameterEditForm(parameter_xml) {
                     	}
 	                    
                     	//the actual textarea
-						output += "<textarea class=\"task_launch_parameter_value_input\" rows=\"1\" " + attr + ">" + $(v).text() + "</textarea>";
+						output += "<textarea id=\"v_" + uniq++ + "\" class=\"task_launch_parameter_value_input\" rows=\"1\" " + attr + ">" + $(v).text() + "</textarea>";
 
                         output += "</div>";
                     });

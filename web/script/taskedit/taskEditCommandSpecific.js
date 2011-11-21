@@ -617,6 +617,18 @@ function ShowRunTaskParameterEdit() {
 	    //don't forget to bind the tooltips!
 	    bindParameterToolTips();
 	
+		//and for this case we bind the right click event of the value fields
+		//so... for the new parameters feature on the Run Task command... bind the right click for the runtime var picker too
+	    //enable right click on all edit fields
+	    $("#fn_runtask_parameter_dialog .task_launch_parameter_value_input").rightClick(function(e) {
+	        showVarPicker(e);
+	    });
+		//this focus hack is required too
+	    $("#fn_runtask_parameter_dialog .task_launch_parameter_value_input").focus(function() {
+	        fieldWithFocus = $(this).attr("id");
+	    });
+
+	
 	    $("#fn_runtask_parameter_dialog").dialog('open');
 	} else {
 		showInfo("Unable to resolve the ID of the Task referenced by this command.");
