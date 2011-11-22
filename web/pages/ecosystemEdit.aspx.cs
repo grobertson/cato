@@ -148,7 +148,7 @@ namespace Web.pages
                     sIcon = "<img class=\"custom_icon\" src=\"../images/custom/" + sPropertyName.Replace(" ", "") + "_" + sValue.Replace(" ", "") + ".png\" alt=\"\" />";
             }
 
-            sHTML += (sValue == "" ? "" : "<span class=\"ecosystem_item_property\">" + sPropertyName + ": " + sIcon + sValue + "</span>");
+            sHTML += (sValue == "" ? "" : "<div class=\"ecosystem_item_property\">" + sPropertyName + ": <span class=\"ecosystem_item_property_value\">" + sIcon + sValue + "</span></div>");
 
             return sHTML;
         }
@@ -237,13 +237,10 @@ namespace Web.pages
 
 				//So, we'll first get a distinct list of all clouds represented in this set
 				//then for each cloud we'll get the objects.
-                string sSQL = "select eo.cloud_id, c.cloud_name" +
-                    " from ecosystem_object eo" +
-                    " join clouds c on eo.cloud_id = c.cloud_id" +
-                    " where eo.ecosystem_id ='" + sEcosystemID + "'" +
-                    " and eo.ecosystem_object_type = '" + sType + "'" +
-					" group by eo.cloud_id, c.cloud_name" +
-                    " order by c.cloud_name";
+                string sSQL = "select distinct cloud_id" +
+                    " from ecosystem_object" +
+                    " where ecosystem_id ='" + sEcosystemID + "'" +
+                    " and ecosystem_object_type = '" + sType + "'";
 
                 DataTable dtClouds = new DataTable();
                 if (!dc.sqlGetDataTable(ref dtClouds, sSQL, ref sErr))
@@ -255,7 +252,6 @@ namespace Web.pages
                     foreach (DataRow drCloud in dtClouds.Rows)
                     {
 						string sCloudID = drCloud["cloud_id"].ToString();
-						string sCloudName = drCloud["cloud_name"].ToString();
 
 		                //get the cloud object rows
 		                sSQL = "select eo.ecosystem_object_id, eo.ecosystem_object_type" +
@@ -278,45 +274,49 @@ namespace Web.pages
 		
 		                    foreach (DataRow drObject in dtObjects.Rows)
 		                    {
-		                        //giving each section a guid so we can delete it on the client side after the ajax call.
-		                        //not 100% the ecosystem_object_id will always be suitable as a javascript ID.
-		                        string sGroupID = ui.NewGUID();
-		
-		                        sHTML += "<div class=\"ui-widget-content ui-corner-all ecosystem_item\" id=\"" + sGroupID + "\">";
-		
-		
-		                        string sObjectID = drObject["ecosystem_object_id"].ToString();
-		
-		                        string sLabel = "Cloud: " + sCloudName + " - " + sObjectID;
-		
-		                        sHTML += "<div class=\"ui-widget-header ecosystem_item_header\">";
-		                        sHTML += "<div class=\"ecosystem_item_header_title\"><span>" + sLabel + "</span></div>";
-		
-		                        sHTML += "<div class=\"ecosystem_item_header_icons\">";
-		
-		                        sHTML += "<span class=\"ui-icon ui-icon-close ecosystem_item_remove_btn pointer\"" +
-									" id_to_delete=\"" + drObject["ecosystem_object_id"].ToString() + "\"" +
-									" id_to_remove=\"" + sGroupID + "\">";
-		                        sHTML += "</span>";
-		
-		                        sHTML += "</div>";
-		
-		                        sHTML += "</div>";
-		
-		                        //the details section
-		                        sHTML += "<div class=\"ecosystem_item_detail\">";
-		
-		                        if (dtAPIResults != null)
-		                        {
-		                            if (dtAPIResults.Rows.Count > 0)
-		                                sHTML += DrawAllProperties(dtAPIResults, sObjectID);
-		                        }
-		
-		
-		                        //end detail section
-		                        sHTML += "</div>";
-		                        //end block
-		                        sHTML += "</div>";
+		                        //look up the cloud and get the name
+								Cloud c = new Cloud(sCloudID);
+								if (c.ID != null) {
+									//giving each section a guid so we can delete it on the client side after the ajax call.
+			                        //not 100% the ecosystem_object_id will always be suitable as a javascript ID.
+			                        string sGroupID = ui.NewGUID();
+			
+			                        sHTML += "<div class=\"ui-widget-content ui-corner-all ecosystem_item\" id=\"" + sGroupID + "\">";
+			
+			
+			                        string sObjectID = drObject["ecosystem_object_id"].ToString();
+			
+			                        string sLabel = "Cloud: " + c.Name + " - " + sObjectID;
+			
+			                        sHTML += "<div class=\"ui-widget-header ecosystem_item_header\">";
+			                        sHTML += "<div class=\"ecosystem_item_header_title\"><span>" + sLabel + "</span></div>";
+			
+			                        sHTML += "<div class=\"ecosystem_item_header_icons\">";
+			
+			                        sHTML += "<span class=\"ui-icon ui-icon-close ecosystem_item_remove_btn pointer\"" +
+										" id_to_delete=\"" + drObject["ecosystem_object_id"].ToString() + "\"" +
+										" id_to_remove=\"" + sGroupID + "\">";
+			                        sHTML += "</span>";
+			
+			                        sHTML += "</div>";
+			
+			                        sHTML += "</div>";
+			
+			                        //the details section
+			                        sHTML += "<div class=\"ecosystem_item_detail\">";
+			
+			                        if (dtAPIResults != null)
+			                        {
+			                            if (dtAPIResults.Rows.Count > 0)
+			                                sHTML += DrawAllProperties(dtAPIResults, sObjectID);
+			                        }
+			
+			
+			                        //end detail section
+			                        sHTML += "</div>";
+			                        //end block
+			                        sHTML += "</div>";
+								}
 		                    }
 		                }
 		                else

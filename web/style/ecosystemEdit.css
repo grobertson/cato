@@ -106,6 +106,9 @@ div.action_inner
 .ecosystem_item
 {
 	margin: 2px 10px 2px 10px;
+	float: left;
+	width: 350px;
+	height: 180px;
 }
 .ecosystem_item_header
 {
@@ -118,10 +121,13 @@ div.action_inner
 	clear: both;
 	padding: 0px 4px 0px 4px;
 }
-
 .ecosystem_item_property
 {
-	margin-right: 15px;
+	font-weight: bold;
+}
+.ecosystem_item_property_value
+{
+	font-weight: normal;
 }
 .breadcrumb
 {
