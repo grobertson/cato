@@ -1762,7 +1762,8 @@ namespace ACWebMethods
             string sDesc = (string.IsNullOrEmpty(dr["action_desc"].ToString()) ? "" : dr["action_desc"].ToString());
             string sOriginalTaskID = dr["original_task_id"].ToString();
             string sTaskID = dr["task_id"].ToString();
-            string sTaskName = dr["task_name"].ToString();
+            string sTaskCode = dr["task_code"].ToString();            
+			string sTaskName = dr["task_name"].ToString();
             string sVersion = (string.IsNullOrEmpty(dr["task_version"].ToString()) ? "" : dr["task_version"].ToString());
             string sTaskParameterXML = (string.IsNullOrEmpty(dr["task_param_xml"].ToString()) ? "" : dr["task_param_xml"].ToString());
             //string sActionParameterXML = (string.IsNullOrEmpty(dr["action_param_xml"].ToString()) ? "" : dr["action_param_xml"].ToString());
@@ -1827,7 +1828,7 @@ namespace ACWebMethods
                 " onkeypress=\"return false;\"" +
                 " is_required=\"true\"" +
                 " class=\"code w75pct task_name\"" +
-                " value=\"" + sTaskName + "\" />" + Environment.NewLine;
+                " value=\"" + sTaskCode + " : " + sTaskName + "\" />" + Environment.NewLine;
             if (sTaskID != "")
             {
                 sHTML += "<img class=\"task_open_btn pointer\" alt=\"Edit Task\"" +
@@ -1940,7 +1941,7 @@ namespace ACWebMethods
                 if (!string.IsNullOrEmpty(sEcoTemplateID))
                 {
                     sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.task_version," +
-                        " t.task_id, t.task_name," +
+                        " t.task_id, t.task_code, t.task_name," +
                         " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" +
                         " from ecotemplate_action ea" +
                         " join task t on ea.original_task_id = t.original_task_id" +
@@ -1993,7 +1994,7 @@ namespace ACWebMethods
                 if (!string.IsNullOrEmpty(sActionID))
                 {
                     sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.task_version," +
-                        " t.task_id, t.task_name," +
+                        " t.task_id, t.task_code, t.task_name," +
                         " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" +
                         " from ecotemplate_action ea" +
                         " join task t on ea.original_task_id = t.original_task_id" +

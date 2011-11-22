@@ -80,67 +80,40 @@ namespace Web
             //(there was a random error where the login page would be loaded and sitting in a browser,
             // and the server reset while it's sitting there.  Somehow this ended up with IsPostBack being true, but the session 
             // values were empty.  This should fix that.
-
-            //if (!Page.IsPostBack)
-            //{
-            //FIRST THINGS FIRST... hitting the login page resets the session.
-            HttpContext.Current.Session.Clear();
 			
-			
-			
-			//now, for some reason we were having issues with the initial startup of apache
-			//not able to perform the very first database hit.
-			//this line serves as an inital db hit, but we aren't trapping it
-			dc.TestDBConnection(ref sErr);
-			if(sErr != "") {
-				//there is a weird mysql error on initial startup.
-				//we're gonna try sleeping a bit then try again
-				System.Threading.Thread.Sleep(2000);
-				
-				dc.TestDBConnection(ref sErr);
-				if(sErr != "")
-					Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
-			}
-
-
-			
-			//load the site.master.xml file into the session.  If it doesn't exist, we can't proceed.
-			try 
-			{
-				XDocument xSiteMaster = XDocument.Load(HttpContext.Current.Server.MapPath("~/pages/site.master.xml"));
-				
-				if (xSiteMaster == null)
-				{
-					lblErrorMessage.Text = "Error: Site master XML file is missing or unreadable.";
-					btnLogin.Visible = false;
-				}
-				else 
-				{
-					ui.SetSessionObject("site_master_xml", xSiteMaster, "Security");
-				}
-			} catch (Exception ex) {
-				lblErrorMessage.Text = "Error: Site master XML is invalid." + ex.Message;
-			}
-
-
-			ui.SetCloudProviders(ref sErr);
-			if (!string.IsNullOrEmpty(sErr))
-				lblErrorMessage.Text = "Error: Unable to load Cloud Providers XML." + sErr;
-
-			
-			
-			
-			//JUST get the login message here
-			string sLoginMessage = "Welcome to Cato";
-			sSQL = "select login_message from login_security_settings where id = 1";
-            if (dc.sqlGetSingleString(ref sLoginMessage, sSQL, ref sErr))
+			//NSC 11/22/2011 Put it back... not convinced it was a problem and it may be causing others.
+            if (!Page.IsPostBack)
             {
-				lblMessage.Text = sLoginMessage;
-				//put it in the global
-				DatabaseSettings.AppInstance = sLoginMessage;
-            }
-			
-			//}
+	            //FIRST THINGS FIRST... hitting the login page resets the session.
+	            HttpContext.Current.Session.Clear();
+				
+				
+				
+				//now, for some reason we were having issues with the initial startup of apache
+				//not able to perform the very first database hit.
+				//this line serves as an inital db hit, but we aren't trapping it
+				dc.TestDBConnection(ref sErr);
+				if(sErr != "") {
+					//there is a weird mysql error on initial startup.
+					//we're gonna try sleeping a bit then try again
+					System.Threading.Thread.Sleep(2000);
+					
+					dc.TestDBConnection(ref sErr);
+					if(sErr != "")
+						Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
+				}
+
+				//JUST get the login message here
+				string sLoginMessage = "Welcome to Cato";
+				sSQL = "select login_message from login_security_settings where id = 1";
+	            if (dc.sqlGetSingleString(ref sLoginMessage, sSQL, ref sErr))
+	            {
+					lblMessage.Text = sLoginMessage;
+					//put it in the global
+					DatabaseSettings.AppInstance = sLoginMessage;
+	            }
+				
+			}
         }
 
         private bool LdapAuthenticate(string sUserID, string sDomain, string sUsername, string sPassword, ref string sErr)
@@ -196,10 +169,13 @@ namespace Web
         }
         private void LoginComplete(string sUserID, string sUserName, ref string sErr)
         {
-            string sClientIPAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+			//what's the IP address of the client?
+			string sClientIPAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
             if (string.IsNullOrEmpty(sClientIPAddress))
                 sClientIPAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+			
 
+			//this is a successful login... reset the counters
             sSQL = "update users set failed_login_attempts=0, last_login_dt=now() where user_id='" + sUserID + "'";
             if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
             {
@@ -211,6 +187,34 @@ namespace Web
 
             //put a crap load of static stuff in the session so we can use the values later without hitting the database a lot.
 
+						
+			//load the site.master.xml file into the session.  If it doesn't exist, we can't proceed.
+			try 
+			{
+				XDocument xSiteMaster = XDocument.Load(HttpContext.Current.Server.MapPath("~/pages/site.master.xml"));
+				
+				if (xSiteMaster == null)
+				{
+					lblErrorMessage.Text = "Error: Site master XML file is missing or unreadable.";
+					btnLogin.Visible = false;
+					return;
+				}
+				else 
+				{
+					ui.SetSessionObject("site_master_xml", xSiteMaster, "Security");
+				}
+			} catch (Exception ex) {
+				lblErrorMessage.Text = "Error: Site master XML is invalid." + ex.Message;
+				return;
+			}
+
+			//set up the cloud providers xml
+			ui.SetCloudProviders(ref sErr);
+			if (!string.IsNullOrEmpty(sErr)) {
+				lblErrorMessage.Text = "Error: Unable to load Cloud Providers XML." + sErr;
+				return;
+			}
+			
             //***SECURITY COLLECTION
             sSQL = "select full_name, user_role, email, last_login_dt from users where user_id = '" + sUserID + "'";
             DataRow dr = null;

@@ -200,7 +200,7 @@ namespace Globals
 					pv.Name = xProvider.Attribute ("name").Value;
 					pv.TestProduct = (xProvider.Attribute ("test_product") == null ? "" : xProvider.Attribute ("test_product").Value);
 					pv.TestObject = (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value);
-					pv.UserDefinedClouds = (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "true" ? true : false));
+					pv.UserDefinedClouds = (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true));
 					
 					IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
 					
@@ -496,7 +496,7 @@ namespace Globals
 			
             //search for the sCloudID in the CloudProvider Class -AND- the database
 			CloudProviders cp = ui.GetCloudProviders();
-			if (cp != null) {
+			if (cp == null) {
 				throw new Exception("Error building Cloud object: Unable to GetCloudProviders.");	
 			}
 			

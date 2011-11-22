@@ -258,16 +258,16 @@ namespace Web.pages
 	                oTrans.Command.CommandText = sSql;
 	                if (!oTrans.ExecUpdate(ref sErr))
 	                    throw new Exception("Error creating cloud: " + sErr);
-
-					oTrans.Commit();
-
-					//update the cloud providers class in the session
-					CloudProviders cp = ui.GetCloudProviders();
-					cp[sProvider].RefreshClouds();
-					ui.UpdateCloudProviders(cp);
 	                
 					ui.WriteObjectAddLog(Globals.acObjectTypes.Cloud, sCloudID, sCloudName, "Cloud Created");                
 				}
+
+				oTrans.Commit();
+
+				//update the cloud providers class in the session
+				CloudProviders cp = ui.GetCloudProviders();
+				cp[sProvider].RefreshClouds();
+				ui.UpdateCloudProviders(cp);
            }
             catch (Exception ex)
             {

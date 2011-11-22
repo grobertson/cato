@@ -69,33 +69,25 @@ namespace Web.pages
 				return "{'result':'fail','error':'Failed to get Cloud Account details for Cloud Account ID [" + sAccountID + "].'}";
 			}
 
-			CloudProviders cp = ui.GetCloudProviders();
-			if (cp == null) 
-			{
-				return "{'result':'fail','error':'Failed to get Cloud Providers definition from session.'}";
-			}
-			else 
-			{
-				//get the test cloud object type for this provider
-				CloudObjectType cot = ui.GetCloudObjectType(c.Provider, c.Provider.TestObject);
-				if (cot != null) {
-					if (string.IsNullOrEmpty(cot.ID)) {
-						return "{'result':'fail','error':'Cannot find definition for requested object type [" + c.Provider.TestObject + "].'}";
-					}
-				} else {
-					return "{'result':'fail','error':'GetCloudObjectType failed for [" + c.Provider.TestObject + "].'}";
+			//get the test cloud object type for this provider
+			CloudObjectType cot = ui.GetCloudObjectType(c.Provider, c.Provider.TestObject);
+			if (cot != null) {
+				if (string.IsNullOrEmpty(cot.ID)) {
+					return "{'result':'fail','error':'Cannot find definition for requested object type [" + c.Provider.TestObject + "].'}";
 				}
-				
-				string sURL = GetURL(ca, c, cot, null, ref sErr);			
-				if (!string.IsNullOrEmpty(sErr))
-					return "{'result':'fail','error':'" + ui.packJSON(sErr) +"'}";
-				
-				string sResult = ui.HTTPGet(sURL, ref sErr);
-				if (!string.IsNullOrEmpty(sErr))
-					return "{'result':'fail','error':'" + ui.packJSON(sErr) + "'}";
-
-				return "{'result':'success','response':'" + ui.packJSON(sResult) + "'}";
+			} else {
+				return "{'result':'fail','error':'GetCloudObjectType failed for [" + c.Provider.TestObject + "].'}";
 			}
+			
+			string sURL = GetURL(ca, c, cot, null, ref sErr);			
+			if (!string.IsNullOrEmpty(sErr))
+				return "{'result':'fail','error':'" + ui.packJSON(sErr) +"'}";
+			
+			string sResult = ui.HTTPGet(sURL, ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+				return "{'result':'fail','error':'" + ui.packJSON(sErr) + "'}";
+
+			return "{'result':'success','response':'" + ui.packJSON(sResult) + "'}";
 		}
 
         #region "Request Building Methods"
