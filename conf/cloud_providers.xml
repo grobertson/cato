@@ -131,7 +131,7 @@
 				</product>-->
 			</products>
 		</provider>
-		<provider name="Eucalyptus" test_product="eucalyptus" test_object="eucalyptus_security_group" user_defined_clouds="true">
+		<provider name="Eucalyptus" test_product="eucalyptus" test_object="aws_ec2_security_group" user_defined_clouds="true">
 			<products>
 				<product name="eucalyptus" label="Eucalyptus" api_protocol="HTTP" api_version="2009-03-01" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>
