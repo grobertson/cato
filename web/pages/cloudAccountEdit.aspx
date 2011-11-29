@@ -32,12 +32,14 @@
         <!-- Start visible elements -->
     </div>
     <div id="left_panel">
-        <div class="left_tooltip">
-            <img src="../images/manage-cld_acc-192x192.png" alt="" />
+        <div id="left_tooltip_img">
+			<img src="../images/icons/cloud_accounts_192.png" alt="" />
+        </div>
+		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Cloud Accounts screen allows administrators
+                        The Cloud Accounts screen allows administrators
                         to modify, add and delete Cloud Accounts.</p>
                     <p>
                         Select an Account from the list or select an action to edit or delete the Accounts
@@ -61,7 +63,7 @@
                 <li><a href="#AccountTab"><span>Account</span></a></li>
                 <li><a href="#KeyPairTab"><span>Key Pairs</span></a></li>
             </ul>
-            <div id="AccountTab" style="height: 350px;">
+            <div id="AccountTab" style="height: 340px;">
                 <table width="100%">
                     <tr>
                         <td>
@@ -91,7 +93,7 @@
                     </tr>
                     <tr>
                         <td>
-                            Login ID:
+                            <span id="login_label">Login ID</span>:
                         </td>
                         <td>
                             <input id="txtLoginID" class="usertextbox" name="txtLoginID" />
@@ -99,7 +101,7 @@
                     </tr>
                     <tr>
                         <td>
-                            Password:
+                            <span class="password_label">Password</span>:
                         </td>
                         <td>
                             <input id="txtLoginPassword" type="password" class="usertextbox" name="txtLoginPassword" />
@@ -107,11 +109,15 @@
                     </tr>
                     <tr>
                         <td>
-                            Password Confirm:
+                            <span class="password_label">Password</span> Confirm:
                         </td>
                         <td>
                             <input id="txtLoginPasswordConfirm" type="password" class="usertextbox" name="txtLoginPasswordConfirm" />
                         </td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+						<td>&nbsp;</td>
                     </tr>
                     <tr>
                         <td>
@@ -125,10 +131,10 @@
                         <td>
                         </td>
                         <td>
-                            The "default" account is automatically selected on intial login.
+                            <i>The "default" account is automatically selected on intial login.</i>
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="display: none;"><!--hidden temporarily pending a decision about auto_manage_security-->
                         <td>
                             Auto Security:
                         </td>
@@ -136,7 +142,7 @@
                             <input id="chkAutoManageSecurity" type="checkbox" class="usertextbox" name="chkAutoManageSecurity" />
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="display: none;"><!--hidden temporarily pending a decision about auto_manage_security-->
                         <td>
                         </td>
                         <td>
