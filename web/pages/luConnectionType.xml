@@ -24,6 +24,11 @@
     <connection_type_desc>telnet</connection_type_desc>
     <credentials_required>1</credentials_required>
   </connectionType>
+  <connectionType id="15">
+    <connection_type>mysql</connection_type>
+    <connection_type_desc>mysql</connection_type_desc>
+    <credentials_required>1</credentials_required>
+  </connectionType>
   <connectionType id="7">
     <connection_type>oracle</connection_type>
     <connection_type_desc>oracle</connection_type_desc>

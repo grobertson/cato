@@ -1074,6 +1074,24 @@ proc ingres_logon {user_id password address port dbname} {
 	return $odbcconn
 
 }
+proc mysql_logon {user_id password address port dbname} {
+    set proc_name mysql_logon
+	global TASK_INSTANCE
+	if {"$port" eq ""} {
+		set port 3306
+	}
+
+        output "DEBUG: mysql_logon $address $port $dbname $user_id **********"
+        if {[catch {set conn [::mysql::connect -user $user_id -password $password -host $address -db $dbname -port "$port" -multiresult 1 -multistatement 1]} errMsg]} {
+                error_out "Could not connect to the database. Error message -> $errMsg" 1002
+        }
+        output "Connected"
+
+
+	insert_audit $::STEP_ID "" "MySQL connection to host=$address, port=$port, user=$user_id established." ""
+	return $conn
+
+}
 proc sqlserver_logon {user_id password address port dbname} {
     set proc_name sqlserver_logon
 	global TASK_INSTANCE
@@ -4223,8 +4241,13 @@ proc connect_system {system conn_type namespace} {
 				set timeout_flag [telnet_logon $::system_arr($system,address) $::system_arr($system,userid) $::system_arr($system,password) yes ssh 2 $::system_arr($system,private_key)]
 			}
 		}
+		mysql {
+			set spawn_id [mysql_logon  $::system_arr($system,userid) $::system_arr($system,password) $::system_arr($system,address) $::system_arr($system,port) $::system_arr($system,db_name)]
+			upvar db_type_flag db_type_flag
+			set db_type_flag "MYSQL"
+		}
 		sybase {
-			set spawn_id [sybase_logon  sqlserver_logon  $::system_arr($system,userid) $::system_arr($system,password) $::system_arr($system,address) $::system_arr($system,port) $::system_arr($system,db_name)]
+			set spawn_id [sybase_logon  $::system_arr($system,userid) $::system_arr($system,password) $::system_arr($system,address) $::system_arr($system,port) $::system_arr($system,db_name)]
 			upvar db_type_flag db_type_flag
 			set db_type_flag "SYB"
 		}
@@ -4618,6 +4641,59 @@ proc sql_exec_odbc {conn conn_name sql} {
 	insert_audit $::STEP_ID "$sql" "$sql\012$output_buffer\012$row_num rows returned." $conn_name
 	##OLD ->insert_audit $::STEP_ID  "" "$sql\012$output_buffer\012$row_num rows returned" "$conn_name"
 }
+proc sql_mysql {conn conn_name sql} {
+	set proc_name sql_mysql
+
+	output "sql_mysql $conn_name $sql\n" 1
+	regsub -all "\r\n" $sql "\n" sql
+	set all_rows ""
+	if { [catch {set all_rows [::mysql::sel $conn $sql -list]} error_msg ]} {
+		output "DEBUG: error_msg = $error_msg\n" 0
+		if {"$error_msg" > ""} {
+			global TRAP_SQL_ERROR
+			if {$TRAP_SQL_ERROR == 0} {
+				set error_msg "MySQL sql error:\012$sql\012$error_msg"
+				error_out $error_msg 2111
+			} else {
+				output $error_msg 0
+			}
+			insert_audit $::STEP_ID "$sql" "$error_msg" $conn_name
+		}
+	}
+	set output_buffer ""
+	output "all_rows = $all_rows" 3
+	output "row count = [llength $all_rows]" 3
+	output [lindex $::step_arr($::STEP_ID) 8] 3
+	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
+		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
+		set root [$xmldoc documentElement]
+		set variable_nodes [$root selectNodes  {/variables/variable}]
+		foreach the_node $variable_nodes {
+			set name [string toupper [$the_node selectNodes string(name)]]
+			array unset ::runtime_arr $name,*
+		}
+	}
+	for {set row_num 0} {$row_num < [llength $all_rows]} {incr row_num} {
+		set row [lindex $all_rows $row_num]
+		set output_buffer "$output_buffer$row\012"
+		if {[info exists variable_nodes]} {
+			foreach the_node $variable_nodes {
+				### 2010-01-19 - PMD - variable names case insensitive
+				set name [string toupper [$the_node selectNodes string(name)]]
+				set column_value ""
+				set position [expr [$the_node selectNodes string(position)] - 1]
+				set ::runtime_arr($name,[expr $row_num + 1]) [lindex $row $position]
+				output "setting $name,[expr $row_num + 1]= [lindex $row $position]" 2
+			}
+		}
+	}
+	if {[info exists xmldoc]} {
+		$root delete
+		$xmldoc delete
+	}
+	insert_audit $::STEP_ID "$sql" "$sql\012$output_buffer\012$row_num rows returned." $conn_name
+	##OLD ->insert_audit $::STEP_ID  "" "$sql\012$output_buffer\012$row_num rows returned" "$conn_name"
+}
 proc sql_exec_mssql {conn conn_name sql} {
 	set proc_name sql_exec_mssql
 
@@ -4768,6 +4844,9 @@ proc sql_exec {command} {
 	} elseif {"$::connection_arr($conn_name,conn_type)" == "ingres odbc" || "$::connection_arr($conn_name,conn_type)" == "odbc dsn" || "$::connection_arr($conn_name,conn_type)" == "informix odbc"} {
 		set handle $::connection_arr($conn_name,handle)
 		sql_exec_odbc $handle $conn_name $sql
+	} elseif {"$::connection_arr($conn_name,conn_type)" == "mysql"} {
+		set handle $::connection_arr($conn_name,handle)
+		sql_mysql $handle $conn_name $sql
 	}
 }
 
