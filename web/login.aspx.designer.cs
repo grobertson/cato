@@ -94,5 +94,7 @@ namespace Web {
 		protected System.Web.UI.WebControls.HiddenField hidID;
 		
 		protected System.Web.UI.WebControls.Label lblErrorMessage;
+		
+		protected System.Web.UI.WebControls.Literal ltAnnouncement;
 	}
 }

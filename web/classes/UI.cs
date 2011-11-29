@@ -702,6 +702,40 @@ namespace acUI
 			}
 		}
 		
+		//Get data via HTTP and do not error under any circumstances
+		public string HTTPGetNoFail(string sURL)
+		{
+			string sResult = "";
+			try {
+				// Create a request for the URL. 
+				HttpWebRequest request = WebRequest.Create (sURL) as HttpWebRequest;
+				request.Method = "GET";
+				
+				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+				if (response.StatusCode == HttpStatusCode.OK) {
+					// Get the stream containing content returned by the server.
+					Stream dataStream = response.GetResponseStream();
+					// Open the stream using a StreamReader for easy access.
+					StreamReader sr = new StreamReader (dataStream);
+					// Read the content.
+					sResult = sr.ReadToEnd();
+					// Clean up the streams and the response.
+					sr.Close();
+					response.Close();
+
+					return sResult;
+				}
+				else
+				{
+					return "";
+				}				
+			} catch (WebException ex) {
+				return "";
+			} catch (Exception ex) {
+				return "";
+			}
+		}
+		
 		//Checks whether the value is a 36 character GUID       
 		public bool IsGUID(string String)
         {

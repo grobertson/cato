@@ -113,6 +113,13 @@ namespace Web
 					DatabaseSettings.AppInstance = sLoginMessage;
 	            }
 				
+				//load any announcements from the community web site
+				//no failures, no errors... just don't show it if anything goes wrong.
+				string sResult = ui.HTTPGetNoFail("http://community.cloudsidekick.com/login-page-announcement?utm_source=cato_app&utm_medium=loginpage&utm_campaign=app");
+				if (!string.IsNullOrEmpty(sResult)) {
+					ltAnnouncement.Text = sResult;
+				}
+				
 			}
         }
 
