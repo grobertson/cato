@@ -18,17 +18,21 @@
         <!-- Start visible elements -->
     </div>
     <div id="left_panel">
-        <div class="left_tooltip">
-            <img src="../images/terminal-192x192.png" alt="" />
+        <div id="left_tooltip_img">
+			<img src="../images/icons/ecosystems_128.png" alt="" />
+        </div>
+		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Manage Ecosystems screen allows administrators
+                        The Manage Ecosystems screen allows administrators
                         to modify, add and delete Ecosystems.</p>
                     <p>
                         Select one or more Ecosystems from the list to the right, using the checkboxes.
                         Select an action to modify or delete the Ecosystems you've selected.</p>
-                </div>
+ 					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Ecosystems?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction to Ecosystems.</p>
+               </div>
             </div>
         </div>
     </div>
