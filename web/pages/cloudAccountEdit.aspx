@@ -44,6 +44,8 @@
                     <p>
                         Select an Account from the list or select an action to edit or delete the Accounts
                         you've selected.</p>
+ 					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/CloudAccount?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction to Cloud Accounts.</p>
                 </div>
             </div>
         </div>
