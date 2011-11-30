@@ -729,9 +729,9 @@ namespace acUI
 				{
 					return "";
 				}				
-			} catch (WebException ex) {
+			} catch (WebException) {
 				return "";
-			} catch (Exception ex) {
+			} catch (Exception) {
 				return "";
 			}
 		}
