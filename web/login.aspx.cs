@@ -284,6 +284,13 @@ namespace Web
                     ui.SetSessionObject("admin_email", sAdminEmail, "Security");
                 }
 
+				// SETTINGS (XDocument)
+                if (!ui.PutApplicationSettingsInSession(ref sErr))
+                {
+                    lblErrorMessage.Text = sErr;
+                    return;
+                }
+				
                 // CLOUD ACCOUNTS (data table)
                 if (!ui.PutCloudAccountsInSession(ref sErr))
                 {

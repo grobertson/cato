@@ -506,5 +506,6 @@
     <Content Include="script\cloudEdit.js" />
     <Content Include="script\assetEdit.js" />
     <Content Include="pages\assetEdit.aspx" />
+    <Content Include="script\home.js" />
   </ItemGroup>
 </Project>
