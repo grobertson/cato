@@ -41,6 +41,16 @@ namespace Web.pages
 			if (ui.UserIsInRole("Administrator")) {
 				ArrayList aItems = new ArrayList();
 				
+				//register Cato
+				string sRegStatus = ui.GetApplicationSetting("general/register_cato");
+				sRegStatus = (string.IsNullOrEmpty(sRegStatus) ? "" : sRegStatus); //nonexistent or empty are both just empty
+				if (sRegStatus != "skipped" && sRegStatus != "registered")
+				{
+					aItems.Add("Register Cato to receive updates about the latest versions, plus the latest news and Community support.");
+					ltGettingStartedItems.Text += DrawGettingStartedItem("Register Cato", aItems, 
+						"<a href=\"\">Click here</a> to register Cato.<br /><a href=\"#\" id=\"skip_registration_btn\">Click here</a> to skip registering and hide this message.");
+				}
+				
 				//administrator account
 				sSQL = "select security_question, security_answer, email from users where username = 'administrator'";
 				DataRow dr = null;

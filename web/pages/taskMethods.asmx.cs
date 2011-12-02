@@ -101,7 +101,7 @@ namespace ACWebMethods
                         //here's the deal... given an XPath statement, we simply cannot add a new node if it doesn't exist.
                         //why?  because xpath is a query language.  It doesnt' describe exactly what to add due to wildcards and //foo syntax.
 
-                        //but, what we can do is make an ssumption in our specific case... 
+                        //but, what we can do is make an assumption in our specific case... 
                         //that we are only wanting to add because we changed an underlying command XML template, and there are existing commands.
 
                         //so... we will split the xpath into segments, and traverse upward until we find an actual node.

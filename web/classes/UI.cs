@@ -34,6 +34,112 @@ namespace acUI
         dataAccess dc = new dataAccess();
 
         #region "Session Functions"
+		public bool PutApplicationSettingsInSession(ref string sErr)
+		{
+            string sSQL = "select setting_xml from application_settings where id = 1";
+			string sSettingXML = "";
+			if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
+            {
+                return false;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(sSettingXML))
+				{
+					//there are no settings!
+					//create the row
+					sSettingXML = "<settings></settings>";
+					sSQL = "insert into application_settings values (1, '" + sSettingXML + "')";
+					if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+		                return false;
+				}
+				
+
+                if (string.IsNullOrEmpty(sSettingXML))
+				{
+					//something is just wrong if we land here... error out
+					sErr = "Unable to find/repair application_settings.";
+					return false;
+				}
+				else
+				{
+					//woot! we have settings.
+					XDocument xd = XDocument.Parse(sSettingXML);
+					if (xd != null)
+					{
+						SetSessionObject("application_settings", xd, "Security");
+						return true;
+					}
+					else
+					{
+						sErr = "Unable to parse and load Application Settings.";
+						return false;
+					}
+				}
+            }			
+		}
+		public string GetApplicationSetting(string sXPath)
+		{
+			//get it from the session collection
+			XDocument xd = (XDocument)GetSessionObject("application_settings", "Security");
+			if (xd != null)
+			{
+				XElement xe = xd.XPathSelectElement("//settings/" + sXPath);
+				if (xe != null)
+				{
+					return xe.Value;
+				}
+				return null;
+			}
+			else
+			{
+				throw new Exception("Unable to read Application Settings from the session.");
+			}
+		}
+		public bool SetApplicationSetting(string sCategory, string sSetting, string sValue, ref string sErr)
+		{
+			//get it from the session collection
+			XDocument xd = (XDocument)GetSessionObject("application_settings", "Security");
+			if (xd != null)
+			{
+				XElement xSettings = xd.Element("settings");
+				if (xSettings != null)
+				{
+					XElement xCat = xSettings.Element(sCategory);
+					if (xCat == null)
+					{
+						xSettings.Add(new XElement(sCategory));
+						xCat = xSettings.Element(sCategory);
+					}
+					
+					XElement xSetting = xCat.Element(sSetting);
+					if (xSetting == null)
+					{
+						xCat.Add(new XElement(sSetting, sValue));
+					}
+					else
+					{
+						xSetting.Value = sValue;
+					}
+				
+	
+					//update the XML both in the session and in the db.
+					SetSessionObject("application_settings", xd, "Security");
+						
+					string sSQL = "update application_settings set setting_xml = '" + xd.ToString(SaveOptions.DisableFormatting) + "' where id = 1";
+					if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+						return false;
+					
+					return true;
+
+				}
+				throw new Exception("Application Settings 'settings' section not found in session xml.");
+			}
+			else
+			{
+				throw new Exception("Unable to read Application Settings from the session.");
+			}
+		}
         public void DeleteSessionObject(string Key, string CollectionName = "")
         {
             try
@@ -698,6 +804,40 @@ namespace acUI
 				return "";
 			} catch (Exception ex) {
 				sErr = ex.Message;
+				return "";
+			}
+		}
+		
+		//Get data via HTTP and do not error under any circumstances
+		public string HTTPGetNoFail(string sURL)
+		{
+			string sResult = "";
+			try {
+				// Create a request for the URL. 
+				HttpWebRequest request = WebRequest.Create (sURL) as HttpWebRequest;
+				request.Method = "GET";
+				
+				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+				if (response.StatusCode == HttpStatusCode.OK) {
+					// Get the stream containing content returned by the server.
+					Stream dataStream = response.GetResponseStream();
+					// Open the stream using a StreamReader for easy access.
+					StreamReader sr = new StreamReader (dataStream);
+					// Read the content.
+					sResult = sr.ReadToEnd();
+					// Clean up the streams and the response.
+					sr.Close();
+					response.Close();
+
+					return sResult;
+				}
+				else
+				{
+					return "";
+				}				
+			} catch (WebException) {
+				return "";
+			} catch (Exception) {
 				return "";
 			}
 		}

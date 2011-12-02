@@ -18,16 +18,20 @@
         <!-- Start visible elements -->
     </div>
     <div id="left_panel">
-        <div class="left_tooltip">
-            <img src="../images/terminal-192x192.png" alt="" />
+        <div id="left_tooltip_img">
+			<img src="../images/icons/ecotemplates_128.png" alt="" />
+        </div>
+		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Manage Eco Templates screen allows
+                        The Manage Ecosystem Templates screen allows
                         administrators to modify, add and delete Templates for Ecosystems.</p>
                     <p>
                         Select one or more Templates from the list to the right, using the checkboxes. Select
                         an action to modify or delete the Templates you've selected.</p>
+					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Ecosystems?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction to Ecosystem Templates.</p>
                 </div>
             </div>
         </div>

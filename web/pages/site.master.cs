@@ -69,6 +69,7 @@ namespace Web
 							string sLabel = (xMenu.Attribute("label") == null ? "No Label Defined" : xMenu.Attribute("label").Value);
 							string sHref = (xMenu.Attribute("href") == null ? "" : " href=\"" + xMenu.Attribute("href").Value + "\"");
 							string sOnClick = (xMenu.Attribute("onclick") == null ? "" : " onclick=\"" + xMenu.Attribute("onclick").Value + "\"");
+							string sTarget = (xMenu.Attribute("target") == null ? "" : xMenu.Attribute("target").Value);
 							string sIcon = (xMenu.Attribute("icon") == null ? "" : "<img src=\"" + xMenu.Attribute("icon").Value + "\" alt=\"\" />");
 							string sClass = (xMenu.Attribute("class") == null ? "" : xMenu.Attribute("class").Value);
 							
@@ -78,6 +79,7 @@ namespace Web
 	                        lt.Text += "<a";
 							lt.Text += sOnClick;
 							lt.Text += sHref;
+							lt.Text += sTarget;
 							lt.Text += ">";
 	                        lt.Text += sIcon;
 	                        lt.Text += sLabel;
@@ -99,6 +101,7 @@ namespace Web
 										
 										sLabel = (xSubMenu.Attribute("label") == null ? "No Label Defined" : xSubMenu.Attribute("label").Value);
 										sHref = (xSubMenu.Attribute("href") == null ? "" : " href=\"" + xSubMenu.Attribute("href").Value + "\"");
+										sTarget = (xSubMenu.Attribute("target") == null ? "" : " target=\"" + xSubMenu.Attribute("target").Value + "\"");
 										sOnClick = (xSubMenu.Attribute("onclick") == null ? "" : " onclick=\"" + xSubMenu.Attribute("onclick").Value + "\"");
 										sIcon = (xSubMenu.Attribute("icon") == null ? "" : "<img src=\"" + xSubMenu.Attribute("icon").Value + "\" alt=\"\" />");
 										sClass = (xSubMenu.Attribute("class") == null ? "" : xSubMenu.Attribute("class").Value);
@@ -107,6 +110,7 @@ namespace Web
 				                        lt.Text += "<a";
 										lt.Text += sOnClick ;
 										lt.Text += sHref ;
+										lt.Text += sTarget ;
 										lt.Text += ">";
 				                        lt.Text += sIcon;
 				                        lt.Text += sLabel;

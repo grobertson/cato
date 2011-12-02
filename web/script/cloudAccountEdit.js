@@ -28,7 +28,7 @@ $(document).ready(function () {
         autoOpen: false,
         modal: true,
         height: 500,
-        width: 500,
+        width: 600,
         bgiframe: true,
         buttons: {
             "Save": function () {
@@ -57,6 +57,14 @@ $(document).ready(function () {
             }
         }
     });
+
+
+	//the Provider ddl changes a few labels based on it's value
+	$('#ddlProvider').change(function () {
+		setLabels();
+	});
+
+
 
 
     //keypair add button
@@ -157,6 +165,17 @@ function GetAccounts() {
     });
 }
 
+function setLabels() {
+	if ($("#ddlProvider").val() == "Amazon AWS")
+	{
+		$("#login_label").text("Access Key");
+		$(".password_label").text("Secret Key");
+	} else {
+		$("#login_label").text("Login ID");
+		$(".password_label").text("Password");
+	}
+}
+
 function LoadEditDialog(editID) {
     clearEditDialog();
     $("#hidMode").val("edit");
@@ -164,6 +183,7 @@ function LoadEditDialog(editID) {
     $("#hidCurrentEditID").val(editID);
 
     FillEditForm(editID);
+	setLabels();	
 
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [] );

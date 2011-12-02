@@ -2,7 +2,8 @@
     MasterPageFile="~/pages/site.master" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
-    <style type="text/css">
+<script type="text/javascript" src="../script/home.js"></script>	
+	<style type="text/css">	
         #content
         {
             padding: 10px 10px 10px 10px;
@@ -20,7 +21,7 @@
 				<asp:Literal id="ltGettingStartedItems" runat="server"></asp:Literal>
 			</div>
 		</asp:Panel>
-    </div>
+	</div>
 	<div id="left_panel">
         <div id="group_tabs">
             <asp:PlaceHolder ID="phGroupTabs" runat="server"></asp:PlaceHolder>

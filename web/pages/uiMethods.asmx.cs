@@ -37,6 +37,18 @@ namespace ACWebMethods
     {
 		#region "General"
         [WebMethod(EnableSession = true)]
+        public string wmSetApplicationSetting(string sCategory, string sSetting, string sValue)
+        {
+            acUI.acUI ui = new acUI.acUI();
+			string sErr = "";
+			if (!ui.SetApplicationSetting(sCategory, sSetting, sValue, ref sErr))
+		    {
+		        return sErr;
+		    }
+			return "";
+		}
+		
+        [WebMethod(EnableSession = true)]
         public string wmGetTime()
         {
             return DateTime.Now.ToString();

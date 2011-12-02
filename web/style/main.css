@@ -213,6 +213,10 @@ body
 {
 	width: 195px;
 }
+#left_tooltip_img
+{
+	text-align: center;
+}
 
 #left_tooltip_box_outer
 {
@@ -225,6 +229,7 @@ body
 	background: #eee3d0;
 	padding: 8px 6px 18px 8px;
 	border-radius: 10px;
+	font-size: 0.9em;
 }
 
 #left_tooltip_box_inner p

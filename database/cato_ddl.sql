@@ -1,3 +1,8 @@
+CREATE  TABLE `application_settings` (
+  `id` INT NOT NULL ,
+  `setting_xml` TEXT NOT NULL ,
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8;
 CREATE TABLE `clouds` (
   `cloud_id` varchar(36) NOT NULL,
   `provider` varchar(32) NOT NULL,

@@ -9,9 +9,13 @@ body
 {
 	margin-left: auto;
 	margin-right: auto;
-	width: 60%;
+	width: 50%;
 }
 #container
+{
+	width: 700px;
+}
+#loginpanel
 {
 	padding-top: 20px;
 	height: 220px;
@@ -20,7 +24,6 @@ body
 	background-position: -175px 54%; /* shorten it a bit */
 	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 	border-radius: 6px 6px 6px 6px;
-	width: 700px;
 }
 #loginbox
 {
@@ -41,7 +44,18 @@ body
 	color: #EE4444;
 	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 	border-radius: 6px 6px 6px 6px;
-	width: 86%;
+}
+.loginannouncement
+{
+	margin-top: 20px;
+	padding: 5px;
+	font-weight: normal;
+	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 6px 6px 6px 6px;
+}
+.loginannouncement img
+{
+	vertical-align: middle;
 }
 .pointer
 {

@@ -34,6 +34,10 @@
 	display: block;
 	position: relative;
 }
+.sf-menu a img
+{
+	padding-right: 6px;
+}
 .sf-menu li:hover ul, .sf-menu li.sfHover ul
 {
 	left: 0;
@@ -98,6 +102,7 @@ so theme changes are easier.
 {
 	/*background: #363656;*/
 	/*background-image: url('item_bg_hover.png');*/
+	color: #dddddd;
 	outline: 0;
 }
 

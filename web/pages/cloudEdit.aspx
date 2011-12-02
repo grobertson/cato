@@ -15,12 +15,14 @@
         <!-- Start visible elements -->
     </div>
     <div id="left_panel">
-        <div class="left_tooltip">
-            <img src="../images/manage-cld_acc-192x192.png" alt="" />
+        <div id="left_tooltip_img">
+			<img src="../images/icons/clouds_192.png" alt="" />
+        </div>
+		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Clouds screen allows administrators
+                        The Clouds screen allows administrators
                         to modify, add and delete Clouds.</p>
                     <p>
                         Select a Cloud from the list or select an action to edit or delete the Clouds
