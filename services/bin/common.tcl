@@ -226,14 +226,14 @@ proc read_config {} {
 proc get_clouds_provider {provider} {
 
         set fp [open $::HOME/conf/cloud_providers.xml r]
-        set ::CLOUD_PROVIDERS [read $fp]
+        set xml [read $fp]
         close $fp
 
-        regsub -all "&" $::CLOUD_PROVIDERS "&amp;" $::CLOUD_PROVIDERS
-        set ::XMLDOC [dom parse $::CLOUD_PROVIDERS]
-        set ::ROOT [$::XMLDOC documentElement]
+        regsub -all "&" $xml "&amp;" $xml
+        set xmldoc [dom parse $xml]
+        set root [$xmldoc documentElement]
         set query "//provider\[@name='$provider'\]/clouds/cloud"
-        set nodes [$::ROOT selectNodes $query]
+        set nodes [$root selectNodes $query]
         set list_a ""
         foreach node $nodes {
                 lappend list_b [$node getAttribute id]
@@ -242,6 +242,9 @@ proc get_clouds_provider {provider} {
                 lappend list_a $list_b
                 unset list_b
         }
+	$root delete
+	$xmldoc delete
+	unset xml
         return $list_a
 }
 

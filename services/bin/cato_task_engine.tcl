@@ -120,7 +120,7 @@ proc register_security_group {apply_to_group port region} {
         #       set ::CSK_SECURITY_GROUP [lindex [$::db_fetch $::CONN] 0]
         #}
 
-        set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS]
+        tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS
 	if {"$region" > ""} {
 		set ip [get_meta public-ipv4]
 	} else {
@@ -128,7 +128,7 @@ proc register_security_group {apply_to_group port region} {
 	}
         #set params "GroupId $apply_to_group IpPermissions.1.Groups.1.UserId $::CSK_ACCOUNT IpPermissions.1.Groups.1.GroupId $::CSK_SECURITY_GROUP IpPermissions.1.IpProtocol tcp IpPermissions.1.FromPort $port IpPermissions.1.ToPort $port"
         set params "GroupId $apply_to_group IpPermissions.1.IpRanges.1.CidrIp $ip/32 IpPermissions.1.IpProtocol tcp IpPermissions.1.FromPort $port IpPermissions.1.ToPort $port"
-        set cmd "$x  call_aws ec2 \"$region\" AuthorizeSecurityGroupIngress"
+        set cmd "tclcloud::call ec2 \"$region\" AuthorizeSecurityGroupIngress"
         lappend cmd $params
         catch {set  result [eval $cmd]} result
         output $result
@@ -156,9 +156,15 @@ proc gather_account_info {account_id} {
 
 	set sql "select cloud_name, api_url,cloud_id from clouds where provider = '$::CLOUD_TYPE'"
 	$::db_query $::CONN $sql
+	set ii 0
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 		if {"$::CLOUD_TYPE" eq "Eucalyptus"} {
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]/services/Eucalyptus"
+			if {$ii == 0} {
+				set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) "[lindex $row 1]/services/Eucalyptus"
+				set ::CLOUD_IDS($::CLOUD_TYPE,default) [lindex $row 2]
+				incr ii
+			}
 		} else {
 			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) "[lindex $row 1]"
 		}
@@ -194,21 +200,22 @@ proc aws_Generic {product operation path command} {
 			}
 			set endpoint $::CLOUD_ENDPOINTS(Eucalyptus,$aws_region)
 			if {"$endpoint" == ""} {
-				error_out "AWS error: Region $aws_region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
+				error_out "Eucalyptus error: Region $aws_region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
 			}
 		} else {
-			set endpoint [lindex [array get ::CLOUD_ENDPOINTS Eucalyptus,*] 1]
+			set endpoint $::CLOUD_ENDPOINTS(Eucalyptus,default)
 			if {"$endpoint" == ""} {
-				error_out "AWS error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
 			}
+			set aws_region default
 		}
-		lappend region_endpoint $aws_region "$endpoint"
+		lappend region_endpoint $aws_region "$endpoint" http
 	} else {
 		lappend region_endpoint ""
 	}
 	#output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
-        set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
-        set cmd "$x  call_aws $product \"$aws_region\" $operation"
+        tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
+        set cmd "tclcloud::call $product \"$aws_region\" $operation"
 output $cmd
 	lappend cmd $params
 	lappend cmd $version
@@ -231,6 +238,8 @@ output $cmd
 		output "got a ecosystem, operation is $operation"
 		if {"$aws_region" eq "" && "$::CLOUD_TYPE" eq "Amazon AWS"} {
 			set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,us-east-1)
+		} elseif {"$aws_region" eq ""} {
+			set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,default)
 		} else {
 			set cloud_id $::CLOUD_IDS($::CLOUD_TYPE,$aws_region)
 		}
@@ -239,7 +248,7 @@ output $cmd
 				register_ecosystem_object $result $::ECOSYSTEM_ID aws_emr_jobflow {//JobFlowId} {} {} $cloud_id
 			}
 			RunInstances {
-				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_instance {//instancesSet/item/instanceId} $instance_role $x $cloud_id
+				register_ecosystem_object $result $::ECOSYSTEM_ID aws_ec2_instance {//instancesSet/item/instanceId} $instance_role {} $cloud_id
 			}
 			CreateAutoScalingGroup {
 				register_ecosystem_object $command $::ECOSYSTEM_ID aws_as_group {//AutoScalingGroupName} {} {} $cloud_id
@@ -268,7 +277,6 @@ output $cmd
 	append path Response
 
 	aws_get_results $result $path $var_name
-	$x destroy
 }
 
 proc register_ecosystem_object {result ecosystem_id object_type path role api_conn cloud_id} {
@@ -293,7 +301,7 @@ proc register_ecosystem_object {result ecosystem_id object_type path role api_co
 			set the_arg ""
 			lappend the_arg ResourceId.1 [$instance asText] Tag.1.Key cato.role Tag.1.Value $role
 			for {set counter 0} {$counter < 4} {incr counter} {
-				if {[catch {$api_conn call_aws ec2 \"$region\" CreateTags $the_arg} errMsg]} {
+				if {[catch {tclcloud::call ec2 \"$region\" CreateTags $the_arg} errMsg]} {
 					if {[string match "*does not exist*" $errMsg]} {
 						output "Waiting five seconds to reattempt tagging"
 						sleep 5
@@ -374,9 +382,9 @@ proc gather_aws_system_info {instance_id user_id region} {
                 set region_endpoint ""
         }
 
-        set x [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
+        tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
 
-        set cmd "$x call_aws ec2 \"$region\" DescribeInstances "
+        set cmd "tclcloud::call ec2 \"$region\" DescribeInstances "
         set params "InstanceId $instance_id"
         lappend cmd $params
         lappend cmd {}
@@ -410,7 +418,6 @@ proc gather_aws_system_info {instance_id user_id region} {
         output "$instance_id state = $state, keyname = $keyname, platform = $platform, address = $address" 3
         $root delete
         $xmldoc delete
-        $x destroy
 	set pk_pass [get_aws_private_key $keyname]
 
 	set ::system_arr($instance_id,name) $instance_id
@@ -3000,18 +3007,15 @@ proc winrm_cmd {command} {
 
 	output "The dos command is >$command<"
 	package require tclwinrm
-	if {[array names ::TWINRM_CONN "$address,$shared_cred"] == ""} {
-		set user_pass [lookup_shared_cred $shared_cred]
-		output "user pass is $user_pass"
-		set ::TWMINRM_CONN($address,$shared_cred) [tclwinrm::connection new http $address 5985 [lindex $user_pass 0] [decrypt_string [lindex $user_pass 1] $::SITE_KEY]]
-	}
+	set user_pass [lookup_shared_cred $shared_cred]
+	tclwinrm::configure http $address 5985 [lindex $user_pass 0] [decrypt_string [lindex $user_pass 1] $::SITE_KEY]
 	if {$::DEBUG_LEVEL > 2} {
 		set debug 1
 	} else {
 		set debug 0
 	}
 
-	set output_buffer [$::TWMINRM_CONN($address,$shared_cred) cmd_line $command $timeout $debug]
+	set output_buffer [tclwinrm::rshell $command $timeout $debug]
 
 	output "$output_buffer"
 	insert_audit $::STEP_ID  "" "$command\012$output_buffer" ""

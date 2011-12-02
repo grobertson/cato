@@ -57,12 +57,12 @@ proc add_new_objects {objects cloud_id object_type ecosystem_id} {
 		output "Adding $object_id of type $object_type to $ecosystem_id" 
 	}
 }
-proc remove_old_objects {objects object_type ecosystem_id cloud_id} {
+proc remove_old_objects {objects object_type account_id cloud_id} {
 	
 	foreach object_id $objects {
-		set sql "delete from ecosystem_object where ecosystem_id = '$ecosystem_id' and ecosystem_object_type = '$object_type' and ecosystem_object_id = '$object_id' and cloud_id = '$cloud_id'" 
+		set sql "delete ecosystem_object from ecosystem_object eo join ecosystem e where e.account_id = '$account_id' and eo.ecosystem_object_type = '$object_type' and eo.ecosystem_object_id = '$object_id' and eo.cloud_id = '$cloud_id'" 
 		::mysql::exec $::CONN $sql
-		output "Deleting $object_id of type $object_type from $ecosystem_id and cloud id $cloud_id" 
+		output "Deleting $object_id of type $object_type from account id $account_id and cloud id $cloud_id" 
 	}
 }
 proc get_clouds {} {
@@ -81,29 +81,19 @@ proc get_clouds {} {
 	}
 	#output "[parray ::cloud_arr]"
 }
-proc get_ecosystems {} {
+proc get_cloud_objects {cloud_id account_id} {
 
-	set sql "select d.ecosystem_name, d.ecosystem_id, d.account_id from ecosystem d join ecosystem_object do on d.ecosystem_id = do.ecosystem_id join cloud_account ca on ca.account_id = d.account_id order by account_id"
-	set  ::ECOSYSTEMS [::mysql::sel $::CONN $sql -list]
-	#output $::ECOSYSTEMS
-}
-proc get_ecosystem_objects {ecosystem} {
-
-	set ecosystem_id [lindex $ecosystem 1]
-
-	set sql "select do.ecosystem_object_id, do.ecosystem_object_type, do.cloud_id from ecosystem_object do where do.ecosystem_id = '$ecosystem_id' order by do.ecosystem_object_type"
+	set sql "select distinct do.ecosystem_object_id, do.ecosystem_object_type from ecosystem_object do join ecosystem e where do.cloud_id = '$cloud_id'  and e.account_id = '$account_id' order by do.ecosystem_object_type"
 	set  objects [::mysql::sel $::CONN $sql -list]
 	foreach object $objects {
-		lappend obj_arr([lindex $object 1]+[lindex $object 2]) [lindex $object 0]
+		lappend obj_arr([lindex $object 1]) [lindex $object 0]
 	}	
-	foreach object_type_cloud_id [array names obj_arr] {
-		#output "object type is $object_type and objects are >$obj_arr($object_type)<"
-		set object_type [lindex [split $object_type_cloud_id "+"] 0]
-		set cloud_id [lindex [split $object_type_cloud_id "+"] 1]
-		set old_objects [get_object_status $object_type $cloud_id [lindex $ecosystem 2] $obj_arr($object_type_cloud_id)]
+	foreach object_type [array names obj_arr] {
+		#output "checking $object_type"
+		set old_objects [get_object_status $object_type $cloud_id $account_id $obj_arr($object_type)]
 		#output "old objects are $old_objects"
 		if {"$old_objects" > ""} {
-			remove_old_objects $old_objects $object_type $ecosystem_id $cloud_id
+			remove_old_objects $old_objects $object_type $account_id $cloud_id
 		}
 	}
 }
@@ -126,15 +116,15 @@ proc parse_results {path result} {
         $xmldoc delete
 	return $results
 }
-proc check_ecosystem_objects {} {
-	
-	foreach ecosystem $::ECOSYSTEMS {
-		##output $ecosystem
-		set ::AS_XML ""
-		set ::EC2_INSTANCES ""
-		get_ecosystem_objects $ecosystem
+proc check_cloud_objects {} {
+	set sql "select distinct eo.cloud_id, e.account_id from ecosystem_object eo join ecosystem e on eo.ecosystem_id = e.ecosystem_id"
+	set  cloud_accounts [::mysql::sel $::CONN $sql -list]
+	foreach {cloud_account} $cloud_accounts {
+		#set ::AS_XML ""
+		#set ::EC2_INSTANCES ""
+		get_cloud_objects [lindex $cloud_account 0] [lindex $cloud_account 1]
 		#check_as_instances [lindex $ecosystem 1]
-		unset ::AS_XML ::EC2_INSTANCES
+		#unset ::AS_XML ::EC2_INSTANCES
 	}
 }
 proc get_object_status {object_type cloud_id account_id objects} {
@@ -144,6 +134,7 @@ proc get_object_status {object_type cloud_id account_id objects} {
 	set one_at_atime 0
 	set old_objects ""
 	set params {}
+	#output "$object_type $cloud_id $account_id $objects"
 	#foreach object $objects {
 	#	set param_name [lindex $::OBJECT_TYPES($object_type) 2]
 	#	##output "$object, $object_type [lindex $::OBJECT_TYPES($object_type) 0], param name is $param_name"
@@ -166,23 +157,21 @@ proc get_object_status {object_type cloud_id account_id objects} {
 	#	}
 	#	
 	#}
-	if {"$object_type" == "aws_ec2_instance"} {
-		#lappend params Filter.1.Name instance-state-name Filter.1.Value.1 pending Filter.1.Value.2 running Filter.1.Value.3 shutting-down Filter.1.Value.4 stopping Filter.1.Value.5 stopped
-	}
+	#if {"$object_type" == "aws_ec2_instance"} {
+	#	lappend params Filter.1.Name instance-state-name Filter.1.Value.1 pending Filter.1.Value.2 running Filter.1.Value.3 shutting-down Filter.1.Value.4 stopping Filter.1.Value.5 stopped
+	#}
 	#output "$account_id = $::OBJECT_TYPES($object_type)"
 	if {$one_at_atime == 0} {
 		if {"[lindex $::cloud_arr($cloud_id) 0]" == "Eucalyptus"} {
-			lappend region_endpoint [lindex $::cloud_arr($cloud_id) 1] "[lindex $::cloud_arr($cloud_id) 2]/services/Eucalyptus"
+			lappend region_endpoint [lindex $::cloud_arr($cloud_id) 1] "[lindex $::cloud_arr($cloud_id) 2]/services/Eucalyptus" http
 		} else {
 			set region_endpoint ""
 		}
-		set ::ACCOUNT_HANDLE [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint]
-		output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
-		set cmd "$::ACCOUNT_HANDLE call_aws [lindex $::OBJECT_TYPES($object_type) 0] [lindex $::cloud_arr($cloud_id) 1] [lindex $::OBJECT_TYPES($object_type) 1]"
+		tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
+		set cmd "tclcloud::call [lindex $::OBJECT_TYPES($object_type) 0] [lindex $::cloud_arr($cloud_id) 1] [lindex $::OBJECT_TYPES($object_type) 1]"
 		lappend cmd $params
 		#output $cmd
 		set return_val [eval $cmd]
-		$::ACCOUNT_HANDLE destroy
 	}
 	foreach object $objects {
 		set results [parse_results [lindex $::OBJECT_TYPES($object_type) 3] $return_val]
@@ -190,16 +179,16 @@ proc get_object_status {object_type cloud_id account_id objects} {
 	##output ">>>> Objects are $objects, results are $results"
 	package require struct::set
 	set old_objects [::struct::set difference $objects $results]
-	if {"$object_type" == "aws_ec2_instance"} {
+	#if {"$object_type" == "aws_ec2_instance"} {
 		##output "return_val is $return_val"
 		##output "objects is $objects"
 		##output "results is $results"
 		
-		set ::EC2_INSTANCES [::struct::set difference $results $objects]
-	}
-	if {"$object_type" == "aws_as_group"} {
-		set ::AS_XML $return_val
-	}
+	#	set ::EC2_INSTANCES [::struct::set difference $results $objects]
+	#}
+	#if {"$object_type" == "aws_as_group"} {
+	#	set ::AS_XML $return_val
+	#}
 	set old_objects [::struct::set difference $objects $results]
 	return $old_objects
 }
@@ -210,11 +199,10 @@ proc check_as_instances {ecosystem_id} {
 	##output "ec2 instance = $::EC2_INSTANCES"
 	if {"$::EC2_INSTANCES" == ""} {
 		lappend params Filter.1.Name instance-state-name Filter.1.Value.1 pending Filter.1.Value.2 running Filter.1.Value.3 shutting-down Filter.1.Value.4 stopping Filter.1.Value.5 stopped
-                set ::ACCOUNT_HANDLE [::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS]
-		set cmd "$::ACCOUNT_HANDLE call_aws ec2 {} DescribeInstances"
+                tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS
+		set cmd "tclcloud::call ec2 {} DescribeInstances"
 		lappend cmd $params
 		set return_val [eval $cmd]
-		$::ACCOUNT_HANDLE destroy
 		set ::EC2_INSTANCES [parse_results //instancesSet/item/instanceId $return_val]
 		#output "ec2 instance = $::EC2_INSTANCES"
 	}
@@ -243,17 +231,17 @@ proc get_account_creds {account_id} {
 proc get_settings {} {
 }
 proc initialize_process {} {
-	package require TclOO
 	package require tclcloud
 	package require tdom
 	get_object_types
 }
+
 proc main_process {} {
 
 	set ::ACCOUNT_ID ""
-	get_ecosystems
+	#get_ecosystems
 	get_clouds
-	check_ecosystem_objects
+	check_cloud_objects
 }	
 main 
 #if {[catch {main [lindex $argv 1]} errMsg]} {
