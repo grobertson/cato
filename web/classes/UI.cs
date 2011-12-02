@@ -816,6 +816,7 @@ namespace acUI
 				// Create a request for the URL. 
 				HttpWebRequest request = WebRequest.Create (sURL) as HttpWebRequest;
 				request.Method = "GET";
+				request.Timeout = 4000;
 				
 				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 				if (response.StatusCode == HttpStatusCode.OK) {

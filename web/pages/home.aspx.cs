@@ -47,11 +47,12 @@ namespace Web.pages
 				if (sRegStatus != "skipped" && sRegStatus != "registered")
 				{
 					aItems.Add("Register Cato to receive updates about the latest versions, plus the latest news and Community support.");
-					ltGettingStartedItems.Text += DrawGettingStartedItem("Register Cato", aItems, 
-						"<a href=\"\">Click here</a> to register Cato.<br /><a href=\"#\" id=\"skip_registration_btn\">Click here</a> to skip registering and hide this message.");
+					ltGettingStartedItems.Text += DrawGettingStartedItem("registercato", "Register Cato", aItems, 
+						"<a href=\"#\" onclick=\"registerCato();\">Click here</a> to register Cato.<br /><a href=\"#\" id=\"skip_registration_btn\">Click here</a> to skip registering and hide this message.");
 				}
 				
 				//administrator account
+				aItems.Clear();
 				sSQL = "select security_question, security_answer, email from users where username = 'administrator'";
 				DataRow dr = null;
 				if(!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) {
@@ -68,9 +69,9 @@ namespace Web.pages
 					if (aItems.Count > 0)
 					{
 						if (ui.GetSessionUsername().ToLower() == "administrator")
-							ltGettingStartedItems.Text += DrawGettingStartedItem("Administrator Account", aItems, "<a href=\"../pages/userPreferenceEdit.aspx\">Click here</a> to update Administrator account settings.");
+							ltGettingStartedItems.Text += DrawGettingStartedItem("adminaccount", "Administrator Account", aItems, "<a href=\"../pages/userPreferenceEdit.aspx\">Click here</a> to update Administrator account settings.");
 						else
-							ltGettingStartedItems.Text += DrawGettingStartedItem("Administrator Account", aItems, "You must be logged in as 'Administrator' to change these settings.");					
+							ltGettingStartedItems.Text += DrawGettingStartedItem("adminaccount", "Administrator Account", aItems, "You must be logged in as 'Administrator' to change these settings.");					
 					}
 				}
 					
@@ -89,7 +90,7 @@ namespace Web.pages
 						aItems.Add("Define an SMTP server.");
 	
 					if (aItems.Count > 0)
-						ltGettingStartedItems.Text += DrawGettingStartedItem("Messenger Settings", aItems, "<a href=\"../pages/notificationEdit.aspx\">Click here</a> to update Messenger settings.");
+						ltGettingStartedItems.Text += DrawGettingStartedItem("messengersettings", "Messenger Settings", aItems, "<a href=\"../pages/notificationEdit.aspx\">Click here</a> to update Messenger settings.");
 				}
 					
 	
@@ -112,7 +113,7 @@ namespace Web.pages
 					aItems.Add("There are no Cloud Accounts defined.");
 				}
 				if (aItems.Count > 0)
-					ltGettingStartedItems.Text += DrawGettingStartedItem("Cloud Accounts", aItems, "<a href=\"../pages/cloudAccountEdit.aspx\">Click here</a> to manage Cloud Accounts.");
+					ltGettingStartedItems.Text += DrawGettingStartedItem("cloudaccounts", "Cloud Accounts", aItems, "<a href=\"../pages/cloudAccountEdit.aspx\">Click here</a> to manage Cloud Accounts.");
 			}
 
 			//if the phGettingStarted has anything in it, show the getting started panel
@@ -123,11 +124,11 @@ namespace Web.pages
 			
         }
     
-		protected string DrawGettingStartedItem(string sTitle, ArrayList aItems, string sActionLine)
+		protected string DrawGettingStartedItem(string sID, string sTitle, ArrayList aItems, string sActionLine)
 		{
 			string sHTML = "";
 
-			sHTML += "<div class=\"ui-widget\" style=\"margin-top: 10px;\">";
+			sHTML += "<div id=\"" + sID + "\" class=\"ui-widget\" style=\"margin-top: 10px;\">";
 			sHTML += "<div style=\"padding: 10px;\" class=\"ui-state-highlight ui-corner-all\">";
 			sHTML += "<span style=\"float: left; margin-right: .3em;\" class=\"ui-icon ui-icon-info\"></span>";
 			sHTML += "<strong>" + sTitle + "</strong>";
