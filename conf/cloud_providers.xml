@@ -41,9 +41,8 @@
 							<property name="Fingerprint" label="" xpath="keyFingerprint" short_list="1" sort_order="2" />
 						</type>
 						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
-							<property name="GroupId" label="" xpath="groupId" id_field="1" short_list="1" sort_order="1" />
-							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="3" />
-							<property name="GroupName" label="" xpath="groupName" short_list="1" sort_order="2" />
+							<property name="GroupName" label="" xpath="groupName" id_field="1" short_list="1" sort_order="1" />
+							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="2" />
 						</type>
 						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
@@ -162,9 +161,8 @@
 							<property name="Fingerprint" label="" xpath="keyFingerprint" short_list="1" sort_order="2" />
 						</type>
 						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
-							<property name="GroupId" label="" xpath="groupId" id_field="1" short_list="1" sort_order="1" />
+							<property name="GroupName" label="" xpath="groupName" id_field="1" short_list="1" sort_order="2" />
 							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="3" />
-							<property name="GroupName" label="" xpath="groupName" short_list="1" sort_order="2" />
 						</type>
 						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
