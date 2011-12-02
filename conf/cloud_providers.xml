@@ -132,7 +132,7 @@
 		</provider>
 		<provider name="Eucalyptus" test_product="eucalyptus" test_object="aws_ec2_security_group" user_defined_clouds="true">
 			<products>
-				<product name="eucalyptus" label="Eucalyptus" api_protocol="HTTP" api_version="2009-03-01" api_url_prefix="" api_uri="/services/Eucalyptus/">
+				<product name="eucalyptus" label="Eucalyptus" api_protocol="HTTP" api_version="2011-11-01" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>
 						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
