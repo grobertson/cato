@@ -83,40 +83,38 @@ namespace Web.pages
 
         protected void rpSystemComponents_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            if ((e.Item.ItemType == ListItemType.Item) || (e.Item.ItemType == ListItemType.AlternatingItem))
-            {
-                DataRowView drv = ((System.Data.DataRowView)(e.Item.DataItem));
-
-                if (drv.Row.ItemArray[5].ToString() != "")
-                {
-                    string sEncID = dc.EnCrypt(ui.GetSessionUserID());
-
-                    //THIS IS TERRIBLE TO PUT THIS HERE...
-                    //but it's temporary.  A ticket exists to give each logserver it's own settings, 
-                    //at which time the main query above should join logserver_settings on the "app_name".
-
-                    //can't build the link until we know what port we need.
-                    string sSQL = "select port from logserver_settings where id = 1";
-                    string sPort = "";
-                    dc.sqlGetSingleString(ref sPort, sSQL, ref sErr);
-
-                    if (string.IsNullOrEmpty(sPort))
-                        sPort = "4000";
-
-                    string sURL = "http://" +
-                        drv.Row.ItemArray[7].ToString() +
-                        ":" + sPort+ "/getlog?logtype=service&q=" + sEncID + "&logfile=" +
-                        drv.Row.ItemArray[5].ToString();
-
-                    ((HyperLink)e.Item.FindControl("lnkCELogFile")).NavigateUrl = sURL;
-                }
-                else
-                {
-                    ((HyperLink)e.Item.FindControl("lnkCELogFile")).Visible = false;
-                }
-
-            }
-
-        }
+//            if ((e.Item.ItemType == ListItemType.Item) || (e.Item.ItemType == ListItemType.AlternatingItem))
+//            {
+//                DataRowView drv = ((System.Data.DataRowView)(e.Item.DataItem));
+//
+//                if (drv.Row.ItemArray[5].ToString() != "")
+//                {
+//                    string sEncID = dc.EnCrypt(ui.GetSessionUserID());
+//
+//                    //THIS IS TERRIBLE TO PUT THIS HERE...
+//                    //but it's temporary.  A ticket exists to give each logserver it's own settings, 
+//                    //at which time the main query above should join logserver_settings on the "app_name".
+//
+//                    //can't build the link until we know what port we need.
+//                    string sSQL = "select port from logserver_settings where id = 1";
+//                    string sPort = "";
+//                    dc.sqlGetSingleString(ref sPort, sSQL, ref sErr);
+//
+//                    if (string.IsNullOrEmpty(sPort))
+//                        sPort = "4000";
+//
+//                    string sURL = "http://" +
+//                        drv.Row.ItemArray[7].ToString() +
+//                        ":" + sPort+ "/getlog?logtype=service&q=" + sEncID + "&logfile=" +
+//                        drv.Row.ItemArray[5].ToString();
+//
+//                    ((HyperLink)e.Item.FindControl("lnkCELogFile")).NavigateUrl = sURL;
+//                }
+//                else
+//                {
+//                    ((HyperLink)e.Item.FindControl("lnkCELogFile")).Visible = false;
+//                }
+//            }
+//        }
     }
 }
