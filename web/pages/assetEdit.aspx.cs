@@ -466,8 +466,8 @@ namespace Web.pages
 
                     sCredentialID = "'" + System.Guid.NewGuid().ToString() + "'";
                     sSql = "insert into asset_credential " +
-                        "(credential_id,username,password,domain,shared_or_local,shared_cred_desc,privileged_password) " +
-                        "values (" + sCredentialID + ",'" + sCredUsername + "','" + dc.EnCrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr + "'," + sPriviledgedPasswordUpdate + ")";
+                        "(credential_id,credential_name,username,password,domain,shared_or_local,shared_cred_desc,privileged_password) " +
+                        "values (" + sCredentialID + ",'" + sCredUsername + "','" + sCredUsername + "','" + dc.EnCrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr.Replace("'","''") + "'," + sPriviledgedPasswordUpdate + ")";
                     if (!dc.sqlExecuteUpdate(sSql, ref sErr))
                         throw new Exception(sErr);
 
@@ -761,7 +761,7 @@ namespace Web.pages
             // or local sShared==1 just the username
 
 
-            sSql = "select credential_id,username,domain,shared_cred_desc  from asset_credential where shared_or_local = 0 order by username";
+            sSql = "select credential_id, username, domain, shared_cred_desc from asset_credential where shared_or_local = 0 order by username";
             DataTable dt = new DataTable();
             if (!dc.sqlGetDataTable(ref dt, sSql, ref sErr))
             {
@@ -769,11 +769,11 @@ namespace Web.pages
             }
             else
             {
-                sb.Append("<table id='tblCredentialSelector' width='99%'><thead><tr class='row_header'><td>Username</td><td>Domain</td><td>Description</td></tr></thead><tbody>");
+                sb.Append("<table id='tblCredentialSelector' width='99%'><thead><tr><th class='col_header'>Username</th><th class='col_header'>Domain</th><th class='col_header'>Description</th></th></thead><tbody>");
 
                 foreach (DataRow dr in dt.Rows)
                 {
-                    sb.Append("<tr class='select_credential' credential_id='" + dr["credential_id"].ToString() + "'><td tag='selectablecrd'>" + dr["username"].ToString() + "</td><td tag='selectablecrd'>" + dr["domain"].ToString() + "</td><td>" + dr["shared_cred_desc"].ToString() + "</td></tr>");
+                    sb.Append("<tr class='select_credential' credential_id='" + dr["credential_id"].ToString() + "'><td tag='selectablecrd' class='row'>" + dr["username"].ToString() + "</td><td tag='selectablecrd' class='row'>" + dr["domain"].ToString() + "</td><td class='row'>" + dr["shared_cred_desc"].ToString() + "</td></tr>");
                 }
 
             }
