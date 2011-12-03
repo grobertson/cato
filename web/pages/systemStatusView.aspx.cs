@@ -115,6 +115,6 @@ namespace Web.pages
 //                    ((HyperLink)e.Item.FindControl("lnkCELogFile")).Visible = false;
 //                }
 //            }
-//        }
+        }
     }
 }
