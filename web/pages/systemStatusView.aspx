@@ -37,6 +37,9 @@
 	                            Instance
 	                        </th>
 	                        <th align="left">
+	                            Load
+	                        </th>
+	                        <th align="left">
 	                            Heartbeat
 	                        </th>
 	                        <th align="left">
@@ -44,9 +47,6 @@
 	                        </th>
 	                        <th align="left">
 	                            Minutes Since Last Report
-	                        </th>
-	                        <th align="left">
-	                            Logfile
 	                        </th>
 	                    </tr>
 	                </thead>
@@ -58,19 +58,19 @@
 	                                    <%# (((System.Data.DataRowView)Container.DataItem)["Component"]) %>
 	                                </td>
 	                                <td>
-	                                    <%# (((System.Data.DataRowView)Container.DataItem)["app_instance"]) %>
+	                                    <%# (((System.Data.DataRowView)Container.DataItem)["Instance"]) %>
+	                                </td>
+	                                <td>
+	                                    <%# (((System.Data.DataRowView)Container.DataItem)["LoadValue"]) %>
 	                                </td>
 	                                <td>
 	                                    <%# (((System.Data.DataRowView)Container.DataItem)["Heartbeat"]) %>
 	                                </td>
 	                                <td>
-	                                    <%# (((System.Data.DataRowView)Container.DataItem)["Master"]) %>
+	                                    <%# (((System.Data.DataRowView)Container.DataItem)["Enabled"]) %>
 	                                </td>
 	                                <td>
 	                                    <%# (((System.Data.DataRowView)Container.DataItem)["mslr"]) %>
-	                                </td>
-	                                <td class="logfile_link">
-	                                    <asp:HyperLink runat="server" ID="lnkCELogFile" Target="_blank"><img src="../images/icons/view_text_16.png" /></asp:HyperLink>
 	                                </td>
 	                            </tr>
 	                        </ItemTemplate>
