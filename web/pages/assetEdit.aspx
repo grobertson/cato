@@ -109,7 +109,7 @@
                                 <%# (((System.Data.DataRowView)Container.DataItem)["asset_status"]) %>
                             </td>
                             <td tag="selectable">
-                                <%# (((System.Data.DataRowView)Container.DataItem)["credentials"]) %>
+                                <%# (((System.Data.DataRowView)Container.DataItem)["shared_or_local"]) %><%# (((System.Data.DataRowView)Container.DataItem)["credentials"]) %>
                             </td>
                             <td tag="selectable">
                                 <%# (((System.Data.DataRowView)Container.DataItem)["address"]) %>
@@ -252,7 +252,15 @@
                                                 <input validate_as="username" id="txtCredUsername" style="width: 200px;" name="txtCredUsername" />
                                             </td>
                                         </tr>
-                                        <tr id="AddCredentialDescr" class="hidden">
+                                        <tr class="SharedCredFields hidden">
+                                            <td>
+                                                Name
+                                            </td>
+                                            <td>
+                                                <input id="txtCredName" style="width: 200px;" name="txtCredName" />
+                                            </td>
+                                        </tr>
+                                        <tr class="SharedCredFields hidden">
                                             <td>
                                                 Description
                                             </td>

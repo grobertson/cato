@@ -112,6 +112,7 @@ namespace Web.pages
             }
 
             sSQL = "select a.asset_id, a.asset_name, a.asset_status, a.address, a.connection_type, " +
+                    " case when ac.shared_or_local = 1 then 'Local - ' else 'Shared - ' end as shared_or_local," +
                     " case when ac.domain <> '' then concat(ac.domain, cast(char(92) as char), ac.username) else ac.username end as credentials" +
                     " from asset a " +
                     " left outer join asset_credential ac " +
@@ -373,7 +374,7 @@ namespace Web.pages
         {
 
             // check the # of elements in the array
-            if (oAsset.Length != 18) return "Incorrect number of Asset Properties:" + oAsset.Length.ToString();
+            if (oAsset.Length != 19) return "Incorrect number of Asset Properties:" + oAsset.Length.ToString();
 
             string sAssetID = oAsset[0].ToString();
             string sAssetName = oAsset[1].ToString().Replace("'", "''");
@@ -389,15 +390,16 @@ namespace Web.pages
             string sCredUsername = oAsset[8].ToString().Replace("'", "''");
             string sCredPassword = oAsset[9].ToString().Replace("'", "''");
             string sShared = oAsset[10].ToString();
-            string sCredentialDescr = oAsset[11].ToString();
-            string sDomain = oAsset[12].ToString().Replace("'", "''");
-            string sCredentialType = oAsset[13].ToString();
+            string sCredentialName = oAsset[11].ToString().Replace("'", "''");
+            string sCredentialDescr = oAsset[12].ToString().Replace("'", "''");
+            string sDomain = oAsset[13].ToString().Replace("'", "''");
+            string sCredentialType = oAsset[14].ToString();
 
-            string sAssetStatus = oAsset[14].ToString();
-            string sPrivilegedPassword = oAsset[15].ToString();
-            string sTagArray = oAsset[16].ToString();
+            string sAssetStatus = oAsset[15].ToString();
+            string sPrivilegedPassword = oAsset[16].ToString();
+            string sTagArray = oAsset[17].ToString();
 
-            string sConnString = oAsset[17].ToString().Replace("'", "''");
+            string sConnString = oAsset[18].ToString().Replace("'", "''");
 
             // for logging
             string sOriginalAssetName = "";
@@ -452,6 +454,13 @@ namespace Web.pages
             string sPriviledgedPasswordUpdate = null;
             if (sCredentialType == "new")
             {
+				//if it's a local credential, the credential_name is the asset_id.
+				//if it's shared, there will be a name.
+				if (sShared == "1")
+				{
+					sCredentialName = sAssetID;
+				}
+				
                 if (sCredPassword == "")
                 {
                     // no username was passed in, so do not add a credentialid
@@ -467,12 +476,17 @@ namespace Web.pages
                     sCredentialID = "'" + System.Guid.NewGuid().ToString() + "'";
                     sSql = "insert into asset_credential " +
                         "(credential_id,credential_name,username,password,domain,shared_or_local,shared_cred_desc,privileged_password) " +
-                        "values (" + sCredentialID + ",'" + sCredUsername + "','" + sCredUsername + "','" + dc.EnCrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr.Replace("'","''") + "'," + sPriviledgedPasswordUpdate + ")";
+                        "values (" + sCredentialID + ",'" + sCredentialName + "','" + sCredUsername + "','" + dc.EnCrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr + "'," + sPriviledgedPasswordUpdate + ")";
                     if (!dc.sqlExecuteUpdate(sSql, ref sErr))
-                        throw new Exception(sErr);
+					{
+						if (sErr == "key_violation")
+							throw new Exception("A Credential with that name already exists.  Please select another name.");
+						else 
+							throw new Exception(sErr);
+					}
 
                     // add security log
-                    ui.WriteObjectAddLog(Globals.acObjectTypes.Credential, sCredentialID, sCredUsername, "");
+                    ui.WriteObjectAddLog(Globals.acObjectTypes.Credential, sCredentialID, sCredentialName, "");
                 }
 
             }
@@ -686,12 +700,13 @@ namespace Web.pages
             string sDomain = null;
             string sAssetStatus = null;
             string sPrivilegedPassword = null;
+            string sSharedCredName = null;
             string sSharedCredDesc = null;
             string sConnString = null;
 
             DataRow dr = null;
             sSql = "select a.asset_name, a.asset_status, a.port, a.db_name, a.conn_string," +
-                   " a.address, a.connection_type, ac.username, ac.password, ac.privileged_password, ac.domain, ac.shared_cred_desc, a.credential_id," +
+                   " a.address, a.connection_type, ac.username, ac.password, ac.privileged_password, ac.domain, ac.shared_cred_desc, ac.credential_name, a.credential_id," +
                    " case when ac.shared_or_local = '0' then 'Shared' else 'Local' end as shared_or_local" +
                    " from asset a " +
                    " left outer join asset_credential ac on ac.credential_id = a.credential_id " +
@@ -719,6 +734,7 @@ namespace Web.pages
                     sDomain = (object.ReferenceEquals(dr["domain"], DBNull.Value) ? "" : dr["domain"].ToString());
                     sAssetStatus = dr["asset_status"].ToString();
                     sPrivilegedPassword = (object.ReferenceEquals(dr["privileged_password"], DBNull.Value) ? "" : "($%#d@x!&");
+                    sSharedCredName = (object.ReferenceEquals(dr["credential_name"], DBNull.Value) ? "" : dr["credential_name"].ToString());
                     sSharedCredDesc = (object.ReferenceEquals(dr["shared_cred_desc"], DBNull.Value) ? "" : dr["shared_cred_desc"].ToString());
                 }
             }
@@ -738,6 +754,7 @@ namespace Web.pages
             sbAssetValues.AppendFormat("\"{0}\" : \"{1}\",", "sPassword", sPassword);
             sbAssetValues.AppendFormat("\"{0}\" : \"{1}\",", "sDomain", sDomain);
             sbAssetValues.AppendFormat("\"{0}\" : \"{1}\",", "sPriviledgedPassword", sPrivilegedPassword);
+            sbAssetValues.AppendFormat("\"{0}\" : \"{1}\",", "sSharedCredName", sSharedCredName);
             sbAssetValues.AppendFormat("\"{0}\" : \"{1}\",", "sSharedCredDesc", ui.packJSON(sSharedCredDesc));
 
             //last value, no comma on the end

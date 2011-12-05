@@ -247,10 +247,10 @@ namespace Web.pages
 
 
                     sSql = "update asset_credential set" +
-                        " credential_name = '" + sCredentialName.Replace("'", "''") + "'," +
-                        " username = '" + sUserName.Replace("'", "''") + "'," +
+                        " credential_name = '" + sCredentialName + "'," +
+                        " username = '" + sUserName + "'," +
                         " domain = '" + sDomain.Replace("'", "''") + "'," +
-                        " shared_cred_desc = '" + sCredentialDesc.Replace("'", "''") + "'" +
+                        " shared_cred_desc = '" + sCredentialDesc + "'" +
                         sNewPassword +
                         sPriviledgedPasswordUpdate +
                         " where credential_id = '" + sCredentialID + "'";
@@ -277,7 +277,10 @@ namespace Web.pages
                 oTrans.Command.CommandText = sSql;
                 if (!oTrans.ExecUpdate(ref sErr))
                 {
-                    throw new Exception(sErr);
+					if (sErr == "key_violation")
+						throw new Exception("A Credential with that name already exists.  Please select another name.");
+					else 
+						throw new Exception(sErr);
                 }
 
                 oTrans.Commit();
