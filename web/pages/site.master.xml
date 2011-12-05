@@ -60,7 +60,7 @@
 			</item>
 			<item roles="developer" label="Cloud API Tester" icon="../images/icons/api_tester_24.png" onclick="showPleaseWait();" href="../pages/cloudAPITester.aspx">
 			</item>
-			<item label="Manage Systems" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
+			<item label="Manage System Settings" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
 			</item>
 			<item label="Manage Pollers" icon="../images/ldap_24.png" onclick="showPleaseWait();" href="../pages/pollerSettings.aspx">
 			</item>
@@ -78,13 +78,11 @@
 			</item>
 			<item label="Browse the Forums" icon="../images/icons/forums_24.png" target="_blank" href="http://projects.cloudsidekick.com/projects/cato/boards?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app">
 			</item>
-			<item label="Join the Mailing List" icon="../images/icons/mailinglist_24.png" onclick="showPleaseWait();" href="">
-			</item>
 			<item label="Report an Issue" icon="../images/icons/issue_24.png" onclick="openWindow('http://community.cloudsidekick.com/report-an-issue?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
 			</item>
 			<item label="Ask a Question" icon="../images/icons/ask_24.png" onclick="openWindow('http://community.cloudsidekick.com/ask-a-question?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
 			</item>
-			<item label="Register Cato" icon="../images/icons/register_24.png" onclick="openWindow('http://community.cloudsidekick.com/register-cato?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
+			<item label="Register Cato" icon="../images/icons/register_24.png" onclick="registerCato();">
 			</item>
 		</menu>
 		<menu roles="all" label="Logout" icon="../images/logout.png" onclick="logout();">

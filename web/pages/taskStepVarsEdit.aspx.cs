@@ -14,6 +14,7 @@
 //
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Web.Services;
@@ -111,7 +112,10 @@ namespace Web.pages
             string sErr = "";
             string sSQL = "";
             int i = 0;
-
+			
+			//if every single variable is delimited, we can sort them!
+			bool bAllDelimited = true;
+			
             ////update the processing method
             //sOutputProcessingType = sOutputProcessingType.Replace("'", "''");
 
@@ -165,9 +169,11 @@ namespace Web.pages
                         xVar.Add(new XElement("position", sLProp));
                         break;
                     case "regex":
+					    bAllDelimited = false;
                         xVar.Add(new XElement("regex", sLProp));
                         break;
                     case "range":
+					    bAllDelimited = false;
                         //we favor the 'string' mode over the index.  If a person selected 'index' that's fine
                         //but if something went wrong, we default to prefix/suffix.
                         if (sLType == "index")
@@ -181,6 +187,7 @@ namespace Web.pages
                             xVar.Add(new XElement("suffix", sRProp));
                         break;
                     case "xpath":
+					    bAllDelimited = false;
                         xVar.Add(new XElement("xpath", sLProp));
                         break;
                 }
@@ -190,14 +197,16 @@ namespace Web.pages
             }
 
             //if it's delimited, sort it
-            if (sOutputProcessingType == "1")
+            if (sOutputProcessingType == "1" || bAllDelimited == true)
             {
-                var xSorted = from r in xVars.Elements("variable")
-                              orderby (int?)r.Element("position")
-                              select r;
-
-                xVars.ReplaceAll(xSorted);
-            }
+				List<XElement> ordered = xVars.Elements("variable")
+					.OrderBy(element => (int?)element.Element("position"))
+						.ToList();
+				
+				xVars.RemoveAll();
+				xVars.Add(ordered);
+			
+			}
 
             sSQL = "update task_step set " +
                 " variable_xml = '" + xVarsDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''") + "'" +

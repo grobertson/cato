@@ -155,6 +155,32 @@ function jumpToAnchor(anchor) {
 }
 
 
+//Update a application setting...
+function updateSetting(category, setting, value)
+{
+	var success = false;
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "uiMethods.asmx/wmSetApplicationSetting",
+        data: '{"sCategory":"' + category + '","sSetting":"' + setting + '","sValue":"' + value + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            if (msg.d.length > 0) {
+                showAlert(msg.d);
+            }
+			success = true;
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+
+	return success;
+}
+
+
 //------------------------------------------------------------
 //Generic functions
 function getQuerystringVariable(variable) {

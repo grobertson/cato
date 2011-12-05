@@ -69,6 +69,14 @@ $(document).ready(function() {
     $("#rbLocal").live("change", function() {
         $("#AddCredentialDescr").hide();
     });
+    
+    //what happens when you click a asset row
+    $("[tag='selectablecrd']").live("click", function() {
+        $("#hidCredentialID").val($(this).parent().attr("credential_id"));
+        $('#tblCredentialSelector td').removeClass('row_over'); //unselect them all
+        $(this).parent().find('td').addClass("row_over"); //select this one
+    });
+
     // end live version
     //------------------------------------------------------------------
 
@@ -275,12 +283,12 @@ function SaveAsset() {
         }
     } else {
         // if the type is new, and the user didnt add a username, just ignore it
-        if (sCredentialType == 'existing') {
+        //if (sCredentialType == 'existing') {
             if (rbShared == '0') {
                 // this is a shared credential, description is required
                 if (sCredentialDescr == '') {
                     bSave = false;
-                    strValidationError += 'Credential Description is required on shared credentials.';
+                    strValidationError += 'Description is required on Shared Credentials.\n';
                 }
             }
             if (sCredPasword != sCredPasswordConfirm) {
@@ -296,7 +304,7 @@ function SaveAsset() {
                 bSave = false;
                 strValidationError += 'Credential Passwords do not match.';
             }
-        }
+        //}
 
     }
     if (bSave != true) {
@@ -476,18 +484,8 @@ function LoadCredentialSelector() {
             if (msg.d.length == 0) {
                 showAlert('Could not load selector.' + response.responseText);
             } else {
-
                 $("#CredentialSelectorShared").html(msg.d);
-
-                //what happens when you click a asset row
-                $("[tag='selectablecrd']").click(function() {
-                    $("#hidCredentialID").val($(this).parent().attr("credential_id"));
-                    $('#tblCredentialSelector tr').removeClass('row_over');
-                    $(this).parent().addClass("row_over");
-                });
-
-                $('#tblCredentialSelector tr').addClass('row');
-
+                //$('#tblCredentialSelector td').addClass('row');
             }
         },
         error: function(response) {

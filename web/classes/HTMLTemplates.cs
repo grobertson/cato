@@ -1936,7 +1936,7 @@ namespace FunctionTemplates
 
 	            sHTML += " in Cloud " + Environment.NewLine;
 	            sHTML += "<input type=\"text\" " +
-	                CommonAttribs(sStepID, sFunction, true, "cloud_name", "") +
+	                CommonAttribs(sStepID, sFunction, false, "cloud_name", "") +
 	                " class=\"code w400px\"" +
 	                " value=\"" + sCloudName + "\"" + " />"
 	                + Environment.NewLine;

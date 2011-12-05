@@ -32,7 +32,6 @@ namespace Web
     {
         dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
-        acUI.AppGlobals ag = new acUI.AppGlobals();
 
         string sSQL = "";
         string sErr = "";
@@ -67,10 +66,6 @@ namespace Web
 
             //If we are here because of a session error, there will be a querystring message.  Display it.
             lblErrorMessage.Text = ui.GetQuerystringValue("msg", typeof(string)).ToString();
-
-			
-			//continue
-            ltTitle.Text = ag.APP_NAME;
 
 
             //NSC 8/19/2011 commenting out the postback catch.

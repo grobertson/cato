@@ -30,5 +30,9 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.Label lblVersion;
 		
 		protected System.Web.UI.WebControls.HyperLink lnkEmail;
+		
+		protected System.Web.UI.WebControls.Label lblCompanyName;
+		
+		protected System.Web.UI.WebControls.HyperLink lnkCorpWeb;
 	}
 }

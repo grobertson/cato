@@ -15,27 +15,11 @@
 
 $(document).ready(function () {
     $("#skip_registration_btn").click(function () {
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            type: "POST",
-            async: false,
-            url: "uiMethods.asmx/wmSetApplicationSetting",
-            data: '{"sCategory":"general","sSetting":"register_cato","sValue":"skipped"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-                
-//here's where we'll figure out how to remove it from the page!
-                if (msg.d.length > 0) {
-                    showAlert(msg.d);
-                }
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
+		var success = updateSetting("general","register_cato","skipped");
+		if (success)
+		{
+			$("#registercato").remove();
+		}
     });
 
 });

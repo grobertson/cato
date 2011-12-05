@@ -19,8 +19,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>
-        <asp:Literal ID="ltTitle" runat="server"></asp:Literal></title>
+    <title>Cato - Cloud Sidekick</title>
     <link type="text/css" href="style/login.css" rel="stylesheet" />
     <link rel="icon" href="images/favicon.png" />
     <script type="text/javascript" src="script/jquery/jquery-1.6.1.js"></script>

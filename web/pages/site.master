@@ -21,7 +21,7 @@
 <head id="Head1" runat="server">
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta http-equiv="content-style-type" content="text/css" />
-    <title>Cloud Sidekick</title>
+    <title>Cato - Cloud Sidekick</title>
     <link rel="icon" href="../images/favicon.png" />
     <!-- Imp CSS -->
     <link type="text/css" href="../style/main.css" rel="stylesheet" />

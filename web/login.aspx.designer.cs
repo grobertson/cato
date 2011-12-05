@@ -13,8 +13,6 @@ namespace Web {
 	
 	public partial class login {
 		
-		protected System.Web.UI.WebControls.Literal ltTitle;
-		
 		protected System.Web.UI.HtmlControls.HtmlForm form1;
 		
 		protected System.Web.UI.WebControls.Label lblMessage;

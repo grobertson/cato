@@ -14,15 +14,11 @@
 //
 
 $(document).ready(function () {
-    initJtable();
+    initJtable(true, true);
 
     //the hook for the 'show log' link
     $("#show_log_link").click(function () {
-
         var url = "securityLogView.aspx?login=security";
         openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
-
     });
-
-
 });

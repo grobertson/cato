@@ -402,7 +402,6 @@
     <Content Include="style\registry.css" />
     <Content Include="style\reset.css" />
     <Content Include="style\sizing.css" />
-    <Content Include="style\statusView.css" />
     <Content Include="style\table.css" />
     <Content Include="style\taskEdit.css" />
     <Content Include="style\taskParams.css" />

@@ -14,67 +14,10 @@
 //
 
 $(document).ready(function() {
-
-	//stripe the list tables
-    $("#tblAtsa tr").live("mouseover", function() {
-        //alert('mouseover');
-        $(this).addClass("row_over");
-    });
-    $("#tblAtsa tr").live("mouseout", function() {
-        $(this).removeClass("row_over");
-    });
-    //stripe the list table
-    //$("#tblManualStatus tr").live("mouseover", function() {
-    //    //alert('mouseover');
-    //    $(this).addClass("row_over");
-    //});
-    //$("#tblManualStatus tr").live("mouseout", function() {
-    //    $(this).removeClass("row_over");
-    //});
-    //stripe the list table
-    $("#tblAtsc tr").live("mouseover", function() {
-        //alert('mouseover');
-        $(this).addClass("row_over");
-    });
-    $("#tblAtsc tr").live("mouseout", function() {
-        $(this).removeClass("row_over");
-    });
-    //stripe the list table
-    //$("#tblManualComplete tr").live("mouseover", function() {
-    //    //alert('mouseover');
-    //    $(this).addClass("row_over");
-    //});
-    //$("#tblManualComplete tr").live("mouseout", function() {
-    //    $(this).removeClass("row_over");
-    //});
-    //stripe the list table
-    //$("#tblUnassignedAssets tr").live("mouseover", function() {
-    //    //alert('mouseover');
-    //    $(this).addClass("row_over");
-    //});
-    //$("#tblUnassignedAssets tr").live("mouseout", function() {
-    //    $(this).removeClass("row_over");
-    //});
-
-
+    initJtable(true, true);
 
     // where to go when you click on an automated task row
     $("[tag='selectAutoTask']").live("click", function() {
         location.href = 'taskActivityLog.aspx?status=' + $(this).attr("status");
     });
-
-    //mouseovers for the Unassigned table
-    $("#tblUnassigned tr").live("mouseover", function() {
-        //alert('mouseover');
-        $(this).addClass("row_over");
-    });
-    $("#tblUnassigned tr").live("mouseout", function() {
-        $(this).removeClass("row_over");
-    });
-
-    // where to go when you click on the unassigned asset row
-    //$("[tag='selectUnassignedAssets']").live("click", function() {
-    //    location.href = 'assetUnassignedEdit.aspx?status=' + $(this).attr("status");
-    //});
-
 });

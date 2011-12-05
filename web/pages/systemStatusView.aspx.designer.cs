@@ -17,8 +17,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Repeater rpSystemComponents;
 		
-		protected System.Web.UI.WebControls.HyperLink lnkCELogFile;
-		
 		protected System.Web.UI.WebControls.Repeater rptUsers;
 	}
 }

@@ -30,11 +30,16 @@ namespace Web.pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            lblAbout.Text = "About " + ag.APP_COMPANYNAME;
+            lblAbout.Text = "About " + ag.APP_NAME;
 
             lnkWeb.Text = ag.APP_WEB;
             lnkWeb.NavigateUrl = ag.APP_WEB;
-            lnkEmail.Text = ag.APP_SUPPORT_EMAIL;
+
+			lnkCorpWeb.Text = ag.APP_CORPORATE_WEB;
+            lnkCorpWeb.NavigateUrl = ag.APP_CORPORATE_WEB;
+			lblCompanyName.Text = ag.APP_COMPANYNAME;
+			
+			lnkEmail.Text = ag.APP_SUPPORT_EMAIL;
             lnkEmail.NavigateUrl = "mailto:" + ag.APP_SUPPORT_EMAIL;
 
             lblEnv.Text = Server.MachineName.ToString();
