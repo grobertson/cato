@@ -21,10 +21,11 @@ namespace acUI
 {
     public class AppGlobals
     {
-        public string APP_NAME = "Cloud Sidekick";
+        public string APP_NAME = "Cato";
         public string APP_COMPANYNAME = "Cloud Sidekick";
         public string APP_COPYRIGHT = "Copyright © Cloud Sidekick " + DateTime.Today.Year + ". All Rights Reserved.";
-        public string APP_WEB = "http://www.cloudsidekick.com";
+        public string APP_WEB = "http://community.cloudsidekick.com";
+        public string APP_CORPORATE_WEB = "http://www.cloudsidekick.com";
         public string APP_SUPPORT_EMAIL = "support@cloudsidekick.com";
         public string APP_VERSION = "##version##";        
     }
