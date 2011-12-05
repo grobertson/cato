@@ -203,6 +203,9 @@ proc aws_Generic {product operation path command} {
 				error_out "Eucalyptus error: Region $aws_region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
 			}
 		} else {
+			if {![info exist ::CLOUD_ENDPOINTS(Eucalyptus,default)]} {
+				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+			}
 			set endpoint $::CLOUD_ENDPOINTS(Eucalyptus,default)
 			if {"$endpoint" == ""} {
 				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
@@ -369,13 +372,21 @@ proc gather_aws_system_info {instance_id user_id region} {
                         }
                         set endpoint $::CLOUD_ENDPOINTS(Eucalyptus,$region)
                         if {"$endpoint" == ""} {
-                                error_out "AWS error: Region $region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
+                                error_out "Region $region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
                         }
                 } else {
-                        set endpoint [lindex [array get ::CLOUD_ENDPOINTS Eucalyptus,*] 1]
-                        if {"$endpoint" == ""} {
-                                error_out "AWS error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
-                        }
+			if {![info exist ::CLOUD_ENDPOINTS(Eucalyptus,default)]} {
+				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+			}
+			set endpoint $::CLOUD_ENDPOINTS(Eucalyptus,default)
+			if {"$endpoint" == ""} {
+				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+			}
+			set region default
+                        #set endpoint [lindex [array get ::CLOUD_ENDPOINTS Eucalyptus,*] 1]
+                        #if {"$endpoint" == ""} {
+                        #        error_out "A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+                        #}
                 }
 		lappend region_endpoint $region $endpoint
         } else {
@@ -401,6 +412,13 @@ proc gather_aws_system_info {instance_id user_id region} {
         #if {!$root} {
         #       return ""
         #}
+        set instanceState [$root selectNodes {//instancesSet/item/instanceState/name}]
+	if {"$instanceState" eq ""} {
+		if {"$region" eq ""} {
+			set region "default"
+		}
+		error_out "Instance $instance_id does not exist in the $::CLOUD_TYPE cloud, region or endpoint named $region. Check that the instance id or region values were properly defined." 9999
+	}
         set state [[[$root selectNodes {//instancesSet/item/instanceState/name}] childNode] data]
 	if {"$state" != "running"} {
 		return $state
