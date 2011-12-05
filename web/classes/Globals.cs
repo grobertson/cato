@@ -145,6 +145,7 @@ namespace Globals
 			
 			foreach (DataRow dr in this.DataTable.Rows)
 			{
+				
 			}
 			
 			
@@ -156,9 +157,140 @@ namespace Globals
 		public string ID;
 		public string Name;
 		public string Description;
+		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
+		
+		//the default constructor, given an ID loads it up.
+		public Ecotemplate(string sEcotemplateID)
+		{
+			if (string.IsNullOrEmpty(sEcotemplateID))
+				throw new Exception("Error building Ecotemplate object: ID is required.");	
+			
+            dataAccess dc = new dataAccess();
+			
+			string sErr = "";
+            string sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc" +
+                " from ecotemplate" +
+                " where ecotemplate_id = '" + sEcotemplateID + "'";
+
+            DataRow dr = null;
+            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+            {
+                if (dr != null)
+                {
+					ID = dr["ecotemplate_id"].ToString();;
+					Name = dr["ecotemplate_name"].ToString();
+					Description = dr["ecotemplate_desc"].ToString();
+					
+					//get a table of actions and loop the rows
+					sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
+						" from ecotemplate_action" +
+						" where ecotemplate_id = '" + sEcotemplateID + "'";
+
+					DataTable dtActions = new DataTable();
+					if (dc.sqlGetDataTable(ref dtActions, sSQL, ref sErr))
+					{
+						if (dtActions.Rows.Count > 0)
+						{
+							foreach(DataRow drAction in dtActions.Rows)
+							{
+								EcotemplateAction ea = new EcotemplateAction(drAction, this);
+								if (ea != null)
+									this.Actions.Add(drAction["action_id"].ToString(), ea);
+							}
+						}
+					}
+				}
+			}
+			else 
+			{
+				throw new Exception("Error building Ecotemplate object: " + sErr);	
+			}
+			
+		}
+		
+		//commit this template to the db
+		public bool SaveToDB(ref string sErr)
+		{
+			return true;
+		}
 	}
 	public class EcotemplateAction
 	{
+		public string ID;
+		public string Name;
+		public string Description;
+		public string Category;
+		public string OriginalTaskID;
+		public string TaskVersion;
+		public string Icon;
+		public string ParameterDefaultsXML;
+		public Ecotemplate Ecotemplate; //pointer to our parent Template.
+		
+		//static method, given an ID.
+		static public EcotemplateAction GetFromID(string sActionID)
+		{
+			if (string.IsNullOrEmpty(sActionID))
+				throw new Exception("Error building Ecotemplate Action object: Action ID is required.");	
+			
+            dataAccess dc = new dataAccess();
+			
+			string sErr = "";
+            string sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
+                " from ecotemplate_action" +
+                " where action_id = '" + sActionID + "'";
+
+            DataRow dr = null;
+            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+            {
+                if (dr != null)
+                {
+					Ecotemplate et = new Ecotemplate(dr["ecotemplate_id"].ToString());
+					if (et != null)
+					{
+						EcotemplateAction ea = new EcotemplateAction(dr, et);
+						if (ea != null)
+						{
+							return ea;
+						}
+						else
+						{
+							sErr = "Unable to build Action object for ID [" + sActionID + "].";
+							return null;
+						}
+					}
+					else
+					{
+						sErr = "Unable to find Template using ID [" + dr["ecotemplate_id"].ToString() + "] for Action ID [" + sActionID + "].";
+						return null;
+					}
+				}
+				else
+				{
+					sErr = "No Action found using ID [" + sActionID + "].";
+					return null;
+				}
+			}
+			else 
+			{
+				throw new Exception("Error building Ecotemplate Action object from ID: " + sErr);	
+			}
+		}
+		
+		//another constructor, takes a datarow from ecotemplate_action and creates it from that
+		public EcotemplateAction(DataRow dr, Ecotemplate parent)
+		{
+			Ecotemplate = parent;
+			
+			ID = dr["action_id"].ToString();
+			Name = dr["action_name"].ToString();
+			Description = dr["action_desc"].ToString();
+			Category = dr["category"].ToString();
+			OriginalTaskID = dr["original_task_id"].ToString();
+			TaskVersion = dr["task_version"].ToString();
+			Icon = dr["action_icon"].ToString();
+			ParameterDefaultsXML = dr["parameter_defaults"].ToString();
+		}
+
 	}
 #endregion
 	
