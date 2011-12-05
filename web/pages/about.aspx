@@ -25,10 +25,19 @@
             <asp:Label runat="server" ID="lblVersion"></asp:Label><br />
             <br />
             <p>
-                To report an issue or enhancement request, send an email to
-                <asp:HyperLink ID="lnkEmail" runat="server"></asp:HyperLink><br />
-                Include as much detail as possible including screenshots to describe the issue.</p>
-        </div>
+                To contact the Cato development team, send an email to
+                <asp:HyperLink ID="lnkEmail" runat="server"></asp:HyperLink>
+			</p>
+			<br />	
+			<p>
+            	Use the Help menu to ask a question, report an issue, or request a feature.
+			</p>
+			<br />
+            <br />
+            <br />
+            <b><asp:Label runat="server" ID="lblCompanyName"></asp:Label> on the Web: </b>
+            <asp:HyperLink ID="lnkCorpWeb" runat="server"></asp:HyperLink><br />
+		</div>
     </div>
     <div id="left_panel">
         <div class="left_tooltip">

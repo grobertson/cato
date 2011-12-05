@@ -46,7 +46,7 @@ namespace Web.pages
                     " heartbeat as Heartbeat," +
                     " case master when 1 then 'Yes' else 'No' end as Enabled," +
                     " timestampdiff(MINUTE, heartbeat, now()) as mslr," +
-                    " ifnull(load_value,'') as LoadValue, platform, hostname" +
+                    " load_value as LoadValue, platform, hostname" +
                     " from application_registry " +
                     " order by component, master desc";
             if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))

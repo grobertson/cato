@@ -524,6 +524,19 @@ public class dataAccess
 
             oUpdateCommand.ExecuteNonQuery();
         }
+		catch (MySqlException ex)
+		{
+			//eventually all these sql wrappers should really run through a handler function for all mysql error codes.
+			switch (ex.Number) {
+			case 1062:
+				ErrorMessage = "key_violation";
+				break;
+			default:
+				ErrorMessage = FormatError(ex.Message);
+				break;
+			}
+            return false;
+		}
         catch (Exception ex)
         {
             ErrorMessage = FormatError(ex.Message);
@@ -1304,6 +1317,23 @@ public class dataAccess
             {
                 Command.ExecuteNonQuery();
             }
+			catch (MySqlException ex)
+			{
+                Transaction.Rollback();
+                Connection.Close();
+				Connection.Dispose();
+
+				switch (ex.Number) {
+				case 1062:
+					sErr = "key_violation";
+					break;
+				default:
+					sErr = ex.Message;
+					break;
+				}
+				
+				return false;
+			}
             catch (Exception ex)
             {
                 Transaction.Rollback();
