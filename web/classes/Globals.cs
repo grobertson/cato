@@ -98,8 +98,70 @@ namespace Globals
             get { return sUserID; }
             set { sUserID = value; }
         }
-    }
+	}
+	
+	#region "Ecostemplates"
+	//Ecotemplates contains a DataTable
+	//more efficient to read from the DB as a DataTable than to loop and create a dictionary.
+	//if you want a dictionary, that's an instance method.
+	public class Ecotemplates
+	{
+		public DataTable DataTable = new DataTable();
+		
+		public Ecotemplates(string sFilter, ref string sErr)
+		{
+			//buids a list of ecotemplates from the db, with the optional filter
+			dataAccess dc = new dataAccess();
+            string sWhereString = "";
 
+            if (!string.IsNullOrEmpty(sFilter))
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (a.ecotemplate_name like '%" + aSearchTerms[i] +
+                           "%' or a.ecotemplate_desc like '%" + aSearchTerms[i] + "%' ) ";
+                    }
+                } 
+            }
+
+            string sSQL = "select a.ecotemplate_id, a.ecotemplate_name, a.ecotemplate_desc" +
+                   " from ecotemplate a" +
+                   " where 1=1" +
+                   sWhereString +
+                   " order by ecotemplate_name";
+
+            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+                return;
+		}
+		public Dictionary<string, Ecotemplate> AsDictionary()
+		{
+			//spin "this" and turn it into a dictionary
+			Dictionary<string, Ecotemplate> et = new Dictionary<string, Ecotemplate>();
+			
+			foreach (DataRow dr in this.DataTable.Rows)
+			{
+			}
+			
+			
+			return et;
+		}
+	}
+	public class Ecotemplate 
+	{
+		public string ID;
+		public string Name;
+		public string Description;
+	}
+	public class EcotemplateAction
+	{
+	}
+#endregion
+	
 	#region "Database Settings"
 	public class DatabaseSettings
     {

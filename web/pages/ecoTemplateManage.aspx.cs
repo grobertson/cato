@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using System.Web.Services;
 using System.Data;
 using System.Text;
+using Globals;
 
 namespace Web.pages
 {
@@ -80,46 +81,20 @@ namespace Web.pages
         }
         private void BindList()
         {
-
-            string sWhereString = "";
-
-            if (txtSearch.Text.Length > 0)
-            {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = txtSearch.Text.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-
-                    //if the value is a guid, it's an existing task.
-                    //otherwise it's a new task.
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (a.ecotemplate_name like '%" + aSearchTerms[i] +
-                           "%' or a.ecotemplate_desc like '%" + aSearchTerms[i] + "%' ) ";
-                    }
-                } 
-            }
-
-
-            sSQL = "select a.ecotemplate_id, a.ecotemplate_name, a.ecotemplate_desc" +
-                   " from ecotemplate a" +
-                   " where 1=1" +
-                   sWhereString +
-                   " order by ecotemplate_name";
-
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                ui.RaiseError(Page, sErr, true, "");
-            }
-
-            ui.SetSessionObject("EcotemplateList", dt, "SelectorListTables");
-
-            //now, actually get the data from the session table and display it
-            GetRows();
-        }
+			string sErr = "";
+			Ecotemplates et = new Ecotemplates(txtSearch.Text, ref sErr);
+			
+			if (et != null && string.IsNullOrEmpty(sErr))
+			{
+				ui.SetSessionObject("EcotemplateList", et.DataTable, "SelectorListTables");
+				//now, actually get the data from the session table and display it
+				GetRows();
+			}
+			else
+			{
+				ui.RaiseError(Page, "Unable to get Ecotempaltes.", false, sErr);
+			}
+		}
         private void GetRows()
         {
             //here's how the paging works
