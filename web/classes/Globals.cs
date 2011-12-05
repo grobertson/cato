@@ -159,6 +159,11 @@ namespace Globals
 		public string Description;
 		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
 		
+		//an empty constructor
+		public Ecotemplate()
+		{
+		}
+		
 		//the default constructor, given an ID loads it up.
 		public Ecotemplate(string sEcotemplateID)
 		{
@@ -179,7 +184,7 @@ namespace Globals
                 {
 					ID = dr["ecotemplate_id"].ToString();;
 					Name = dr["ecotemplate_name"].ToString();
-					Description = dr["ecotemplate_desc"].ToString();
+					Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
 					
 					//get a table of actions and loop the rows
 					sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
@@ -208,10 +213,74 @@ namespace Globals
 			
 		}
 		
-		//commit this template to the db
-		public bool SaveToDB(ref string sErr)
+		//makes a copy of this template in the database
+		public bool DBCopy(string sNewName, ref string sErr)
 		{
-			return true;
+            dataAccess dc = new dataAccess();
+			
+			//1) create a new template in the db
+			//2) batch copy all the steps from the old template to the new
+			
+			//1) 
+			Ecotemplate et = Ecotemplate.DBCreateNew(sNewName, this.Description, ref sErr);
+			if (et != null)
+			{
+				//2
+				string sSQL = "insert into ecotemplate_action" + 
+					" select uuid() as action_id, '" + et.ID + "', action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
+					" from ecotemplate_action" +
+					" where ecotemplate_id = '" + this.ID + "'";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					throw new Exception(sErr);
+			
+				return true;
+			}
+			
+			return false;
+		}
+
+		//saves this template as a new template in the db
+		//and returns the object
+		static public Ecotemplate DBCreateNew(string sName, string sDescription, ref string sErr)
+		{
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+			string sSQL = "";
+			
+			try
+			{
+				string sNewID = ui.NewGUID();
+				
+				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc)" +
+					" values ('" + sNewID + "'," +
+						" '" + sName + "'," +
+						(string.IsNullOrEmpty(sDescription) ? " null" : " '" + sDescription + "'") + ")";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				{
+					if (sErr == "key_violation")
+					{
+						sErr = "An Ecotemplate with that name already exists.  Please select another name.";
+						return null;
+					}
+					else 
+						throw new Exception(sErr);
+				}
+				
+				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, sNewID, sName, "Ecotemplate created.");
+				
+				
+				//now it's inserted... lets get it back from the db as a complete object for confirmation.
+				Ecotemplate et = new Ecotemplate(sNewID);
+
+				//yay!
+				return et;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}		
 		}
 	}
 	public class EcotemplateAction

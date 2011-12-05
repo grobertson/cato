@@ -26,12 +26,12 @@ using System.Collections.Specialized;
 using System.Xml.Linq;
 using System.Xml;
 using System.Xml.XPath;
+using Globals;
 
 namespace Web.pages
 {
     public partial class ecoTemplateEdit : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
         ACWebMethods.uiMethods wm = new ACWebMethods.uiMethods();
 
@@ -68,20 +68,15 @@ namespace Web.pages
         {
             try
             {
-                string sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc" +
-                              " from ecotemplate" +
-                              " where ecotemplate_id = '" + sEcoTemplateID + "'";
-
-                DataRow dr = null;
-                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) return false;
-
-                if (dr != null)
+				Ecotemplate et = new Ecotemplate(sEcoTemplateID);
+			
+				if (et != null)
                 {
-                    txtEcoTemplateName.Text = dr["ecotemplate_name"].ToString();
-                    txtDescription.Text = ((!object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value)) ? dr["ecotemplate_desc"].ToString() : "");
+                    txtEcoTemplateName.Text = et.Name;
+                    txtDescription.Text = et.Description;
 
                     //the header
-                    lblEcoTemplateHeader.Text = dr["ecotemplate_name"].ToString();
+                    lblEcoTemplateHeader.Text = et.Name;
 
                     return true;
                 }

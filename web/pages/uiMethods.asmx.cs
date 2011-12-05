@@ -1398,56 +1398,37 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
+        public string wmCopyEcotemplate(string sEcoTemplateID, string sNewName)
+        {
+			//have to instantiate one just to copy it :-(
+			//grr, but that overhead won't happen too often.
+            string sErr = "";
+
+			Ecotemplate et = new Ecotemplate(sEcoTemplateID);
+			if (et != null)
+			{
+				if (!et.DBCopy(sNewName, ref sErr))
+					return sErr;
+				
+				//returning the ID indicates success...
+				return et.ID;
+			}
+			else
+			{
+				throw new Exception("Unable to get Template [" + sEcoTemplateID + "] to copy.");
+			}
+		}
+
+        [WebMethod(EnableSession = true)]
         public string wmCreateEcotemplate(string sName, string sDescription)
         {
-            dataAccess dc = new dataAccess();
-            acUI.acUI ui = new acUI.acUI();
-            string sSQL = null;
-            string sErr = null;
+            string sErr = "";
 
-            try
-            {
-                sSQL = "select ecotemplate_name from ecotemplate where ecotemplate_name = '" + sName + "'";
-                string sExists = "";
-                if (!dc.sqlGetSingleString(ref sExists, sSQL, ref sErr))
-                {
-                    throw new Exception(sErr);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(sExists))
-                    {
-                        return "Eco Template exists - choose another name.";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-
-
-            try
-            {
-                string sNewID = ui.NewGUID();
-
-                sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc)" +
-                    " values ('" + sNewID + "'," +
-                    " '" + sName + "'," +
-                    (string.IsNullOrEmpty(sDescription) ? " null" : " '" + sDescription + "'") + ")";
-
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                    throw new Exception(sErr);
-
-                ui.WriteObjectAddLog(acObjectTypes.Ecosystem, sNewID, sName, "Ecotemplate created.");
-
-                return sNewID;
-            }
-            catch (Exception ex)
-            {
-
-                throw new Exception(ex.Message);
-            }
+			Ecotemplate et = Ecotemplate.DBCreateNew(sName, sDescription, ref sErr);
+			if (et != null)
+				return et.ID;
+			else
+				return sErr;
         }
 
         [WebMethod(EnableSession = true)]
