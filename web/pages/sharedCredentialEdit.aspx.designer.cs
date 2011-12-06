@@ -17,6 +17,10 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.HiddenField hidSortColumn;
 		
+		protected System.Web.UI.WebControls.HiddenField hidSortDirection;
+		
+		protected System.Web.UI.WebControls.HiddenField hidLastSortColumn;
+		
 		protected System.Web.UI.WebControls.HiddenField hidPage;
 		
 		protected System.Web.UI.UpdatePanel uplList;

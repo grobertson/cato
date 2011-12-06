@@ -48,28 +48,18 @@
                                     <input class="chkbox" type="checkbox" id="chkAll" />
                                 </th>
                                 <th sortcolumn="task_code" width="75px">
-                                    <img id="imgUptask_code" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDowntask_codee" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Task Code
                                 </th>
                                 <th sortcolumn="task_name" width="200px">
-                                    <img id="imgUptask_name" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDowntask_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Task Name
                                 </th>
                                 <th sortcolumn="version" width="50px">
-                                    <img id="imgUpversion" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownversion" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Version
                                 </th>
                                 <th sortcolumn="task_desc" width="400px">
-                                    <img id="imgUptask_desc" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDowntask_desc" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Description
                                 </th>
                                 <th sortcolumn="task_status" width="75px">
-                                    <img id="imgUptask_status" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDowntask_status" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Status
                                 </th>
                             </tr>

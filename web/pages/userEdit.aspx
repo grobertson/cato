@@ -65,28 +65,18 @@
                                     <input type="checkbox" class="chkbox" id="chkAll" />
                                 </th>
                                 <th sortcolumn="status" width="80px">
-                                    <img id="imgUpstatus" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownstatus" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Status
                                 </th>
                                 <th sortcolumn="full_name" width="235px">
-                                    <img id="imgUpfull_name" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownfull_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     User
                                 </th>
                                 <th sortcolumn="username">
-                                    <img id="imgUpusername" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownusername" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Login
                                 </th>
                                 <th sortcolumn="role" width="95px">
-                                    <img id="imgUprole" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownrole" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Role
                                 </th>
                                 <th sortcolumn="last_login_dt" width="150px">
-                                    <img id="imgUplast_login_dt" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownlast_login_dt" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Last Login
                                 </th>
                             </tr>
