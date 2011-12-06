@@ -219,14 +219,6 @@ CREATE TABLE `ecotemplate_action` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `global_registry` (
-  `registry_id` varchar(36) NOT NULL,
-  `registry_xml` text,
-  PRIMARY KEY (`registry_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `import_task` (
   `user_id` varchar(36) NOT NULL DEFAULT '',
   `task_id` varchar(36) NOT NULL DEFAULT '',
@@ -386,24 +378,6 @@ CREATE TABLE `object_tags` (
   `object_type` int(11) NOT NULL,
   `tag_name` varchar(64) NOT NULL,
   PRIMARY KEY (`object_id`,`tag_name`,`object_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `object_type` (
-  `object_type` int(11) NOT NULL,
-  `object_type_name` varchar(32) NOT NULL,
-  `searchable` int(11) NOT NULL DEFAULT '0',
-  `table_name` varchar(32) DEFAULT NULL,
-  `id_col` varchar(32) DEFAULT NULL,
-  `name_col` varchar(32) DEFAULT NULL,
-  `item_selector_cols` varchar(255) DEFAULT '',
-  `edit_page` varchar(64) DEFAULT NULL,
-  `detail_report` varchar(36) DEFAULT NULL,
-  `name_col_width` varchar(255) DEFAULT '',
-  `selector_col_width` varchar(255) DEFAULT '',
-  PRIMARY KEY (`object_type`),
-  UNIQUE KEY `IX_object_type_name` (`object_type_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
