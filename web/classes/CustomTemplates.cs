@@ -1,4 +1,4 @@
-﻿//Copyright 2011 Cloud Sidekick
+//Copyright 2011 Cloud Sidekick
 // 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -27,34 +27,36 @@ namespace FunctionTemplates
     public partial class HTMLTemplates
     {
         
-        public string GetCustomStepTemplate(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sOptionHTML, ref string sVariableHTML)
+        public string GetCustomStepTemplate(Step oStep, ref string sOptionHTML, ref string sVariableHTML)
         {
+			string sFunction = oStep.Function.Name;
             string sHTML = "";
 
             switch (sFunction.ToLower())
             {
                 case "get_ecosystem_objects":
-                    sHTML = GetEcosystemObjects(sStepID, sFunction, xd);
+                    sHTML = GetEcosystemObjects(oStep);
                     break;
                 default:
                     //we don't have a special hardcoded case, just render it from the XML directly
-                    sHTML = DrawStepFromXMLDocument(ref xd, sStepID, sFunction);
+                    sHTML = DrawStepFromXMLDocument(oStep);
                     break;
             }
 
             return sHTML;
         }
-        public string GetCustomStepTemplate_View(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sOptionHTML)
+        public string GetCustomStepTemplate_View(Step oStep, ref string sOptionHTML)
         {
+			string sFunction = oStep.Function.Name;
             string sHTML = "";
 
             switch (sFunction.ToLower())
             {
                 case "get_ecosystem_objects":
-                    sHTML = GetEcosystemObjects_View(sStepID, sFunction, xd);
+                    sHTML = GetEcosystemObjects_View(oStep);
                     break;
                 default:
-                    sHTML = DrawReadOnlyStepFromXMLDocument(ref xd, sStepID, sFunction);
+                    sHTML = DrawReadOnlyStepFromXMLDocument(oStep);
                     break;
             }
 
@@ -62,8 +64,12 @@ namespace FunctionTemplates
         }
 
 
-        public string GetEcosystemObjects(string sStepID, string sFunction, XDocument xd)
+        public string GetEcosystemObjects(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xObjectType = xd.XPathSelectElement("//object_type");
             string sObjectType = (xObjectType == null ? "" : xObjectType.Value);
 			
@@ -109,8 +115,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string GetEcosystemObjects_View(string sStepID, string sFunction, XDocument xd)
+        public string GetEcosystemObjects_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xObjectType = xd.XPathSelectElement("//object_type");
             string sObjectType = (xObjectType == null ? "" : xObjectType.Value);
 			

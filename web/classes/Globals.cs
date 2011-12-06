@@ -884,4 +884,580 @@ namespace Globals
    }
 
 #endregion
+	
+	#region "Task Steps, Categories and Functions"
+	
+	//FunctionCategories IS a named dictionary of task command Category objects
+	//it's useful for spinning categories and functions hierarchically, as when building the command toolbox
+	public class FunctionCategories : Dictionary<string, Category>
+	{
+		//the constructor requires an XDocument
+		public FunctionCategories (XDocument xCategories)
+		{
+			if (xCategories == null) {
+				//crash... we can't do anything if the XML is busted
+				throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
+			} else {
+				
+				foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
+				{
+					//not crashing... just skipping
+					if (xCategory.Attribute ("name") == null) 
+						continue;
+					
+					//not crashing... just skipping
+					if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
+						continue;
+					
+					//ok, minimal data is intact... proceed...
+					Category cat = new Category();
+					cat.Name = xCategory.Attribute("name").Value;
+					cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
+					cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
+					cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
+				
+					
+					//load up this category with it's functions
+					foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
+					{
+						//not crashing... just skipping
+						if (xFunction.Attribute ("name") == null) 
+							continue;
+						
+						//not crashing... just skipping
+						if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
+							continue;
+						
+						//ok, minimal data is intact... proceed...
+						Function fn = new Function(cat);
+						fn.Name = xFunction.Attribute("name").Value;
+						fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
+						fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
+						fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
+						fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
+						
+						if (xFunction.Element("function") != null)
+						{
+							if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
+							{
+								fn.TemplateXML = xFunction.Element("function").ToString();
+								fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
+							}
+						}						
+						cat.Functions.Add(fn.Name, fn);
+					}
+				
+					this.Add(cat.Name, cat);
+				}
+			}
+        }
+	}
+	
+	//Functions IS a named dictionary of ALL Function objects
+	//used when you know the function by name and need to lookup all it's details
+	//as in when drawing a step
+	public class Functions : Dictionary<string, Function>
+	{
+		//the constructor requires an FunctionCategories class, and it flattens it.
+		//should only happen once at login and be cached in the session
+		//but searching this dictionary will be faster because it's flat
+		public Functions (FunctionCategories fc)
+		{
+			if (fc == null) {
+				//crash... we can't do anything if the XML is busted
+				throw new Exception ("Error: (Functions Class) Invalid or missing FunctionCategories Class.");
+			} else {
+				foreach (Category cat in fc.Values)
+				{
+					foreach (Function fn in cat.Functions.Values)
+					{
+						this.Add(fn.Name, fn);
+					}
+				}
+			}
+        }
+	}
+	
+	public class Category
+	{
+		public string Name;
+		public string Label;
+		public string Description;
+		public string Icon;
+
+		//Product CONTAINS a named dictionary of Function objects;
+		public Dictionary<string, Function> Functions = new Dictionary<string, Function>();
+}
+	public class Function
+	{
+		public string Name;
+		public string Label;
+		public string Description;
+		public string Help;
+		public string Icon;
+		public Category Category; //Function has a parent Category
+		public string TemplateXML;
+		public XDocument TemplateXDoc;
+
+		//constructor by Category object
+		public Function(Category parent)
+		{
+			this.Category = parent;
+		}
+		
+		//class method - get Function by function name !! requires session
+		public static Function GetFunctionByName(string sFunctionName)
+		{
+			acUI.acUI ui = new acUI.acUI();
+			Function fn = ui.GetTaskFunction(sFunctionName);
+			if (fn != null)
+				return fn;
+			
+			return null;
+		}
+
+		//class method - get Function from step_id
+		public static Function GetFunctionForStep(string sStepID)
+		{
+			dataAccess dc = new dataAccess();
+			string sErr = "";
+			
+			string sFunctionName = "";
+			string sSQL = "select function_name from task_step where step_id = '" + sStepID + "'";
+			if (!dc.sqlGetSingleString(ref sFunctionName, sSQL, ref sErr))
+				throw new Exception(sErr);
+			
+			if (sFunctionName.Length > 0)
+			{
+				Function func = GetFunctionByName(sFunctionName);
+				if (func == null)
+					throw new Exception("Unable to look up [" + sFunctionName + "] in Function class.");
+				
+				return func;
+			}
+			
+			return null;
+		}
+
+	}
+	
+	//ClipboardSteps is a dictionary of clipboardStep objects
+	public class ClipboardSteps : Dictionary<string, ClipboardStep>
+	{
+		public ClipboardSteps(string sUserID)
+		{
+			dataAccess dc = new dataAccess();
+			string sErr = "";
+			
+			//note: some literal values are selected here.  That's because DrawReadOnlyStep
+            //requires a more detailed record, but the snip doesn't have some of those values
+            //so we hardcode them.
+            string sSQL = "select s.clip_dt, s.step_id, s.step_desc, s.function_name, s.function_xml," +
+                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
+                " from task_step_clipboard s" +
+                " where s.user_id = '" + sUserID + "'" +
+                " and s.codeblock_name is null" +
+                " order by s.clip_dt desc";
+
+            DataTable dt = new DataTable();
+            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+            {
+                throw new Exception("Unable to get clipboard data for user [" + sUserID + "].<br />" + sErr);
+            }
+
+			if (dt.Rows.Count > 0)
+            {
+				foreach(DataRow dr in dt.Rows)
+				{
+					ClipboardStep cs = new ClipboardStep(dr);
+					if (cs != null)
+						this.Add(cs.ID, cs);
+				}
+			}
+		}
+	}
+	public class ClipboardStep
+	{
+		public string ID;
+		public string ClipDT;
+		public int Order;
+		public string Description;
+		public int OutputParseType;
+		public int OutputRowDelimiter;
+		public int OutputColumnDelimiter;
+		public string FunctionXML;
+		public string VariableXML;
+
+		public XDocument FunctionXDoc;
+		public XDocument VariableXDoc;
+
+		public Function Function; //Step has a parent Function
+
+		public ClipboardStep(DataRow dr)
+		{
+			this.ID = dr["step_id"].ToString();
+			this.ClipDT = dr["clip_dt"].ToString();
+			this.Order = -1;
+			this.Description = (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString());
+		
+			this.OutputParseType = (int)dr["output_parse_type"];
+			this.OutputRowDelimiter = (int)dr["output_row_delimiter"];
+			this.OutputColumnDelimiter = (int)dr["output_column_delimiter"];
+
+			this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
+			this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
+			
+			if (!string.IsNullOrEmpty(this.FunctionXML)) 
+				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+			if (!string.IsNullOrEmpty(this.VariableXML)) 
+				this.VariableXDoc = XDocument.Parse(this.VariableXML);
+			
+			this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+		}
+	}
+	
+	public class Step
+	{
+		public string ID;
+		public string TaskID;
+		public string Codeblock;
+		public int Order;
+		public string Description;
+		public bool Commented;
+		public bool Locked;
+		public int OutputParseType;
+		public int OutputRowDelimiter;
+		public int OutputColumnDelimiter;
+		public string FunctionXML;
+		public string VariableXML;
+		
+		public XDocument FunctionXDoc;
+		public XDocument VariableXDoc;
+			
+		public Task Task; // step has a parent task
+		public Function Function; //Step has a parent Function
+		public StepUserSettings UserSettings; //Step has user settings from the db
+		
+		//constructor from a DataRow
+		public Step(DataRow dr, Task oTask)
+		{
+			PopulateStep(dr, oTask);
+		}
+		private Step PopulateStep(DataRow dr, Task oTask)
+		{
+			this.ID = dr["step_id"].ToString();
+			this.Codeblock = (string.IsNullOrEmpty(dr["codeblock_name"].ToString()) ? "" : dr["codeblock_name"].ToString());
+			this.Order = (int)dr["step_order"];
+			this.Description = (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString());
+
+			this.Commented = (dr["commented"].ToString() == "0" ? false : true);
+			this.Locked = (dr["locked"].ToString() == "0" ? false : true);
+			
+			this.OutputParseType = (int)dr["output_parse_type"];
+			this.OutputRowDelimiter = (int)dr["output_row_delimiter"];
+			this.OutputColumnDelimiter = (int)dr["output_column_delimiter"];
+
+			this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
+			this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
+			
+			if (!string.IsNullOrEmpty(this.FunctionXML)) 
+				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+			if (!string.IsNullOrEmpty(this.VariableXML)) 
+				this.VariableXDoc = XDocument.Parse(this.VariableXML);
+			
+			this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+			
+			this.UserSettings = new StepUserSettings();
+			this.UserSettings.Visible = (string.IsNullOrEmpty(dr["visible"].ToString()) ? true : (dr["visible"].ToString() == "0" ? false : true));
+			this.UserSettings.Breakpoint = (string.IsNullOrEmpty(dr["breakpoint"].ToString()) ? true : (dr["breakpoint"].ToString() == "0" ? false : true));
+			this.UserSettings.Skip = (string.IsNullOrEmpty(dr["skip"].ToString()) ? true : (dr["skip"].ToString() == "0" ? false : true));
+			
+			this.UserSettings.Button = (string.IsNullOrEmpty(dr["button"].ToString()) ? "" : dr["button"].ToString());
+			
+			
+			//NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
+			//if it's null, it will not populate the parent object.
+			//this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task
+			//object being created hundreds of times.
+			
+			if (oTask != null)
+			{
+				this.Task = oTask;
+			}
+			else 
+			{
+				//NOTE HACK TODO - this is bad and wrong
+				//we shouldn't assume the datarow was a join to the task table... but in a few places it was.
+				//so we're populating some stuff here.
+				
+				//the right approach is to create a full Task object from the ID, but we need to analyze
+				//how it's working, so we don't create a bunch more database hits.
+				
+				//I THINK THIS is only happening on taskStepVarsEdit, but double check.
+				this.Task = new Task();
+				this.Task.ID = dr["task_id"].ToString();
+	
+				if (dr["task_name"] != null)
+					this.Task.Name = dr["task_name"].ToString();
+				if (dr["version"] != null)
+					this.Task.Version = dr["version"].ToString();
+			}
+			
+			return this;
+		}
+		
+		//constructor from a step_id AND user_id ... will include settings
+		public Step(string sStepID, string sUserID, ref string sErr)
+		{
+			dataAccess dc = new dataAccess();
+
+            string sSQL = "select t.task_name, t.version," +
+                " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
+                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+                " us.visible, us.breakpoint, us.skip, us.button" +
+                " from task_step s" +
+                " join task t on s.task_id = t.task_id" +
+                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
+                " where s.step_id = '" + sStepID + "' limit 1";
+
+            DataTable dt = new DataTable();
+            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+            {
+                throw new Exception("Unable to get data row for step_id [" + sStepID + "].<br />" + sErr);
+            }
+
+			if (dt.Rows.Count == 1)
+            {
+				PopulateStep(dt.Rows[0], null);
+			}
+		}
+
+		//constructor from a clipboard step!
+		public Step(ClipboardStep cs)
+		{
+			this.ID = cs.ID;
+			this.Order = cs.Order;
+			this.Description = cs.Description;
+		
+			this.OutputParseType = cs.OutputParseType;
+			this.OutputRowDelimiter = cs.OutputRowDelimiter;
+			this.OutputColumnDelimiter = cs.OutputColumnDelimiter;
+
+			this.FunctionXML = cs.FunctionXML;
+			this.VariableXML = cs.VariableXML;
+			
+			if (!string.IsNullOrEmpty(this.FunctionXML)) 
+				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+			if (!string.IsNullOrEmpty(this.VariableXML)) 
+				this.VariableXDoc = XDocument.Parse(this.VariableXML);
+			
+			this.Function = cs.Function;
+		}
+	}
+	
+	public class Codeblock
+	{
+		public string Name;
+		
+		//a codeblock contains a dictionary collection of steps
+		public Dictionary<string, Step> Steps = new Dictionary<string, Step>();
+		
+		public Codeblock(string sCodeblockName)
+		{
+			this.Name = sCodeblockName;
+		}
+	}
+	
+	public class Task
+	{
+		public string ID;
+		public string OriginalTaskID;
+		public string Name;
+		public string Code;
+		public string Version;
+		public string Status;
+		public string Description;
+		public bool UseConnectorSystem;
+		public bool IsDefaultVersion;
+		public string ConcurrentInstances;
+		public string QueueDepth;
+		public string ParameterXML;
+		public XDocument ParameterXDoc;
+		
+		public int NumberOfApprovedVersions;
+		public int NumberOfOtherVersions;
+		
+		//a task has a dictionary of codeblocks
+		public Dictionary<string, Codeblock> Codeblocks = new Dictionary<string, Codeblock>();
+
+		//empty constructor
+		public Task()
+		{
+		}
+
+		//constructor - from the database by ID
+		public Task(string sTaskID, ref string sErr)
+		{
+			try
+            {
+				dataAccess dc = new dataAccess();
+				acUI.acUI ui = new acUI.acUI();
+				
+				string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
+					" task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" +
+					" from task" +
+					" where task_id = '" + sTaskID + "'";
+				
+                DataRow dr = null;
+                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) 
+					return;
+
+                if (dr != null)
+                {
+                    this.ID = dr["task_id"].ToString();
+                    this.Name = dr["task_name"].ToString();
+					this.Code = dr["task_code"].ToString();
+                    this.Version = dr["version"].ToString();
+                    this.Status = dr["task_status"].ToString();
+                    this.OriginalTaskID = dr["original_task_id"].ToString();
+
+					this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
+
+                    this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
+
+                    this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
+                    this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
+
+					this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
+
+					/*                    
+                     * ok, this is important.
+                     * there are some rules for the process of 'Approving' a task and other things.
+                     * so, we'll need to know some count information
+                     */
+                    sSQL = "select count(*) from task" +
+                        " where original_task_id = '" + this.OriginalTaskID + "'" +
+                        " and task_status = 'Approved'";
+                    int iCount = 0;
+                    if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+                    {
+                        return;
+                    }
+
+					this.NumberOfApprovedVersions = iCount;
+
+                    sSQL = "select count(*) from task" +
+                        " where original_task_id = '" + this.OriginalTaskID + "'";
+					if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+                    {
+                        return;
+                    }
+
+					this.NumberOfOtherVersions = iCount;
+					
+					
+					//now, the fun stuff
+					//1 get all the codeblocks and populate that dictionary
+					//2 then get all the steps... ALL the steps in one sql
+					//..... and while spinning them put them in the appropriate codeblock
+					
+					//GET THE CODEBLOCKS
+					sSQL = "select codeblock_name" +
+						" from task_codeblock" +
+						" where task_id = '" + sTaskID + "'" +
+						" order by codeblock_name";
+					
+					DataTable dt = new DataTable();
+					if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+					{
+						return;
+					}
+					
+					if (dt.Rows.Count > 0)
+					{
+						foreach (DataRow drCB in dt.Rows)
+						{
+							this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
+						}
+					}
+					else
+					{
+						//uh oh... there are no codeblocks!
+						//since all tasks require a MAIN codeblock... if it's missing,
+						//we can just repair it right here.
+						sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + sTaskID + "', 'MAIN')";
+						if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+						{
+							return;
+						}
+						
+						this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
+					}
+					
+					
+					//GET THE STEPS
+					//we need the userID to get the user settings
+					string sUserID = ui.GetSessionUserID();
+					
+					//NOTE: it may seem like sorting will be an issue, but it shouldn't.
+					//sorting ALL the steps by their ID here will ensure they get added to their respective 
+					// codeblocks in the right order.
+					sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+		                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+		                " us.visible, us.breakpoint, us.skip, us.button" +
+		                " from task_step s" +
+		                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
+		                " where s.task_id = '" + sTaskID + "'" +
+		                " order by s.step_order";
+		
+		            DataTable dtSteps = new DataTable();
+		            if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
+		                sErr += "Database Error: " + sErr;
+		
+					if (dtSteps.Rows.Count > 0)
+		            {
+		                foreach (DataRow drSteps in dtSteps.Rows)
+		                {
+							Step oStep = new Step(drSteps, this);
+							if (oStep != null)
+							{
+								//a 'REAL' codeblock will be in this collection
+								// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+								if (this.Codeblocks.ContainsKey(oStep.Codeblock))
+								{
+									this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+								}
+								else
+								{
+									//so, what do we do if we found a step that's not in a 'real' codeblock?
+									//nothing!  the gui will take care of drawing those embedded steps! 
+									
+									//maybe one day we'll do the full recusrive loading of all embedded steps here
+									// but not today... it's a big deal and we need to let these changes settle down first.
+								}
+							}
+						}
+		            }
+				}
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
+		}
+	}
+	public class StepUserSettings
+	{
+		public bool Visible;
+		public bool Breakpoint;
+		public bool Skip;
+		public string Button;
+
+		//constructor
+		public StepUserSettings()
+		{
+
+		}
+	}
+#endregion
 }

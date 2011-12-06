@@ -20,49 +20,41 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Data;
+using Globals;
 
 namespace Web.pages
 {
-    /// <summary>
-    /// Description of taskStepVarsEdit
-    /// </summary>
     public partial class taskCommandHelp : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
+        acUI.acUI ui = new acUI.acUI();
 
         private void Page_Load(object sender, System.EventArgs e)
         {
             if (!Page.IsPostBack)
             {
-                GetHelp();
+				Functions funcs = ui.GetTaskFunctions();
+
+                if (funcs == null)
+                {
+                    ui.RaiseError(Page, "Error: Task Functions class is not in the session.", false, "");
+                } 
+				else 
+				{
+					string sFunHTML = "";
+					foreach (Function fn in funcs.Values)
+					{
+						sFunHTML += "<p>";
+						sFunHTML += "<img src=\"../images/" + fn.Icon + "\" alt=\"\" />";
+						sFunHTML += "<span>" + fn.Category.Label + " : " + fn.Label + "</span>";
+						sFunHTML += "<div>";
+						sFunHTML += fn.Help;
+						sFunHTML += "</div>";
+						sFunHTML += "</p><hr />";
+					}
+					ltHelp.Text = sFunHTML;
+				}
+
             }
         }
-
-        private void GetHelp()
-        {
-
-            string sSQL = "select help, icon, upper(left(category_name,1)) + substring(Lower(category_name), 2," + 
-                " length(category_name)) as category" +
-                " from lu_task_step_function" +
-                " order by category_name, function_label";
-            string sErr = "";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                throw new Exception("Unable to get command help.<br />" + sErr);
-            }
-
-            rpCommandHelp.DataSource = dt;
-            rpCommandHelp.DataBind();
-
-
-            return;
-        }
-
-
-      
-
-        
     }
 }

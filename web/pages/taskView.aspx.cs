@@ -23,6 +23,7 @@ using System.Data;
 using System.Xml.Linq;
 using System.Xml;
 using System.Xml.XPath;
+using Globals;
 
 namespace Web.pages
 {
@@ -34,17 +35,21 @@ namespace Web.pages
         FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
         ACWebMethods.taskMethods tm = new ACWebMethods.taskMethods();
 
+		//Get a global Task object for this task
+		Task oTask;
         string sTaskID;
-        string sOriginalTaskID;
 
         //use a checkbox on the page to set this
         bool bShowNotes = true;
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            string sErr = "";
+
             sTaskID = ui.GetQuerystringValue("task_id", typeof(string)).ToString();
 
-            string sErr = "";
+			//instantiate the new Task object
+			oTask = new Task(sTaskID, ref sErr);
 
             if (!Page.IsPostBack)
             {
@@ -69,67 +74,50 @@ namespace Web.pages
         }
         private bool GetDetails(ref string sErr)
         {
-            try
-            {
-                string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
-                              " task_desc, use_connector_system, concurrent_instances, queue_depth" +
-                              " from task" +
-                              " where task_id = '" + sTaskID + "'";
+		    if (oTask != null)
+			{
+				hidOriginalTaskID.Value = oTask.OriginalTaskID;
 
-                DataRow dr = null;
-                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) return false;
-
-                if (dr != null)
-                {
-                    sOriginalTaskID = dr["original_task_id"].ToString();
-                    hidOriginalTaskID.Value = sOriginalTaskID;
-
-                    hidDefault.Value = dr["default_version"].ToString();
-
-                    if (dr["default_version"].ToString() == "1")
-                        btnSetDefault.Visible = false;
-
-                    lblTaskCode.Text = ui.SafeHTML(dr["task_code"].ToString());
-                    lblVersion.Text = dr["version"].ToString();
-                    lblCurrentVersion.Text = dr["version"].ToString();
-
-                    lblDescription.Text = ui.SafeHTML(((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : ""));
-
-                    //lblDirect.Text = ((int)dr["use_connector_system"] == 1 ? "Yes" : "No");
-                    lblConcurrentInstances.Text = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
-                    lblQueueDepth.Text = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
-
-                    lblStatus.Text = dr["task_status"].ToString();
-                    lblStatus2.Text = dr["task_status"].ToString();
-
-                    //the header
-                    lblTaskNameHeader.Text = ui.SafeHTML(dr["task_name"].ToString());
-                    lblVersionHeader.Text = dr["version"].ToString() + ((int)dr["default_version"] == 1 ? " (default)" : "");
-
-                    if (!GetMaxVersion(dr["task_id"].ToString(), ref sErr)) return false;
-
-                    //schedules (only if this is default)
-                    if (hidDefault.Value == "1")
-                    {
-                        if (!GetSchedule(dr["original_task_id"].ToString(), ref sErr)) return false;
-                        tab_schedules.Visible = true;
-                    }
-                    else
-                        tab_schedules.Visible = false;
-
-                    return true;
-                }
-                else
-                {
-                    return false;
-
-                }
-            }
-            catch (Exception ex)
-            {
-                sErr = ex.Message;
-                return false;
-            }
+				hidDefault.Value = (oTask.IsDefaultVersion ? "1" : "0");
+		
+		        if (oTask.IsDefaultVersion)
+		            btnSetDefault.Visible = false;
+		
+		        lblTaskCode.Text = ui.SafeHTML(oTask.Code);
+		        lblVersion.Text = oTask.Version;
+		        lblCurrentVersion.Text = oTask.Version;
+		
+		        lblDescription.Text = ui.SafeHTML(oTask.Description);
+		
+		        //lblDirect.Text = ((int)dr["use_connector_system"] == 1 ? "Yes" : "No");
+		        lblConcurrentInstances.Text = oTask.ConcurrentInstances;
+		        lblQueueDepth.Text = oTask.QueueDepth;
+		
+		        lblStatus.Text = oTask.Status;
+		        lblStatus2.Text = oTask.Status;
+		
+		        //the header
+		        lblTaskNameHeader.Text = ui.SafeHTML(oTask.Name);
+		        lblVersionHeader.Text = oTask.Version + (oTask.IsDefaultVersion ? " (default)" : "");
+		
+		        if (!GetMaxVersion(sTaskID, ref sErr)) return false;
+		
+		        //schedules (only if this is default)
+		        if (oTask.IsDefaultVersion)
+		        {
+		            if (!GetSchedule(oTask.OriginalTaskID, ref sErr)) return false;
+		            tab_schedules.Visible = true;
+		        }
+		        else
+		            tab_schedules.Visible = false;
+		
+		        return true;
+		    }
+		    else
+		    {
+		        return false;
+		
+		    }
         }
         private bool GetSchedule(string sTaskID, ref string sErr)
         {
@@ -187,39 +175,25 @@ namespace Web.pages
                 lt.Text += BuildSteps("MAIN");
                 lt.Text += "</div>";
 
-
-
-                //now get the codeblocks and loop thru them
-                string sSQL = "select codeblock_name" +
-                      " from task_codeblock" +
-                      " where task_id = '" + sTaskID + "'" +
-                      " and codeblock_name <> 'MAIN'" +
-                      " order by codeblock_name";
-
-                DataTable dt = new DataTable();
-                if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				
+				//for the rest of the codeblocks
+				foreach (Codeblock cb in oTask.Codeblocks.Values)
                 {
-                    ui.RaiseError(Page, "Database Error", true, sErr);
-                    return false;
-                }
+					if (cb.Name == "MAIN")
+						continue;
+					
+                    lt.Text += "<div class=\"ui-state-default te_header\">";
 
-                if (dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        lt.Text += "<div class=\"ui-state-default te_header\">";
+                    lt.Text += "<div class=\"step_section_title\" id=\"cbt_" + cb.Name + "\">";
+                    lt.Text += "<span class=\"step_title\">";
+                    lt.Text += cb.Name;
+                    lt.Text += "</span>";
+                    lt.Text += "</div>";
+                    lt.Text += "</div>";
 
-                        lt.Text += "<div class=\"step_section_title\" id=\"cbt_" + dr["codeblock_name"].ToString() + "\">";
-                        lt.Text += "<span class=\"step_title\">";
-                        lt.Text += dr["codeblock_name"].ToString();
-                        lt.Text += "</span>";
-                        lt.Text += "</div>";
-                        lt.Text += "</div>";
-
-                        lt.Text += "<div class=\"codeblock_box\">";
-                        lt.Text += BuildSteps(dr["codeblock_name"].ToString());
-                        lt.Text += "</div>";
-                    }
+                    lt.Text += "<div class=\"codeblock_box\">";
+                    lt.Text += BuildSteps(cb.Name);
+                    lt.Text += "</div>";
                 }
 
                 phSteps.Controls.Add(lt);
@@ -234,32 +208,12 @@ namespace Web.pages
         }
         private string BuildSteps(string sCodeblockName)
         {
-            string sErr = "";
-            string sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-                " f.function_label, f.category_name, c.category_label, f.description, f.help," +
-                " us.visible, us.breakpoint, us.skip" +
-                " from task_step s" +
-                " join lu_task_step_function f on s.function_name = f.function_name" +
-                " join lu_task_step_function_category c on f.category_name = c.category_name" +
-                " left outer join task_step_user_settings us on us.user_id = '" + ui.GetSessionUserID() + "' and s.step_id = us.step_id" +
-                " where s.task_id = '" + sTaskID + "'" +
-                " and s.codeblock_name = '" + sCodeblockName + "' and s.commented = 0" +
-                " order by s.step_order";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+			string sHTML = "";
+            if (oTask.Codeblocks[sCodeblockName].Steps.Count > 0)
             {
-                ui.RaiseError(Page, "Database Error", true, sErr);
-                return "";
-            }
-
-            string sHTML = "";
-            if (dt.Rows.Count > 0)
-            {
-                foreach (DataRow dr in dt.Rows)
+                foreach (Step oStep in oTask.Codeblocks[sCodeblockName].Steps.Values)
                 {
-                    sHTML += ft.DrawReadOnlyStep(dr, bShowNotes);
+					sHTML += ft.DrawReadOnlyStep(oStep, bShowNotes);
                 }
             }
             else

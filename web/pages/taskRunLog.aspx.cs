@@ -280,13 +280,12 @@ namespace Web.pages
                 }
 
                 string sSQL = "select til.task_instance, til.entered_dt, til.connection_name, FormatTextToHTML(til.log) as log," +
-                    " til.step_id, s.step_order, s.function_name, f.function_label, s.codeblock_name, " +
+                    " til.step_id, s.step_order, s.function_name, s.function_name as function_label, s.codeblock_name, " +
                     " FormatTextToHTML(til.command_text) as command_text," +
                     " '' as variable_name,  '' as variable_value, " +
                     " case when length(til.log) > 256 then 1 else 0 end as large_text" +
                     " from task_instance_log til" +
                     " left outer join task_step s on til.step_id = s.step_id" +
-                    " left outer join lu_task_step_function f on s.function_name = f.function_name" +
                     " where til.task_instance = " + sTaskInstance +
                     " order by til.id" + sLimitClause;
 

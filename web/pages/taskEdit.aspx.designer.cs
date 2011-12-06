@@ -39,17 +39,15 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Button btnCBAdd;
 		
-		protected System.Web.UI.WebControls.Repeater rpCodeblocks;
+		protected System.Web.UI.WebControls.Literal ltCodeblocks;
 		
 		protected System.Web.UI.WebControls.Button btnCBDelete;
 		
 		protected System.Web.UI.WebControls.Button btnCBRefresh;
 		
-		protected System.Web.UI.WebControls.Repeater rpCategories;
+		protected System.Web.UI.WebControls.Literal ltCategories;
 		
-		protected System.Web.UI.WebControls.Repeater rpCategoryWidgets;
-		
-		protected System.Web.UI.WebControls.Repeater rpCategoryFunctions;
+		protected System.Web.UI.WebControls.Literal ltFunctions;
 		
 		protected System.Web.UI.WebControls.Label lblLastRunDT;
 		
@@ -73,7 +71,7 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Label lblStepSectionTitle;
 		
-		protected System.Web.UI.WebControls.PlaceHolder phSteps;
+		protected System.Web.UI.WebControls.Literal ltSteps;
 		
 		protected System.Web.UI.WebControls.Button btnStepLoad;
 		

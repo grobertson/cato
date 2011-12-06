@@ -471,7 +471,6 @@ namespace Web.pages
 				else
 					sPriviledgedPasswordUpdate = "'" + dc.EnCrypt(sPrivilegedPassword) + "'";
 
-				
 				//if it's a local credential, the credential_name is the asset_id.
 				//if it's shared, there will be a name.
 				if (sShared == "1")

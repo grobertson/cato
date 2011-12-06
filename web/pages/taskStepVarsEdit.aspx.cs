@@ -21,6 +21,7 @@ using System.Web.Services;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
+using Globals;
 
 namespace Web.pages
 {
@@ -51,23 +52,23 @@ namespace Web.pages
         private void BuildVars(string sStepID)
         {
             string sErr = "";
-            DataRow dr = ft.GetSingleStep(sStepID, sUserID, ref sErr);
+            Step oStep = ft.GetSingleStep(sStepID, sUserID, ref sErr);
 
             //we need these on the page
-            hidOutputParseType.Value = dr["output_parse_type"].ToString();
-            hidRowDelimiter.Value = dr["output_row_delimiter"].ToString();
-            hidColDelimiter.Value = dr["output_column_delimiter"].ToString();
+            hidOutputParseType.Value = oStep.OutputParseType.ToString();
+            hidRowDelimiter.Value = oStep.OutputRowDelimiter.ToString();
+            hidColDelimiter.Value = oStep.OutputColumnDelimiter.ToString();
 
             //header
-            lblTaskName.Text = "[ " + dr["task_name"].ToString() + " ] Version: [ " + dr["version"].ToString() + " ]";
-            lblCommandName.Text = dr["step_order"].ToString() + " : " +
-                dr["category_label"].ToString() + " - " + dr["function_label"].ToString();
+            lblTaskName.Text = "[ " + oStep.Task.Name + " ] Version: [ " + oStep.Task.Version + " ]";
+            lblCommandName.Text = oStep.Order.ToString() + " : " +
+                oStep.Function.Category.Label + " - " + oStep.Function.Label;
 
 
             Literal lt = new Literal();
             
             if (sErr == "")
-                lt.Text = ft.DrawVariableSectionForEdit(dr);
+                lt.Text = ft.DrawVariableSectionForEdit(oStep);
             else
                 lt.Text = "<span class=\"red_text\">" + sErr + "</span>";
 
@@ -80,29 +81,16 @@ namespace Web.pages
         [WebMethod(EnableSession = true)]
         public static string wmGetVars(string sStepID)
         {
-            dataAccess dc = new dataAccess();
             FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
+			string sErr = "";
+			Step oStep = new Step(sStepID, "", ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+				throw new Exception("No data row found for step_id [" + sStepID + "].<br />" + sErr);
 
-            string sErr = "";
-            string sSQL = "select s.step_id, " +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
-                " from task_step s" +
-                " where s.step_id = '" + sStepID + "'";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                throw new Exception("Unable to get data row for step_id [" + sStepID + "].<br />" + sErr);
-            }
-
-            if (dt.Rows.Count == 1)
-            {
-                return ft.GetVariablesForStepForEdit(dt.Rows[0]);
-            }
-            else
-            {
-                throw new Exception("No data row found for step_id [" + sStepID + "].<br />" + sErr);
-            }
+			if (oStep != null)
+				return ft.GetVariablesForStepForEdit(oStep);
+			else 
+				return "";
         }
 
         [WebMethod(EnableSession = true)]

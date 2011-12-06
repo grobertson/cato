@@ -330,6 +330,7 @@
     <Compile Include="pages\assetEdit.aspx.designer.cs">
       <DependentUpon>assetEdit.aspx</DependentUpon>
     </Compile>
+    <None Include="pages\luCommands.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />

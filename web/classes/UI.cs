@@ -140,6 +140,80 @@ namespace acUI
 				throw new Exception("Unable to read Application Settings from the session.");
 			}
 		}
+		//this one shoves the site.master.xml into the session
+        public void SetSitemaster(ref string sErr)
+        {
+			try 
+			{
+				XDocument xSiteMaster = XDocument.Load(HttpContext.Current.Server.MapPath("~/pages/site.master.xml"));
+				
+				if (xSiteMaster == null)
+				{
+					sErr = "XML file is missing or unreadable.";
+					return;
+				}
+				else 
+				{
+					SetSessionObject("site_master_xml", xSiteMaster, "Security");
+				}
+			} catch (Exception ex) {
+				sErr = "XML is invalid." + ex.Message;
+				return;
+			}
+		}
+		//this one returns the entire FunctionCategories class
+        public FunctionCategories GetTaskFunctionCategories()
+        {
+            return (FunctionCategories) GetSessionObject("function_categories", "Security");
+		}
+		//this one returns the flattened Functions class
+        public Functions GetTaskFunctions()
+        {
+            return (Functions) GetSessionObject("functions", "Security");
+		}
+		//this one returns just one specific function
+        public Function GetTaskFunction(string sFunctionName)
+        {
+            Functions funcs =  GetTaskFunctions();
+			if (funcs != null)
+			{
+				Function fn = funcs[sFunctionName];
+				if (fn != null)
+					return fn;
+				else 
+					return null;
+			}
+			else
+			{
+				return null;
+			}
+		}
+        public void SetTaskCommands(ref string sErr)
+        {
+			//load the task_commands.xml file into the session.  If it doesn't exist, we can't proceed.
+			try 
+			{
+				XDocument xCommands = XDocument.Load(HttpContext.Current.Server.MapPath("~/pages/luCommands.xml"));
+				
+				if (xCommands == null)
+				{
+					sErr = "Task Commands XML file is missing or unreadable.";
+				}
+				else 
+				{
+					//we load two classes here...
+					//first, the category/function hierarchy
+					FunctionCategories cats = new FunctionCategories(xCommands);
+					SetSessionObject("function_categories", cats, "Security");
+
+					//then the flat list of all functions for fastest lookups
+					Functions funcs = new Functions(cats);
+					SetSessionObject("functions", funcs, "Security");
+				}
+			} catch (Exception ex) {
+				sErr = "Unable to load Task Commands XML." + ex.Message;
+			}
+		}
         public void DeleteSessionObject(string Key, string CollectionName = "")
         {
             try

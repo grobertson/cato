@@ -10,19 +10,7 @@
         <div class="step_header_title">
             Command Help</div>
     </div>
-    <asp:Repeater ID="rpCommandHelp" runat="server">
-        <HeaderTemplate>
-        </HeaderTemplate>
-        <ItemTemplate>
-            <p>
-                <img src="../images/<%# (((System.Data.DataRowView)Container.DataItem)["icon"]) %>" />
-                <b>
-                    <%# (((System.Data.DataRowView)Container.DataItem)["category"]) %></b> :
-                <%# (((System.Data.DataRowView)Container.DataItem)["help"]) %>
-            </p>
-            <br />
-        </ItemTemplate>
-        <FooterTemplate>
-        </FooterTemplate>
-    </asp:Repeater>
+	<div>
+		<asp:Literal id="ltHelp" runat="server"></asp:Literal>
+	</div>
 </asp:Content>

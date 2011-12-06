@@ -312,33 +312,6 @@ CREATE TABLE `logserver_settings` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lu_task_step_function_category` (
-  `category_name` varchar(32) NOT NULL,
-  `category_label` varchar(64) NOT NULL,
-  `sort_order` decimal(18,2) NOT NULL,
-  `description` varchar(255) DEFAULT '',
-  `icon` varchar(255) DEFAULT '',
-  PRIMARY KEY (`category_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lu_task_step_function` (
-  `function_name` varchar(64) NOT NULL,
-  `function_label` varchar(64) NOT NULL,
-  `category_name` varchar(32) NOT NULL,
-  `sort_order` decimal(18,2) NOT NULL DEFAULT '0.00',
-  `description` varchar(255) DEFAULT '',
-  `help` text,
-  `icon` varchar(255) DEFAULT '',
-  `xml_template` text NOT NULL,
-  PRIMARY KEY (`function_name`),
-  KEY `FK_lu_task_step_function_lu_task_step_function_category` (`category_name`),
-  CONSTRAINT `FK_lu_task_step_function_lu_task_step_function_category` FOREIGN KEY (`category_name`) REFERENCES `lu_task_step_function_category` (`category_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `message` (
   `msg_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `date_time_entered` datetime DEFAULT NULL,

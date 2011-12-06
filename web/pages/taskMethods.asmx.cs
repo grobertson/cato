@@ -23,6 +23,7 @@ using System.Web.Services;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using System.IO;
+using Globals;
 
 namespace ACWebMethods
 {
@@ -374,7 +375,15 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    //add a new command
+					//THE NEW CLASS CENTRIC WAY
+					//1) Get a Function object for the sItem (function_name)
+					//2) use those values to construct an insert statement
+					
+					Function func = Function.GetFunctionByName(sItem);
+					if (func == null)
+						throw new Exception("Unable to add step.  Can't find a Function definition for [" + sItem + "]");
+					
+					//add a new command
                     sNewStepID = ui.NewGUID();
 
                     //NOTE: !! yes we are doing some command specific logic here.
@@ -385,9 +394,6 @@ namespace ACWebMethods
                     switch (sItem)
                     {
                         case "sql_exec":
-                            sOPM = "1";
-                            break;
-                        case "win_cmd":
                             sOPM = "1";
                             break;
                         case "dos_cmd":
@@ -408,17 +414,17 @@ namespace ACWebMethods
                     }
 
                     sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
-                        " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
-                        " function_name, function_xml)" +
-                           " select '" + sNewStepID + "'," +
-                           "'" + sTaskID + "'," +
-                           (string.IsNullOrEmpty(sCodeblockName) ? "NULL" : "'" + sCodeblockName + "'") + "," +
-                           "-1," +
-                           "0,0," + sOPM + ",0,0," +
-                           "'" + sItem + "'," +
-                           " xml_template" +
-                           " from lu_task_step_function" +
-                           " where function_name = '" + sItem + "' limit 1";
+						" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
+						" function_name, function_xml)" +
+						" values (" +
+						"'" + sNewStepID + "'," +
+						"'" + sTaskID + "'," +
+						(string.IsNullOrEmpty(sCodeblockName) ? "NULL" : "'" + sCodeblockName + "'") + "," +
+						"-1," +
+						"0,0," + sOPM + ",0,0," +
+						"'" + func.Name + "'," +
+						"'" + func.TemplateXML + "'" +
+						")";
 
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                         throw new Exception("Unable to add step." + sErr);
@@ -430,9 +436,9 @@ namespace ACWebMethods
                 if (!string.IsNullOrEmpty(sNewStepID))
                 {
                     //now... get the newly inserted step and draw it's HTML
-                    DataRow dr = ft.GetSingleStep(sNewStepID, sUserID, ref sErr);
-                    if (dr != null && sErr == "")
-                        sStepHTML += ft.DrawFullStep(dr);
+                    Step oNewStep = ft.GetSingleStep(sNewStepID, sUserID, ref sErr);
+                    if (oNewStep != null && sErr == "")
+                        sStepHTML += ft.DrawFullStep(oNewStep);
                     else
                         sStepHTML += "<span class=\"red_text\">" + sErr + "</span>";
 
@@ -467,16 +473,16 @@ namespace ACWebMethods
 
                 string sUserID = ui.GetSessionUserID();
 
-                DataRow dr = ft.GetSingleStep(sStepID, sUserID, ref sErr);
-                if (dr != null && sErr == "")
+                Step oStep = ft.GetSingleStep(sStepID, sUserID, ref sErr);
+                if (oStep != null && sErr == "")
                 {
                     //embedded steps...
                     //if the step_order is -1 and the codeblock_name is a guid, this step is embedded 
                     //within another step
-                    if (dr["step_order"].ToString() == "-1" && ui.IsGUID(dr["codeblock_name"].ToString()))
-                        sStepHTML += ft.DrawEmbeddedStep(dr);
+                    if (oStep.Order == -1 && ui.IsGUID(oStep.Codeblock))
+                        sStepHTML += ft.DrawEmbeddedStep(oStep);
                     else
-                        sStepHTML += ft.DrawFullStep(dr);
+                        sStepHTML += ft.DrawFullStep(oStep);
                 }
                 else
                     sStepHTML += "<span class=\"red_text\">" + sErr + "</span>";
@@ -823,96 +829,76 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmGetClips()
         {
-            dataAccess dc = new dataAccess();
             FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
             acUI.acUI ui = new acUI.acUI();
 
             try
             {
                 string sUserID = ui.GetSessionUserID();
-                string sErr = "";
-
-                //note: some literal values are selected here.  That's because DrawReadOnlyStep
-                //requires a more detailed record, but the snip doesn't have some of those values
-                //so we hardcode them.
-                string sSQL = "select s.clip_dt, s.step_id, s.step_desc, s.function_name, s.function_xml," +
-                    " f.function_label, f.category_name, c.category_label, f.icon," +
-                    " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-                    " -1 as step_order, 0 as commented " +
-                    " from task_step_clipboard s" +
-                    " join lu_task_step_function f on s.function_name = f.function_name" +
-                    " join lu_task_step_function_category c on f.category_name = c.category_name" +
-                    " where s.user_id = '" + sUserID + "'" +
-                    " and s.codeblock_name is null" +
-                    " order by s.clip_dt desc";
-
-                DataTable dt = new DataTable();
-                if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-                {
-                    throw new Exception(sErr);
-                }
-
                 string sHTML = "";
-
-                foreach (DataRow dr in dt.Rows)
-                {
-                    string sStepID = dr["step_id"].ToString();
-                    string sLabel = dr["function_label"].ToString();
-                    string sIcon = dr["icon"].ToString();
-                    string sClipDT = dr["clip_dt"].ToString();
-                    string sDesc = ui.GetSnip(dr["step_desc"].ToString(), 75);
-
-                    sHTML += "<li" +
-                        " id=\"clip_" + sStepID + "\"" +
-                        " name=\"clip_" + sStepID + "\"" +
-                        " class=\"command_item function clip\"" +
-                        ">";
-
-                    //a table for the label so the clear icon can right align
-                    sHTML += "<table width=\"99%\" border=\"0\"><tr>";
-                    sHTML += "<td width=\"1px\"><img alt=\"\" src=\"../images/" + sIcon + "\" /></td>";
-                    sHTML += "<td style=\"vertical-align: middle; padding-left: 5px;\">" + sLabel + "</td>";
-                    sHTML += "<td width=\"1px\" style=\"vertical-align: middle;\">";
-
-                    //view icon
-                    //due to the complexity of telling the core routines to look in the clipboard table, it 
-                    //it not possible to easily show the complex command types
-                    // without a redesign of how this works.  NSC 4-19-2011
-                    //due to several reasons, most notable being that the XML node for each of those commands 
-                    //that contains the step_id is hardcoded and the node names differ.
-                    //and GetSingleStep requires a step_id which must be mined from the XML.
-                    //so.... don't show a preview icon for them
-                    string sFunction = dr["function_name"].ToString();
-                    if (!"loop,exists,if,while".Contains(sFunction))
-                    {
-                        sHTML += "<span id=\"btn_view_clip\" view_id=\"v_" + sStepID + "\">" +
-                            "<img src=\"../images/icons/search.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" +
-                            "</span>";
-                    }
-                    sHTML += "</td></tr>";
-
-                    sHTML += "<tr><td>&nbsp;</td><td><span class=\"code\">" + sClipDT + "</span></td>";
-                    sHTML += "<td>";
-                    //delete icon
-                    sHTML += "<span id=\"btn_clear_clip\" remove_id=\"" + sStepID + "\">" +
-                        "<img src=\"../images/icons/fileclose.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" +
-                        "</span>";
-                    sHTML += "</td></tr></table>";
-
-
-                    sHTML += "<div class=\"hidden\" id=\"help_text_clip_" + sStepID + "\">" + sDesc + "</div>";
-
-                    //we use this function because it draws a smaller version than DrawReadOnlyStep
-                    string sStepHTML = "";
-                    //and don't draw those complex ones either
-                    if (!"loop,exists,if,while".Contains(sFunction))
-                        sStepHTML = ft.DrawEmbeddedReadOnlyStep(dr, true);
-
-                    sHTML += "<div class=\"hidden\" id=\"v_" + sStepID + "\">" + sStepHTML + "</div>";
-                    sHTML += "</li>";
-
-                }
-
+				
+				ClipboardSteps oCSteps = new ClipboardSteps(sUserID);
+				if (oCSteps != null)
+				{
+	                foreach (ClipboardStep cs in oCSteps.Values)
+					{
+						string sStepID = cs.ID;
+						string sLabel = cs.Function.Label;
+						string sIcon = cs.Function.Icon;
+						string sDesc = ui.GetSnip(cs.Description, 75);
+						string sClipDT = cs.ClipDT;
+						
+						sHTML += "<li" +
+							" id=\"clip_" + sStepID + "\"" +
+								" name=\"clip_" + sStepID + "\"" +
+								" class=\"command_item function clip\"" +
+								">";
+						
+						//a table for the label so the clear icon can right align
+						sHTML += "<table width=\"99%\" border=\"0\"><tr>";
+						sHTML += "<td width=\"1px\"><img alt=\"\" src=\"../images/" + sIcon + "\" /></td>";
+						sHTML += "<td style=\"vertical-align: middle; padding-left: 5px;\">" + sLabel + "</td>";
+						sHTML += "<td width=\"1px\" style=\"vertical-align: middle;\">";
+						
+						//view icon
+						//due to the complexity of telling the core routines to look in the clipboard table, it 
+						//it not possible to easily show the complex command types
+						// without a redesign of how this works.  NSC 4-19-2011
+						//due to several reasons, most notable being that the XML node for each of those commands 
+						//that contains the step_id is hardcoded and the node names differ.
+						//and GetSingleStep requires a step_id which must be mined from the XML.
+						//so.... don't show a preview icon for them
+						string sFunction = cs.Function.Name;
+						
+						if (!"loop,exists,if,while".Contains(sFunction))
+						{
+							sHTML += "<span id=\"btn_view_clip\" view_id=\"v_" + sStepID + "\">" +
+								"<img src=\"../images/icons/search.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" +
+									"</span>";
+						}
+						sHTML += "</td></tr>";
+						
+						sHTML += "<tr><td>&nbsp;</td><td><span class=\"code\">" + sClipDT + "</span></td>";
+						sHTML += "<td>";
+						//delete icon
+						sHTML += "<span id=\"btn_clear_clip\" remove_id=\"" + sStepID + "\">" +
+							"<img src=\"../images/icons/fileclose.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" +
+								"</span>";
+						sHTML += "</td></tr></table>";
+						
+						
+						sHTML += "<div class=\"hidden\" id=\"help_text_clip_" + sStepID + "\">" + sDesc + "</div>";
+						
+						//we use this function because it draws a smaller version than DrawReadOnlyStep
+						string sStepHTML = "";
+						//and don't draw those complex ones either
+						if (!"loop,exists,if,while".Contains(sFunction))
+							sStepHTML = ft.DrawClipboardStep(cs, true);
+						
+						sHTML += "<div class=\"hidden\" id=\"v_" + sStepID + "\">" + sStepHTML + "</div>";
+						sHTML += "</li>";
+	                }
+				}
                 return sHTML;
             }
             catch (Exception ex)
@@ -2726,50 +2712,35 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public void wmFnNodeArrayAdd(string sStepID, string sGroupNode)
         {
-            dataAccess dc = new dataAccess();
             FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
             try
             {
-                string sErr = "";
-
-                //what's the command type?
-                string sFunctionName = "";
-                string sSQL = "select function_name from task_step where step_id = '" + sStepID + "'";
-                if (!dc.sqlGetSingleString(ref sFunctionName, sSQL, ref sErr))
-                    throw new Exception(sErr);
-
-                if (sFunctionName.Length > 0)
-                {
-                    //so, let's get the one we want from the XML template for this step... adjust the indexes, and add it.
-                    string sXML = ft.GetCommandXMLTemplate(sFunctionName, ref sErr);
-                    if (sErr != "") throw new Exception(sErr);
-
-                    //validate it
-                    //parse the doc from the table
-                    XDocument xd = XDocument.Parse(sXML);
-                    if (xd == null) throw new Exception("Error: Unable to parse Function XML.");
-
-                    //get the original "group" node from the xml_template
-                    //here's the rub ... the "sGroupNode" from the actual command instance might have xpath indexes > 1... 
-                    //but the template DOESN'T!
-                    //So, I'm regexing any [#] on the string back to a [1]... that value should be in the template.
-
-                    Regex rx = new Regex(@"\[[0-9]*\]");
-                    string sTemplateNode = rx.Replace(sGroupNode, "[1]");
-
-                    XElement xGroupNode = xd.XPathSelectElement("//" + sTemplateNode);
-                    if (xGroupNode == null) throw new Exception("Error: Unable to add.  Source node not found in Template XML. [" + sTemplateNode + "]");
-
-                    //yeah, this wicked single line aggregates the string value of each node
-                    string sNewXML = xGroupNode.Nodes().Aggregate("", (str, node) => str += node.ToString());
-
-                    if (sNewXML != "")
-                        ft.AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", "//" + sGroupNode, sNewXML);
-
-                }
-                else
-                    throw new Exception("Error: Could not loop up XML for command type [" + sFunctionName + "].");
-
+				//so, let's get the one we want from the XML template for this step... adjust the indexes, and add it.
+				Function func = Function.GetFunctionForStep(sStepID);
+				if (func == null)
+					throw new Exception("Unable to look up Function definition for Step [" + sStepID + "] in Function class.");
+				
+				//validate it
+				//parse the doc from the table
+				XDocument xd = func.TemplateXDoc;
+				if (xd == null) throw new Exception("Unable to get Function Template.");
+				
+				//get the original "group" node from the xml_template
+				//here's the rub ... the "sGroupNode" from the actual command instance might have xpath indexes > 1... 
+				//but the template DOESN'T!
+				//So, I'm regexing any [#] on the string back to a [1]... that value should be in the template.
+				
+				Regex rx = new Regex(@"\[[0-9]*\]");
+				string sTemplateNode = rx.Replace(sGroupNode, "[1]");
+				
+				XElement xGroupNode = xd.XPathSelectElement("//" + sTemplateNode);
+				if (xGroupNode == null) throw new Exception("Error: Unable to add.  Source node not found in Template XML. [" + sTemplateNode + "]");
+				
+				//yeah, this wicked single line aggregates the string value of each node
+				string sNewXML = xGroupNode.Nodes().Aggregate("", (str, node) => str += node.ToString());
+				
+				if (sNewXML != "")
+					ft.AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", "//" + sGroupNode, sNewXML);
                 return;
             }
             catch (Exception ex)

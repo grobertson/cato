@@ -191,22 +191,10 @@ namespace Web
 
 						
 			//load the site.master.xml file into the session.  If it doesn't exist, we can't proceed.
-			try 
-			{
-				XDocument xSiteMaster = XDocument.Load(HttpContext.Current.Server.MapPath("~/pages/site.master.xml"));
-				
-				if (xSiteMaster == null)
-				{
-					lblErrorMessage.Text = "Error: Site master XML file is missing or unreadable.";
-					btnLogin.Visible = false;
-					return;
-				}
-				else 
-				{
-					ui.SetSessionObject("site_master_xml", xSiteMaster, "Security");
-				}
-			} catch (Exception ex) {
-				lblErrorMessage.Text = "Error: Site master XML is invalid." + ex.Message;
+			ui.SetSitemaster(ref sErr);
+			if (!string.IsNullOrEmpty(sErr)) {
+				lblErrorMessage.Text = "Error: Unable to load Site Master XML." + sErr;
+				btnLogin.Visible = false;
 				return;
 			}
 
@@ -214,6 +202,15 @@ namespace Web
 			ui.SetCloudProviders(ref sErr);
 			if (!string.IsNullOrEmpty(sErr)) {
 				lblErrorMessage.Text = "Error: Unable to load Cloud Providers XML." + sErr;
+				btnLogin.Visible = false;
+				return;
+			}
+			
+			//set up the cloud providers xml
+			ui.SetTaskCommands(ref sErr);
+			if (!string.IsNullOrEmpty(sErr)) {
+				lblErrorMessage.Text = "Error: Unable to load Task Command XML." + sErr;
+				btnLogin.Visible = false;
 				return;
 			}
 			

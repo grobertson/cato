@@ -99,28 +99,8 @@
                             <span id="codeblock_add_btn">Add New</span>
                             <hr />
                             <ul>
-                                <asp:Repeater ID="rpCodeblocks" runat="server">
-                                    <ItemTemplate>
-                                        <li class="ui-widget-content ui-corner-all codeblock" id="cb_<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>">
-                                            <div>
-                                                <div class="codeblock_title" name="<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>">
-                                                    <span>
-                                                        <%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%></span>
-                                                </div>
-                                                <div class="codeblock_icons pointer">
-                                                    <span id="codeblock_rename_btn_<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>">
-                                                        <img class="codeblock_rename" codeblock_name="<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>"
-                                                            src="../images/icons/edit_16.png" alt="" /></span><span class="codeblock_copy_btn"
-                                                                codeblock_name="<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>">
-                                                                <img src="../images/icons/editcopy_16.png" alt="" /></span><span id="codeblock_delete_btn_<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>"
-                                                                    class="codeblock_delete_btn codeblock_icon_delete" remove_id="<%#(((System.Data.DataRowView)Container.DataItem)["codeblock_name"])%>">
-                                                                    <img src="../images/icons/fileclose.png" alt="" /></span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
+								<asp:Literal id="ltCodeblocks" runat="server"></asp:Literal>
+							</ul>
                             <div class="hidden">
                                 <asp:Button ID="btnCBDelete" runat="server" OnClick="btnCBDelete_Click" />
                                 <asp:Button ID="btnCBRefresh" runat="server" OnClick="btnCBRefresh_Click" />
@@ -136,48 +116,12 @@
                     <tr>
                         <td width="30%">
                             <ul id="categories">
-                                <asp:Repeater ID="rpCategories" runat="server">
-                                    <HeaderTemplate>
-                                    </HeaderTemplate>
-                                    <ItemTemplate>
-                                        <li class="ui-widget-content ui-corner-all command_item category" id="cat_<%#(((System.Data.DataRowView)Container.DataItem)["category_name"])%>"
-                                            name="<%#(((System.Data.DataRowView)Container.DataItem)["category_name"])%>">
-                                            <div>
-                                                <img class="category_icon" src="../images/<%#(((System.Data.DataRowView)Container.DataItem)["icon"])%>"
-                                                    alt="" />
-                                                <span>
-                                                    <%#(((System.Data.DataRowView)Container.DataItem)["category_label"])%></span>
-                                            </div>
-                                            <div id="help_text_<%#(((System.Data.DataRowView)Container.DataItem)["category_name"])%>"
-                                                class="hidden">
-                                                <%#(((System.Data.DataRowView)Container.DataItem)["description"])%></div>
-                                        </li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+								<asp:Literal ID="ltCategories" runat="server"></asp:Literal>
                             </ul>
                         </td>
                         <td width="70%">
                             <div class="category_functions" id="category_functions">
-                                <asp:Repeater ID="rpCategoryWidgets" runat="server" OnItemDataBound="rpCategoryWidgets_ItemDataBound">
-                                    <ItemTemplate>
-                                        <div class="functions hidden" id="cat_<%#(((System.Data.DataRowView)Container.DataItem)["category_name"])%>_functions">
-                                            <asp:Repeater ID="rpCategoryFunctions" runat="server">
-                                                <ItemTemplate>
-                                                    <div class="ui-widget-content ui-corner-all command_item function" id="fn_<%#(((System.Data.DataRowView)Container.DataItem)["function_name"])%>"
-                                                        name="<%#(((System.Data.DataRowView)Container.DataItem)["function_name"])%>">
-                                                        <img class="function_icon" src="../images/<%#(((System.Data.DataRowView)Container.DataItem)["icon"])%>"
-                                                            alt="" />
-                                                        <span>
-                                                            <%#(((System.Data.DataRowView)Container.DataItem)["function_label"])%></span>
-                                                        <div id="help_text_<%#(((System.Data.DataRowView)Container.DataItem)["function_name"])%>"
-                                                            class="hidden">
-                                                            <%#(((System.Data.DataRowView)Container.DataItem)["description"])%></div>
-                                                    </div>
-                                                </ItemTemplate>
-                                            </asp:Repeater>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+								<asp:Literal ID="ltFunctions" runat="server"></asp:Literal>
                             </div>
                         </td>
                     </tr>
@@ -295,7 +239,7 @@
                     </div>
                     <div id="task_steps">
                         <ul id="steps" class="sortable">
-                            <asp:PlaceHolder ID="phSteps" runat="server"></asp:PlaceHolder>
+                            <asp:Literal ID="ltSteps" runat="server"></asp:Literal>
                         </ul>
                         <div class="hidden">
                             <asp:Button ID="btnStepLoad" runat="server" OnClick="btnStepLoad_Click" Text="Load" />

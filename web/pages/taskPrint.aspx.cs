@@ -18,19 +18,19 @@ using System.IO;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Globals;
 
 
 namespace Web.pages
 {
     public partial class taskPrint : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
         FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
         ACWebMethods.taskMethods tm = new ACWebMethods.taskMethods();
 
-        string sUserID;
+		//Get a global Task object for this task
+		Task oTask;
         string sTaskID;
 
         //use a checkbox on the page to set this
@@ -38,11 +38,12 @@ namespace Web.pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            sUserID = ui.GetSessionUserID();
-            sTaskID = ui.GetQuerystringValue("task_id", typeof(string)).ToString();
-
             string sErr = "";
 
+            sTaskID = ui.GetQuerystringValue("task_id", typeof(string)).ToString();
+
+			//instantiate the new Task object
+			oTask = new Task(sTaskID, ref sErr);
             
             //details
             if (!GetDetails(ref sErr))
@@ -71,28 +72,15 @@ namespace Web.pages
         {
             try
             {
-                string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
-                              " task_desc, use_connector_system, concurrent_instances, queue_depth" +
-                              " from task" +
-                              " where task_id = '" + sTaskID + "'";
-
-                DataRow dr = null;
-                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) return false;
-
-                if (dr != null)
-                {
-                    lblTaskCode.Text = dr["task_code"].ToString();
-                    lblDescription.Text = ui.SafeHTML(((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : ""));
-
-                    //lblDirect.Text = ((int)dr["use_connector_system"] == 1 ? "Yes" : "No");
-                    //txtConcurrentInstances.Text = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
-                    //txtQueueDepth.Text = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
-
-                    lblStatus.Text = dr["task_status"].ToString();
+			    if (oTask != null)
+				{
+                    lblTaskCode.Text = oTask.Code;
+                    lblDescription.Text = ui.SafeHTML(oTask.Description);
+                    lblStatus.Text = oTask.Status;
 
                     //the header
-                    lblTaskNameHeader.Text = ui.SafeHTML(dr["task_name"].ToString());
-                    lblVersionHeader.Text = dr["version"].ToString() + ((int)dr["default_version"] == 1 ? " (default)" : "");
+                    lblTaskNameHeader.Text = ui.SafeHTML(oTask.Name);
+                    lblVersionHeader.Text = oTask.Version + (oTask.IsDefaultVersion ? " (default)" : "");
 
                     return true;
                 }
@@ -122,29 +110,16 @@ namespace Web.pages
                 lt.Text += BuildSteps("MAIN");
                 lt.Text += "</div>";
 
-                //now get the codeblocks and loop thru them
-                string sSQL = "select codeblock_name" +
-                      " from task_codeblock" +
-                      " where task_id = '" + sTaskID + "'" +
-                      " and codeblock_name <> 'MAIN'" +
-                      " order by codeblock_name";
-
-                DataTable dt = new DataTable();
-                if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				//for the rest of the codeblocks
+				foreach (Codeblock cb in oTask.Codeblocks.Values)
                 {
-                    ui.RaiseError(Page, "Database Error", true, sErr);
-                    return false;
-                }
-
-                if (dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        lt.Text += "<div class=\"ui-state-default te_header\" id=\"cbt_" + dr["codeblock_name"].ToString() + "\">" + dr["codeblock_name"].ToString() + "</div>";
-                        lt.Text += "<div class=\"codeblock_box\">";
-                        lt.Text += BuildSteps(dr["codeblock_name"].ToString());
-                        lt.Text += "</div>";
-                    }
+					if (cb.Name == "MAIN")
+						continue;
+					
+                    lt.Text += "<div class=\"ui-state-default te_header\" id=\"cbt_" + cb.Name + "\">" + cb.Name + "</div>";
+                    lt.Text += "<div class=\"codeblock_box\">";
+                    lt.Text += BuildSteps(cb.Name);
+                    lt.Text += "</div>";
                 }
 
                 phSteps.Controls.Add(lt);
@@ -159,32 +134,12 @@ namespace Web.pages
         }
         private string BuildSteps(string sCodeblockName)
         {
-            string sErr = "";
-            string sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-                " f.function_label, f.category_name, c.category_label, f.description, f.help," +
-                " us.visible, us.breakpoint, us.skip" +
-                " from task_step s" +
-                " join lu_task_step_function f on s.function_name = f.function_name" +
-                " join lu_task_step_function_category c on f.category_name = c.category_name" +
-                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-                " where s.task_id = '" + sTaskID + "'" +
-                " and s.codeblock_name = '" + sCodeblockName + "'" +
-                " order by s.step_order";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                ui.RaiseError(Page, "Database Error", true, sErr);
-                return "";
-            }
-
             string sHTML = "";
-            if (dt.Rows.Count > 0)
+			if (oTask.Codeblocks[sCodeblockName].Steps.Count > 0)
             {
-                foreach (DataRow dr in dt.Rows)
+                foreach (Step oStep in oTask.Codeblocks[sCodeblockName].Steps.Values)
                 {
-                    sHTML += ft.DrawReadOnlyStep(dr, bShowNotes);
+					sHTML += ft.DrawReadOnlyStep(oStep, bShowNotes);
                 }
             }
             else

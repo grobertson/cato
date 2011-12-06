@@ -17,6 +17,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Content cDetail;
 		
-		protected System.Web.UI.WebControls.Repeater rpCommandHelp;
+		protected System.Web.UI.WebControls.Literal ltHelp;
 	}
 }

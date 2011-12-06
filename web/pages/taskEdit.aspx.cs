@@ -18,6 +18,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
+using System.Xml.XPath;
+using Globals;
 
 namespace Web.pages
 {
@@ -27,23 +29,24 @@ namespace Web.pages
         acUI.acUI ui = new acUI.acUI();
         FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
         ACWebMethods.taskMethods tm = new ACWebMethods.taskMethods();
-
-        string sTaskID;
-        string sOriginalTaskID;
+		
+		//Get a global Task object for this task
+		Task oTask;
+		string sTaskID;
         string sQSCodeblock;
-        string sUserID;
         protected void Page_Load(object sender, EventArgs e)
         {
-            sUserID = ui.GetSessionUserID();
-
             string sErr = "";
-
+			
             sTaskID = ui.GetQuerystringValue("task_id", typeof(string)).ToString();
             sQSCodeblock = ui.GetQuerystringValue("codeblock_name", typeof(string)).ToString();
 
+			//instantiate the new Task object
+			oTask = new Task(sTaskID, ref sErr);
+
             if (!Page.IsPostBack)
             {
-                hidTaskID.Value = sTaskID;
+				hidTaskID.Value = sTaskID;
                 //the initial value of the Codeblock is always "MAIN"
                 hidCodeblockName.Value = "MAIN";
 
@@ -94,48 +97,37 @@ namespace Web.pages
         {
             try
             {
-                string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
-                              " task_desc, use_connector_system, concurrent_instances, queue_depth" +
-                              " from task" +
-                              " where task_id = '" + sTaskID + "'";
-
-                DataRow dr = null;
-                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) return false;
-
-                if (dr != null)
+                if (oTask != null)
                 {
                     //ATTENTION!
                     //Approved tasks CANNOT be edited.  So, if the status is approved... we redirect to the
                     //task 'view' page.
                     //this is to prevent any sort of attempts on the client to load an approved or otherwise 'locked' 
                     // version into the edit page.
-                    if (dr["task_status"].ToString() == "Approved")
+                    if (oTask.Status == "Approved")
                     {
                         Response.Redirect("taskView.aspx?task_id=" + sTaskID, false);
                         return true;
                     }
                     //so, we are here, meaning we have an editable task.
-                    txtTaskName.Text = dr["task_name"].ToString();
-                    txtTaskCode.Text = dr["task_code"].ToString();
-                    lblVersion.Text = dr["version"].ToString();
-                    lblCurrentVersion.Text = dr["version"].ToString();
+                    txtTaskName.Text = oTask.Name;
+                    txtTaskCode.Text = oTask.Code;
+                    lblVersion.Text = oTask.Version;
+                    lblCurrentVersion.Text = oTask.Version;
 
+                    //chkDirect.Checked = oTask.UseConnectorSystem;
 
+                    txtDescription.Text = oTask.Description;
+                    txtConcurrentInstances.Text = oTask.ConcurrentInstances;
+                    txtQueueDepth.Text = oTask.QueueDepth;
 
-                    //chkDirect.Checked = ((int)dr["use_connector_system"] == 1 ? true : false);
+                    hidDefault.Value = (oTask.IsDefaultVersion ? "1" : "0");
 
-                    txtDescription.Text = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
-                    txtConcurrentInstances.Text = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
-                    txtQueueDepth.Text = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
-
-                    hidDefault.Value = dr["default_version"].ToString();
-
-                    hidOriginalTaskID.Value = dr["original_task_id"].ToString();
-                    sOriginalTaskID = dr["original_task_id"].ToString();
+                    hidOriginalTaskID.Value = oTask.OriginalTaskID;
 
                     //lblStatus.Text = dr["task_status"].ToString();
-                    lblStatus2.Text = dr["task_status"].ToString();
-                    hidOriginalStatus.Value = dr["task_status"].ToString();
+                    lblStatus2.Text = oTask.Status;
+                    hidOriginalStatus.Value = oTask.Status;
 
                     /*                    
                      * ok, this is important.
@@ -145,18 +137,7 @@ namespace Web.pages
                      * -- if there is another approved task in this family, we show the checkbox
                      * -- allowing the user to decide whether or not to make this one the default
                      */
-                    sSQL = "select count(*) from task" +
-                        " where original_task_id = '" + sOriginalTaskID + "'" +
-                        " and task_status = 'Approved'";
-
-                    int iCount = 0;
-                    if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-                    {
-                        ui.RaiseError(Page, "Unable to count Tasks in this family.", true, sErr);
-                        return false;
-                    }
-
-                    if (iCount > 0)
+                    if (oTask.NumberOfApprovedVersions > 0)
                         chkMakeDefault.Visible = true;
                     else
                         chkMakeDefault.Visible = false;
@@ -164,15 +145,15 @@ namespace Web.pages
 
 
                     //the header
-                    lblTaskNameHeader.Text = dr["task_name"].ToString();
-                    lblVersionHeader.Text = dr["version"].ToString() + ((int)dr["default_version"] == 1 ? " (default)" : "");
-
-                    if (!GetMaxVersion(dr["task_id"].ToString(), ref sErr)) return false;
+                    lblTaskNameHeader.Text = oTask.Name;
+                    lblVersionHeader.Text = oTask.Version + (oTask.IsDefaultVersion ? " (default)" : "");
+					
+					//NSC: WHY?  Why is this just checking to see if it can get the max version, then doing nothing with it?
+                    if (!GetMaxVersion(sTaskID, ref sErr)) return false;
 
                     //schedules (only if this is default)
-                    if (hidDefault.Value == "1")
+                    if (oTask.IsDefaultVersion)
                     {
-                        //if (!GetSchedule(dr["original_task_id"].ToString(), ref sErr)) return false;
                         tab_schedules.Visible = true;
                     }
                     else
@@ -311,47 +292,32 @@ namespace Web.pages
         }
         private bool GetCodeblocks(ref string sErr)
         {
+			//TODO: this will need to move asap to a jquery ajax web method, because adding/deleting is using a MS ajax postback which is bad and wrong.
             try
             {
-                string sSQL = "select codeblock_name" +
-                    " from task_codeblock" +
-                    " where task_id = '" + sTaskID + "'" +
-                    " order by codeblock_name";
-
-                DataTable dt = new DataTable();
-                if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-                {
-                    return false;
-                }
-
-                if (dt.Rows.Count > 0)
-                {
-                    rpCodeblocks.DataSource = dt;
-                    rpCodeblocks.DataBind();
-
-                    return true;
-                }
-                else
-                {
-                    //uh oh... there are no codeblocks!
-                    //since all tasks require a MAIN codeblock... if it's missing,
-                    //we can just repair it right here.
-                    sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + sTaskID + "', 'MAIN')";
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                    {
-                        ui.RaiseError(Page, "No codeblocks found, and unable to add MAIN." + sErr, true, "");
-                        return false;
-                    }
-
-                    //go again
-                    if (!GetCodeblocks(ref sErr))
-                    {
-                        sErr += "Unable to continue.  Could not retrieve Codeblocks (17). " + sErr;
-                        return false;
-                    }
-
-                    return true;
-                }
+				string sCBHTML = "";
+				
+				foreach (Codeblock cb in oTask.Codeblocks.Values)
+				{
+					sCBHTML += "<li class=\"ui-widget-content ui-corner-all codeblock\" id=\"cb_" + cb.Name + "\">";
+					sCBHTML += "<div>";
+					sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">";
+					sCBHTML += "<span>" + cb.Name + "</span>";
+					sCBHTML += "</div>";
+					sCBHTML += "<div class=\"codeblock_icons pointer\">";
+					sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\">";
+					sCBHTML += "<img class=\"codeblock_rename\" codeblock_name=\"" + cb.Name + "\"";
+					sCBHTML += " src=\"../images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\"";
+					sCBHTML += " codeblock_name=\"" + cb.Name + "\">";
+					sCBHTML += "<img src=\"../images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\"";
+					sCBHTML += " class=\"codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">";
+					sCBHTML += "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>";
+					sCBHTML += "</div>";
+					sCBHTML += "</div>";
+					sCBHTML += "</li>";
+				}
+				ltCodeblocks.Text = sCBHTML;
+				return true;
             }
             catch (Exception ex)
             {
@@ -363,47 +329,61 @@ namespace Web.pages
         {
             try
             {
-                string sSQL = "";
+				//so, we will use the FunctionCategories class in the session that was loaded at login, and build the list items for the commands tab.
 
-                sSQL = "select category_name, category_label, description, icon" +
-                     " from lu_task_step_function_category" +
-                     " order by sort_order;";
-
-                //create the data set with the first table
-                DataSet ds = new DataSet();
-                if (!dc.sqlGetDataSet(ref ds, sSQL, ref sErr, "dt")) return false;
-
-                //append it with the second table
-                sSQL = " select category_name, function_name, function_label, description, help, icon" +
-                    " from lu_task_step_function" +
-                    " order by sort_order";
-
-                DataTable dt = new DataTable();
-                if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr)) return false;
-
-                //put the second table in the dataset
-                ds.Tables.Add(dt);
-
-                DataRelation rel = new DataRelation("CatFuncs",
-                    ds.Tables[0].Columns["category_name"], ds.Tables[1].Columns["category_name"]);
-                ds.Relations.Add(rel);
-
-                if (ds.Tables[0].Rows.Count > 0)
+				//not by a web method yet, baby steps ....
+				
+				FunctionCategories cats = ui.GetTaskFunctionCategories();
+                if (cats == null)
                 {
-                    rpCategories.DataSource = ds.Tables[0].DefaultView;
-                    rpCategories.DataBind();
+                    ui.RaiseError(Page, "Error: Task Function Categories class is not in the session.", false, "");
+                } 
+				else 
+				{
+					string sCatHTML = "";
+					string sFunHTML = "";
+					
+					foreach (Category cat in cats.Values)
+                    {
+                        sCatHTML += "<li class=\"ui-widget-content ui-corner-all command_item category\"";
+                        sCatHTML += " id=\"cat_" + cat.Name + "\"";
+						sCatHTML += " name=\"" + cat.Name + "\">";
+						sCatHTML += "<div>";
+						sCatHTML += "<img class=\"category_icon\" src=\"../images/" + cat.Icon + "\" alt=\"\" />";
+						sCatHTML += "<span>" + cat.Label + "</span>";
+                        sCatHTML += "</div>";
+                        sCatHTML += "<div id=\"help_text_" + cat.Name + "\" class=\"hidden\">";
+						sCatHTML += cat.Description;
+                        sCatHTML += "</div>";
+                        sCatHTML += "</li>";
+						
+						
+						sFunHTML += "<div class=\"functions hidden\" id=\"cat_" + cat.Name + "_functions\">";
+						//now, let's work out the functions.
+						//we can just draw them all... they are hidden and will display on the client as clicked
+						foreach (Function fn in cat.Functions.Values)
+	                    {
+							sFunHTML += "<div class=\"ui-widget-content ui-corner-all command_item function\"";
+	                        sFunHTML += " id=\"fn_" + fn.Name + "\"";
+	                        sFunHTML += " name=\"" + fn.Name + "\">";
+	                        sFunHTML += "<img class=\"function_icon\" src=\"../images/" + fn.Icon + "\" alt=\"\" />";
+	                        sFunHTML += "<span>" + fn.Label + "</span>";
+	                        sFunHTML += "<div id=\"help_text_" + fn.Name + "\" class=\"hidden\">";
+	                        sFunHTML += fn.Description;
+	                        sFunHTML += "</div>";
+	                        sFunHTML += "</div>";
+						}
+						sFunHTML += "</div>";
 
-                    rpCategoryWidgets.DataSource = ds.Tables[0].DefaultView;
-                    rpCategoryWidgets.DataBind();
-
-                    return true;
-                }
-                else
-                {
-                    sErr = "Error: No categories defined.";
-                    return false;
-
-                }
+					}
+						
+					ltCategories.Text = sCatHTML;
+					ltFunctions.Text = sFunHTML;
+					
+				}
+				
+				return true;
+				
             }
             catch (Exception ex)
             {
@@ -447,45 +427,24 @@ namespace Web.pages
         }
         private bool BuildSteps(string sCodeblockName, ref string sErr)
         {
-            string sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-                " f.function_label, f.category_name, c.category_label, f.description, f.help, f.icon," +
-                " us.visible, us.breakpoint, us.skip, us.button" +
-                " from task_step s" +
-                " join lu_task_step_function f on s.function_name = f.function_name" +
-                " join lu_task_step_function_category c on f.category_name = c.category_name" +
-                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-                " where s.task_id = '" + sTaskID + "'" +
-                " and s.codeblock_name = '" + sCodeblockName + "'" +
-                " order by s.step_order";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                sErr += "Database Error: " + sErr;
-                return false;
-            }
-
             //set the text of the step 'add' message...
             string sAddHelpMsg =  "No Commands have been defined in this Codeblock. Drag a Command here to add it.";
 
-            Literal lt = new Literal();
-            if (dt.Rows.Count > 0)
+            if (oTask.Codeblocks[sCodeblockName].Steps.Count > 0)
             {
                 //we always need the no_step item to be there, we just hide it if we have other items
                 //it will get unhidden if someone deletes the last step.
-                lt.Text = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>";
+                ltSteps.Text = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>";
 
-                foreach (DataRow dr in dt.Rows)
+                foreach (Step oStep in oTask.Codeblocks[sCodeblockName].Steps.Values)
                 {
-                    lt.Text += ft.DrawFullStep(dr);
+					ltSteps.Text += ft.DrawFullStep(oStep);
                 }
             }
             else
             {
-                lt.Text = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>";
+                ltSteps.Text = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>";
             }
-            phSteps.Controls.Add(lt);
             return true;
         }
         #endregion
@@ -635,22 +594,6 @@ namespace Web.pages
             if (!GetCodeblocks(ref sErr))
             {
                 ui.RaiseError(Page, "Error getting codeblocks:" + sErr, true, "");
-            }
-        }
-        #endregion
-
-        #region "DataBound"
-        protected void rpCategoryWidgets_ItemDataBound(object sender, RepeaterItemEventArgs e)
-        {
-            RepeaterItem item = e.Item;
-            if ((item.ItemType == ListItemType.Item) ||
-                (item.ItemType == ListItemType.AlternatingItem))
-            {
-                Repeater rp = (Repeater)item.FindControl("rpCategoryFunctions");
-                DataRowView drv = (DataRowView)item.DataItem;
-
-                rp.DataSource = drv.CreateChildView("CatFuncs");
-                rp.DataBind();
             }
         }
         #endregion

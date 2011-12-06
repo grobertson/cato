@@ -35,31 +35,12 @@ namespace FunctionTemplates
 
         bool bShowNotes = true;
 
-        public DataRow GetSingleStep(string sStepID, string sUserID, ref string sErr)
+        public Step GetSingleStep(string sStepID, string sUserID, ref string sErr)
         {
-            //this is called from many different places...
-            string sSQL = "select t.task_name, t.version," +
-                " s.step_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-                " f.function_label, f.category_name, c.category_label, f.description, f.help, f.icon," +
-                " us.visible, us.breakpoint, us.skip, us.button" +
-                " from task_step s" +
-                " join task t on s.task_id = t.task_id" +
-                " join lu_task_step_function f on s.function_name = f.function_name" +
-                " join lu_task_step_function_category c on f.category_name = c.category_name" +
-                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-                " where s.step_id = '" + sStepID + "' limit 1";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+			Step oStep = new Step(sStepID, sUserID, ref sErr);
+            if (oStep != null)
             {
-                sErr = "Unable to get data row for step_id [" + sStepID + "].<br />" + sErr;
-                return null;
-            }
-
-            if (dt.Rows.Count == 1)
-            {
-                return dt.Rows[0];
+				return oStep;
             }
             else
             {
@@ -68,28 +49,24 @@ namespace FunctionTemplates
             }
 
         }
-        public string DrawFullStep(DataRow dr)
+        public string DrawFullStep(Step oStep)
         {
-            string sExpandedClass = "";
-            if (!string.IsNullOrEmpty(dr["visible"].ToString()))
-                sExpandedClass = (dr["visible"].ToString() == "0" ? "step_collapsed" : "");
+			string sStepID = oStep.ID;
+			
+            string sExpandedClass = (!oStep.UserSettings.Visible ? "step_collapsed" : "");
 
-            string sSkipStepClass = "";
-            string sSkipHeaderClass = "";
-            string sSkipIcon = "";
-            if (!string.IsNullOrEmpty(dr["commented"].ToString()))
-            {
-                sSkipStepClass = (dr["commented"].ToString() == "0" ? "" : "step_skip");
-                sSkipHeaderClass = (dr["commented"].ToString() == "0" ? "" : "step_header_skip");
-                sSkipIcon = (dr["commented"].ToString() == "0"
-                    ? "../images/icons/cnr.png"
-                    : "../images/icons/cnrgrey.png");
-                //pay attention
-                //this overrides the 'expanded class', making the step collapsed by default if it's commented out.
-                //the 'skip' overrides the saved visibility preference.
-                if (dr["commented"].ToString() == "1")
-                    sExpandedClass = "step_collapsed";
-            }
+            string sSkipStepClass = (oStep.Commented ? "step_skip" : "");
+            string sSkipHeaderClass = (oStep.Commented ? "step_header_skip" : "");
+            string sSkipIcon = (oStep.Commented
+                    ? "../images/icons/cnrgrey.png"
+                    : "../images/icons/cnr.png");
+
+			//pay attention
+			//this overrides the 'expanded class', making the step collapsed by default if it's commented out.
+			//the 'skip' overrides the saved visibility preference.
+			if (oStep.Commented)
+				sExpandedClass = "step_collapsed";
+            
 
             string sMainHTML = "";
             string sVariableHTML = "";
@@ -99,31 +76,31 @@ namespace FunctionTemplates
             //(hate this... wish the label was consistent across all step types)
             //hack for initial loading of the step... don't show the order if it's a "-1"... it's making a
             //strange glitch in the browser...you can see it update
-            string sIcon = (string.IsNullOrEmpty(dr["icon"].ToString()) ? "" : "../images/" + dr["icon"].ToString());
-            string sStepOrder = (dr["step_order"].ToString() == "-1" ? "" : dr["step_order"].ToString());
+            string sIcon = (string.IsNullOrEmpty(oStep.Function.Icon) ? "" : "../images/" + oStep.Function.Icon);
+            string sStepOrder = (oStep.Order == -1 ? "" : oStep.Order.ToString());
             string sLabel = "<img class=\"step_header_function_icon\" src=\"" + sIcon + "\" alt=\"\" />" +
                 "<span class=\"step_order_label\">" + sStepOrder + "</span> : " +
-                dr["category_label"].ToString() + " - " + dr["function_label"].ToString();
+                oStep.Function.Category.Label + " - " + oStep.Function.Label;
 
             //show a useful snip in the title bar.
             //notes trump values, and not all commands show a value snip
             //but certain ones do.
             string sSnip = "";
-            if (!string.IsNullOrEmpty(dr["step_desc"].ToString()))
-                sSnip = ui.GetSnip(dr["step_desc"].ToString(), 75);
+            if (!string.IsNullOrEmpty(oStep.Description))
+                sSnip = ui.GetSnip(oStep.Description, 75);
             else
-                sSnip = ui.GetSnip(GetValueSnip(ref dr), 75);
+                sSnip = ui.GetSnip(GetValueSnip(oStep), 75);
             sLabel += (sSnip == "" ? "" : "<span style=\"padding-left:15px;font-style:italic;font-weight:normal;\">[" + sSnip + "]</span>");
 
-            string sLockClause = (dr["locked"].ToString() != "0" ? " onclick=\"return false;\"" : "");
+            string sLockClause = (oStep.Locked ? " onclick=\"return false;\"" : "");
 
             string sCommentFieldID = "";
 
             sMainHTML += "<li class=\"step " + sSkipStepClass + "\"" +
-                " id=\"" + dr["step_id"].ToString() + "\" " + sLockClause + ">";
+                " id=\"" + sStepID + "\" " + sLockClause + ">";
             sMainHTML += "<input type=\"text\"" +
-                " value=\"" + dr["commented"].ToString() + "\"" +
-                CommonAttribs(dr["step_id"].ToString(), "_common", false, "commented", ref sCommentFieldID, "hidden") +
+                " value=\"" + (oStep.Commented ? "1" : "0") + "\"" +
+                CommonAttribs(sStepID, "_common", false, "commented", ref sCommentFieldID, "hidden") +
                 " />";
 
             // step expand image
@@ -131,34 +108,34 @@ namespace FunctionTemplates
             if (sExpandedClass == "step_collapsed") { sExpandImage = "expand_up.png"; };
 
             sMainHTML += "    <div class=\"ui-state-default step_header " + sSkipHeaderClass + "\"" +
-                         " id=\"step_header_" + dr["step_id".ToString()] + "\">";
+                         " id=\"step_header_" + sStepID + "\">";
             sMainHTML += "        <div class=\"step_header_title\">";
-            sMainHTML += "            <span class=\"step_toggle_btn\" step_id=\"" + dr["step_id"].ToString() + "\">" +
+            sMainHTML += "            <span class=\"step_toggle_btn\" step_id=\"" + sStepID + "\">" +
                          " <img class=\"expand_image\" src=\"../images/icons/" + sExpandImage + "\" alt=\"\" title=\"Hide/Show Step\" /></span>";
             sMainHTML += "            <span>" + sLabel + "</span>";
             sMainHTML += "        </div>";
             sMainHTML += "        <div class=\"step_header_icons\">";
 
             //this button will copy a step into the clipboard.
-            sMainHTML += "            <span><img id=\"step_copy_btn_" + dr["step_id"].ToString() + "\"" +
-                " class=\"step_copy_btn\" step_id=\"" + dr["step_id"].ToString() + "\"" +
+            sMainHTML += "            <span><img id=\"step_copy_btn_" + sStepID + "\"" +
+                " class=\"step_copy_btn\" step_id=\"" + sStepID + "\"" +
                 " src=\"../images/icons/editcopy_16.png\" alt=\"\" title=\"Copy this Step to your Clipboard\"/></span>";
 
             //this button is data enabled.  it controls the value of the hidden field at the top of the step.
-            sMainHTML += "            <span><img id=\"step_skip_btn_" + dr["step_id"].ToString() + "\"" +
-                " class=\"step_skip_btn\" step_id=\"" + dr["step_id"].ToString() + "\"" +
+            sMainHTML += "            <span><img id=\"step_skip_btn_" + sStepID + "\"" +
+                " class=\"step_skip_btn\" step_id=\"" + sStepID + "\"" +
                 " datafield_id=\"" + sCommentFieldID + "\"" +
                 " src=\"" + sSkipIcon + "\" alt=\"\" title=\"Skip this Step\"/></span>";
 
-            sMainHTML += "            <span class=\"step_delete_btn\" remove_id=\"" + dr["step_id"].ToString() + "\">" +
+            sMainHTML += "            <span class=\"step_delete_btn\" remove_id=\"" + sStepID + "\">" +
                 " <img src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Delete Step\" /></span>";
             sMainHTML += "        </div>";
             sMainHTML += "    </div>";
-            sMainHTML += "    <div id=\"step_detail_" + dr["step_id"].ToString() + "\"" +
+            sMainHTML += "    <div id=\"step_detail_" + sStepID + "\"" +
                 " class=\"ui-widget-content ui-corner-bottom step_detail " + sExpandedClass + "\" >";
 
-            sMainHTML += GetStepTemplate(dr, ref sOptionHTML, ref sVariableHTML);
-            sMainHTML += DrawStepCommon(dr, sOptionHTML, sVariableHTML);
+            sMainHTML += GetStepTemplate(oStep, ref sOptionHTML, ref sVariableHTML);
+            sMainHTML += DrawStepCommon(oStep, sOptionHTML, sVariableHTML);
 
             sMainHTML += "    </div>";
 
@@ -166,103 +143,100 @@ namespace FunctionTemplates
 
             return sMainHTML;
         }
-        public string DrawEmbeddedStep(DataRow dr)
+        public string DrawEmbeddedStep(Step oStep)
         {
-            string sExpandedClass = "";
-            if (!string.IsNullOrEmpty(dr["visible"].ToString()))
-                sExpandedClass = (dr["visible"].ToString() == "0" ? "step_collapsed" : "");
+			string sStepID = oStep.ID;
+			
+            string sExpandedClass = (!oStep.UserSettings.Visible ? "step_collapsed" : "");
 
             string sMainHTML = "";
             string sVariableHTML = "";
             string sOptionHTML = "";
 
             //labels are different here than in Full Steps.
-            string sIcon = (string.IsNullOrEmpty(dr["icon"].ToString()) ? "" : "../images/" + dr["icon"].ToString());
+            string sIcon = (string.IsNullOrEmpty(oStep.Function.Icon) ? "" : "../images/" + oStep.Function.Icon);
             string sLabel = "<img class=\"step_header_function_icon\" src=\"" + sIcon + "\" alt=\"\" /> " +
-                dr["category_label"].ToString() + " - " + dr["function_label"].ToString();
+                oStep.Function.Category.Label + " - " + oStep.Function.Label;
 
-            string sSnip = ui.GetSnip(dr["step_desc"].ToString(), 75);
-            sLabel += (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[" + sSnip + "]");
+            string sSnip = ui.GetSnip(oStep.Description, 75);
+            sLabel += (string.IsNullOrEmpty(oStep.Description) ? "" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[" + sSnip + "]");
 
-            string sLockClause = (dr["locked"].ToString() != "0" ? " onclick=\"return false;\"" : "");
+            string sLockClause = (!oStep.Locked ? " onclick=\"return false;\"" : "");
 
 
             // step expand image
             string sExpandImage = "expand_down.png";
             if (sExpandedClass == "step_collapsed") { sExpandImage = "expand_up.png"; };
 
-            sMainHTML += "<div class=\"embedded_step\" id=\"" + dr["step_id"].ToString() + "\" " + sLockClause + ">";
-            sMainHTML += "    <div class=\"ui-state-default embedded_step_header\" id=\"embedded_step_header_" + dr["step_id".ToString()] + "\">";
+            sMainHTML += "<div class=\"embedded_step\" id=\"" + sStepID + "\" " + sLockClause + ">";
+            sMainHTML += "    <div class=\"ui-state-default embedded_step_header\" id=\"embedded_step_header_" + sStepID + "\">";
             sMainHTML += "        <div class=\"step_header_title\">";
             sMainHTML += "            <span class=\"step_toggle_btn\"" +
-                " step_id=\"" + dr["step_id"].ToString() + "\">" +
+                " step_id=\"" + sStepID + "\">" +
                 " <img class=\"expand_image\" src=\"../images/icons/" + sExpandImage + "\" alt=\"\" title=\"Hide/Show Step\" /></span>";
             sMainHTML += "            <span>" + sLabel + "</span>";
             sMainHTML += "        </div>";
             sMainHTML += "        <div class=\"step_header_icons\">";
 
             //this button will copy a step into the clipboard.
-            sMainHTML += "            <span><img id=\"step_copy_btn_" + dr["step_id"].ToString() + "\"" +
-                " class=\"step_copy_btn\" step_id=\"" + dr["step_id"].ToString() + "\"" +
+            sMainHTML += "            <span><img id=\"step_copy_btn_" + sStepID + "\"" +
+                " class=\"step_copy_btn\" step_id=\"" + sStepID + "\"" +
                 " src=\"../images/icons/editcopy_16.png\" alt=\"\" title=\"Copy this Step to your Clipboard\"/></span>";
 
             //for deleting, the codeblock_name is the step_id of the parent step.
             sMainHTML += "            <span class=\"embedded_step_delete_btn\"" +
-                " remove_id=\"" + dr["step_id"].ToString() + "\" parent_id=\"" + dr["codeblock_name"].ToString() + "\">" +
+                " remove_id=\"" + sStepID + "\" parent_id=\"" + oStep.Codeblock + "\">" +
                 " <img src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Remove Command\" /></span>";
             sMainHTML += "        </div>";
             sMainHTML += "     </div>";
-            sMainHTML += "     <div id=\"step_detail_" + dr["step_id"].ToString() + "\"" +
+            sMainHTML += "     <div id=\"step_detail_" + sStepID + "\"" +
                 " class=\"ui-widget-content ui-corner-bottom step_detail " + sExpandedClass + "\" >";
 
-            sMainHTML += GetStepTemplate(dr, ref sOptionHTML, ref sVariableHTML);
-            sMainHTML += DrawStepCommon(dr, sOptionHTML, sVariableHTML);
+            sMainHTML += GetStepTemplate(oStep, ref sOptionHTML, ref sVariableHTML);
+            sMainHTML += DrawStepCommon(oStep, sOptionHTML, sVariableHTML);
 
             sMainHTML += "    </div>";
             sMainHTML += "</div>";
 
             return sMainHTML;
         }
-        public string DrawReadOnlyStep(DataRow dr, bool bDisplayNotes)
+        public string DrawReadOnlyStep(Step oStep, bool bDisplayNotes)
         {
+			string sStepID = oStep.ID;
+
             //set this global flag so embedded steps will know what to do
             bShowNotes = bDisplayNotes;
 
             string sMainHTML = "";
             string sOptionHTML = "";
 
-            string sStepOrder = "";
-            sStepOrder = (dr["step_order"].ToString() == "-1" ? "" : dr["step_order"].ToString() + ":");
+            string sStepOrder = (oStep.Order == -1 ? "" : oStep.Order.ToString() + ":");
 
             //labels are different here than in Full Steps.
-            string sLabel = sStepOrder + dr["category_label"].ToString() + " - " + dr["function_label"].ToString();
-            string sSkipHeaderClass = "";
-            string sSkipClass = "";
+            string sLabel = sStepOrder + oStep.Function.Category.Label + " - " + oStep.Function.Label;
+            string sSkipHeaderClass = (oStep.Commented ? "step_header_skip" : "");
+            string sSkipStepClass = (oStep.Commented ? "step_skip" : "");
+			
+			string sSkipClass = "";
             string sExpandedClass = "";
-            string sSkipStepClass = "";
-            if (!string.IsNullOrEmpty(dr["commented"].ToString()))
-            {
-                sSkipStepClass = (dr["commented"].ToString() == "0" ? "" : "step_skip");
-                sSkipHeaderClass = (dr["commented"].ToString() == "0" ? "" : "step_header_skip");
-                if (dr["commented"].ToString() == "1")
-                {
-                    sExpandedClass = "step_collapsed";
-                    sSkipClass = "style=\"color: #ACACAC\"";
-                }
-            }
+			if (oStep.Commented)
+			{
+				sExpandedClass = "step_collapsed";
+				sSkipClass = "style=\"color: #ACACAC\"";
+			}
 
-            sMainHTML += "<li class=\"step " + sSkipStepClass + "\" id=\"" + dr["step_id"].ToString() + "\">";
-            sMainHTML += "<div class=\"view_step " + sSkipHeaderClass + "\" id=\"" + dr["step_id"].ToString() + "\">";
-            sMainHTML += "    <div class=\"view_step_header " + sSkipHeaderClass + "\" id=\"view_step_header_" + dr["step_id".ToString()] + "\">";
+            sMainHTML += "<li class=\"step " + sSkipStepClass + "\" id=\"" + sStepID + "\">";
+            sMainHTML += "<div class=\"view_step " + sSkipHeaderClass + "\" id=\"" + sStepID + "\">";
+            sMainHTML += "    <div class=\"view_step_header " + sSkipHeaderClass + "\" id=\"view_step_header_" + sStepID + "\">";
             sMainHTML += "       <span " + sSkipClass + ">" + sLabel + "</span>";
             sMainHTML += "    </div>";
-            sMainHTML += "    <div class=\"view_step_detail " + sExpandedClass + "\" id=\"step_detail_" + dr["step_id"].ToString() + "\">";
+            sMainHTML += "    <div class=\"view_step_detail " + sExpandedClass + "\" id=\"step_detail_" + sStepID + "\">";
 
-            sMainHTML += GetStepTemplate_View(dr, ref sOptionHTML);
+            sMainHTML += GetStepTemplate_View(oStep, ref sOptionHTML);
 
             if (bShowNotes)
-                if (!string.IsNullOrEmpty(dr["step_desc"].ToString()))
-                    sMainHTML += DrawStepNotes_View(dr["step_desc"].ToString());
+                if (!string.IsNullOrEmpty(oStep.Description))
+                    sMainHTML += DrawStepNotes_View(oStep.Description);
 
             if (sOptionHTML != "")
                 sMainHTML += DrawStepOptions_View(sOptionHTML);
@@ -273,51 +247,83 @@ namespace FunctionTemplates
 
             return sMainHTML;
         }
-        public string DrawEmbeddedReadOnlyStep(DataRow dr, bool bDisplayNotes)
+        public string DrawEmbeddedReadOnlyStep(Step oStep, bool bDisplayNotes)
         {
-            //set this global flag so embedded steps will know what to do
+            string sStepID = oStep.ID;
+			
+			//set this global flag so embedded steps will know what to do
             bShowNotes = bDisplayNotes;
 
             string sMainHTML = "";
             string sOptionHTML = "";
 
-            string sStepOrder = "";
-            sStepOrder = (dr["step_order"].ToString() == "-1" ? "" : dr["step_order"].ToString() + ":");
+            string sStepOrder = (oStep.Order == -1 ? "" : oStep.Order + ":");
 
             //labels are different here than in Full Steps.
-            string sLabel = sStepOrder + dr["category_label"].ToString() + " - " + dr["function_label"].ToString();
-            string sSkipHeaderClass = "";
-            string sSkipClass = "";
+            string sLabel = sStepOrder + oStep.Function.Category.Label + " - " + oStep.Function.Label;
+            string sSkipHeaderClass = (oStep.Commented ? "step_header_skip" : "");
+            string sSkipStepClass = (oStep.Commented ? "step_skip" : "");
+			
+			string sSkipClass = "";
             string sExpandedClass = "";
-            string sSkipStepClass = "";
-            if (!string.IsNullOrEmpty(dr["commented"].ToString()))
-            {
-                sSkipStepClass = (dr["commented"].ToString() == "0" ? "" : "step_skip");
-                sSkipHeaderClass = (dr["commented"].ToString() == "0" ? "" : "step_header_skip");
-                if (dr["commented"].ToString() == "1")
-                {
-                    sExpandedClass = "step_collapsed";
-                    sSkipClass = "style=\"color: #ACACAC\"";
-                }
-            }
+			if (oStep.Commented)
+			{
+				sExpandedClass = "step_collapsed";
+				sSkipClass = "style=\"color: #ACACAC\"";
+			}
 
-            sMainHTML += "<div class=\"embedded_step " + sSkipStepClass + "\" id=\"" + dr["step_id"].ToString() + "\">";
-            sMainHTML += "<div class=\"view_step " + sSkipHeaderClass + "\" id=\"" + dr["step_id"].ToString() + "\">";
-            sMainHTML += "    <div class=\"view_step_header " + sSkipHeaderClass + "\" id=\"view_step_header_" + dr["step_id".ToString()] + "\">";
+            sMainHTML += "<div class=\"embedded_step " + sSkipStepClass + "\" id=\"" + sStepID + "\">";
+            sMainHTML += "<div class=\"view_step " + sSkipHeaderClass + "\" id=\"" + sStepID + "\">";
+            sMainHTML += "    <div class=\"view_step_header " + sSkipHeaderClass + "\" id=\"view_step_header_" + sStepID + "\">";
             sMainHTML += "       <span " + sSkipClass + ">" + sLabel + "</span>";
             sMainHTML += "    </div>";
-            sMainHTML += "    <div class=\"view_step_detail " + sExpandedClass + "\" id=\"step_detail_" + dr["step_id"].ToString() + "\">";
+            sMainHTML += "    <div class=\"view_step_detail " + sExpandedClass + "\" id=\"step_detail_" + sStepID + "\">";
 
-            sMainHTML += GetStepTemplate_View(dr, ref sOptionHTML);
+            sMainHTML += GetStepTemplate_View(oStep, ref sOptionHTML);
 
             if (bShowNotes)
-                if (!string.IsNullOrEmpty(dr["step_desc"].ToString()))
-                    sMainHTML += DrawStepNotes_View(dr["step_desc"].ToString());
+                if (!string.IsNullOrEmpty(oStep.Description))
+                    sMainHTML += DrawStepNotes_View(oStep.Description);
 
             if (sOptionHTML != "")
                 sMainHTML += DrawStepOptions_View(sOptionHTML);
 
             //sMainHTML += "    </div>";
+            sMainHTML += "</div>";
+            sMainHTML += "</div>";
+
+            return sMainHTML;
+        }
+        public string DrawClipboardStep(ClipboardStep cs, bool bDisplayNotes)
+        {
+            string sStepID = cs.ID;
+			
+            string sMainHTML = "";
+            string sOptionHTML = "";
+
+            string sLabel = cs.Function.Category.Label + " - " + cs.Function.Label;
+
+            sMainHTML += "<div class=\"embedded_step\" id=\"" + sStepID + "\">";
+            sMainHTML += "<div class=\"view_step\" id=\"" + sStepID + "\">";
+            sMainHTML += "    <div class=\"view_step_header\" id=\"view_step_header_" + sStepID + "\">";
+            sMainHTML += "       <span>" + sLabel + "</span>";
+            sMainHTML += "    </div>";
+            sMainHTML += "    <div class=\"view_step_detail\" id=\"step_detail_" + sStepID + "\">";
+			
+			//well, before we can actually display it, we need to cast the clipboard step into a regular step.
+			//it'll be missing a lot of data, but it will be fine for display purposes.
+			//we have a class method for this
+			Step oStep = new Step(cs);
+			
+            sMainHTML += GetStepTemplate_View(oStep, ref sOptionHTML);
+
+            if (bDisplayNotes)
+                if (!string.IsNullOrEmpty(cs.Description))
+                    sMainHTML += DrawStepNotes_View(oStep.Description);
+
+            if (sOptionHTML != "")
+                sMainHTML += DrawStepOptions_View(sOptionHTML);
+
             sMainHTML += "</div>";
             sMainHTML += "</div>";
 
@@ -325,8 +331,10 @@ namespace FunctionTemplates
         }
 
         #region "Edit Templates"
-        public string DrawStepCommon(DataRow dr, string sOptionHTML, string sVariableHTML)
+        public string DrawStepCommon(Step oStep, string sOptionHTML, string sVariableHTML)
         {
+			string sStepID = oStep.ID;
+			
             //this is the section that is common to all steps.
             string sHTML = "";
 
@@ -334,34 +342,34 @@ namespace FunctionTemplates
             sHTML += "        <div class=\"step_common\" >";
             sHTML += "            <div class=\"step_common_header\">";
 
-            string sShowOnLoad = (string.IsNullOrEmpty(dr["button"].ToString()) ? "" : dr["button"].ToString());
+            string sShowOnLoad = oStep.UserSettings.Button;
 
             //pill buttons
             if (sVariableHTML != "")
                 sHTML += "                <span class=\"step_common_button " +
                     (sShowOnLoad == "variables" ? "step_common_button_active" : "") + "\"" +
-                    " id=\"btn_step_common_detail_" + dr["step_id"].ToString() + "_variables\"" +
+                    " id=\"btn_step_common_detail_" + sStepID + "_variables\"" +
                     " button=\"variables\"" +
-                    " step_id=\"" + dr["step_id"].ToString() + "\">Variables</span>";
+                    " step_id=\"" + sStepID + "\">Variables</span>";
 
             if (sOptionHTML != "")
                 sHTML += "                <span class=\"step_common_button " +
                     (sShowOnLoad == "options" ? "step_common_button_active" : "") + "\"" +
-                    " id=\"btn_step_common_detail_" + dr["step_id"].ToString() + "_options\"" +
+                    " id=\"btn_step_common_detail_" + sStepID + "_options\"" +
                     " button=\"options\"" +
-                    " step_id=\"" + dr["step_id"].ToString() + "\">Options</span>";
+                    " step_id=\"" + sStepID + "\">Options</span>";
 
             sHTML += "                <span class=\"step_common_button " +
                 (sShowOnLoad == "notes" ? "step_common_button_active" : "") + "\"" +
-                " id=\"btn_step_common_detail_" + dr["step_id"].ToString() + "_notes\"" +
+                " id=\"btn_step_common_detail_" + sStepID + "_notes\"" +
                 " button=\"notes\"" +
-                " step_id=\"" + dr["step_id"].ToString() + "\">Notes</span>";
+                " step_id=\"" + sStepID + "\">Notes</span>";
 
             sHTML += "                <span class=\"step_common_button " +
                 (sShowOnLoad == "help" ? "step_common_button_active" : "") + "\"" +
-                " id=\"btn_step_common_detail_" + dr["step_id"].ToString() + "_help\"" +
+                " id=\"btn_step_common_detail_" + sStepID + "_help\"" +
                 " button=\"help\"" +
-                " step_id=\"" + dr["step_id"].ToString() + "\">Help</span>";
+                " step_id=\"" + sStepID + "\">Help</span>";
 
 
             sHTML += "            </div>";
@@ -369,27 +377,27 @@ namespace FunctionTemplates
 
 
             //sections
-            sHTML += "            <div id=\"step_common_detail_" + dr["step_id"].ToString() + "_notes\"" +
+            sHTML += "            <div id=\"step_common_detail_" + sStepID + "_notes\"" +
                 " class=\"step_common_detail " + (sShowOnLoad == "notes" ? "" : "step_common_collapsed") + "\"" +
                 " style=\"height: 100px;\">";
             sHTML += "                <textarea rows=\"4\" " +
-                                            CommonAttribs(dr["step_id"].ToString(), "_common", false, "step_desc", "") +
+                                            CommonAttribs(sStepID, "_common", false, "step_desc", "") +
                                             " help=\"Enter notes for this Command.\" reget_on_change=\"true\">" +
-                                            (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString()) +
+                                            oStep.Description +
                                         "</textarea>" + Environment.NewLine;
             sHTML += "            </div>";
 
-            sHTML += "            <div id=\"step_common_detail_" + dr["step_id"].ToString() + "_help\"" +
+            sHTML += "            <div id=\"step_common_detail_" + sStepID + "_help\"" +
                 " class=\"step_common_detail " + (sShowOnLoad == "help" ? "" : "step_common_collapsed") + "\"" +
                 " style=\"height: 200px;\">";
-            sHTML += (string.IsNullOrEmpty(dr["help"].ToString()) ? "" : dr["help"].ToString());
+            sHTML += oStep.Function.Help;
             sHTML += "            </div>";
 
             //some steps generate custom options we want in this pane
             //but we don't show the panel if there aren't any
             if (sOptionHTML != "")
             {
-                sHTML += "          <div id=\"step_common_detail_" + dr["step_id"].ToString() + "_options\"" +
+                sHTML += "          <div id=\"step_common_detail_" + sStepID + "_options\"" +
                     " class=\"step_common_detail " + (sShowOnLoad == "options" ? "" : "step_common_collapsed") + "\">";
                 sHTML += "              <div>";
                 sHTML += sOptionHTML;
@@ -401,7 +409,7 @@ namespace FunctionTemplates
             //but we don't show the panel if there aren't any
             if (sVariableHTML != "")
             {
-                sHTML += "          <div id=\"step_common_detail_" + dr["step_id"].ToString() + "_variables\"" +
+                sHTML += "          <div id=\"step_common_detail_" + sStepID + "_variables\"" +
                     " class=\"step_common_detail " + (sShowOnLoad == "variables" ? "" : "step_common_collapsed") + "\">";
                 sHTML += "              <div>";
                 sHTML += sVariableHTML;
@@ -414,14 +422,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string GetStepTemplate(DataRow dr, ref string sOptionHTML, ref string sVariableHTML)
+        public string GetStepTemplate(Step oStep, ref string sOptionHTML, ref string sVariableHTML)
         {
-            string sStepID = dr["step_id"].ToString();
-            string sFunction = dr["function_name"].ToString();
-            string sFunctionXML = dr["function_xml"].ToString();
+            string sFunction = oStep.Function.Name;
 
             string sHTML = "";
-            XDocument xd = XDocument.Parse(sFunctionXML);
 
             switch (sFunction.ToLower())
             {
@@ -435,109 +440,105 @@ namespace FunctionTemplates
                  IF the command populates variables, it will need a case statement added to that function
                  to ensure the output_parse_type field is properly set.
                  */
+				
+				//TODO: come fix the rest of these later, only need to pass in the oStep object
                 case "if":
-                    sHTML = If(sStepID, sFunction, xd);
+                    sHTML = If(oStep);
                     break;
                 case "loop":
-                    sHTML = Loop(sStepID, sFunction, xd);
+                    sHTML = Loop(oStep);
                     break;
                 case "while":
-                    sHTML = While(sStepID, sFunction, xd);
+                    sHTML = While(oStep);
                     break;
                 case "new_connection":
-                    sHTML = NewConnection(sStepID, sFunction, xd);
+                    sHTML = NewConnection(oStep);
                     break;
                 case "drop_connection":
-                    sHTML = DropConnection(sStepID, sFunction, xd);
+                    sHTML = DropConnection(oStep);
                     break;
                 case "sql_exec":
-                    sHTML = SqlExec(sStepID, sFunction, xd, dr, ref sVariableHTML);
+                    sHTML = SqlExec(oStep, ref sVariableHTML);
                     break;
                 case "cmd_line":
-                    sHTML = CmdLine(sStepID, sFunction, xd, dr, ref sOptionHTML, ref sVariableHTML);
+                    sHTML = CmdLine(oStep, ref sOptionHTML, ref sVariableHTML);
                     break;
                 case "dos_cmd":
-                    sHTML = DOSCmd(sStepID, sFunction, xd, dr, ref sOptionHTML, ref sVariableHTML);
+                    sHTML = DOSCmd(oStep, ref sOptionHTML, ref sVariableHTML);
                     break;
                 case "set_variable":
-                    sHTML = SetVariable(sStepID, sFunction, xd);
+                    sHTML = SetVariable(oStep);
                     break;
                 case "parse_text":
-                    sHTML = ParseText(sStepID, sFunction, xd, dr, ref sVariableHTML);
+                    sHTML = ParseText(oStep, ref sVariableHTML);
                     break;
                 case "read_file":
-                    sHTML = ReadFile(sStepID, sFunction, xd, dr, ref sVariableHTML);
+                    sHTML = ReadFile(oStep, ref sVariableHTML);
                     break;
                 case "clear_variable":
-                    sHTML = ClearVariable(sStepID, sFunction, xd);
+                    sHTML = ClearVariable(oStep);
                     break;
                 case "wait_for_tasks":
-                    sHTML = WaitForTasks(sStepID, sFunction, xd);
+                    sHTML = WaitForTasks(oStep);
                     break;
                 case "codeblock":
-                    sHTML = Codeblock(sStepID, sFunction, xd);
+                    sHTML = Codeblock(oStep);
                     break;
                 case "log_msg":
-                    sHTML = LogMessage(sStepID, sFunction, xd);
+                    sHTML = LogMessage(oStep);
                     break;
                 case "end":
-                    sHTML = End(sStepID, sFunction, xd);
+                    sHTML = End(oStep);
                     break;
                 case "dataset":
-                    sHTML = Dataset(sStepID, sFunction, xd);
+                    sHTML = Dataset(oStep);
                     break;
                 case "http":
-                    sHTML = HTTP(sStepID, sFunction, xd, dr, ref sVariableHTML);
-                    break;
-                case "win_cmd":
-                    sHTML = WinCmd(sStepID, sFunction, xd, dr, ref sVariableHTML);
+                    sHTML = HTTP(oStep, ref sVariableHTML);
                     break;
                 case "subtask":
-                    sHTML = Subtask(sStepID, sFunction, xd);
+                    sHTML = Subtask(oStep);
                     break;
                 case "set_asset_registry":
-                    sHTML = SetAssetRegistry(sStepID, sFunction, xd);
+                    sHTML = SetAssetRegistry(oStep);
                     break;
                 case "set_task_registry":
-                    sHTML = SetTaskRegistry(sStepID, sFunction, xd);
+                    sHTML = SetTaskRegistry(oStep);
                     break;
                 case "run_task":
-                    sHTML = RunTask(sStepID, sFunction, xd);
+                    sHTML = RunTask(oStep);
                     break;
                 case "sleep":
-                    sHTML = Sleep(sStepID, sFunction, xd);
+                    sHTML = Sleep(oStep);
                     break;
                 case "set_debug_level":
-                    sHTML = SetDebugLevel(sStepID, sFunction, xd);
+                    sHTML = SetDebugLevel(oStep);
                     break;
                 case "get_instance_handle":
-                    sHTML = GetTaskInstance(sStepID, sFunction, xd);
+                    sHTML = GetTaskInstance(oStep);
                     break;
                 case "cancel_task":
-                    sHTML = CancelTask(sStepID, sFunction, xd);
+                    sHTML = CancelTask(oStep);
                     break;
                 case "substring":
-                    sHTML = Substring(sStepID, sFunction, xd);
+                    sHTML = Substring(oStep);
                     break;
                 case "transfer":
-                    sHTML = Transfer(sStepID, sFunction, xd);
+                    sHTML = Transfer(oStep);
                     break;
                 case "scriptlet":
-                    sHTML = Scriptlet(sStepID, sFunction, xd);
-                    break;
-                case "question":
-                    sHTML = Question(sStepID, sFunction, xd);
+                    sHTML = Scriptlet(oStep);
                     break;
                 case "break_loop":
-                    sHTML = BreakLoop(sStepID, sFunction, xd);
+                    sHTML = BreakLoop(oStep);
                     break;
                 case "exists":
-                    sHTML = Exists(sStepID, sFunction, xd);
+                    sHTML = Exists(oStep);
                     break;
 
                 default:
                     //OK, here's some fun.  We didn't find one of our built in commands.  Perhaps it was something else?
-                    sHTML = GetCustomStepTemplate(sStepID, sFunction, xd, dr, ref sOptionHTML, ref sVariableHTML);
+                    sHTML = GetCustomStepTemplate(oStep, ref sOptionHTML, ref sVariableHTML);
                     break;
             }
 
@@ -547,13 +548,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string GetValueSnip(ref DataRow dr)
+        public string GetValueSnip(Step oStep)
         {
-            string sFunction = dr["function_name"].ToString();
-            string sFunctionXML = dr["function_xml"].ToString();
-
+            string sFunction = oStep.Function.Name;
             string sSnip = "";
-            XDocument xd = XDocument.Parse(sFunctionXML);
+            XDocument xd = oStep.FunctionXDoc;
 
             switch (sFunction.ToLower())
             {
@@ -603,13 +602,6 @@ namespace FunctionTemplates
                     if (!string.IsNullOrEmpty(xd.XPathSelectElement("//message").Value))
                         sSnip = xd.XPathSelectElement("//message").Value;
                     break;
-                case "win_cmd":
-                    if (string.IsNullOrEmpty(xd.XPathSelectElement("//conn_name").Value)) return "";
-                    if (string.IsNullOrEmpty(xd.XPathSelectElement("//type").Value)) return "";
-
-                    sSnip = xd.XPathSelectElement("//conn_name").Value + " : " +
-                        xd.XPathSelectElement("//type").Value;
-                    break;
                 case "sleep":
                     if (!string.IsNullOrEmpty(xd.XPathSelectElement("//seconds").Value))
                         sSnip = xd.XPathSelectElement("//seconds").Value;
@@ -631,8 +623,12 @@ namespace FunctionTemplates
             return sSnip;
         }
 
-        public string Transfer(string sStepID, string sFunction, XDocument xd)
+        public string Transfer(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xFromAsset = xd.XPathSelectElement("//from_asset");
             if (xFromAsset == null) return "Error: XML does not contain from_asset";
             XElement xFromFile = xd.XPathSelectElement("//from_file");
@@ -819,8 +815,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string ReadFile(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sVarHTML)
+        public string ReadFile(Step oStep, ref string sVarHTML)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xFileName = xd.XPathSelectElement("//filename");
             if (xFileName == null) return "Error: XML does not contain filename";
             XElement xStart = xd.XPathSelectElement("//start");
@@ -855,12 +855,16 @@ namespace FunctionTemplates
 
 
             //variables
-            sVarHTML += DrawVariableSectionForDisplay(dr, true);
+            sVarHTML += DrawVariableSectionForDisplay(oStep, true);
 
             return sHTML;
         }
-        public string ParseText(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sVarHTML)
+        public string ParseText(Step oStep, ref string sVarHTML)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xText = xd.XPathSelectElement("//text");
             if (xText == null) return "Error: XML does not contain 'text' field.";
 
@@ -881,12 +885,16 @@ namespace FunctionTemplates
             sHTML += " help=\"Enter text to be processed into variables.\">" + sCommand + "</textarea>";
 
             //variables
-            sVarHTML += DrawVariableSectionForDisplay(dr, true);
+            sVarHTML += DrawVariableSectionForDisplay(oStep, true);
 
             return sHTML;
         }
-        public string SetTaskRegistry(string sStepID, string sFunction, XDocument xd)
+        public string SetTaskRegistry(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             XElement xXPath = xd.XPathSelectElement("//xpath");
@@ -915,8 +923,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string SetAssetRegistry(string sStepID, string sFunction, XDocument xd)
+        public string SetAssetRegistry(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sAssetID = "";
             string sAssetName = "";
             string sHTML = "";
@@ -1004,8 +1016,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string RunTask(string sStepID, string sFunction, XDocument xd)
+        public string RunTask(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sOriginalTaskID = "";
             string sVersion = "";
             string sActualTaskID = "";
@@ -1243,8 +1259,12 @@ namespace FunctionTemplates
 			
             return sHTML;
         }
-        public string End(string sStepID, string sFunction, XDocument xd)
+        public string End(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xStatus = xd.XPathSelectElement("//status");
             if (xStatus == null) return "Error: XML does not contain status";
             XElement xMsg = xd.XPathSelectElement("//message");
@@ -1277,8 +1297,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string ClearVariable(string sStepID, string sFunction, XDocument xd)
+        public string ClearVariable(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             sHTML += "<div id=\"v" + sStepID + "_vars\">";
@@ -1321,8 +1345,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string WaitForTasks(string sStepID, string sFunction, XDocument xd)
+        public string WaitForTasks(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             sHTML += "<div id=\"v" + sStepID + "_handles\">";
@@ -1360,16 +1388,20 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Dataset(string sStepID, string sFunction, XDocument xd)
+        public string Dataset(Step oStep)
         {
             string sHTML = "";
 
-            sHTML += DrawKeyValueSection(sStepID, sFunction, xd, true, true, "Key", "Value");
+            sHTML += DrawKeyValueSection(oStep, true, true, "Key", "Value");
 
             return sHTML;
         }
-        public string Exists(string sStepID, string sFunction, XDocument xd)
+        public string Exists(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             //IEnumerable<XElement> xTests = xd.XPathSelectElements("//variable/name");
@@ -1448,8 +1480,12 @@ namespace FunctionTemplates
             // The End.
             return sHTML;
         }
-        public string If(string sStepID, string sFunction, XDocument xd)
+        public string If(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             IEnumerable<XElement> xTests = xd.XPathSelectElements("//tests/test");
@@ -1555,8 +1591,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string SqlExec(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sVarHTML)
+        public string SqlExec(Step oStep, ref string sVarHTML)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             /*TAKE NOTE:
             * 
             * Similar to the windows command...
@@ -1653,7 +1693,7 @@ namespace FunctionTemplates
             }
 
             if (bDrawVarButton)
-                sVarHTML += DrawVariableSectionForDisplay(dr, true);
+                sVarHTML += DrawVariableSectionForDisplay(oStep, true);
 
             if (bDrawHandle)
             {
@@ -1663,7 +1703,7 @@ namespace FunctionTemplates
             }
 
             if (bDrawKeyValSection)
-                sHTML += DrawKeyValueSection(sStepID, sFunction, xd, false, false, "Bind", "Value");
+                sHTML += DrawKeyValueSection(oStep, false, false, "Bind", "Value");
 
             if (bDrawSQLBox)
             {
@@ -1681,9 +1721,13 @@ namespace FunctionTemplates
             }
             return sHTML;
         }
-        public string CmdLine(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sOptionHTML, ref string sVarHTML)
+        public string CmdLine(Step oStep, ref string sOptionHTML, ref string sVarHTML)
         {
-            XElement xCommand = xd.XPathSelectElement("//command");
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
+			XElement xCommand = xd.XPathSelectElement("//command");
             if (xCommand == null) return "Error: XML does not contain command.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
             if (xConnName == null) return "Error: XML does not contain conn_name.";
@@ -1714,7 +1758,7 @@ namespace FunctionTemplates
             sHTML += " help=\"Enter a command to execute.\">" + sCommand + "</textarea>";
 
             //variables
-            sVarHTML += DrawVariableSectionForDisplay(dr, true);
+            sVarHTML += DrawVariableSectionForDisplay(oStep, true);
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
@@ -1754,8 +1798,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string DOSCmd(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sOptionHTML, ref string sVarHTML)
+        public string DOSCmd(Step oStep, ref string sOptionHTML, ref string sVarHTML)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xCommand = xd.XPathSelectElement("//command");
             if (xCommand == null) return "Error: XML does not contain command.";
 
@@ -1776,7 +1824,7 @@ namespace FunctionTemplates
             sHTML += " help=\"Enter a command to execute.\">" + sCommand + "</textarea>";
 
             //variables
-            sVarHTML += DrawVariableSectionForDisplay(dr, true);
+            sVarHTML += DrawVariableSectionForDisplay(oStep, true);
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
@@ -1816,58 +1864,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Question(string sStepID, string sFunction, XDocument xd)
+        public string NewConnection(Step oStep)
         {
-            XElement xInstructions = xd.XPathSelectElement("//instructions");
-            if (xInstructions == null) return "Error: XML does not contain instructions.";
-            XElement xQuestion = xd.XPathSelectElement("//question");
-            if (xQuestion == null) return "Error: XML does not contain question.";
-            XElement xER = xd.XPathSelectElement("//evidence_requirements");
-            if (xER == null) return "Error: XML does not contain evidence_requirements.";
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
 
-            string sInstructions = xInstructions.Value;
-            string sQuestion = xQuestion.Value;
-            string sER = xER.Value;
-            string sFieldID = "";
-            string sHTML = "";
-
-            // we gotta get the field id first, but don't show the textarea until after
-            string sCommonAttribs = CommonAttribs(sStepID, sFunction, true, "instructions", ref sFieldID, "");
-            sHTML += "Instructions: ";
-            //big box button
-            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" +
-                " src=\"../images/icons/edit_16.png\"" +
-                " link_to=\"" + sFieldID + "\" /><br />" + Environment.NewLine;
-            sHTML += "<textarea rows=\"3\" " + sCommonAttribs +
-                " help=\"Enter instructions to assist the Assessor.\"" +
-                ">" + sInstructions + "</textarea>" + Environment.NewLine;
-
-
-            sCommonAttribs = CommonAttribs(sStepID, sFunction, true, "question", ref sFieldID, "");
-            sHTML += "Question: ";
-            //big box button
-            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" +
-                " src=\"../images/icons/edit_16.png\"" +
-                " link_to=\"" + sFieldID + "\" /><br />" + Environment.NewLine;
-            sHTML += "<textarea rows=\"3\" " + sCommonAttribs +
-                " help=\"Enter a Question.\"" +
-                ">" + sQuestion + "</textarea>" + Environment.NewLine;
-
-
-            sCommonAttribs = CommonAttribs(sStepID, sFunction, true, "evidence_requirements", ref sFieldID, "");
-            sHTML += "Evidence Requirements: ";
-            //big box button
-            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" +
-                " src=\"../images/icons/edit_16.png\"" +
-                " link_to=\"" + sFieldID + "\" /><br />" + Environment.NewLine;
-            sHTML += "<textarea rows=\"3\" " + sCommonAttribs +
-                " help=\"What are the evidence requirements for this Question?\"" +
-                ">" + sER + "</textarea>" + Environment.NewLine;
-
-            return sHTML;
-        }
-        public string NewConnection(string sStepID, string sFunction, XDocument xd)
-        {
             XElement xAsset = xd.XPathSelectElement("//asset");
             if (xAsset == null) return "Error: XML does not contain asset";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
@@ -2008,8 +2010,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string DropConnection(string sStepID, string sFunction, XDocument xd)
+        public string DropConnection(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xConnName = xd.XPathSelectElement("//conn_name");
             if (xConnName == null) return "Error: XML does not contain conn_name";
 
@@ -2028,8 +2034,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string HTTP(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sVarHTML)
+        public string HTTP(Step oStep, ref string sVarHTML)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xType = xd.XPathSelectElement("//type");
             if (xType == null) return "Error: XML does not contain type";
             XElement xURL = xd.XPathSelectElement("//url");
@@ -2073,361 +2083,19 @@ namespace FunctionTemplates
             // until HTTP post is enabled
             sHTML += "<hr />";
             sHTML += "Post Parameters:";
-            sHTML += DrawKeyValueSection(sStepID, sFunction, xd, true, false, "Name", "Value");
+            sHTML += DrawKeyValueSection(oStep, true, false, "Name", "Value");
 
             //variables
-            sVarHTML += DrawVariableSectionForDisplay(dr, true);
+            sVarHTML += DrawVariableSectionForDisplay(oStep, true);
 
             return sHTML;
         }
-        public string WinCmd(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sVarHTML)
+        public string Codeblock(Step oStep)
         {
-            /*TAKE NOTE:
-             * 
-             * (this stinks but it has to be done)...
-             * ... we are updating a record here when we GET the data.
-             * 
-             * Why?  Because this command stores data in generic fields in the XML.
-             * The data has different meaning depending on the 'type' and 'command'.
-             * 
-             * So, on the client if the user changes the 'command', the new command may not need all the fields
-             * that the previous selection needed.
-             * 
-             * But we don't want to put all that logic on the client in JScript... no that would be nasty.
-             * 
-             * So, here we just wipe any unused fields based on the current type and command.
-             * This means if a user changed type or command, the next time they look at it (which is immediately BTW)
-             * this function will clean up some data.
-             *
-             * 
-             * By the way... there are five (5) generic 'parameter_n' columns in the XML.
-             * */
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
 
-            string sFieldsToClear = "";
-
-            XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name.";
-            XElement xType = xd.XPathSelectElement("//type");
-            if (xType == null) return "Error: XML does not contain type.";
-            XElement xCmd = xd.XPathSelectElement("//command");
-            if (xCmd == null) return "Error: XML does not contain command.";
-
-            string sConnName = xConnName.Value;
-            string sType = xType.Value;
-            string sCommand = xCmd.Value;
-            string sElementID = "";
-            string sFieldID = "";
-            string sHTML = "";
-
-            sHTML += "Connection:" + Environment.NewLine;
-            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "conn_name", ref sElementID, "");
-            sHTML += " help=\"Enter an active Windows connection where this command will be executed.\" value=\"" + sConnName + "\" />";
-            sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\"" +
-                " src=\"../images/icons/search.png\"" +
-                " link_to=\"" + sElementID + "\" /><br />" + Environment.NewLine;
-
-            //still using our ~~ notation for the option tags... they'll get 'selected' by the main routine
-            // that parses this HTML *after* we construct it.
-
-            sHTML += "Command Type:" + Environment.NewLine;
-
-            sHTML += "<select " + CommonAttribs(sStepID, sFunction, true, "type", "") +
-                " reget_on_change=\"true\">" + Environment.NewLine;
-
-            //display AND select a blank option only IF THERE is no value in sCommand
-            if (sType == "")
-                sHTML += "  <option " + SetOption("", sType) + " value=\"\"></option>" + Environment.NewLine;
-
-            sHTML += "  <option " + SetOption("WMI", sType) + " value=\"WMI\">WMI Query</option>" + Environment.NewLine;
-            sHTML += "  <option " + SetOption("Registry", sType) +
-                " value=\"Registry\">Registry Query</option>" + Environment.NewLine;
-            sHTML += "  <option " + SetOption("Security", sType) +
-                " value=\"Security\">Security Policy</option>" + Environment.NewLine;
-            sHTML += "</select>" + Environment.NewLine;
-
-
-            //go ahead and get the parameters here before the switch
-            XElement xP0 = xd.XPathSelectElement("//parameter_0");
-            if (xP0 == null) return "Error: XML does not contain parameter_0.";
-            XElement xP1 = xd.XPathSelectElement("//parameter_1");
-            if (xP1 == null) return "Error: XML does not contain parameter_1.";
-            XElement xP2 = xd.XPathSelectElement("//parameter_2");
-            if (xP2 == null) return "Error: XML does not contain parameter_2.";
-            XElement xP3 = xd.XPathSelectElement("//parameter_3");
-            if (xP3 == null) return "Error: XML does not contain parameter_3.";
-            XElement xP4 = xd.XPathSelectElement("//parameter_4");
-            if (xP4 == null) return "Error: XML does not contain parameter_4.";
-
-            string sP0 = xP0.Value;
-            string sP1 = xP1.Value;
-            string sP2 = xP2.Value;
-            //string sP3 = xP3.Value;
-            //string sP4 = xP4.Value;
-
-            //which option to show depends on the command type
-            //wmi only has one box
-            switch (sType)
-            {
-                case "WMI":
-                    //WMI has no 'command' so clear it (because we may have switched from another type
-                    // and left a remnant of data in there.
-                    SetNodeValueinCommandXML(sStepID, "//command", "");
-
-                    //set a default if it's blank
-                    if (sP1 == "")
-                    {
-                        sP1 = "CIMV2";
-                        //and actually set the value
-                        SetNodeValueinCommandXML(sStepID, "//parameter_1", sP1);
-                    }
-
-
-                    sHTML += "Namespace: " + Environment.NewLine;
-                    sHTML += "<input type=\"text\" " +
-                        CommonAttribs(sStepID, sFunction, true, "parameter_1", ref sFieldID, "w200px") +
-                        " help=\"Enter a Namespace.\"" +
-                        " value=\"" + sP1 + "\" />" +
-                        "<img class=\"namespace_picker_btn pointer\" src=\"../images/icons/search.png\" alt=\"\" link_to=\"" + sFieldID + "\" title=\"Select a Namespace\" target=\"col\" />" + Environment.NewLine;
-
-                    sHTML += "Max Rows: " + Environment.NewLine;
-                    sHTML += "<input type=\"text\" " +
-                        CommonAttribs(sStepID, sFunction, false, "parameter_2", "w100px") +
-                        " help=\"Enter a Maximum number of rows to return.\"" +
-                        " validate_as=\"posint\"" +
-                        " value=\"" + sP2 + "\" />" + Environment.NewLine;
-
-                    // we gotta get the field id first, but don't show the textarea until after
-                    string sCommonAttribs = CommonAttribs(sStepID, sFunction, true, "parameter_0", ref sFieldID, "");
-
-                    sHTML += "<br />Command: " + Environment.NewLine;
-
-                    //big box button
-                    sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" +
-                        " src=\"../images/icons/edit_16.png\"" +
-                        " link_to=\"" + sFieldID + "\" /><br />" + Environment.NewLine;
-
-                    sHTML += "<textarea rows=\"2\" " + sCommonAttribs +
-                    " help=\"Enter a WMI Command.\"" +
-                    ">" + sP0 + "</textarea>" + Environment.NewLine;
-
-                    sFieldsToClear = "3,4";
-                    break;
-                case "Registry":
-                    sHTML += "Command:" + Environment.NewLine;
-                    sHTML += "<select " + CommonAttribs(sStepID, sFunction, true, "command", "") +
-                        " reget_on_change=\"true\">" + Environment.NewLine;
-
-
-                    //we may have switched from another type and left a remnant of data in the command field.
-                    //clear everything IF IT IS NOT A VALID VALUE for the Registry command.
-                    if ("Get Keys,Get Key Values,Get Values".IndexOf(sCommand) == -1)
-                    {
-                        sCommand = "";
-                        SetNodeValueinCommandXML(sStepID, "//command", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_0", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_1", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_2", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_3", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_4", "");
-                    }
-
-                    //display AND select a blank option only IF THERE is no value in sCommand
-                    //this prevents the appearance that a value has been selected.
-                    //sure, it required the user to make an extra click, but this is necessary since a change on one field
-                    //cannot update another without custom client side script.
-                    if (sCommand == "")
-                        sHTML += "  <option " + SetOption("", sCommand) +
-                            " value=\"\"></option>" + Environment.NewLine;
-
-                    //TODO: temporarily commented out per bug 1117
-                    //reactivated 9/1/09 per Patrick
-                    sHTML += "  <option " + SetOption("Get Keys", sCommand) +
-                       " value=\"Get Keys\">Get Keys</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Key Values", sCommand) +
-                        " value=\"Get Key Values\">Get Key Values</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Values", sCommand) +
-                        " value=\"Get Values\">Get Values</option>" + Environment.NewLine;
-
-                    sHTML += "</select> <br />" + Environment.NewLine;
-
-                    //fields depend on the command
-                    switch (sCommand)
-                    {
-                        case "Get Keys":
-                            sHTML += "Registry Path: " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " +
-                                CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a Registry path from which to retrieve Keys.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get Key Values":
-                            sHTML += "Registry Path: " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " +
-                                CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a Registry path from which to retrieve Key/Value pairs.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get Values":
-                            sHTML += "Registry Path: " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " +
-                                CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a Registry path.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sHTML += "Key: " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " +
-                                CommonAttribs(sStepID, sFunction, true, "parameter_1", "w98pct") +
-                                " help=\"Enter a Key.\"" +
-                                " value=\"" + sP1 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "2,3,4";
-                            break;
-                        default:
-                            //has nothing
-                            sFieldsToClear = "0,1,2,3,4";
-                            break;
-                    }
-
-                    break;
-                case "Security":
-                    sHTML += "Command:" + Environment.NewLine;
-                    sHTML += "<select " + CommonAttribs(sStepID, sFunction, true, "command", "") +
-                        " reget_on_change=\"true\">" + Environment.NewLine;
-
-                    //we may have switched from another type and left a remnant of data in the command field.
-                    //clear everything IF IT IS NOT A VALID VALUE for the Security command.
-                    if ("Get Password Policy,Get Audit Policy,Get Users,Get User Properties,Get User Groups,Get User Rights,Get Users with Right,Get Local Groups,Get Group Members,Get Group Properties,Get Group Rights".IndexOf(sCommand) == -1)
-                    {
-                        sCommand = "";
-                        SetNodeValueinCommandXML(sStepID, "//command", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_0", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_1", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_2", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_3", "");
-                        SetNodeValueinCommandXML(sStepID, "//parameter_4", "");
-                    }
-
-                    //display AND select a blank option only IF THERE is no value in sCommand
-                    if (sCommand == "")
-                        sHTML += "  <option " + SetOption("", sCommand) + " value=\"\"></option>" + Environment.NewLine;
-
-                    sHTML += "  <option " + SetOption("Get Password Policy", sCommand) +
-                        " value=\"Get Password Policy\">Get Password Policy</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Audit Policy", sCommand) +
-                        " value=\"Get Audit Policy\">Get Audit Policy</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Users", sCommand) +
-                        " value=\"Get Users\">Get Users</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get User Properties", sCommand) +
-                        " value=\"Get User Properties\">Get User Properties</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get User Groups", sCommand) +
-                        " value=\"Get User Groups\">Get User Groups</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get User Rights", sCommand) +
-                        " value=\"Get User Rights\">Get User Rights</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Users with Right", sCommand) +
-                        " value=\"Get Users with Right\">Get Users with Right</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Local Groups", sCommand) +
-                        " value=\"Get Local Groups\">Get Local Groups</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Group Members", sCommand) +
-                        " value=\"Get Group Members\">Get Group Members</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Group Properties", sCommand) +
-                        " value=\"Get Group Properties\">Get Group Properties</option>" + Environment.NewLine;
-                    sHTML += "  <option " + SetOption("Get Group Rights", sCommand) +
-                        " value=\"Get Group Rights\">Get Group Rights</option>" + Environment.NewLine;
-                    sHTML += "</select> <br />" + Environment.NewLine;
-
-                    //fields depend on the command
-                    switch (sCommand)
-                    {
-                        case "Get Users":
-                            sFieldsToClear = "0,1,2,3,4";
-                            break;
-                        case "Get User Properties":
-                            sHTML += "User Name (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Gets all the properties for the specified User. Enter a User Name.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get User Rights":
-                            sHTML += "User Name (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a User Name for which to retrieve rights.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get User Groups":
-                            sHTML += "User Name (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Gets all the Groups to which the specified User belongs  Enter a User Name.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get Group Members":
-                            sHTML += "Group Name (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a Group from which to retrieve Users.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get Group Properties":
-                            sHTML += "Group Name (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Gets all the properties for the specified Group. Enter a User Name.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get Group Rights":
-                            sHTML += "Group Name (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a Group Name for which to retrieve rights.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        case "Get Users with Right":
-                            sHTML += "Right (required): " + Environment.NewLine;
-                            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "parameter_0", "w98pct") +
-                                " help=\"Enter a Right to retrieve a list of all users having that right.\"" +
-                                " value=\"" + sP0 + "\" />" + Environment.NewLine;
-
-                            sFieldsToClear = "1,2,3,4";
-                            break;
-                        default:
-                            //has nothing
-                            sFieldsToClear = "0,1,2,3,4";
-                            break;
-                    }
-
-                    break;
-                default:
-                    //has nothing
-                    sFieldsToClear = "0,1,2,3,4";
-                    break;
-            }
-
-            //clean up the XML data
-            string[] sFields = sFieldsToClear.Split(',');
-            foreach (string sField in sFields)
-            {
-                SetNodeValueinCommandXML(sStepID, "//parameter_" + sField, "");
-            }
-
-            //variables
-            sVarHTML += DrawVariableSectionForDisplay(dr, true);
-
-            return sHTML;
-        }
-        public string Codeblock(string sStepID, string sFunction, XDocument xd)
-        {
             XElement xCB = xd.XPathSelectElement("//codeblock");
             if (xCB == null) return "Error: XML does not contain codeblock";
 
@@ -2477,8 +2145,12 @@ namespace FunctionTemplates
             }
             return sHTML;
         }
-        public string Subtask(string sStepID, string sFunction, XDocument xd)
+        public string Subtask(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sOriginalTaskID = "";
             string sVersion = "";
             string sActualTaskID = "";
@@ -2614,8 +2286,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string SetDebugLevel(string sStepID, string sFunction, XDocument xd)
+        public string SetDebugLevel(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xDebugLevel = xd.XPathSelectElement("//debug_level");
             if (xDebugLevel == null) return "Error: XML does not contain debug_level";
 
@@ -2634,8 +2310,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Sleep(string sStepID, string sFunction, XDocument xd)
+        public string Sleep(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xSeconds = xd.XPathSelectElement("//seconds");
             if (xSeconds == null) return "Error: XML does not contain seconds";
 
@@ -2649,8 +2329,12 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        public string GetTaskInstance(string sStepID, string sFunction, XDocument xd)
+        public string GetTaskInstance(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xInstance = xd.XPathSelectElement("//instance");
             if (xInstance == null) return "Error: XML does not contain instance";
             XElement xHandle = xd.XPathSelectElement("//handle");
@@ -2670,8 +2354,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string CancelTask(string sStepID, string sFunction, XDocument xd)
+        public string CancelTask(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xTaskInstance = xd.XPathSelectElement("//task_instance");
             if (xTaskInstance == null) return "Error: XML does not contain task_instance";
 
@@ -2684,8 +2372,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string SetVariable(string sStepID, string sFunction, XDocument xd)
+        public string SetVariable(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             sHTML += "<div id=\"v" + sStepID + "_vars\">";
@@ -2758,8 +2450,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Substring(string sStepID, string sFunction, XDocument xd)
+        public string Substring(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xVariable = xd.XPathSelectElement("//variable_name");
             if (xVariable == null) return "Error: XML does not contain variable_name";
             XElement xStart = xd.XPathSelectElement("//start");
@@ -2810,8 +2506,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Loop(string sStepID, string sFunction, XDocument xd)
+        public string Loop(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xStart = xd.XPathSelectElement("//start");
             if (xStart == null) return "Error: XML does not contain start";
             XElement xIncrement = xd.XPathSelectElement("//increment");
@@ -2877,8 +2577,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string While(string sStepID, string sFunction, XDocument xd)
+        public string While(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xTest = xd.XPathSelectElement("//test");
             if (xTest == null) return "Error: XML does not contain test";
             XElement xAction = xd.XPathSelectElement("//action");
@@ -2901,8 +2605,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string LogMessage(string sStepID, string sFunction, XDocument xd)
+        public string LogMessage(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xMessage = xd.XPathSelectElement("//message");
             if (xMessage == null) return "Error: XML does not contain message";
 
@@ -2925,8 +2633,12 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Scriptlet(string sStepID, string sFunction, XDocument xd)
+        public string Scriptlet(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xLanguage = xd.XPathSelectElement("//language");
             if (xLanguage == null) return "Error: XML does not contain language";
             XElement xScript = xd.XPathSelectElement("//script");
@@ -2958,7 +2670,7 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string BreakLoop(string sStepID, string sFunction, XDocument xd)
+        public string BreakLoop(Step oStep)
         {
             // the break_loop contains nothing, but every command must return something.
             return "<!---->";
@@ -2988,14 +2700,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string GetStepTemplate_View(DataRow dr, ref string sOptionHTML)
+        public string GetStepTemplate_View(Step oStep, ref string sOptionHTML)
         {
-            string sStepID = dr["step_id"].ToString();
-            string sFunction = dr["function_name"].ToString();
-            string sFunctionXML = dr["function_xml"].ToString();
-
+			string sFunction = oStep.Function.Name;
             string sHTML = "";
-            XDocument xd = XDocument.Parse(sFunctionXML);
 
             switch (sFunction.ToLower())
             {
@@ -3009,108 +2717,102 @@ namespace FunctionTemplates
                 to ensure the output_parse_type field is properly set.
                 */
                 case "if":
-                    sHTML = If_View(sStepID, sFunction, xd);
+                    sHTML = If_View(oStep);
                     break;
                 case "loop":
-                    sHTML = Loop_View(sStepID, sFunction, xd);
+                    sHTML = Loop_View(oStep);
                     break;
                 case "new_connection":
-                    sHTML = NewConnection_View(sStepID, sFunction, xd);
+                    sHTML = NewConnection_View(oStep);
                     break;
                 case "drop_connection":
-                    sHTML = DropConnection_View(sStepID, sFunction, xd);
+                    sHTML = DropConnection_View(oStep);
                     break;
                 case "sql_exec":
-                    sHTML = SqlExec_View(sStepID, sFunction, xd, dr);
+                    sHTML = SqlExec_View(oStep);
                     break;
                 case "cmd_line":
-                    sHTML = CmdLine_View(sStepID, sFunction, xd, dr, ref sOptionHTML);
+                    sHTML = CmdLine_View(oStep, ref sOptionHTML);
                     break;
                 case "dos_cmd":
-                    sHTML = DOSCmd_View(sStepID, sFunction, xd, dr, ref sOptionHTML);
+                    sHTML = DOSCmd_View(oStep, ref sOptionHTML);
                     break;
                 case "set_variable":
-                    sHTML = SetVariable_View(sStepID, sFunction, xd);
+                    sHTML = SetVariable_View(oStep);
                     break;
                 case "parse_text":
-                    sHTML = ParseText_View(sStepID, sFunction, xd, dr);
+                    sHTML = ParseText_View(oStep);
                     break;
                 case "read_file":
-                    sHTML = ReadFile_View(sStepID, sFunction, xd, dr);
+                    sHTML = ReadFile_View(oStep);
                     break;
                 case "clear_variable":
-                    sHTML = ClearVariable_View(sStepID, sFunction, xd);
+                    sHTML = ClearVariable_View(oStep);
                     break;
                 case "wait_for_tasks":
-                    sHTML = WaitForTasks_View(sStepID, sFunction, xd);
+                    sHTML = WaitForTasks_View(oStep);
                     break;
                 case "codeblock":
-                    sHTML = Codeblock_View(sStepID, sFunction, xd);
+                    sHTML = Codeblock_View(oStep);
                     break;
                 case "log_msg":
-                    sHTML = LogMessage_View(sStepID, sFunction, xd);
+                    sHTML = LogMessage_View(oStep);
                     break;
                 case "end":
-                    sHTML = End_View(sStepID, sFunction, xd);
+                    sHTML = End_View(oStep);
                     break;
                 case "dataset":
-                    sHTML = Dataset_View(sStepID, sFunction, xd);
+                    sHTML = Dataset_View(oStep);
                     break;
                 case "http":
-                    sHTML = HTTP_View(sStepID, sFunction, xd, dr);
-                    break;
-                case "win_cmd":
-                    sHTML = WinCmd_View(sStepID, sFunction, xd, dr);
+                    sHTML = HTTP_View(oStep);
                     break;
                 case "subtask":
-                    sHTML = Subtask_View(sStepID, sFunction, xd);
+                    sHTML = Subtask_View(oStep);
                     break;
                 case "run_task":
-                    sHTML = RunTask_View(sStepID, sFunction, xd);
+                    sHTML = RunTask_View(oStep);
                     break;
                 case "set_asset_registry":
-                    sHTML = SetAssetRegistry_View(sStepID, sFunction, xd);
+                    sHTML = SetAssetRegistry_View(oStep);
                     break;
                 case "set_task_registry":
-                    sHTML = SetTaskRegistry_View(sStepID, sFunction, xd);
+                    sHTML = SetTaskRegistry_View(oStep);
                     break;
                 case "sleep":
-                    sHTML = Sleep_View(sStepID, sFunction, xd);
+                    sHTML = Sleep_View(oStep);
                     break;
                 case "set_debug_level":
-                    sHTML = SetDebugLevel_View(sStepID, sFunction, xd);
+                    sHTML = SetDebugLevel_View(oStep);
                     break;
                 case "get_instance_handle":
-                    sHTML = GetTaskInstance_View(sStepID, sFunction, xd);
+                    sHTML = GetTaskInstance_View(oStep);
                     break;
                 case "cancel_task":
-                    sHTML = CancelTask_View(sStepID, sFunction, xd);
+                    sHTML = CancelTask_View(oStep);
                     break;
                 case "substring":
-                    sHTML = Substring_View(sStepID, sFunction, xd);
+                    sHTML = Substring_View(oStep);
                     break;
                 case "transfer":
-                    sHTML = Transfer_View(sStepID, sFunction, xd);
+                    sHTML = Transfer_View(oStep);
                     break;
                 case "scriptlet":
-                    sHTML = Scriptlet_View(sStepID, sFunction, xd);
-                    break;
-                case "question":
-                    sHTML = Question_View(sStepID, sFunction, xd);
+                    sHTML = Scriptlet_View(oStep);
                     break;
                 case "break_loop":
-                    sHTML = BreakLoop_View(sStepID, sFunction, xd);
+                    sHTML = BreakLoop_View(oStep);
                     break;
                 case "exists":
-                    sHTML = Exists_View(sStepID, sFunction, xd);
+                    sHTML = Exists_View(oStep);
                     break;
                 case "while":
-                    sHTML = While_View(sStepID, sFunction, xd);
+                    sHTML = While_View(oStep);
                     break;
 
                 default:
                     //OK, here's some fun.  We didn't find one of our built in commands.  Perhaps it was something else?
-                    sHTML = GetCustomStepTemplate_View(sStepID, sFunction, xd, dr, ref sOptionHTML);
+                    sHTML = GetCustomStepTemplate_View(oStep, ref sOptionHTML);
                     break;
             }
 
@@ -3121,8 +2823,10 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        public string SetTaskRegistry_View(string sStepID, string sFunction, XDocument xd)
+        public string SetTaskRegistry_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xXPath = xd.XPathSelectElement("//xpath");
             if (xXPath == null) return "Error: XML does not contain xpath";
             XElement xValue = xd.XPathSelectElement("//value");
@@ -3147,8 +2851,10 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        public string SetAssetRegistry_View(string sStepID, string sFunction, XDocument xd)
+        public string SetAssetRegistry_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xAsset = xd.XPathSelectElement("//asset_id");
             if (xAsset == null) return "Error: XML does not contain asset_id";
             XElement xXPath = xd.XPathSelectElement("//xpath");
@@ -3197,8 +2903,10 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        public string Transfer_View(string sStepID, string sFunction, XDocument xd)
+        public string Transfer_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xFromAsset = xd.XPathSelectElement("//from_asset");
             if (xFromAsset == null) return "Error: XML does not contain from_asset";
             XElement xFromFile = xd.XPathSelectElement("//from_file");
@@ -3269,8 +2977,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string ReadFile_View(string sStepID, string sFunction, XDocument xd, DataRow dr)
+        public string ReadFile_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xFileName = xd.XPathSelectElement("//filename");
             if (xFileName == null) return "Error: XML does not contain filename";
             XElement xStart = xd.XPathSelectElement("//start");
@@ -3297,12 +3007,14 @@ namespace FunctionTemplates
             sHTML += "</table>" + Environment.NewLine;
 
             //variables
-            sHTML += DrawVariableSectionForDisplay(dr, false);
+            sHTML += DrawVariableSectionForDisplay(oStep, false);
 
             return sHTML;
         }
-        public string ParseText_View(string sStepID, string sFunction, XDocument xd, DataRow dr)
+        public string ParseText_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xText = xd.XPathSelectElement("//text");
             if (xText == null) return "Error: XML does not contain 'text' field.";
 
@@ -3313,12 +3025,14 @@ namespace FunctionTemplates
             sHTML += "<div class=\"codebox\">" + sCommand + "</div>";
 
             //variables
-            sHTML += DrawVariableSectionForDisplay(dr, false);
+            sHTML += DrawVariableSectionForDisplay(oStep, false);
 
             return sHTML;
         }
-        public string RunTask_View(string sStepID, string sFunction, XDocument xd)
+        public string RunTask_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             string sOriginalTaskID = "";
             string sVersion = "";
             string sTime = "";
@@ -3443,12 +3157,14 @@ namespace FunctionTemplates
             //key/value pairs
             sHTML += "<hr />";
             sHTML += "Parameters:";
-            sHTML += DrawKeyValueSection_View(sStepID, sFunction, xd, "Input", "Value");
+            sHTML += DrawKeyValueSection_View(oStep, "Input", "Value");
 
             return sHTML;
         }
-        public string End_View(string sStepID, string sFunction, XDocument xd)
+        public string End_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xStatus = xd.XPathSelectElement("//status");
             if (xStatus == null) return "Error: XML does not contain status";
             XElement xMsg = xd.XPathSelectElement("//message");
@@ -3471,8 +3187,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string ClearVariable_View(string sStepID, string sFunction, XDocument xd)
+        public string ClearVariable_View(Step oStep)
         {
+			string sStepID = oStep.ID;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             sHTML += "<div id=\"v" + sStepID + "_vars\">";
@@ -3490,8 +3209,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string WaitForTasks_View(string sStepID, string sFunction, XDocument xd)
+        public string WaitForTasks_View(Step oStep)
         {
+			string sStepID = oStep.ID;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             sHTML += "<div id=\"v" + sStepID + "_handles\">";
@@ -3509,12 +3231,15 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Dataset_View(string sStepID, string sFunction, XDocument xd)
+        public string Dataset_View(Step oStep)
         {
-            return DrawKeyValueSection_View(sStepID, sFunction, xd, "Key", "Value");
+            return DrawKeyValueSection_View(oStep, "Key", "Value");
         }
-        public string Exists_View(string sStepID, string sFunction, XDocument xd)
+        public string Exists_View(Step oStep)
         {
+			string sStepID = oStep.ID;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
             string sUserID = ui.GetSessionUserID();
             string sErr = "";
@@ -3545,9 +3270,9 @@ namespace FunctionTemplates
 
             if (ui.IsGUID(xPositiveAction.Value))
             {
-                DataRow dr = GetSingleStep(xPositiveAction.Value, sUserID, ref sErr);
-                if (dr != null && sErr == "")
-                    sHTML += DrawEmbeddedReadOnlyStep(dr, bShowNotes);
+                Step oEmbeddedStep = GetSingleStep(xPositiveAction.Value, sUserID, ref sErr);
+                if (oEmbeddedStep != null && sErr == "")
+                    sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                 else
                     sHTML += "<span class=\"red_text\">" + sErr + "</span>";
             }
@@ -3563,9 +3288,9 @@ namespace FunctionTemplates
 
             if (ui.IsGUID(xNegativeAction.Value))
             {
-                DataRow dr = GetSingleStep(xNegativeAction.Value, sUserID, ref sErr);
-                if (dr != null && sErr == "")
-                    sHTML += DrawEmbeddedReadOnlyStep(dr, bShowNotes);
+                Step oEmbeddedStep = GetSingleStep(xNegativeAction.Value, sUserID, ref sErr);
+                if (oEmbeddedStep != null && sErr == "")
+                    sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                 else
                     sHTML += "<span class=\"red_text\">" + sErr + "</span>";
             }
@@ -3580,8 +3305,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string If_View(string sStepID, string sFunction, XDocument xd)
+        public string If_View(Step oStep)
         {
+			string sStepID = oStep.ID;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sUserID = ui.GetSessionUserID();
             string sErr = "";
             string sHTML = "";
@@ -3620,9 +3348,9 @@ namespace FunctionTemplates
                 {
                     if (ui.IsGUID(xAction.Value))
                     {
-                        DataRow dr = GetSingleStep(xAction.Value, sUserID, ref sErr);
-                        if (dr != null && sErr == "")
-                            sHTML += DrawEmbeddedReadOnlyStep(dr, bShowNotes);
+                        Step oEmbeddedStep = GetSingleStep(xAction.Value, sUserID, ref sErr);
+                        if (oEmbeddedStep != null && sErr == "")
+                            sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                         else
                             sHTML += "<span class=\"red_text\">" + sErr + "</span>";
                     }
@@ -3654,9 +3382,9 @@ namespace FunctionTemplates
                 sHTML += "Else (no 'If' conditions matched):";
                 if (ui.IsGUID(xElse.Value))
                 {
-                    DataRow dr = GetSingleStep(xElse.Value, sUserID, ref sErr);
-                    if (dr != null && sErr == "")
-                        sHTML += DrawReadOnlyStep(dr, bShowNotes);
+                    Step oElseStep = GetSingleStep(xElse.Value, sUserID, ref sErr);
+                    if (oElseStep != null && sErr == "")
+                        sHTML += DrawReadOnlyStep(oElseStep, bShowNotes);
                     else
                         sHTML += "<span class=\"red_text\">" + sErr + "</span>";
                 }
@@ -3672,8 +3400,10 @@ namespace FunctionTemplates
             //The End
             return sHTML;
         }
-        public string SqlExec_View(string sStepID, string sFunction, XDocument xd, DataRow dr)
+        public string SqlExec_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xCommand = xd.XPathSelectElement("//sql");
             if (xCommand == null) return "Error: XML does not contain sql.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
@@ -3724,7 +3454,7 @@ namespace FunctionTemplates
             }
 
             if (bDrawKeyValSection)
-                sHTML += DrawKeyValueSection(sStepID, sFunction, xd, false, false, "Bind", "Value");
+                sHTML += DrawKeyValueSection(oStep, false, false, "Bind", "Value");
 
             if (bDrawSQLBox)
             {
@@ -3734,12 +3464,14 @@ namespace FunctionTemplates
 
             //variables
             if (bDrawVarSection)
-                sHTML += DrawVariableSectionForDisplay(dr, false);
+                sHTML += DrawVariableSectionForDisplay(oStep, false);
 
             return sHTML;
         }
-        public string CmdLine_View(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sOptionHTML)
+        public string CmdLine_View(Step oStep, ref string sOptionHTML)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xCommand = xd.XPathSelectElement("//command");
             if (xCommand == null) return "Error: XML does not contain command.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
@@ -3756,7 +3488,7 @@ namespace FunctionTemplates
             sHTML += "<div class=\"codebox\">" + sCommand + "</div>" + Environment.NewLine;
 
             //variables
-            sHTML += DrawVariableSectionForDisplay(dr, false);
+            sHTML += DrawVariableSectionForDisplay(oStep, false);
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
@@ -3776,8 +3508,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string DOSCmd_View(string sStepID, string sFunction, XDocument xd, DataRow dr, ref string sOptionHTML)
+        public string DOSCmd_View(Step oStep, ref string sOptionHTML)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xCommand = xd.XPathSelectElement("//command");
             if (xCommand == null) return "Error: XML does not contain command.";
 
@@ -3788,7 +3522,7 @@ namespace FunctionTemplates
             sHTML += "<div class=\"codebox\">" + sCommand + "</div>" + Environment.NewLine;
 
             //variables
-            sHTML += DrawVariableSectionForDisplay(dr, false);
+            sHTML += DrawVariableSectionForDisplay(oStep, false);
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
@@ -3808,33 +3542,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Question_View(string sStepID, string sFunction, XDocument xd)
+        public string NewConnection_View(Step oStep)
         {
-            XElement xInstructions = xd.XPathSelectElement("//instructions");
-            if (xInstructions == null) return "Error: XML does not contain instructions.";
-            XElement xQuestion = xd.XPathSelectElement("//question");
-            if (xQuestion == null) return "Error: XML does not contain question.";
-            XElement xER = xd.XPathSelectElement("//evidence_requirements");
-            if (xER == null) return "Error: XML does not contain evidence_requirements.";
+			XDocument xd = oStep.FunctionXDoc;
 
-            string sInstructions = ui.SafeHTML(xInstructions.Value);
-            string sQuestion = ui.SafeHTML(xQuestion.Value);
-            string sER = ui.SafeHTML(xER.Value);
-            string sHTML = "";
-
-            sHTML += "Instructions:<br />";
-            sHTML += "<span class=\"code\">" + sInstructions + "</span>" + Environment.NewLine;
-
-            sHTML += "Question:<br />";
-            sHTML += "<span class=\"code\">" + sQuestion + "</span>" + Environment.NewLine;
-
-            sHTML += "Evidence Requirements:<br />";
-            sHTML += "<span class=\"code\">" + sER + "</span>" + Environment.NewLine;
-
-            return sHTML;
-        }
-        public string NewConnection_View(string sStepID, string sFunction, XDocument xd)
-        {
             XElement xAsset = xd.XPathSelectElement("//asset");
             if (xAsset == null) return "Error: XML does not contain asset";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
@@ -3875,8 +3586,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string DropConnection_View(string sStepID, string sFunction, XDocument xd)
+        public string DropConnection_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xConnName = xd.XPathSelectElement("//conn_name");
             if (xConnName == null) return "Error: XML does not contain conn_name";
 
@@ -3889,8 +3602,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string HTTP_View(string sStepID, string sFunction, XDocument xd, DataRow dr)
+        public string HTTP_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xType = xd.XPathSelectElement("//type");
             if (xType == null) return "Error: XML does not contain type";
             XElement xURL = xd.XPathSelectElement("//url");
@@ -3914,146 +3629,14 @@ namespace FunctionTemplates
             //sHTML += DrawKeyValueSection_View(sStepID, sFunction, xd, "Key", "Value"); ;
 
             //variables
-            sHTML += DrawVariableSectionForDisplay(dr, false);
+            sHTML += DrawVariableSectionForDisplay(oStep, false);
 
             return sHTML;
         }
-        public string WinCmd_View(string sStepID, string sFunction, XDocument xd, DataRow dr)
+        public string Codeblock_View(Step oStep)
         {
-            XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name.";
-            XElement xType = xd.XPathSelectElement("//type");
-            if (xType == null) return "Error: XML does not contain type.";
-            XElement xCmd = xd.XPathSelectElement("//command");
-            if (xCmd == null) return "Error: XML does not contain command.";
+			XDocument xd = oStep.FunctionXDoc;
 
-            string sConnName = ui.SafeHTML(xConnName.Value);
-            string sType = xType.Value;
-            string sCommand = ui.SafeHTML(xCmd.Value);
-
-            string sHTML = "";
-
-            sHTML += "Connection Name: " + Environment.NewLine;
-            sHTML += "<span class=\"code\">" + sConnName + "</span><br />" + Environment.NewLine;
-
-            sHTML += "Command Type:" + Environment.NewLine;
-            sHTML += "<span class=\"code\">" + sType + "</span><br />" + Environment.NewLine;
-
-
-
-            //go ahead and get the parameters here before the switch
-            XElement xP0 = xd.XPathSelectElement("//parameter_0");
-            if (xP0 == null) return "Error: XML does not contain parameter_0.";
-            XElement xP1 = xd.XPathSelectElement("//parameter_1");
-            if (xP1 == null) return "Error: XML does not contain parameter_1.";
-            //XElement xP2 = xd.XPathSelectElement("//parameter_2");
-            //if (xP2 == null) return "Error: XML does not contain parameter_2.";
-            //XElement xP3 = xd.XPathSelectElement("//parameter_3");
-            //if (xP3 == null) return "Error: XML does not contain parameter_3.";
-            //XElement xP4 = xd.XPathSelectElement("//parameter_4");
-            //if (xP4 == null) return "Error: XML does not contain parameter_4.";
-
-            string sP0 = ui.SafeHTML(xP0.Value);
-            string sP1 = ui.SafeHTML(xP1.Value);
-            //string sP2 = ui.SafeHTML(xP2.Value);
-            //string sP3 = ui.SafeHTML(xP3.Value);
-            //string sP4 = ui.SafeHTML(xP4.Value);
-
-            //which option to show depends on the command type
-            //wmi only has one box
-            switch (sType)
-            {
-                case "WMI":
-                    sHTML += "Namespace: " + Environment.NewLine;
-                    sHTML += "<span class=\"code\">" + sP1 + "</span><br />" + Environment.NewLine;
-
-                    sHTML += "<br />Command: <br />" + Environment.NewLine;
-                    sHTML += "<div class=\"codebox\">" + sP0 + "</div>" + Environment.NewLine;
-
-                    break;
-                case "Registry":
-                    sHTML += "Command:" + Environment.NewLine;
-                    sHTML += "<span class=\"code\">" + sCommand + "</span><br />" + Environment.NewLine;
-
-
-                    //fields depend on the command
-                    switch (sCommand)
-                    {
-                        case "Get Keys":
-                            sHTML += "Registry Path: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-
-                            break;
-                        case "Get Key Values":
-                            sHTML += "Registry Path: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-
-                            break;
-                        case "Get Values":
-                            sHTML += "Registry Path: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-
-                            sHTML += "Key: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP1 + "</span><br />" + Environment.NewLine;
-
-                            break;
-                        default:
-                            break;
-                    }
-
-                    break;
-                case "Security":
-                    sHTML += "Command:" + Environment.NewLine;
-                    sHTML += "<span class=\"code\">" + sCommand + "</span><br />" + Environment.NewLine;
-
-
-                    //fields depend on the command
-                    switch (sCommand)
-                    {
-                        case "Get User Properties":
-                            sHTML += "User Name: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        case "Get User Rights":
-                            sHTML += "User Name: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        case "Get User Groups":
-                            sHTML += "User Name: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        case "Get Local Group Members":
-                            sHTML += "Group Name: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        case "Get Group Rights":
-                            sHTML += "Group Name: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        case "Get Group Properties":
-                            sHTML += "Group Name: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        case "Get Users with Right":
-                            sHTML += "Right: " + Environment.NewLine;
-                            sHTML += "<span class=\"code\">" + sP0 + "</span><br />" + Environment.NewLine;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    break;
-                default:
-                    break;
-            }
-
-            //variables
-            sHTML += DrawVariableSectionForDisplay(dr, false);
-
-            return sHTML;
-        }
-        public string Codeblock_View(string sStepID, string sFunction, XDocument xd)
-        {
             XElement xCB = xd.XPathSelectElement("//codeblock");
             if (xCB == null) return "Error: XML does not contain codeblock";
 
@@ -4065,8 +3648,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Subtask_View(string sStepID, string sFunction, XDocument xd)
+        public string Subtask_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             string sOriginalTaskID = "";
             string sVersion = "";
             string sLabel = "";
@@ -4112,8 +3697,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Sleep_View(string sStepID, string sFunction, XDocument xd)
+        public string Sleep_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xSeconds = xd.XPathSelectElement("//seconds");
             if (xSeconds == null) return "Error: XML does not contain seconds";
 
@@ -4125,8 +3712,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string While_View(string sStepID, string sFunction, XDocument xd)
+        public string While_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             string sUserID = ui.GetSessionUserID();
 
             XElement xTest = xd.XPathSelectElement("//test");
@@ -4145,9 +3734,9 @@ namespace FunctionTemplates
             sHTML += "<hr />Action:<br />" + Environment.NewLine;
             if (ui.IsGUID(xAction.Value))
             {
-                DataRow dr = GetSingleStep(sAction, sUserID, ref sErr);
-                if (dr != null && sErr == "")
-                    sHTML += DrawEmbeddedReadOnlyStep(dr, bShowNotes);
+                Step oEmbeddedStep = GetSingleStep(sAction, sUserID, ref sErr);
+                if (oEmbeddedStep != null && sErr == "")
+                    sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                 else
                     sHTML += "<span class=\"red_text\">" + sErr + "</span>";
             }
@@ -4158,8 +3747,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string SetDebugLevel_View(string sStepID, string sFunction, XDocument xd)
+        public string SetDebugLevel_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xDebugLevel = xd.XPathSelectElement("//debug_level");
             if (xDebugLevel == null) return "Error: XML does not contain debug_level";
 
@@ -4193,8 +3784,10 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        public string GetTaskInstance_View(string sStepID, string sFunction, XDocument xd)
+        public string GetTaskInstance_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xInstance = xd.XPathSelectElement("//instance");
             if (xInstance == null) return "Error: XML does not contain instance";
             XElement xHandle = xd.XPathSelectElement("//handle");
@@ -4211,8 +3804,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string CancelTask_View(string sStepID, string sFunction, XDocument xd)
+        public string CancelTask_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xTaskInstance = xd.XPathSelectElement("//task_instance");
             if (xTaskInstance == null) return "Error: XML does not contain task_instance";
 
@@ -4224,8 +3819,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string SetVariable_View(string sStepID, string sFunction, XDocument xd)
+        public string SetVariable_View(Step oStep)
         {
+			string sStepID = oStep.ID;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
 
             sHTML += "<div id=\"v" + sStepID + "_vars\">";
@@ -4258,8 +3856,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Substring_View(string sStepID, string sFunction, XDocument xd)
+        public string Substring_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xVariable = xd.XPathSelectElement("//variable_name");
             if (xVariable == null) return "Error: XML does not contain variable_name";
             XElement xStart = xd.XPathSelectElement("//start");
@@ -4289,8 +3889,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Loop_View(string sStepID, string sFunction, XDocument xd)
+        public string Loop_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             string sUserID = ui.GetSessionUserID();
 
             XElement xStart = xd.XPathSelectElement("//start");
@@ -4339,9 +3941,9 @@ namespace FunctionTemplates
             sHTML += "Action:<br />" + Environment.NewLine;
             if (ui.IsGUID(xAction.Value))
             {
-                DataRow dr = GetSingleStep(sAction, sUserID, ref sErr);
-                if (dr != null && sErr == "")
-                    sHTML += DrawEmbeddedReadOnlyStep(dr, bShowNotes);
+                Step oEmbeddedStep = GetSingleStep(sAction, sUserID, ref sErr);
+                if (oEmbeddedStep != null && sErr == "")
+                    sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                 else
                     sHTML += "<span class=\"red_text\">" + sErr + "</span>";
             }
@@ -4352,8 +3954,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string LogMessage_View(string sStepID, string sFunction, XDocument xd)
+        public string LogMessage_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xMessage = xd.XPathSelectElement("//message");
             if (xMessage == null) return "Error: XML does not contain message";
 
@@ -4365,8 +3969,10 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string Scriptlet_View(string sStepID, string sFunction, XDocument xd)
+        public string Scriptlet_View(Step oStep)
         {
+			XDocument xd = oStep.FunctionXDoc;
+
             XElement xLanguage = xd.XPathSelectElement("//language");
             if (xLanguage == null) return "Error: XML does not contain language";
             XElement xScript = xd.XPathSelectElement("//script");
@@ -4383,7 +3989,7 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string BreakLoop_View(string sStepID, string sFunction, XDocument xd)
+        public string BreakLoop_View(Step oStep)
         {
             return "<!---->";
         }
@@ -4401,8 +4007,12 @@ namespace FunctionTemplates
             }
         }
 
-        private string DrawKeyValueSection(string sStepID, string sFunction, XDocument xd, bool bShowPicker, bool bShowMaskOption, string sKeyLabel, string sValueLabel)
+        private string DrawKeyValueSection(Step oStep, bool bShowPicker, bool bShowMaskOption, string sKeyLabel, string sValueLabel)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sElementID = "";
             string sValueFieldID = "";
             string sHTML = "";
@@ -4483,8 +4093,11 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        private string DrawKeyValueSection_View(string sStepID, string sFunction, XDocument xd, string sKeyLabel, string sValueLabel)
+        private string DrawKeyValueSection_View(Step oStep, string sKeyLabel, string sValueLabel)
         {
+			string sStepID = oStep.ID;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
             sHTML += "<div id=\"" + sStepID + "_pairs\">";
 
@@ -4520,23 +4133,23 @@ namespace FunctionTemplates
             return (s1 == s2 ? " checked=\"checked\"" : "");
         }
 
-        private string DrawVariableSectionForDisplay(DataRow drStep, bool bShowEditLink)
+        private string DrawVariableSectionForDisplay(Step oStep, bool bShowEditLink)
         {
+			string sStepID = oStep.ID;
+
             //we go check if there are vars first, so that way we don't waste space displaying nothing
             //if there are none
             //BUT only hide this empty section on the 'view' page.
             //if it's an edit page, we still show the empty table!
 
-            string sVariableHTML = GetVariablesForStepForDisplay(drStep);
+            string sVariableHTML = GetVariablesForStepForDisplay(oStep);
 
             if (!bShowEditLink && string.IsNullOrEmpty(sVariableHTML))
                 return "";
 
-            string sStepID = drStep["step_id"].ToString();
-            //string sFunction = drStep["function_name"].ToString();
-            int iParseType = (int)drStep["output_parse_type"];
-            int iRowDelimiter = (int)drStep["output_row_delimiter"];
-            int iColumnDelimiter = (int)drStep["output_column_delimiter"];
+            int iParseType = oStep.OutputParseType;
+            int iRowDelimiter = oStep.OutputRowDelimiter;
+            int iColumnDelimiter = oStep.OutputColumnDelimiter;
 
             string sHTML = "";
             if (bShowEditLink)
@@ -4562,108 +4175,103 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        private string GetVariablesForStepForDisplay(DataRow drStep)
+        private string GetVariablesForStepForDisplay(Step oStep)
         {
-            string sStepID = drStep["step_id"].ToString();
+			string sStepID = oStep.ID;
+			XDocument xDoc = oStep.VariableXDoc;
+
             string sHTML = "";
 
-            if (!string.IsNullOrEmpty(drStep["variable_xml"].ToString()))
-            {
-                XDocument xDoc = XDocument.Parse(drStep["variable_xml"].ToString());
-                if (xDoc == null)
-                    return "Variable XML data for step [" + sStepID + "] is invalid.";
-
-                XElement xVars = xDoc.Element("variables");
-                if (xVars == null)
-                    return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
-
-                if (xVars.Elements("variable").Count() > 0)
-                {
-                    //build the HTML
-                    sHTML += "<table class=\"step_variables\" width=\"99%\" border=\"0\">" + Environment.NewLine;
-                    sHTML += "<tbody>";
-
-                    //loop
-                    foreach (XElement xVar in xVars.Elements("variable"))
-                    {
-                        string sName = ui.SafeHTML(xVar.Element("name").Value);
-                        string sType = xVar.Element("type").Value.ToLower();
-
-                        sHTML += "<tr>";
-                        sHTML += "<td class=\"row\"><span class=\"code\">" + sName + "</span></td>";
-
-                        switch (sType)
-                        {
-                            case "range":
-                                string sLProp = "";
-                                string sRProp = "";
-                                //the markers can be a range indicator or a string.
-                                if (xVar.Element("range_begin") != null)
-                                {
-                                    sLProp = " Position [" + xVar.Element("range_begin").Value + "]";
-                                }
-                                else if (xVar.Element("prefix") != null)
-                                {
-                                    sLProp = " Prefix [" + xVar.Element("prefix").Value + "]";
-                                }
-                                else
-                                {
-                                    return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker.";
-                                }
-                                if (xVar.Element("range_end") != null)
-                                {
-                                    sRProp = " Position [" + xVar.Element("range_end").Value + "]";
-                                }
-                                else if (xVar.Element("suffix") != null)
-                                {
-                                    sRProp = " Suffix [" + xVar.Element("suffix").Value + "]";
-                                }
-                                else
-                                {
-                                    return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker.";
-                                }
-
-
-
-                                sHTML += "<td class=\"row\">Characters in Range:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(sLProp) + " - " + ui.SafeHTML(sRProp) + "</span></td>";
-                                break;
-
-
-                            case "delimited":
-                                sHTML += "<td class=\"row\">Value at Index Position:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("position").Value) + "</span></td>";
-                                break;
-
-
-                            case "regex":
-                                sHTML += "<td class=\"row\">Regular Expression:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("regex").Value) + "</span></td>";
-                                break;
-                            case "xpath":
-                                sHTML += "<td class=\"row\">Xpath:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("xpath").Value) + "</span></td>";
-                                break;
-                            default:
-                                sHTML += "INVALID TYPE";
-                                break;
-                        }
-
-                        sHTML += "</tr>";
-
-                    }
-
-                    //close it out
-                    sHTML += "</tbody></table>" + Environment.NewLine;
-                }
-            }
-            return sHTML;
-        }
-
-        public string DrawVariableSectionForEdit(DataRow drStep)
+			XElement xVars = xDoc.Element("variables");
+			if (xVars == null)
+				return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
+			
+			if (xVars.Elements("variable").Count() > 0)
+			{
+				//build the HTML
+				sHTML += "<table class=\"step_variables\" width=\"99%\" border=\"0\">" + Environment.NewLine;
+				sHTML += "<tbody>";
+				
+				//loop
+				foreach (XElement xVar in xVars.Elements("variable"))
+				{
+					string sName = ui.SafeHTML(xVar.Element("name").Value);
+					string sType = xVar.Element("type").Value.ToLower();
+					
+					sHTML += "<tr>";
+					sHTML += "<td class=\"row\"><span class=\"code\">" + sName + "</span></td>";
+					
+					switch (sType)
+					{
+					case "range":
+						string sLProp = "";
+						string sRProp = "";
+						//the markers can be a range indicator or a string.
+						if (xVar.Element("range_begin") != null)
+						{
+							sLProp = " Position [" + xVar.Element("range_begin").Value + "]";
+						}
+						else if (xVar.Element("prefix") != null)
+						{
+							sLProp = " Prefix [" + xVar.Element("prefix").Value + "]";
+						}
+						else
+						{
+							return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker.";
+						}
+						if (xVar.Element("range_end") != null)
+						{
+							sRProp = " Position [" + xVar.Element("range_end").Value + "]";
+						}
+						else if (xVar.Element("suffix") != null)
+						{
+							sRProp = " Suffix [" + xVar.Element("suffix").Value + "]";
+						}
+						else
+						{
+							return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker.";
+						}
+						
+						
+						
+						sHTML += "<td class=\"row\">Characters in Range:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(sLProp) + " - " + ui.SafeHTML(sRProp) + "</span></td>";
+						break;
+						
+						
+					case "delimited":
+						sHTML += "<td class=\"row\">Value at Index Position:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("position").Value) + "</span></td>";
+						break;
+						
+						
+					case "regex":
+						sHTML += "<td class=\"row\">Regular Expression:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("regex").Value) + "</span></td>";
+						break;
+					case "xpath":
+						sHTML += "<td class=\"row\">Xpath:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("xpath").Value) + "</span></td>";
+						break;
+					default:
+						sHTML += "INVALID TYPE";
+						break;
+					}
+					
+					sHTML += "</tr>";
+					
+				}
+				
+				//close it out
+				sHTML += "</tbody></table>" + Environment.NewLine;
+			}
+			return sHTML;
+		}
+	
+        public string DrawVariableSectionForEdit(Step oStep)
         {
             string sHTML = "";
             //string sStepID = drStep["step_id"].ToString();
             //string sFunction = drStep["function_name"].ToString();
-            string sParseType = drStep["output_parse_type"].ToString();
-            int iRowDelimiter = (int)drStep["output_row_delimiter"];
-            int iColumnDelimiter = (int)drStep["output_column_delimiter"];
+            string sParseType = oStep.OutputParseType.ToString();
+            int iRowDelimiter = oStep.OutputRowDelimiter;
+            int iColumnDelimiter = oStep.OutputColumnDelimiter;
 
             //now, some sections or items may or may not be available.
             string sDelimiterSectionVisiblity = "";
@@ -4706,160 +4314,157 @@ namespace FunctionTemplates
                 " alt=\"Add Variable\" title=\"Add Variable\"/> Add a Variable</span><span id=\"variable_clearall_btn\">" +
                 "<img src=\"../images/icons/bookmark_delete_32.png\" width=\"16\" height=\"16\"" +
                 " alt=\"Clear All Variables\" title=\"Clear All Variables\"/> Clear All Variables</span></div>";
-            sHTML += GetVariablesForStepForEdit(drStep);
+            sHTML += GetVariablesForStepForEdit(oStep);
             sHTML += "</div>";
 
             return sHTML;
         }
-        public string GetVariablesForStepForEdit(DataRow drStep)
+        public string GetVariablesForStepForEdit(Step oStep)
         {
-            string sStepID = drStep["step_id"].ToString();
-            //string sParseType = drStep["output_parse_type"].ToString();
+            string sStepID = oStep.ID;
 
-            string sHTML = "";
+			string sHTML = "";
+			
+			//build the HTML
+			sHTML += "<ul id=\"edit_variables\" class=\"variables\">";
+			
+			XDocument xDoc = oStep.VariableXDoc;
+			if (xDoc == null)
+				return "Variable XML data for step [" + sStepID + "] is invalid.";
+			
+			XElement xVars = xDoc.Element("variables");
+			if (xVars == null)
+				return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
+			
+			
+			if (xVars.Elements("variable").Count() > 0)
+			{
+				//loop
+				foreach (XElement xVar in xVars.Elements("variable"))
+				{
+					string sName = xVar.Element("name").Value;
+					string sType = xVar.Element("type").Value.ToLower();
+					string sVarStrip = sName;
+					string sDetailStrip = "";
+					string sLProp = "";
+					string sRProp = "";
+					string sLIdxChecked = "";
+					string sRIdxChecked = "";
+					string sLPosChecked = "";
+					string sRPosChecked = "";
+					string sVarGUID = "v" + ui.NewGUID();
+					
+					switch (sType)
+					{
+					case "range":
+						//the markers can be a range indicator or a string.
+						if (xVar.Element("range_begin") != null)
+						{
+							sLProp = ui.SafeHTML(xVar.Element("range_begin").Value);
+							sLIdxChecked = " checked=\"checked\"";
+						}
+						else if (xVar.Element("prefix") != null)
+						{
+							sLProp = ui.SafeHTML(xVar.Element("prefix").Value);
+							sLPosChecked = " checked=\"checked\"";
+						}
+						else
+						{
+							return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker.";
+						}
+						if (xVar.Element("range_end") != null)
+						{
+							sRProp = ui.SafeHTML(xVar.Element("range_end").Value);
+							sRIdxChecked = " checked=\"checked\"";
+						}
+						else if (xVar.Element("suffix") != null)
+						{
+							sRProp = ui.SafeHTML(xVar.Element("suffix").Value);
+							sRPosChecked = " checked=\"checked\"";
+						}
+						else
+						{
+							return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker.";
+						}
+						sVarStrip = "Variable: " +
+							" <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
+								" validate_as=\"variable\"" +
+								" value=\"" + sName + "\" />";
+						sDetailStrip = " will contain the output found between <br />" +
+							"<input type=\"radio\" name=\"" + sVarGUID + "_l_mode\" value=\"index\" " + sLIdxChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
+								" position / " +
+								" <input type=\"radio\" name=\"" + sVarGUID + "_l_mode\" value=\"string\" " + sLPosChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
+								" prefix " +
+								" <input type=\"text\" class=\"w100px code prop\" id=\"" + sVarGUID + "_l_prop\"" +
+								" value=\"" + sLProp + "\" refid=\"" + sVarGUID + "\" />" +
+								" and " +
+								"<input type=\"radio\" name=\"" + sVarGUID + "_r_mode\" value=\"index\" " + sRIdxChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
+								" position / " +
+								" <input type=\"radio\" name=\"" + sVarGUID + "_r_mode\" value=\"string\" " + sRPosChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
+								" suffix " +
+								" <input type=\"text\" class=\"w100px code prop\" id=\"" + sVarGUID + "_r_prop\"" +
+								" value=\"" + sRProp + "\" refid=\"" + sVarGUID + "\" />.";
+						break;
+						
+						
+						
+					case "delimited":
+						sLProp = xVar.Element("position").Value;
+						sVarStrip = "Variable: " +
+							" <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
+								" validate_as=\"variable\"" +
+								" value=\"" + sName + "\" />";
+						sDetailStrip += "" +
+							" will contain the data from column position" +
+								" <input type=\"text\" class=\"w100px code\" id=\"" + sVarGUID + "_l_prop\"" +
+								" value=\"" + sLProp + "\" validate_as=\"posint\" />.";
+						break;
+						
+						
+					case "regex":
+						sLProp = ui.SafeHTML(xVar.Element("regex").Value);
+						sVarStrip = "Variable: " +
+							" <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
+								" validate_as=\"variable\"" +
+								" value=\"" + sName + "\" />";
+						sDetailStrip += "" +
+							" will contain the result of the following regular expression: " +
+								" <br /><input type=\"text\" class=\"w98pct code\"" +
+								" id=\"" + sVarGUID + "_l_prop\"" +
+								" value=\"" + sLProp + "\" />.";
+						break;
+					case "xpath":
+						sLProp = ui.SafeHTML(xVar.Element("xpath").Value);
+						sVarStrip = "Variable: " +
+							" <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
+								" validate_as=\"variable\"" +
+								" value=\"" + sName + "\" />";
+						sDetailStrip += "" +
+							" will contain the Xpath: " +
+								" <br /><input type=\"text\" class=\"w98pct code\"" +
+								" id=\"" + sVarGUID + "_l_prop\"" +
+								" value=\"" + sLProp + "\" />.";
+						break;
+					default:
+						sHTML += "INVALID TYPE";
+						break;
+					}
+					
+					
+					sHTML += "<li id=\"" + sVarGUID + "\" class=\"variable\" var_type=\"" + sType + "\">";
+					sHTML += "<span class=\"variable_name\">" + sVarStrip + "</span>";
+					sHTML += "<span class=\"variable_delete_btn\" remove_id=\"" + sVarGUID + "\">" +
+						" <img src=\"../images/icons/fileclose.png\"" +
+							"  alt=\"Delete Variable\" title=\"Delete Variable\" /></span>";
+					sHTML += "<span class=\"variable_detail\">" + sDetailStrip + "</span>";
+					//an error message placeholder
+					sHTML += "<br /><span id=\"" + sVarGUID + "_msg\" class=\"var_error_msg\"></span>";
+					
+					sHTML += "</li>" + Environment.NewLine;
+					
+				}
+			}
 
-            //build the HTML
-            sHTML += "<ul id=\"edit_variables\" class=\"variables\">";
-
-            if (!string.IsNullOrEmpty(drStep["variable_xml"].ToString()))
-            {
-                XDocument xDoc = XDocument.Parse(drStep["variable_xml"].ToString());
-                if (xDoc == null)
-                    return "Variable XML data for step [" + sStepID + "] is invalid.";
-
-                XElement xVars = xDoc.Element("variables");
-                if (xVars == null)
-                    return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
-
-
-                if (xVars.Elements("variable").Count() > 0)
-                {
-                    //loop
-                    foreach (XElement xVar in xVars.Elements("variable"))
-                    {
-                        string sName = xVar.Element("name").Value;
-                        string sType = xVar.Element("type").Value.ToLower();
-                        string sVarStrip = sName;
-                        string sDetailStrip = "";
-                        string sLProp = "";
-                        string sRProp = "";
-                        string sLIdxChecked = "";
-                        string sRIdxChecked = "";
-                        string sLPosChecked = "";
-                        string sRPosChecked = "";
-                        string sVarGUID = "v" + ui.NewGUID();
-
-                        switch (sType)
-                        {
-                            case "range":
-                                //the markers can be a range indicator or a string.
-                                if (xVar.Element("range_begin") != null)
-                                {
-                                    sLProp = ui.SafeHTML(xVar.Element("range_begin").Value);
-                                    sLIdxChecked = " checked=\"checked\"";
-                                }
-                                else if (xVar.Element("prefix") != null)
-                                {
-                                    sLProp = ui.SafeHTML(xVar.Element("prefix").Value);
-                                    sLPosChecked = " checked=\"checked\"";
-                                }
-                                else
-                                {
-                                    return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker.";
-                                }
-                                if (xVar.Element("range_end") != null)
-                                {
-                                    sRProp = ui.SafeHTML(xVar.Element("range_end").Value);
-                                    sRIdxChecked = " checked=\"checked\"";
-                                }
-                                else if (xVar.Element("suffix") != null)
-                                {
-                                    sRProp = ui.SafeHTML(xVar.Element("suffix").Value);
-                                    sRPosChecked = " checked=\"checked\"";
-                                }
-                                else
-                                {
-                                    return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker.";
-                                }
-                                sVarStrip = "Variable: " +
-                                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
-                                    " validate_as=\"variable\"" +
-                                    " value=\"" + sName + "\" />";
-                                sDetailStrip = " will contain the output found between <br />" +
-                                        "<input type=\"radio\" name=\"" + sVarGUID + "_l_mode\" value=\"index\" " + sLIdxChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
-                                        " position / " +
-                                        " <input type=\"radio\" name=\"" + sVarGUID + "_l_mode\" value=\"string\" " + sLPosChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
-                                        " prefix " +
-                                    " <input type=\"text\" class=\"w100px code prop\" id=\"" + sVarGUID + "_l_prop\"" +
-                                    " value=\"" + sLProp + "\" refid=\"" + sVarGUID + "\" />" +
-                                    " and " +
-                                        "<input type=\"radio\" name=\"" + sVarGUID + "_r_mode\" value=\"index\" " + sRIdxChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
-                                        " position / " +
-                                        " <input type=\"radio\" name=\"" + sVarGUID + "_r_mode\" value=\"string\" " + sRPosChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" +
-                                        " suffix " +
-                                    " <input type=\"text\" class=\"w100px code prop\" id=\"" + sVarGUID + "_r_prop\"" +
-                                    " value=\"" + sRProp + "\" refid=\"" + sVarGUID + "\" />.";
-                                break;
-
-
-
-                            case "delimited":
-                                sLProp = xVar.Element("position").Value;
-                                sVarStrip = "Variable: " +
-                                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
-                                    " validate_as=\"variable\"" +
-                                    " value=\"" + sName + "\" />";
-                                sDetailStrip += "" +
-                                    " will contain the data from column position" +
-                                    " <input type=\"text\" class=\"w100px code\" id=\"" + sVarGUID + "_l_prop\"" +
-                                    " value=\"" + sLProp + "\" validate_as=\"posint\" />.";
-                                break;
-
-
-                            case "regex":
-                                sLProp = ui.SafeHTML(xVar.Element("regex").Value);
-                                sVarStrip = "Variable: " +
-                                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
-                                    " validate_as=\"variable\"" +
-                                    " value=\"" + sName + "\" />";
-                                sDetailStrip += "" +
-                                    " will contain the result of the following regular expression: " +
-                                    " <br /><input type=\"text\" class=\"w98pct code\"" +
-                                    " id=\"" + sVarGUID + "_l_prop\"" +
-                                    " value=\"" + sLProp + "\" />.";
-                                break;
-                            case "xpath":
-                                sLProp = ui.SafeHTML(xVar.Element("xpath").Value);
-                                sVarStrip = "Variable: " +
-                                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" +
-                                    " validate_as=\"variable\"" +
-                                    " value=\"" + sName + "\" />";
-                                sDetailStrip += "" +
-                                    " will contain the Xpath: " +
-                                    " <br /><input type=\"text\" class=\"w98pct code\"" +
-                                    " id=\"" + sVarGUID + "_l_prop\"" +
-                                    " value=\"" + sLProp + "\" />.";
-                                break;
-                            default:
-                                sHTML += "INVALID TYPE";
-                                break;
-                        }
-
-
-                        sHTML += "<li id=\"" + sVarGUID + "\" class=\"variable\" var_type=\"" + sType + "\">";
-                        sHTML += "<span class=\"variable_name\">" + sVarStrip + "</span>";
-                        sHTML += "<span class=\"variable_delete_btn\" remove_id=\"" + sVarGUID + "\">" +
-                            " <img src=\"../images/icons/fileclose.png\"" +
-                                    "  alt=\"Delete Variable\" title=\"Delete Variable\" /></span>";
-                        sHTML += "<span class=\"variable_detail\">" + sDetailStrip + "</span>";
-                        //an error message placeholder
-                        sHTML += "<br /><span id=\"" + sVarGUID + "_msg\" class=\"var_error_msg\"></span>";
-
-                        sHTML += "</li>" + Environment.NewLine;
-
-                    }
-                }
-            }
             sHTML += "</ul>" + Environment.NewLine;
 
             return sHTML;
@@ -4920,9 +4525,9 @@ namespace FunctionTemplates
 
             if (ui.IsGUID(sEmbeddedStepID))
             {
-                DataRow dr = GetSingleStep(sEmbeddedStepID, sUserID, ref sErr);
-                if (dr != null && sErr == "")
-                    sHTML += DrawEmbeddedStep(dr);
+                Step oEmbeddedStep = GetSingleStep(sEmbeddedStepID, sUserID, ref sErr);
+                if (oEmbeddedStep != null && sErr == "")
+                    sHTML += DrawEmbeddedStep(oEmbeddedStep);
                 else
                     sHTML += "<span class=\"red_text\">" + sErr + "</span>";
             }
@@ -4969,8 +4574,12 @@ namespace FunctionTemplates
         }
         //END OVERLOADED
 
-        private string DrawReadOnlyStepFromXMLDocument(ref XDocument xd, string sStepID, string sFunction)
+        private string DrawReadOnlyStepFromXMLDocument(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             string sHTML = "";
             if (xd.XPathSelectElement("//function") != null)
             {
@@ -4985,8 +4594,12 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        private string DrawStepFromXMLDocument(ref XDocument xd, string sStepID, string sFunction)
+        private string DrawStepFromXMLDocument(Step oStep)
         {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.Function.Name;
+			XDocument xd = oStep.FunctionXDoc;
+
             /*
              * This block reads the XML for a step and uses certain node attributes to determine how to draw the step.
              *
@@ -5802,35 +5415,6 @@ namespace FunctionTemplates
             }
         }
 
-
-        public string GetCommandXMLTemplate(string sFunction, ref string sErr)
-        {
-            try
-            {
-                if (sFunction == "")
-                {
-                    sErr = "Unable to look up XML.  Invalid command type. [" + sFunction + "]";
-                    return "";
-                }
-
-                string sXML = "";
-                string sSQL = "select xml_template from lu_task_step_function where function_name = '" + sFunction + "'";
-                if (!dc.sqlGetSingleString(ref sXML, sSQL, ref sErr))
-                    return "";
-
-                if (!string.IsNullOrEmpty(sXML))
-                    return sXML;
-                else
-                {
-                    sErr = "Error: Could not loop up XML for command type [" + sFunction + "].";
-                    return "";
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
         public string GetStepCommandXML(string sStepID, ref string sErr)
         {
             try
@@ -5859,7 +5443,6 @@ namespace FunctionTemplates
                 throw ex;
             }
         }
-
 
         public void AddNodeToRegistry(string sRegistryID, string sXPath, string sXMLToAdd)
         {
