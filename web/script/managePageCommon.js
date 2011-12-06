@@ -151,19 +151,7 @@ $(document).ready(function () {
     });
 
 
-    // show the icon for any sorting
-    var sortColumn = $("#ctl00_phDetail_hidSortColumn").val();
-    if (sortColumn != "") {
-        if ($("#ctl00_phDetail_hidSortDirection").val() == "asc") {
-            $("#imgDown" + sortColumn).removeClass("hidden");
-        } else {
-            $("#imgUp" + sortColumn).removeClass("hidden");
-        }
-    }
-
-
-
-    //this spins thru the check boxes on the page and builds the array.
+	//this spins thru the check boxes on the page and builds the array.
     //yes it rebuilds the list on every selection, but it's fast.
     $("[tag='chk']").live("click", function () {
         //first, deal with some 'check all' housekeeping
@@ -198,6 +186,11 @@ $(document).ready(function () {
 
 function ManagePageLoad() {
     initJtable(true, true);
+
+    // show the icon for any sorting
+    //this occurs on page load for any saved settings
+    //not part of initJtable because not all jTables are set up as sortable.
+	ShowSortIcon();
 
     //all the buttons are jQuery "button" widgets - enable them
     $("#clear_selected_btn").button({ icons: { primary: "ui-icon-refresh" }, text: false });
@@ -266,5 +259,20 @@ function IsInArray(myArray, searchString) {
         }
     } else {
         return myArray.indexOf(searchString);
+    }
+}
+
+function ShowSortIcon() {
+    var sortColumn = $("#ctl00_phDetail_hidSortColumn").val();
+    if (sortColumn != "") {
+		var $th = $(".jtable [sortcolumn='" + sortColumn + "']");
+		if ($th.length > 0)
+		{
+         	if ($("#ctl00_phDetail_hidSortDirection").val() == "asc") {
+            	$th.remove("img").prepend("<img src='../images/UpArrow.gif' />");
+        	} else {
+            	$th.remove("img").prepend("<img src='../images/DnArrow.gif' />");
+        	}
+    	}
     }
 }

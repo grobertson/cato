@@ -372,7 +372,6 @@ namespace Web.pages
         [WebMethod()]
         public static string SaveAsset(object[] oAsset)
         {
-
             // check the # of elements in the array
             if (oAsset.Length != 19) return "Incorrect number of Asset Properties:" + oAsset.Length.ToString();
 
@@ -419,6 +418,7 @@ namespace Web.pages
 
 
             //if we are editing get the original values
+			//this is getting original values for logging purposes
             if (sMode == "edit")
             {
                 DataRow dr = null;
@@ -446,7 +446,19 @@ namespace Web.pages
                     }
                 }
             }
-
+			
+			//NOTE NOTE NOTE!
+			//the following is a catch 22.
+			//if we're adding a new asset, we will need to figure out the credential first so we can save the credential id on the asset
+			//but if it's a new local credential, it gets the asset id as it's name.
+			//so.........
+			//if it's a new asset, go ahead and get the new guid for it here so the credential add will work.
+			if (sMode == "add")
+				sAssetID = ui.NewGUID();
+			//and move on...
+			
+			
+			
             // there are three CredentialType's 
             // 1) 'selected' = user selected a different credential, just save the credential_id
             // 2) 'new' = user created a new shared or local credential
@@ -454,40 +466,40 @@ namespace Web.pages
             string sPriviledgedPasswordUpdate = null;
             if (sCredentialType == "new")
             {
+				if (sPrivilegedPassword.Length == 0)
+					sPriviledgedPasswordUpdate = "NULL";
+				else
+					sPriviledgedPasswordUpdate = "'" + dc.EnCrypt(sPrivilegedPassword) + "'";
+
+				
 				//if it's a local credential, the credential_name is the asset_id.
 				//if it's shared, there will be a name.
 				if (sShared == "1")
 				{
 					sCredentialName = sAssetID;
+					
+					//whack and add - easiest way to avoid conflicts
+                    sSql = "delete from asset_credential where credential_name = '" + sCredentialName + "' and shared_or_local = '1'";
+                    if (!dc.sqlExecuteUpdate(sSql, ref sErr))
+                        throw new Exception(sErr);
 				}
 				
-                if (sCredPassword == "")
-                {
-                    // no username was passed in, so do not add a credentialid
-                    sCredentialID = "''";
-                }
-                else
-                {
-                    if (sPrivilegedPassword.Length == 0)
-                        sPriviledgedPasswordUpdate = "NULL";
-                    else
-                        sPriviledgedPasswordUpdate = "'" + dc.EnCrypt(sPrivilegedPassword) + "'";
-
-                    sCredentialID = "'" + System.Guid.NewGuid().ToString() + "'";
-                    sSql = "insert into asset_credential " +
-                        "(credential_id,credential_name,username,password,domain,shared_or_local,shared_cred_desc,privileged_password) " +
-                        "values (" + sCredentialID + ",'" + sCredentialName + "','" + sCredUsername + "','" + dc.EnCrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr + "'," + sPriviledgedPasswordUpdate + ")";
-                    if (!dc.sqlExecuteUpdate(sSql, ref sErr))
-					{
-						if (sErr == "key_violation")
-							throw new Exception("A Credential with that name already exists.  Please select another name.");
-						else 
-							throw new Exception(sErr);
-					}
-
-                    // add security log
-                    ui.WriteObjectAddLog(Globals.acObjectTypes.Credential, sCredentialID, sCredentialName, "");
-                }
+				//now we're clear to add
+				sCredentialID = "'" + ui.NewGUID() + "'";
+				sSql = "insert into asset_credential " +
+					"(credential_id,credential_name,username,password,domain,shared_or_local,shared_cred_desc,privileged_password) " +
+						"values (" + sCredentialID + ",'" + sCredentialName + "','" + sCredUsername + "','" + dc.EnCrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr + "'," + sPriviledgedPasswordUpdate + ")";
+				if (!dc.sqlExecuteUpdate(sSql, ref sErr))
+				{
+					if (sErr == "key_violation")
+						throw new Exception("A Credential with that name already exists.  Please select another name.");
+					else 
+						throw new Exception(sErr);
+				}
+				
+				// add security log
+				ui.WriteObjectAddLog(Globals.acObjectTypes.Credential, sCredentialID, sCredentialName, "");
+                
 
             }
             else if (sCredentialType == "existing")
@@ -589,7 +601,6 @@ namespace Web.pages
                 }
                 else
                 {
-                    sAssetID = System.Guid.NewGuid().ToString().ToUpper();
                     sSql = "insert into asset (asset_id,asset_name,asset_status,address,conn_string,db_name,port,connection_type,is_connection_system,credential_id)" +
                     " values (" +
                     "'" + sAssetID + "'," +

@@ -5,25 +5,23 @@
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/objectTag.js"></script>
     <script type="text/javascript" src="../script/validation.js"></script>
-
     <style type="text/css">
         .credential_selector
         {
-            height: 300px;
-            overflow: auto;
+        height: 300px;
+        overflow: auto;
         }
         .select_credential
         {
-            background: #cccccc;
-            cursor: pointer;
+        background: #cccccc;
+        cursor: pointer;
         }
         .credentialinputs
         {
-            width: 200px;
+        width: 200px;
         }
     </style>
 </asp:Content>
-
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div style="display: none;">
         <input id="hidPageSaveType" type="hidden" value="batch" />
@@ -47,10 +45,12 @@
                 <div id="left_tooltip_box_inner">
                     <p>
                         <img src="../images/tooltip.png" alt="" />The Manage Assets screen allows administrators
-                        to modify, add and delete Assets.</p>
+                        to modify, add and delete Assets.
+                    </p>
                     <p>
                         Select one or more Assets from the list to the right, using the checkboxes. Select
-                        an action to modify or delete the Assets you've selected.</p>
+                        an action to modify or delete the Assets you've selected.
+                    </p>
                 </div>
             </div>
         </div>
@@ -69,61 +69,50 @@
                             <input type="checkbox" class="chkbox" id="chkAll" />
                         </th>
                         <th sortcolumn="asset_name" width="250px">
-                            <img id="imgUpasset_name" src="../images/UpArrow.gif" class="hidden" alt="" />
-                            <img id="imgDownasset_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                             Asset
                         </th>
                         <th sortcolumn="asset_status" width="100px">
-                            <img id="imgUpasset_status" src="../images/UpArrow.gif" class="hidden" alt="" />
-                            <img id="imgDownasset_status" src="../images/DnArrow.gif" class="hidden" alt="" />
                             Status
                         </th>
                         <th sortcolumn="credentials" width="125px">
-                            <img id="imgUpcredentials" src="../images/UpArrow.gif" class="hidden" alt="" />
-                            <img id="imgDowncredentials" src="../images/DnArrow.gif" class="hidden" alt="" />
                             Credential
                         </th>
                         <th sortcolumn="address" width="50px">
-                            <img id="imgUpaddress" src="../images/UpArrow.gif" class="hidden" alt="" />
-                            <img id="imgDownaddress" src="../images/DnArrow.gif" class="hidden" alt="" />
                             Address
                         </th>
                         <th sortcolumn="connection_type" width="70px">
-                            <img id="imgUpconnection_type" src="../images/UpArrow.gif" class="hidden" alt="" />
-                            <img id="imgDownconnection_type" src="../images/DnArrow.gif" class="hidden" alt="" />
                             Conn Type
                         </th>
                     </tr>
-                <asp:Repeater ID="rpAssets" runat="server">
-                    <ItemTemplate>
-                        <tr asset_id="<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>">
-                            <td class="chkboxcolumn" id="<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>">
-                                <input type="checkbox" class="chkbox" id="chk_<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>"
-                                    asset_id="<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>"
-                                    tag="chk" />
-                            </td>
-                            <td tag="selectable">
-                                <%# (((System.Data.DataRowView)Container.DataItem)["asset_name"]) %>
-                            </td>
-                            <td tag="selectable">
-                                <%# (((System.Data.DataRowView)Container.DataItem)["asset_status"]) %>
-                            </td>
-                            <td tag="selectable">
-                                <%# (((System.Data.DataRowView)Container.DataItem)["shared_or_local"]) %><%# (((System.Data.DataRowView)Container.DataItem)["credentials"]) %>
-                            </td>
-                            <td tag="selectable">
-                                <%# (((System.Data.DataRowView)Container.DataItem)["address"]) %>
-                            </td>
-                            <td tag="selectable">
-                                <%# (((System.Data.DataRowView)Container.DataItem)["connection_type"]) %>
-                            </td>
-                        </tr>
-                    </ItemTemplate>
-                </asp:Repeater>
+                    <asp:Repeater ID="rpAssets" runat="server">
+                        <ItemTemplate>
+                            <tr asset_id="<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>">
+                                <td class="chkboxcolumn" id="<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>">
+                                    <input type="checkbox" class="chkbox" id="chk_<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>" asset_id="<%# (((System.Data.DataRowView)Container.DataItem)["asset_id"]) %>" tag="chk" />
+                                </td>
+                                <td tag="selectable">
+                                    <%# (((System.Data.DataRowView)Container.DataItem)["asset_name"]) %>
+                                </td>
+                                <td tag="selectable">
+                                    <%# (((System.Data.DataRowView)Container.DataItem)["asset_status"]) %>
+                                </td>
+                                <td tag="selectable">
+                                    <%# (((System.Data.DataRowView)Container.DataItem)["shared_or_local"]) %><%# (((System.Data.DataRowView)Container.DataItem)["credentials"]) %>
+                                </td>
+                                <td tag="selectable">
+                                    <%# (((System.Data.DataRowView)Container.DataItem)["address"]) %>
+                                </td>
+                                <td tag="selectable">
+                                    <%# (((System.Data.DataRowView)Container.DataItem)["connection_type"]) %>
+                                </td>
+                            </tr>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </table>
                 <asp:PlaceHolder ID="phPager" runat="server"></asp:PlaceHolder>
                 <div class="hidden">
-                    <asp:Button ID="btnGetPage" runat="server" OnClick="btnGetPage_Click" /></div>
+                    <asp:Button ID="btnGetPage" runat="server" OnClick="btnGetPage_Click" />
+                </div>
             </ContentTemplate>
         </asp:UpdatePanel>
     </div>
@@ -194,27 +183,26 @@
                                 Connection String
                             </td>
                             <td>
-                                <textarea id="txtConnString" style="width: 400px;" type="text" name="txtConnString"
-                                    rows="4"></textarea>
+                                <textarea id="txtConnString" style="width: 400px;" type="text" name="txtConnString" rows="4"></textarea>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <br />
                 <span id="show_log_link" class="pointer">
-                    <img alt="" src="../images/icons/view_text_16.png" />
-                    View Change Log</span>
+                <img alt="" src="../images/icons/view_text_16.png" />
+                View Change Log</span>
             </div>
             <!--
-			<div id="TagsTab">
-                <span id="tag_add_btn" class="tag_add_btn pointer">
-                    <img src="../images/icons/edit_add.png" alt="" />
-                    click to add </span>
-                <hr />
-                <ul id="objects_tags">
-                </ul>
-            </div>
-			-->
+                <div id="TagsTab">
+                             <span id="tag_add_btn" class="tag_add_btn pointer">
+                                 <img src="../images/icons/edit_add.png" alt="" />
+                                 click to add </span>
+                             <hr />
+                             <ul id="objects_tags">
+                             </ul>
+                         </div>
+                -->
             <div id="CredentialsTab">
                 <table id="tblCredentials" width="80%">
                     <tbody>
@@ -223,7 +211,8 @@
                                 <input id="btnCredSelect" type="submit" value="Select Shared Credential" name="btnCredSelect" />
                                 <input id="btnCredAdd" type="submit" value="New Credential" name="btnCredAdd" />
                                 <p>
-                                    &nbsp;</p>
+                                    &nbsp;
+                                </p>
                                 <div id="CredentialDetails" class="col_header">
                                 </div>
                                 <div id="CredentialSelectorTabs" style="height: 380px;">
@@ -237,10 +226,10 @@
                                                 <div id="SharedLocalDiv">
                                                     <input id="rbLocal" type="radio" value="1" name="rbShared" checked="checked" />
                                                     <label for="rbLocal">
-                                                        Local</label>
+                                                    Local</label>
                                                     <input id="rbShared" type="radio" value="0" name="rbShared" />
                                                     <label for="rbShared">
-                                                        Shared</label>
+                                                    Shared</label>
                                                 </div>
                                             </td>
                                         </tr>

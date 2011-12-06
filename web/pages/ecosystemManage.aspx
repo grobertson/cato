@@ -52,18 +52,12 @@
                                     <input class="chkbox" type="checkbox" id="chkAll" />
                                 </th>
                                 <th sortcolumn="ecosystem_name" width="200px">
-                                    <img id="imgUpecosystem_name" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownecosystem_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Name
                                 </th>
                                 <th sortcolumn="ecotemplate_name" width="200px">
-                                    <img id="imgUpecotemplate_name" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownecotemplate_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Ecosystem Template
                                 </th>
                                 <th sortcolumn="ecosystem_desc" width="200px">
-                                    <img id="imgUpecosystem_desc" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownecosystem_desc" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Description
                                 </th>
                             </tr>

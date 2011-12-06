@@ -52,13 +52,9 @@
                                     <input class="chkbox" type="checkbox" id="chkAll" />
                                 </th>
                                 <th sortcolumn="ecotemplate_name" width="200px">
-                                    <img id="imgUpecotemplate_name" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownecotemplate_name" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Name
                                 </th>
                                 <th sortcolumn="ecotemplate_desc" width="200px">
-                                    <img id="imgUpecotemplate_desc" src="../images/UpArrow.gif" class="hidden" alt="" />
-                                    <img id="imgDownecotemplate_desc" src="../images/DnArrow.gif" class="hidden" alt="" />
                                     Description
                                 </th>
                             </tr>

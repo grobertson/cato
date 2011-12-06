@@ -1,6 +1,5 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="sharedCredentialEdit.aspx.cs"
     Inherits="Web.pages.sharedCredentialEdit" MasterPageFile="~/pages/site.master" %>
-
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/sharedCredentialEdit.js"></script>
@@ -12,6 +11,8 @@
         <input id="hidCredentialID" type="hidden" name="hidCredentialID" />
         <input id="hidCredentialType" type="hidden" name="hidCredentialID" />
         <asp:HiddenField ID="hidSortColumn" runat="server" />
+        <asp:HiddenField ID="hidSortDirection" runat="server" />
+        <asp:HiddenField ID="hidLastSortColumn" runat="server" />
         <asp:HiddenField ID="hidPage" runat="server" />
         <!-- Start visible elements -->
     </div>
@@ -23,10 +24,12 @@
                     <p>
                         <img src="../images/tooltip.png" alt="" />The Administer Shared Credentials screen
                         allows administrators to modify, add and delete credentials that will be shared
-                        across multiple assets.</p>
+                        across multiple assets.
+                    </p>
                     <p>
                         Select a shared credential from the list or select an action to add or delete the
-                        shared credentials you've selected.</p>
+                        shared credentials you've selected.
+                    </p>
                 </div>
             </div>
         </div>
@@ -40,31 +43,28 @@
                 <span id="item_search_btn">Search</span>
                 <asp:ImageButton ID="btnSearch" class="hidden" OnClick="btnSearch_Click" runat="server" />
                 <table class="jtable" cellspacing="1" cellpadding="1" width="99%">
+                    <tr>
+                        <th class="chkboxcolumn">
+                            <input type="checkbox" class="chkbox" id="chkAll" />
+                        </th>
+                        <th sortcolumn="credential_name" width="100px">
+                            Credential
+                        </th>
+                        <th sortcolumn="username" width="100px">
+                            UserName
+                        </th>
+                        <th sortcolumn="domain" width="100px">
+                            Domain
+                        </th>
+                        <th sortcolumn="shared_cred_desc" width="350px">
+                            Description
+                        </th>
+                    </tr>
                     <asp:Repeater ID="rptCredentials" runat="server">
-                        <HeaderTemplate>
-                            <tr>
-                                <th class="chkboxcolumn">
-                                </th>
-                                <th sortcolumn="credential_name" width="100px">
-                                    Credential
-                                </th>
-                                <th sortcolumn="username" width="100px">
-                                    UserName
-                                </th>
-                                <th sortcolumn="domain" width="100px">
-                                    Domain
-                                </th>
-                                <th sortcolumn="shared_cred_desc" width="350px">
-                                    Description
-                                </th>
-                            </tr>
-                        </HeaderTemplate>
                         <ItemTemplate>
                             <tr credential_id="<%# (((System.Data.DataRowView)Container.DataItem)["credential_id"]) %>">
                                 <td class="chkboxcolumn" id="<%# (((System.Data.DataRowView)Container.DataItem)["credential_id"]) %>">
-                                    <input type="checkbox" class="chkbox" id="chk_<%# (((System.Data.DataRowView)Container.DataItem)["credential_id"]) %>"
-                                        credential_id="<%# (((System.Data.DataRowView)Container.DataItem)["credential_id"]) %>"
-                                        tag="chk" />
+                                    <input type="checkbox" class="chkbox" id="chk_<%# (((System.Data.DataRowView)Container.DataItem)["credential_id"]) %>" credential_id="<%# (((System.Data.DataRowView)Container.DataItem)["credential_id"]) %>" tag="chk" />
                                 </td>
                                 <td tag="selectable">
                                     <%# (((System.Data.DataRowView)Container.DataItem)["credential_name"])%>
@@ -84,7 +84,8 @@
                 </table>
                 <asp:PlaceHolder ID="phPager" runat="server"></asp:PlaceHolder>
                 <div class="hidden">
-                    <asp:Button ID="btnGetPage" runat="server" OnClick="btnGetPage_Click" /></div>
+                    <asp:Button ID="btnGetPage" runat="server" OnClick="btnGetPage_Click" />
+                </div>
             </ContentTemplate>
         </asp:UpdatePanel>
     </div>
