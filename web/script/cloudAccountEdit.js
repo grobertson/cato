@@ -318,6 +318,8 @@ function ShowItemAdd() {
     clearEditDialog();
     $("#hidMode").val("add");
 
+	setLabels();	
+
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [1] );
     $('#edit_dialog').dialog('option', 'title', 'Create a New Account');
