@@ -166,7 +166,7 @@ function GetAccounts() {
 }
 
 function setLabels() {
-	if ($("#ddlProvider").val() == "Amazon AWS")
+	if ($("#ddlProvider").val() == "Amazon AWS" || $("#ddlProvider").val() == "Eucalyptus")
 	{
 		$("#login_label").text("Access Key");
 		$(".password_label").text("Secret Key");

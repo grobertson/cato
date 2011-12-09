@@ -95,7 +95,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <span id="login_label">Login ID</span>:
+                            <span id="login_label">Access Key</span>:
                         </td>
                         <td>
                             <input id="txtLoginID" class="usertextbox" name="txtLoginID" />
@@ -103,7 +103,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <span class="password_label">Password</span>:
+                            <span class="password_label">Secret Key</span>:
                         </td>
                         <td>
                             <input id="txtLoginPassword" type="password" class="usertextbox" name="txtLoginPassword" />
@@ -111,7 +111,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <span class="password_label">Password</span> Confirm:
+                            <span class="password_label">Secret Key</span> Confirm:
                         </td>
                         <td>
                             <input id="txtLoginPasswordConfirm" type="password" class="usertextbox" name="txtLoginPasswordConfirm" />
