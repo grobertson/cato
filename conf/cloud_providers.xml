@@ -182,5 +182,24 @@
 				</product>-->
 			</products>
 		</provider>
-	</providers>
+		<!--<provider name="OpenStack" test_product="compute" test_object="compute_security_group" user_defined_clouds="true">
+			<products>
+				<product name="compute" label="Compute" api_protocol="HTTP" api_version="1.1" api_url_prefix="" api_uri="">
+					<object_types>
+						<type id="os_servers" label="Servers" api_call="" xml_record_xpath="servers">
+							<property name="ID" label="" xpath="server[id]" id_field="1" short_list="1" sort_order="1" />
+							<property name="ServerLabel" label="" xpath="metadata/meta[key='Server Label']/value" short_list="1" sort_order="2" />
+						</type>
+						<type id="os_flavors" label="Flavors" api_call="" xml_record_xpath="flavors">
+						</type>
+						<type id="os_images" label="Images" api_call="" xml_record_xpath="images">
+							<property name="ID" label="ID" xpath="image[id]" id_field="1" short_list="1" sort_order="1" />
+							<property name="name" label="Name" xpath="image[name]" short_list="1" sort_order="2" />
+							<property name="ServerLabel" label="" xpath="metadata/meta[key='Image Type']/value" short_list="1" sort_order="3" />
+						</type>
+					</object_types>
+				</product>
+			</products>
+		</provider>-->
+</providers>
 </root>
