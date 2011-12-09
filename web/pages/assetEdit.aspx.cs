@@ -297,16 +297,19 @@ namespace Web.pages
                 {
 					dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 
-                    // TBD
                     // delete asset_credential
+                    sSql = "delete from asset_credential" +
+						" where shared_or_local = 1" +
+						" and credential_id in (select credential_id from asset where asset_id in (" + sbAssetIDString.ToString() + "))";
+                    oTrans.Command.CommandText = sSql;
+                    if (!oTrans.ExecUpdate(ref sErr))
+                        throw new Exception(sErr);
 
                     // delete asset
                     sSql = "delete from asset where asset_id in (" + sbAssetIDString.ToString() + ")";
                     oTrans.Command.CommandText = sSql;
                     if (!oTrans.ExecUpdate(ref sErr))
-                    {
                         throw new Exception(sErr);
-                    }
 
                     oTrans.Commit();
 
