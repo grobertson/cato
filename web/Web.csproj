@@ -331,6 +331,9 @@
       <DependentUpon>assetEdit.aspx</DependentUpon>
     </Compile>
     <None Include="pages\luCommands.xml" />
+    <Compile Include="pages\api.asmx.cs">
+      <DependentUpon>api.asmx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -507,5 +510,7 @@
     <Content Include="script\assetEdit.js" />
     <Content Include="pages\assetEdit.aspx" />
     <Content Include="script\home.js" />
+    <Content Include="pages\api.asmx" />
+    <Content Include="apitest.html" />
   </ItemGroup>
 </Project>

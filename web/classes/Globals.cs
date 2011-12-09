@@ -1138,6 +1138,58 @@ namespace Globals
 		public Function Function; //Step has a parent Function
 		public StepUserSettings UserSettings; //Step has user settings from the db
 		
+		//constructor from an xElement
+		public Step(XElement xStep, Codeblock c)
+		{
+			this.ID = Guid.NewGuid().ToString().ToLower();
+			this.Codeblock = c.Name;
+			
+			//stuff that shouldn't matter from the XML and we need to work out if it's required.
+			this.Order = 0;
+			this.Locked = false;
+
+			this.Description = (xStep.Element("description") != null ? xStep.Element("description").Value : "");
+
+			this.Commented = (xStep.Attribute("commented") != null ? (xStep.Attribute("commented").Value == "1" ? true : false) : false);
+			
+			int i = 0;
+
+			if (xStep.Attribute("output_parse_type") != null)
+			{
+				int.TryParse(xStep.Attribute("output_parse_type").Value, out i);
+				this.OutputParseType = i;
+			}
+			if (xStep.Attribute("output_row_delimiter") != null)
+			{
+				int.TryParse(xStep.Attribute("output_row_delimiter").Value, out i);
+				this.OutputRowDelimiter = i;
+			}
+			if (xStep.Attribute("output_column_delimiter") != null)
+			{
+				int.TryParse(xStep.Attribute("output_column_delimiter").Value, out i);
+				this.OutputColumnDelimiter = i;
+			}
+
+			if (xStep.Element("function") != null)
+			{
+				this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
+
+				if (!string.IsNullOrEmpty(this.FunctionXML)) 
+					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+			}
+			
+			if (xStep.Element("variable_xml") != null)
+			{
+				this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
+
+				if (!string.IsNullOrEmpty(this.VariableXML)) 
+					this.VariableXDoc = XDocument.Parse(this.VariableXML);
+			}
+			
+			//this is gonna have to load from the function xml
+			this.Function = Function.GetFunctionByName(this.FunctionXDoc.Element("function").Attribute("command_type").Value);
+		}
+		
 		//constructor from a DataRow
 		public Step(DataRow dr, Task oTask)
 		{
@@ -1293,6 +1345,60 @@ namespace Globals
 		//empty constructor
 		public Task()
 		{
+		}
+
+		//Constructor, from an XML document
+		public Task(string sTaskXML)
+		{
+		
+			XDocument xTask = XDocument.Parse(sTaskXML);
+			if (xTask != null)
+			{
+				XElement xeTask = xTask.Element("task");
+				
+				//some of these properties will not be required coming from the XML.
+				
+				//TODO: if there's no ID, make one
+				this.ID = Guid.NewGuid().ToString().ToLower();
+				this.Name = xeTask.Attribute("name").Value;
+				this.Code = xeTask.Attribute("code").Value;
+				this.Description = xeTask.Element("description").Value;
+				
+				//this stuff needs discussion for how it would run on a non-local task
+				
+				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "");
+				this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "");
+				this.OriginalTaskID = this.ID;
+				this.IsDefaultVersion = true;
+
+				//this.ConcurrentInstances = xeTask.Attribute("concurrent_instances").ToString();
+				//this.QueueDepth = xeTask.Attribute("queue_depth").ToString();
+				//this.UseConnectorSystem = false;
+				
+				
+				//now, codeblocks.
+				foreach (XElement xCodeblock in xeTask.XPathSelectElements("//codeblocks/codeblock")) {
+					if (xCodeblock.Attribute("name") == null) 
+						throw new Exception("Task XML: All Codeblocks must have the 'name' attribute.");
+					
+					Codeblock c = new Codeblock(xCodeblock.Attribute("name").Value);
+					
+					if (c != null)
+					{
+						//steps.
+						foreach (XElement xStep in xCodeblock.XPathSelectElements("//steps/step")) {
+							Step s = new Step(xStep, c);
+							
+							if (s != null)
+							{
+								c.Steps.Add(s.ID, s);
+							}
+						}
+
+						this.Codeblocks.Add(c.Name, c);
+					}
+				}
+			}
 		}
 
 		//constructor - from the database by ID
