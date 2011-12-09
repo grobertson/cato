@@ -24,6 +24,7 @@
 		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
+					<h2>Manage EcoTemplates</h2>
                     <p>
                         The Manage Ecosystem Templates screen allows
                         administrators to modify, add and delete Templates for Ecosystems.</p>
