@@ -83,7 +83,7 @@ namespace ACWebMethods
 			if (!string.IsNullOrEmpty(sErr))
 				return "{'result':'fail','error':'" + ui.packJSON(sErr) +"'}";
 			
-			string sResult = ui.HTTPGet(sURL, ref sErr);
+			string sResult = ui.HTTPGet(sURL, 15000, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 				return "{'result':'fail','error':'" + ui.packJSON(sErr) + "'}";
 
@@ -331,7 +331,7 @@ namespace ACWebMethods
 			if (!string.IsNullOrEmpty(sErr))
 				return null;
 			
-			sXML = ui.HTTPGet(sURL, ref sErr);
+			sXML = ui.HTTPGet(sURL, 15000, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 				return null;
 
@@ -447,7 +447,7 @@ namespace ACWebMethods
 			sSignature = PercentEncodeRfc3986(sSignature);
 	
 	
-			string sHostURL = prod.APIProtocol.ToLower() + "://" + sHostName + sResourceURI;
+			string sHostURL = c.APIProtocol.ToLower() + "://" + sHostName + sResourceURI;
 		
 			return sHostURL + "?" + sQueryString + "&Signature=" + sSignature;
 		}

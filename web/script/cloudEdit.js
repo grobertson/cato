@@ -157,7 +157,7 @@ function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudEdit.aspx/LoadCloud",
+        url: "cloudEdit.aspx/wmGetCloud",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -167,12 +167,13 @@ function FillEditForm(sEditID) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var oResultData = eval('(' + response.d + ')');
+                var cloud = eval('(' + response.d + ')');
 
                 // show the assets current values
-                $("#txtCloudName").val(oResultData.sCloudName);
-                $("#ddlProvider").val(oResultData.sProvider);
-                $("#txtAPIUrl").val(oResultData.sAPIUrl);
+                $("#txtCloudName").val(cloud.Name);
+                $("#ddlProvider").val(cloud.Provider);
+                $("#txtAPIUrl").val(cloud.APIUrl);
+                $("#ddlAPIProtocol").val(cloud.APIProtocol);
             }
         },
         error: function (response) {
@@ -209,6 +210,7 @@ function SaveItem(close_after_save) {
     	"sCloudID":"' + sCloudID + '", \
         "sCloudName":"' + sCloudName + '", \
         "sProvider":"' + $("#ddlProvider").val() + '", \
+        "sAPIProtocol":"' + $("#ddlAPIProtocol").val() + '", \
         "sAPIUrl":"' + sAPIUrl + '" \
         }';
 
@@ -216,13 +218,13 @@ function SaveItem(close_after_save) {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "cloudEdit.aspx/SaveCloud",
+        url: "cloudEdit.aspx/wmSaveCloud",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-            var ret = eval('(' + response.d + ')');
-	        if (ret) {
+            var cloud = eval('(' + response.d + ')');
+	        if (cloud) {
                 // clear the search field and fire a search click, should reload the grid
                 $("[id*='txtSearch']").val("");
 				GetClouds();
@@ -232,7 +234,7 @@ function SaveItem(close_after_save) {
             	} else {
 	            	//we aren't closing? fine, we're now in 'edit' mode.
 	            	$("#hidMode").val("edit");
-            		$("#hidCurrentEditID").val(ret.cloud_id);
+            		$("#hidCurrentEditID").val(cloud.ID);
             		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
             	}
 	        } else {

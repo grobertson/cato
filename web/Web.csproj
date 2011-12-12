@@ -511,6 +511,5 @@
     <Content Include="pages\assetEdit.aspx" />
     <Content Include="script\home.js" />
     <Content Include="pages\api.asmx" />
-    <Content Include="apitest.html" />
   </ItemGroup>
 </Project>

@@ -8,6 +8,7 @@ CREATE TABLE `clouds` (
   `provider` varchar(32) NOT NULL,
   `cloud_name` varchar(32) NOT NULL,
   `api_url` varchar(512) NOT NULL,
+  `api_protocol` varchar(8) NOT NULL,
   PRIMARY KEY (`cloud_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

@@ -20,7 +20,7 @@ using System.Data;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
-
+using System.Text;
 
 namespace Globals
 {
@@ -477,9 +477,11 @@ namespace Globals
 								if (xCloud.Attribute("name") == null) 
 									throw new Exception("Cloud Providers XML: All Clouds must have the 'name' attribute.");
 								if (xCloud.Attribute("api_url") == null) 
-									throw new Exception("Cloud Providers XML: All Products must have the 'api_url' attribute.");
+									throw new Exception("Cloud Providers XML: All Clouds must have the 'api_url' attribute.");
+								if (xCloud.Attribute("api_protocol") == null) 
+									throw new Exception("Cloud Providers XML: All Clouds must have the 'api_protocol' attribute.");
 								
-								Cloud c = new Cloud(pv, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value);
+								Cloud c = new Cloud(pv, false, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value, xCloud.Attribute("api_protocol").Value);
 								pv.Clouds.Add(c.ID, c);
 							}
 						}
@@ -488,7 +490,7 @@ namespace Globals
 						//IF the "user_defined_clouds" flag is set.
 						if (pv.UserDefinedClouds) {
 							string sErr = "";
-							string sSQL = "select cloud_id, cloud_name, api_url" +
+							string sSQL = "select cloud_id, cloud_name, api_url, api_protocol" +
 				                " from clouds" +
 				                " where provider = '" + pv.Name + "'" + 
 								" order by cloud_name";
@@ -498,7 +500,7 @@ namespace Globals
 				            {
 				                foreach (DataRow dr in dt.Rows)
 				                {
-									Cloud c = new Cloud(pv, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString());
+									Cloud c = new Cloud(pv, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
 									pv.Clouds.Add(c.ID, c);
 								}
 							}
@@ -514,14 +516,11 @@ namespace Globals
 	                {
 						if (xProduct.Attribute("name") == null) 
 							throw new Exception("Cloud Providers XML: All Products must have the 'name' attribute.");
-						if (xProduct.Attribute("api_protocol") == null) 
-							throw new Exception("Cloud Providers XML: All Products must have the 'api_protocol' attribute.");
 						
 						Product p = new Product(pv);
 						p.Name = xProduct.Attribute("name").Value;
 						//use the name for the label if it doesn't exist.
 						p.Label = (xProduct.Attribute("label") == null ? p.Name : xProduct.Attribute("label").Value);
-						p.APIProtocol = xProduct.Attribute("api_protocol").Value;
 						p.APIUrlPrefix = (xProduct.Attribute("api_url_prefix") == null ? "" : xProduct.Attribute("api_url_prefix").Value);
 						p.APIUri = (xProduct.Attribute("api_uri") == null ? "" : xProduct.Attribute("api_uri").Value);
 						p.APIVersion = (xProduct.Attribute("api_version") == null ? "" : xProduct.Attribute("api_version").Value);
@@ -644,7 +643,7 @@ namespace Globals
 			dataAccess dc = new dataAccess();
 			
 			string sErr = "";
-			string sSQL = "select cloud_id, cloud_name, api_url" +
+			string sSQL = "select cloud_id, cloud_name, api_url, api_protocol" +
                 " from clouds" +
                 " where provider = '" + this.Name + "'" + 
 				" order by cloud_name";
@@ -654,7 +653,7 @@ namespace Globals
             {
                 foreach (DataRow dr in dt.Rows)
                 {
-					Cloud c = new Cloud(this, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString());
+					Cloud c = new Cloud(this, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
 					this.Clouds.Add(c.ID, c);
 				}
 			}
@@ -672,7 +671,6 @@ namespace Globals
 		public Provider ParentProvider { get; set; }
 		public string Name { get; set; }
 		public string Label { get; set; }
-		public string APIProtocol { get; set; }
         public string APIUrlPrefix { get; set; }
         public string APIUri { get; set; }
 		public string APIVersion { get; set; }
@@ -688,7 +686,7 @@ namespace Globals
         
 		public bool IsValidForCalls()
         {
-            if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.APIProtocol))
+            if (string.IsNullOrEmpty(this.Name))
                 return false;
 
             return true;
@@ -747,6 +745,8 @@ namespace Globals
 		public string Name;
 		public Provider Provider;
         public string APIUrl;
+		public string APIProtocol;
+		public bool IsUserDefined;
 		
 		//the default constructor
 		public Cloud(string sCloudID)
@@ -754,7 +754,6 @@ namespace Globals
 			if (string.IsNullOrEmpty(sCloudID))
 				throw new Exception("Error building Cloud object: Cloud ID is required.");	
 			
-            dataAccess dc = new dataAccess();
 			acUI.acUI ui = new acUI.acUI();
 			
             //search for the sCloudID in the CloudProvider Class -AND- the database
@@ -763,44 +762,49 @@ namespace Globals
 				throw new Exception("Error building Cloud object: Unable to GetCloudProviders.");	
 			}
 			
-			//check the CloudProvider class first
+			//check the CloudProvider class first ... it *should be there unless something is wrong.
 			foreach (Provider p in cp.Values) {
 				Dictionary<string, Cloud> cs = p.Clouds;
 				foreach (Cloud c in cs.Values) {
 					if (c.ID == sCloudID) {
+						IsUserDefined = c.IsUserDefined;
 						ID = c.ID;
 						Name = c.Name;
 						APIUrl = c.APIUrl;
+						APIProtocol = c.APIProtocol;
 						Provider = c.Provider;
 						return;
 					}				
 				}
 			}
 			
-			//if we are here it didn't find it... check the database
-			string sErr = "";
-            string sSQL = "select cloud_name, provider, api_url" +
-                " from clouds" +
-                " where cloud_id = '" + sCloudID + "'";
-
-            DataRow dr = null;
-            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                if (dr != null)
-                {
-					ID = sCloudID;
-					Name = dr["cloud_name"].ToString();
-					APIUrl = dr["api_url"].ToString();
-					
-					Provider p = cp[dr["provider"].ToString()];
-					Provider = p;
-					return;
-				}
-			}
-			else 
-			{
-				throw new Exception("Error building Cloud object: " + sErr);	
-			}
+			//this check is no longer necessary, as any addition to the clouds table calls an update to the CloudProviders class in the session.
+//			//if we are here it didn't find it... check the database
+//			string sErr = "";
+//            string sSQL = "select cloud_name, provider, api_url, api_protocol" +
+//                " from clouds" +
+//                " where cloud_id = '" + sCloudID + "'";
+//
+//            DataRow dr = null;
+//            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+//            {
+//                if (dr != null)
+//                {
+//					IsUserDefined = true;
+//					ID = sCloudID;
+//					Name = dr["cloud_name"].ToString();
+//					APIUrl = dr["api_url"].ToString();
+//					APIProtocol = dr["api_protocol"].ToString();
+//					
+//					Provider p = cp[dr["provider"].ToString()];
+//					Provider = p;
+//					return;
+//				}
+//			}
+//			else 
+//			{
+//				throw new Exception("Error building Cloud object: " + sErr);	
+//			}
 			
 			//well, if we got here we have a problem... the ID provided wasn't found anywhere.
 			//this should never happen, so bark about it.
@@ -809,21 +813,143 @@ namespace Globals
         }
 
 		//an override constructor (manual creation)
-		public Cloud(Provider p, string sID, string sName, string sAPIUrl) {
+		public Cloud(Provider p, bool bUserDefined, string sID, string sName, string sAPIUrl, string sAPIProtocol) {
+			IsUserDefined = bUserDefined;
 			ID = sID;
 			Name = sName;
 			APIUrl = sAPIUrl;
+			APIProtocol = sAPIProtocol;
 			Provider = p;
 		}
 		
         public bool IsValidForCalls()
         {
-            if (string.IsNullOrEmpty(this.APIUrl))
+            if (string.IsNullOrEmpty(this.APIUrl) || string.IsNullOrEmpty(this.APIProtocol))
                 return false;
 
             return true;
         }
+		
+		public string AsJSON()
+		{
+			StringBuilder sb = new StringBuilder();
+			
+			sb.Append("{");
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", this.ID);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "APIProtocol", this.APIProtocol);
+			sb.Append("}");
+			
+			return sb.ToString();
+		}
+		
+		
+		//CLASS METHOD
+		//creates this Cloud as a new record in the db
+		//and returns the object
+		static public Cloud DBCreateNew(string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol, ref string sErr)
+		{
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+			string sSQL = "";
+			
+			try
+			{
+				string sNewID = ui.NewGUID();
+				
+				sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" +
+                    " values ('" + sNewID + "'," +
+                    "'" + sCloudName + "'," +
+                    "'" + sProvider + "'," +
+                    "'" + sAPIUrl + "'," +
+                    "'" + sAPIProtocol + "')";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				{
+					if (sErr == "key_violation")
+					{
+						sErr = "A Cloud with that name already exists.  Please select another name.";
+						return null;
+					}
+					else 
+						throw new Exception(sErr);
+				}
+				
+				ui.WriteObjectAddLog(Globals.acObjectTypes.Cloud, sNewID, sCloudName, "Cloud Created");
+				
+				
+				//now it's inserted... lets get it back from the db as a complete object for confirmation.
+				Cloud c = new Cloud(sNewID);
 
+				//update the CloudProviders in the session
+				CloudProviders cp = ui.GetCloudProviders();  //get the session object
+				cp[c.Provider.Name].RefreshClouds(); //find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+				ui.UpdateCloudProviders(cp); //update the session
+				
+				//yay!
+				return c;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}		
+		}
+		
+		//INSTANCE METHOD
+		//updates the current Cloud object to the db
+		public bool DBUpdate(ref string sErr)
+		{
+			acUI.acUI ui = new acUI.acUI();
+            dataAccess dc = new dataAccess();
+			string sSQL = "";
+			
+			try
+			{
+				//of course we do nothing if this cloud was hardcoded in the xml
+				//just return success, which should never happen since the user can't get to edit a hardcoded Cloud anyway.
+				if (!this.IsUserDefined)
+					return true;
+				
+				//what's the original name?
+				string sOriginalName = "";
+				sSQL = "select cloud_name from clouds where cloud_id = '" + this.ID + "'";
+				if (!dc.sqlGetSingleString(ref sOriginalName, sSQL, ref sErr))
+					throw new Exception("Error getting original cloud name:" + sErr);
+	
+				sSQL = "update clouds set" +
+                        " cloud_name = '" + this.Name + "'," +
+                        " provider = '" + this.Provider.Name + "'," +
+                        " api_protocol = '" + this.APIProtocol + "'," +
+                        " api_url = '" + this.APIUrl + "'" +
+                        " where cloud_id = '" + this.ID + "'";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				{
+					if (sErr == "key_violation")
+					{
+						sErr = "A Cloud with that name already exists.  Please select another name.";
+						return false;
+					}
+					else 
+						throw new Exception(sErr);
+				}
+				
+				ui.WriteObjectChangeLog(Globals.acObjectTypes.Cloud, this.ID, this.Name, sOriginalName, this.Name);
+
+				//update the CloudProviders in the session
+				CloudProviders cp = ui.GetCloudProviders();  //get the session object
+				cp[this.Provider.Name].RefreshClouds(); //find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+				ui.UpdateCloudProviders(cp); //update the session
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}		
+		}
    }
 
 	public class CloudAccount

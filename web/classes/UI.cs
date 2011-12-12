@@ -832,7 +832,7 @@ namespace acUI
 		}
 				
 		//Get data via HTTP
-		public string HTTPGet(string sURL, ref string sErr)
+		public string HTTPGet(string sURL, int iTimeout, ref string sErr)
 		{
 			string sResult = "";
 			try {
@@ -840,6 +840,7 @@ namespace acUI
 				//WebRequest request = WebRequest.Create(sAPICall);
 				HttpWebRequest request = WebRequest.Create (sURL) as HttpWebRequest;
 				request.Method = "GET";
+				request.Timeout = iTimeout;
 				
 				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 				

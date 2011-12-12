@@ -62,6 +62,18 @@
             </tr>
             <tr>
                 <td>
+                    API Protocol:
+                </td>
+                <td>
+                    <select id="ddlAPIProtocol">
+                        <option value="HTTPS">HTTPS</option>
+                        <option value="HTTP">HTTP</option>
+                    </select>
+
+                </td>
+            </tr>
+            <tr>
+                <td>
                     API URL:
                 </td>
                 <td>

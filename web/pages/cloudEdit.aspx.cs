@@ -21,7 +21,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.Services;
 using System.Data;
-using System.Text;
 using Globals;
 
 namespace Web.pages
@@ -93,7 +92,7 @@ namespace Web.pages
                 }
             }
 
-            sSQL = "select cloud_id, cloud_name, provider, api_url" +
+            sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" +
                 " from clouds" +
                 " where 1=1 " + sWhereString +
                 " order by provider, cloud_name";
@@ -118,6 +117,7 @@ namespace Web.pages
 
             sHTML += "<th sortcolumn=\"cloud_name\">Cloud Name</th>";
             sHTML += "<th sortcolumn=\"provider\">Type</th>";
+            sHTML += "<th sortcolumn=\"api_protocol\">Protocol</th>";
             sHTML += "<th sortcolumn=\"api_url\">URL</th>";
 
             sHTML += "</tr>";
@@ -135,6 +135,7 @@ namespace Web.pages
 
                 sHTML += "<td tag=\"selectable\">" + dr["cloud_name"].ToString() +  "</td>";
                 sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";
+                sHTML += "<td tag=\"selectable\">" + dr["api_protocol"].ToString() +  "</td>";
                 sHTML += "<td tag=\"selectable\">" + dr["api_url"].ToString() +  "</td>";
 
                 sHTML += "</tr>";
@@ -207,124 +208,62 @@ namespace Web.pages
         }
 
         [WebMethod(EnableSession = true)]
-        public static string SaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl)
+        public static string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
         {
-            // for logging
-            string sOriginalName = null;
-
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
-            string sSql = null;
             string sErr = null;
-
-
-            //if we are editing get the original values
-            if (sMode == "edit")
-            {
-            }
 
             try
             {
-                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
-
-                // update the user fields.
-                if (sMode == "edit")
+				if (sMode == "add")
                 {
-	                sSql = "select cloud_name from clouds " +
-	                       "where cloud_id = '" + sCloudID + "'";
-	                if (!dc.sqlGetSingleString(ref sOriginalName, sSql, ref sErr))
-	                    throw new Exception("Error getting original cloud name:" + sErr);
-	
-                    sSql = "update clouds set" +
-                        " cloud_name = '" + sCloudName + "'," +
-                        " provider = '" + sProvider + "'," +
-                        " api_url = '" + sAPIUrl + "'" +
-                        " where cloud_id = '" + sCloudID + "'";
-
-	                oTrans.Command.CommandText = sSql;
-	                if (!oTrans.ExecUpdate(ref sErr))
-	                    throw new Exception("Error updating cloud: " + sErr);
-                	                
-					ui.WriteObjectChangeLog(Globals.acObjectTypes.Cloud, sCloudID, sCloudName, sOriginalName, sCloudName);}
-                else
-                {
-					sCloudID = ui.NewGUID();
-                    sSql = "insert into clouds (cloud_id, cloud_name, provider, api_url)" +
-                    " values ('" + sCloudID + "'," +
-                    "'" + sCloudName + "'," +
-                    "'" + sProvider + "'," +
-                    "'" + sAPIUrl + "')";
-	
-	                oTrans.Command.CommandText = sSql;
-	                if (!oTrans.ExecUpdate(ref sErr))
-	                    throw new Exception("Error creating cloud: " + sErr);
-	                
-					ui.WriteObjectAddLog(Globals.acObjectTypes.Cloud, sCloudID, sCloudName, "Cloud Created");                
+					Cloud c = Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, ref sErr);
+					if (c == null) {
+						return "{}";
+					}
+					else
+					{
+						return c.AsJSON();
+					}
 				}
-
-				oTrans.Commit();
-
-				//update the cloud providers class in the session
-				CloudProviders cp = ui.GetCloudProviders();
-				cp[sProvider].RefreshClouds();
-				ui.UpdateCloudProviders(cp);
-           }
+                else if (sMode == "edit")
+                {
+					Cloud c = new Cloud(sCloudID);
+					if (c == null) {
+						return "{}";
+					}
+					else
+					{
+						c.Name = sCloudName;
+						c.APIProtocol = sAPIProtocol;
+						c.APIUrl = sAPIUrl;
+						if (!c.DBUpdate(ref sErr))
+						{
+							throw new Exception(sErr);	
+						}
+					}
+				}
+			}
             catch (Exception ex)
             {
                 throw new Exception("Error: General Exception: " + ex.Message);
             }
 			
-            // no errors to here, so return an empty string
+            // no errors to here, so return the new ID
             return "{'cloud_id':'" + sCloudID + "'}";
         }
 
         [WebMethod(EnableSession = true)]
-        public static string LoadCloud(string sID)
+        public static string wmGetCloud(string sID)
         {
-
-            dataAccess dc = new dataAccess();
-            string sSql = null;
-            string sErr = null;
-
-            string sCloudName = null;
-            string sProvider = null;
-            string sAPIUrl = null;
-
-
-            sSql = "select cloud_id, cloud_name, provider, api_url" +
-                " from clouds where cloud_id = '" + sID + "'";
-
-            StringBuilder sb = new StringBuilder();
-            DataRow dr = null;
-            if (!dc.sqlGetDataRow(ref dr, sSql, ref sErr))
-            {
-                throw new Exception(sErr);
-            }
+			Cloud c = new Cloud(sID);
+			if (c == null) {
+				return "{}";
+			}
             else
             {
-                if (dr != null)
-                {
-                    sCloudName = (object.ReferenceEquals(dr["cloud_name"], DBNull.Value) ? "" : dr["cloud_name"].ToString());
-                    sProvider = (object.ReferenceEquals(dr["provider"], DBNull.Value) ? "" : dr["provider"].ToString());
-                    sAPIUrl = (object.ReferenceEquals(dr["api_url"], DBNull.Value) ? "" : dr["api_url"].ToString());
-
-                    // Return the object as a JSON 
-
-                    sb.Append("{");
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sCloudName", sCloudName);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sProvider", sProvider);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sAPIUrl", sAPIUrl);
-                    sb.Append("}");
-
-                }
-                else
-                {
-                    sb.Append("{}");
-                }
-
-            }
-
-            return sb.ToString();
+				return c.AsJSON();
+			}
         }
         #endregion
     }
