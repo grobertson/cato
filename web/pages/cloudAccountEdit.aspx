@@ -151,6 +151,26 @@
                             Automatically grant port access for EC2? (ssh, winrm, etc.)
                         </td>
                     </tr>
+		             <tr>
+		                <td>
+							Cloud:
+		                </td>
+		                <td>
+                            <select id="ddlTestCloud">
+                            </select>
+						</td>
+		            </tr>
+					<tr>
+						<td colspan="2" style="text-align: center;">
+							<span id="test_connection_btn">Test Connection</span>
+						</td>
+					</tr>
+		             <tr>
+		                <td colspan="2">
+							<div id="conn_test_result" style="margin-top: 10px;"></div>
+							<div id="conn_test_error" style="font-size: 0.8em; font-style: italic; margin-top: 10px;"></div>
+						</td>
+		            </tr>
 				</table>
             </div>
             <div id="KeyPairTab">

@@ -32,7 +32,7 @@ $(document).ready(function () {
         bgiframe: true,
         buttons: {
             "Save": function () {
-                SaveItem(1);
+                SaveItem();
             },
             Cancel: function () {
                 $("#edit_dialog").dialog('close');
@@ -50,70 +50,12 @@ $(document).ready(function () {
 	$("#item_search_btn").live("click", function () {
         GetClouds();
     });
-    
-    //the test connection buttton
-    $("#test_connection_btn").button({ icons: { primary: "ui-icon-link"} });
-	$("#test_connection_btn").live("click", function () {
-        TestConnection();
-    });
 });
 
 function pageLoad() {
     ManagePageLoad();
 }
 
-function TestConnection() {
-	SaveItem(0);
-
-    var cloud_id = $("#hidCurrentEditID").val();
-    var account_id = $("#ctl00_phDetail_ddlTestAccount").val();
-
-    //if there's no cloud_id, it's not been saved yet.  We can't do anything.
-    //but there's no point in displaying anything, as the save routine should handle all
-    //the field level validation.
-    if (cloud_id != "")
-    {    
-		
-		$("#conn_test_result").text("Testing...");
-		$("#conn_test_error").empty();
-	
-	    
-	    $.ajax({
-	        type: "POST",
-	        async: false,
-	        url: "awsMethods.asmx/wmTestCloudConnection",
-	        data: '{"sAccountID":"' + account_id + '","sCloudID":"' + cloud_id + '"}',
-	        contentType: "application/json; charset=utf-8",
-	        dataType: "json",
-	        success: function (response) {
-				try
-				{
-		        	var oResultData = eval('(' + response.d + ')');
-					if (oResultData != null)
-					{
-						if (oResultData.result == "success") {
-							$("#conn_test_result").css("color","green");
-							$("#conn_test_result").text("Connection Successful.");
-						}
-						if (oResultData.result == "fail") {
-							$("#conn_test_result").css("color","red");
-							$("#conn_test_result").text("Connection Failed.");
-							$("#conn_test_error").text(unpackJSON(oResultData.error));
-						}			
-					
-					}
-				}
-				catch(err)
-				{
-					alert(err);
-				}
-	        },
-	        error: function (response) {
-	            showAlert(response.responseText);
-	        }
-	    });
-	}
-}
 
 function GetClouds() {
     $.ajax({
@@ -182,7 +124,7 @@ function FillEditForm(sEditID) {
     });
 }
 
-function SaveItem(close_after_save) {
+function SaveItem() {
     var bSave = true;
     var strValidationError = '';
 
@@ -229,14 +171,7 @@ function SaveItem(close_after_save) {
                 $("[id*='txtSearch']").val("");
 				GetClouds();
 	            
-	            if (close_after_save) {
-	            	$("#edit_dialog").dialog('close');
-            	} else {
-	            	//we aren't closing? fine, we're now in 'edit' mode.
-	            	$("#hidMode").val("edit");
-            		$("#hidCurrentEditID").val(cloud.ID);
-            		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
-            	}
+            	$("#edit_dialog").dialog('close');
 	        } else {
 	            showAlert(response.d);
 	        }

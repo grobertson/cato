@@ -32,7 +32,7 @@ $(document).ready(function () {
         bgiframe: true,
         buttons: {
             "Save": function () {
-                SaveItem();
+                SaveItem(1);
             },
             Cancel: function () {
                 $("#edit_dialog").dialog('close');
@@ -62,6 +62,7 @@ $(document).ready(function () {
 	//the Provider ddl changes a few labels based on it's value
 	$('#ddlProvider').change(function () {
 		setLabels();
+		GetProviderClouds();
 	});
 
 
@@ -140,10 +141,95 @@ $(document).ready(function () {
 	$("#item_search_btn").live("click", function () {
         GetAccounts();
     });
+    
+    //the test connection buttton
+    $("#test_connection_btn").button({ icons: { primary: "ui-icon-link"} });
+	$("#test_connection_btn").live("click", function () {
+        TestConnection();
+    });
 });
 
 function pageLoad() {
     ManagePageLoad();
+}
+
+function GetProviderClouds() {
+	var provider = $("#ddlProvider").val();
+
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "cloudAccountEdit.aspx/wmGetProviderClouds",
+        data: '{"sProvider":"' + provider + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+            var provider = eval('(' + response.d + ')');
+
+            // all we want here is to loop the clouds
+            $("#ddlTestCloud").empty();
+            $.each(provider.Clouds, function(id, c){
+            	var cloud = eval(c);                	
+            	$("#ddlTestCloud").append("<option value=\"" + id + "\">" + cloud.Name + "</option>");
+			});	
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
+function TestConnection() {
+	SaveItem(0);
+
+    var account_id = $("#hidCurrentEditID").val();
+    var cloud_id = $("#ddlTestCloud").val();
+
+    //if there's no cloud_id, it's not been saved yet.  We can't do anything.
+    //but there's no point in displaying anything, as the save routine should handle all
+    //the field level validation.
+    if (cloud_id != "")
+    {    
+		
+		$("#conn_test_result").text("Testing...");
+		$("#conn_test_error").empty();
+	
+	    
+	    $.ajax({
+	        type: "POST",
+	        async: false,
+	        url: "awsMethods.asmx/wmTestCloudConnection",
+	        data: '{"sAccountID":"' + account_id + '","sCloudID":"' + cloud_id + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function (response) {
+				try
+				{
+		        	var oResultData = eval('(' + response.d + ')');
+					if (oResultData != null)
+					{
+						if (oResultData.result == "success") {
+							$("#conn_test_result").css("color","green");
+							$("#conn_test_result").text("Connection Successful.");
+						}
+						if (oResultData.result == "fail") {
+							$("#conn_test_result").css("color","red");
+							$("#conn_test_result").text("Connection Failed.");
+							$("#conn_test_error").text(unpackJSON(oResultData.error));
+						}			
+					
+					}
+				}
+				catch(err)
+				{
+					alert(err);
+				}
+	        },
+	        error: function (response) {
+	            showAlert(response.responseText);
+	        }
+	    });
+	}
 }
 
 function GetAccounts() {
@@ -184,6 +270,11 @@ function LoadEditDialog(editID) {
 
     FillEditForm(editID);
 	setLabels();	
+	
+	//clear out any test results
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
 
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
@@ -196,7 +287,7 @@ function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/LoadAccount",
+        url: "cloudAccountEdit.aspx/wmGetCloudAccount",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -206,18 +297,26 @@ function FillEditForm(sEditID) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var oResultData = eval('(' + response.d + ')');
+                var account = eval('(' + response.d + ')');
 
                 // show the assets current values
-                $("#txtAccountName").val(oResultData.sAccountName);
-                $("#txtAccountNumber").val(oResultData.sAccountNumber)
-                $("#ddlProvider").val(oResultData.sProvider);
-                $("#txtLoginID").val(oResultData.sLoginID);
-                $("#txtLoginPassword").val(oResultData.sLoginPassword);
-                $("#txtLoginPasswordConfirm").val(oResultData.sLoginPassword);
+                $("#txtAccountName").val(account.Name);
+                $("#txtAccountNumber").val(account.AccountNumber)
+                $("#ddlProvider").val(account.Provider);
+                $("#txtLoginID").val(account.LoginID);
+                $("#txtLoginPassword").val(account.LoginPassword);
+                $("#txtLoginPasswordConfirm").val(account.LoginPassword);
 
-                if (oResultData.sIsDefault == "1") $("#chkDefault").attr('checked', true);
-                if (oResultData.sAutoManage == "1") $("#chkAutoManageSecurity").attr('checked', true);
+                if (account.IsDefault) $("#chkDefault").attr('checked', true);
+                //if (account.AutoManage == "1") $("#chkAutoManageSecurity").attr('checked', true);
+                
+                //the account result will have a list of all the clouds on this account.
+                $("#ddlTestCloud").empty();
+                $.each(account.Clouds, function(id, c){
+                	var cloud = eval(c);                	
+                	$("#ddlTestCloud").append("<option value=\"" + id + "\">" + cloud.Name + "</option>");
+                	//alert( "Index #" + i + ": " + l );
+   				});	
             }
         },
         error: function (response) {
@@ -246,7 +345,7 @@ function GetKeyPairs(sEditID) {
     });
 }
 
-function SaveItem() {
+function SaveItem(close_after_save) {
     var bSave = true;
     var strValidationError = '';
 
@@ -284,22 +383,29 @@ function SaveItem() {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/SaveAccount",
+        url: "cloudAccountEdit.aspx/wmSaveAccount",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-            var ret = eval('(' + response.d + ')');
-	        if (ret) {
+            var account = eval('(' + response.d + ')');
+	        if (account) {
                 // clear the search field and fire a search click, should reload the grid
                 $("[id*='txtSearch']").val("");
 				GetAccounts();
 	            
-	            $("#edit_dialog").dialog('close');
-	
+	            if (close_after_save) {
+	            	$("#edit_dialog").dialog('close');
+            	} else {
+	            	//we aren't closing? fine, we're now in 'edit' mode.
+	            	$("#hidMode").val("edit");
+            		$("#hidCurrentEditID").val(account.ID);
+            		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
+            	}
+
 				//if we are adding a new one, add it to the dropdown too
 				if ($("#hidMode").val() == "add") {
-		            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : ret.account_id }).text(ret.account_name + ' (' + ret.provider + ')')); 
+		            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : account.ID }).text(account.Name + ' (' + account.Provider + ')')); 
 		          	//if this was the first one, get it in the session by nudging the change event.
 		          	if ($("#ctl00_ddlCloudAccounts option").length == 1)
 		          		$("#ctl00_ddlCloudAccounts").change();
@@ -319,6 +425,11 @@ function ShowItemAdd() {
     $("#hidMode").val("add");
 
 	setLabels();	
+
+	//clear out any test results
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
 
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [1] );

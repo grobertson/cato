@@ -637,6 +637,43 @@ namespace Globals
 			
 			return dt;
 		}
+				
+		//INSTANCE METHOD - returns the object as JSON
+		public string AsJSON()
+		{
+			StringBuilder sb = new StringBuilder();
+			
+			sb.Append("{");
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "TestProduct", this.TestProduct);
+			sb.AppendFormat("\"{0}\" : {1},", "UserDefinedClouds", this.UserDefinedClouds.ToString().ToLower()); //boolean has no quotes!
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "TestObject", this.TestObject);
+
+			//clouds
+			StringBuilder sbClouds = new StringBuilder();
+			sbClouds.Append("{");
+			
+			int i = 1;
+			foreach (Cloud c in this.Clouds.Values)
+			{
+				sbClouds.AppendFormat("\"{0}\" : {1}", c.ID, c.AsJSON());
+				
+				//the last one doesn't get a trailing comma
+				if (i < this.Clouds.Count)
+					sbClouds.Append(",");
+				
+				i++;
+			}
+			
+			sbClouds.Append("}");
+			
+			sb.AppendFormat("\"{0}\" : {1}", "Clouds", sbClouds);
+			
+			sb.Append("}");
+			
+			return sb.ToString();
+		}
+
 		public void RefreshClouds() {
 			this.Clouds.Clear();
 			
@@ -839,7 +876,7 @@ namespace Globals
 			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
 			sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
 			sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "APIProtocol", this.APIProtocol);
+			sb.AppendFormat("\"{0}\" : \"{1}\"", "APIProtocol", this.APIProtocol);
 			sb.Append("}");
 			
 			return sb.ToString();
@@ -956,20 +993,25 @@ namespace Globals
     {
         public string ID;
 		public string Name;
-		public string Provider;
 		public string AccountNumber;
         public string LoginID;
         public string LoginPassword;
+		public bool IsDefault;
+
+		public Provider Provider;
 		
 		//the default constructor
 		public CloudAccount(string sAccountID)
         {
-            //get the cloud from the db
+			if (string.IsNullOrEmpty(sAccountID))
+				throw new Exception("Error building Cloud Account object: Cloud Account ID is required.");	
+			
             dataAccess dc = new dataAccess();
-
+			acUI.acUI ui = new acUI.acUI();
+			
             string sErr = "";
 
-            string sSQL = "select account_name, account_number, provider, login_id, login_password" +
+            string sSQL = "select account_name, account_number, provider, login_id, login_password, is_default" +
                 " from cloud_account" +
                 " where account_id = '" + sAccountID + "'";
 
@@ -980,10 +1022,23 @@ namespace Globals
                 {
 					ID = sAccountID;
 					Name = dr["account_name"].ToString();
-					Provider = dr["provider"].ToString();
 					AccountNumber = (string.IsNullOrEmpty(dr["account_number"].ToString()) ? "" : dr["account_number"].ToString());
 					LoginID = (string.IsNullOrEmpty (dr["login_id"].ToString()) ? "" : dr["login_id"].ToString());
 					LoginPassword = (string.IsNullOrEmpty (dr["login_password"].ToString()) ? "" : dc.DeCrypt(dr["login_password"].ToString()));
+					IsDefault = (dr["is_default"].ToString() == "1" ? true : false);
+					
+					//get the provider record from the CloudProviders object in the session
+					CloudProviders cp = ui.GetCloudProviders();
+					if (cp == null) {
+						throw new Exception("Error building CloudAccount object: Unable to GetCloudProviders.");	
+					}
+
+					Provider p = cp[dr["provider"].ToString()];
+					if (p == null) {
+						throw new Exception("Error building CloudAccount object: No Provider for name [" + dr["provider"].ToString() + "] defined in session.");	
+					}
+					
+					Provider = p;
 				}
 				else 
 				{
@@ -1006,8 +1061,193 @@ namespace Globals
 
             return true;
         }
+		
+		//INSTANCE METHOD - returns the object as JSON
+		public string AsJSON()
+		{
+			StringBuilder sb = new StringBuilder();
+			
+			sb.Append("{");
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", this.ID);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "AccountNumber", this.AccountNumber);
+			sb.AppendFormat("\"{0}\" : {1},", "IsDefault", this.IsDefault.ToString().ToLower()); //boolean has no quotes!
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "LoginID", this.LoginID);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "LoginPassword", this.LoginPassword);
+			sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
 
-   }
+			//providers clouds for this account
+			StringBuilder sbClouds = new StringBuilder();
+			sbClouds.Append("{");
+			
+			int i = 1;
+			foreach (Cloud c in this.Provider.Clouds.Values)
+			{
+				sbClouds.AppendFormat("\"{0}\" : {1}", c.ID, c.AsJSON());
+				
+				//the last one doesn't get a trailing comma
+				if (i < this.Provider.Clouds.Count)
+					sbClouds.Append(",");
+				
+				i++;
+			}
+			
+			sbClouds.Append("}");
+			
+			sb.AppendFormat("\"{0}\" : {1}", "Clouds", sbClouds);
+			
+			sb.Append("}");
+			
+			return sb.ToString();
+		}
+		
+		//CLASS METHOD
+		//creates this Cloud as a new record in the db
+		//and returns the object
+		static public CloudAccount DBCreateNew(string sAccountName, string sAccountNumber, string sProvider, 
+		                                       string sLoginID, string sLoginPassword, string sIsDefault, ref string sErr)
+		{
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+
+			try
+			{
+				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				//if there are no rows yet, make this one the default even if the box isn't checked.
+				if (sIsDefault == "0")
+				{
+					int iExists = -1;
+					
+					//as a reminder, we were doing this because of a random screws mysql connection error.
+					string sSQL = "select count(*) as cnt from cloud_account";
+                	if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
+					{
+						System.Threading.Thread.Sleep(300);
+						if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
+						{
+							System.Threading.Thread.Sleep(300);
+							if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
+								throw new Exception("Unable to count Cloud Accounts: " + sErr);
+						}
+					}
+					
+					if (iExists == 0)
+						sIsDefault = "1";
+				}
+
+				string sNewID = ui.NewGUID();
+				
+				oTrans.Command.CommandText = "insert into cloud_account (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" +
+                    " values ('" + sNewID + "'," +
+                    "'" + sAccountName + "'," +
+                    "'" + sAccountNumber + "'," +
+                    "'" + sProvider + "'," +
+                    "'" + sIsDefault + "'," +
+                    "'" + sLoginID + "'," +
+                    "'" + dc.EnCrypt(sLoginPassword) + "'," +
+                    "0)";
+				
+				if (!oTrans.ExecUpdate(ref sErr))
+				{
+					if (sErr == "key_violation")
+					{
+						sErr = "A Cloud Account with that name already exists.  Please select another name.";
+						return null;
+					}
+					else 
+						throw new Exception(sErr);
+				}
+				
+				oTrans.Commit();
+				
+				
+				ui.WriteObjectAddLog(Globals.acObjectTypes.CloudAccount, sNewID, sAccountName, "Account Created");
+				
+                //if "default" was selected, unset all the others
+                if (dc.IsTrue(sIsDefault))
+                {
+                    oTrans.Command.CommandText = "update cloud_account set is_default = 0 where account_id <> '" + sNewID + "'";
+                    if (!oTrans.ExecUpdate(ref sErr))
+                        throw new Exception("Error resetting default Cloud Account: " + sErr);
+                }
+
+				
+				//now it's inserted... lets get it back from the db as a complete object for confirmation.
+				CloudAccount ca = new CloudAccount(sNewID);
+
+				//refresh the cloud account list in the session
+	            if (!ui.PutCloudAccountsInSession(ref sErr))
+					throw new Exception("Error refreshing Cloud Accounts in session: " + sErr);
+				
+				//yay!
+				return ca;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}		
+		}
+
+		//INSTANCE METHOD
+		//updates the current Cloud object to the db
+		public bool DBUpdate(ref string sErr)
+		{
+			acUI.acUI ui = new acUI.acUI();
+            dataAccess dc = new dataAccess();
+			string sSQL = "";
+			
+			try
+			{
+				//what's the original name?
+				string sOriginalName = "";
+				sSQL = "select account_name from cloud_account where account_id = '" + this.ID + "'";
+				if (!dc.sqlGetSingleString(ref sOriginalName, sSQL, ref sErr))
+					throw new Exception("Error getting original Cloud Account Name:" + sErr);
+	
+				// only update the passwword if it has changed
+                string sNewPassword = "";
+                if (this.LoginPassword != "($%#d@x!&")
+                {
+                    sNewPassword = ", login_password = '" + dc.EnCrypt(this.LoginPassword) + "'";
+                }
+
+				sSQL = "update cloud_account set" +
+                        " account_name = '" + this.Name + "'," +
+                        " account_number = '" + this.AccountNumber + "'," +
+                        " provider = '" + this.Provider.Name + "'," +
+                        " is_default = '" + (this.IsDefault ? 1 : 0) + "'," +
+                        " auto_manage_security = 0," +
+                        " login_id = '" + this.LoginID + "'" +
+                        sNewPassword +
+                        " where account_id = '" + this.ID + "'";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				{
+					if (sErr == "key_violation")
+					{
+						sErr = "A Cloud Account with that name already exists.  Please select another name.";
+						return false;
+					}
+					else 
+						throw new Exception(sErr);
+				}
+				
+				ui.WriteObjectChangeLog(Globals.acObjectTypes.CloudAccount, this.ID, this.Name, sOriginalName, this.Name);
+
+				//refresh the cloud account list in the session
+	            if (!ui.PutCloudAccountsInSession(ref sErr))
+					throw new Exception("Error refreshing Cloud Accounts in session: " + sErr);
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}		
+		}
+
+	}
 
 #endregion
 	

@@ -38,20 +38,6 @@ namespace Web.pages
  				
 				//one time get of the Provider list.
 				ltProviders.Text = GetProviders();
-				
-
-				//fill the test cloud account drop down
-                DataTable dtCloudAccounts = (DataTable)ui.GetSessionObject("cloud_accounts_dt", "Security");
-                if (dtCloudAccounts != null)
-                {
-                    if (dtCloudAccounts.Rows.Count > 0)
-                    {
-                        ddlTestAccount.DataTextField = "account_label";
-                        ddlTestAccount.DataValueField = "account_id";
-                        ddlTestAccount.DataSource = dtCloudAccounts;
-                        ddlTestAccount.DataBind();
-                    }
-                }
            }
         }
 		
@@ -210,7 +196,6 @@ namespace Web.pages
         [WebMethod(EnableSession = true)]
         public static string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
         {
-            acUI.acUI ui = new acUI.acUI();
             string sErr = null;
 
             try
@@ -249,8 +234,8 @@ namespace Web.pages
                 throw new Exception("Error: General Exception: " + ex.Message);
             }
 			
-            // no errors to here, so return the new ID
-            return "{'cloud_id':'" + sCloudID + "'}";
+            // no errors to here, so return an empty object
+            return "{}";
         }
 
         [WebMethod(EnableSession = true)]
@@ -258,7 +243,7 @@ namespace Web.pages
         {
 			Cloud c = new Cloud(sID);
 			if (c == null) {
-				return "{}";
+				return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}";
 			}
             else
             {

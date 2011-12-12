@@ -194,118 +194,52 @@ namespace Web.pages
         }
 
         [WebMethod(EnableSession = true)]
-        public static string SaveAccount(string sMode, string sAccountID, string sAccountName, string sAccountNumber, string sProvider, 
+        public static string wmSaveAccount(string sMode, string sAccountID, string sAccountName, string sAccountNumber, string sProvider, 
 			string sLoginID, string sLoginPassword, string sLoginPasswordConfirm, string sIsDefault, string sAutoManageSecurity)
         {
-            // for logging
-            string sOriginalName = "";
+            string sErr = null;
 
-            dataAccess dc = new dataAccess();
-            acUI.acUI ui = new acUI.acUI();
-            string sSql = "";
-            string sErr = "";
-
-
-            //if we are editing get the original values
-            if (sMode == "edit")
-            {
-            }
-
-            try
-            {
-                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
-
-                // update the user fields.
-                if (sMode == "edit")
-                {
-	                sSql = "select account_name from cloud_account " +
-	                       "where account_id = '" + sAccountID + "'";
-	                if (!dc.sqlGetSingleString(ref sOriginalName, sSql, ref sErr))
-	                    throw new Exception("Error getting original account name:" + sErr);
-	
-					// only update the passwword if it has changed
-                    string sNewPassword = "";
-                    if (sLoginPassword != "($%#d@x!&")
-                    {
-                        sNewPassword = ", login_password = '" + dc.EnCrypt(sLoginPassword) + "'";
-                    }
-
-                    sSql = "update cloud_account set" +
-                        " account_name = '" + sAccountName + "'," +
-                        " account_number = '" + sAccountNumber + "'," +
-                        " provider = '" + sProvider + "'," +
-                        " is_default = '" + sIsDefault + "'," +
-                        " auto_manage_security = '" + sAutoManageSecurity + "'," +
-                        " login_id = '" + sLoginID + "'" +
-                        sNewPassword +
-                        " where account_id = '" + sAccountID + "'";
-
-	                oTrans.Command.CommandText = sSql;
-	                if (!oTrans.ExecUpdate(ref sErr))
-	                    throw new Exception("Error updating account: " + sErr);
-                	                
-					ui.WriteObjectChangeLog(Globals.acObjectTypes.CloudAccount, sAccountID, sAccountName, sOriginalName, sAccountName);}
-                else
-                {
-					//now, for some reason we were having issues with the initial startup of apache
-					//not able to perform the very first database hit.
-					//this line serves as an inital db hit, but we aren't trapping it or showing the error
-					dc.TestDBConnection(ref sErr);
-
-					//if there are no rows yet, make this one the default even if the box isn't checked.
-					if (sIsDefault == "0")
-					{
-						int iExists = -1;
-						
-						sSql = "select count(*) as cnt from cloud_account";
-	                	if (!dc.sqlGetSingleInteger(ref iExists, sSql, ref sErr))
-						{
-							System.Threading.Thread.Sleep(300);
-							if (!dc.sqlGetSingleInteger(ref iExists, sSql, ref sErr))
-							{
-								System.Threading.Thread.Sleep(300);
-								if (!dc.sqlGetSingleInteger(ref iExists, sSql, ref sErr))
-									throw new Exception("Unable to count Cloud Accounts: " + sErr);
-							}
-						}
-
-
-						
-						if (iExists == 0)
-							sIsDefault = "1";
+			try
+			{
+				if (sMode == "add")
+	            {
+					CloudAccount ca = CloudAccount.DBCreateNew(sAccountName, sAccountNumber, sProvider, 
+					                                           sLoginID, sLoginPassword, sIsDefault, ref sErr);
+					if (ca == null) {
+						return "{}";
 					}
-					
-					sAccountID = ui.NewGUID();
-                    sSql = "insert into cloud_account (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" +
-                    " values ('" + sAccountID + "'," +
-                    "'" + sAccountName + "'," +
-                    "'" + sAccountNumber + "'," +
-                    "'" + sProvider + "'," +
-                    "'" + sIsDefault + "'," +
-                    "'" + sLoginID + "'," +
-                    "'" + dc.EnCrypt(sLoginPassword) + "'," +
-                    "'" + sAutoManageSecurity + "')";
-	
-	                oTrans.Command.CommandText = sSql;
-	                if (!oTrans.ExecUpdate(ref sErr))
-	                    throw new Exception("Error creating account: " + sErr);
-	                
-					ui.WriteObjectAddLog(Globals.acObjectTypes.CloudAccount, sAccountID, sAccountName, "Account Created");                
+					else
+					{
+						return ca.AsJSON();
+					}
 				}
-
-                //if "default" was selected, unset all the others
-                if (dc.IsTrue(sIsDefault))
-                {
-                    oTrans.Command.CommandText = "update cloud_account set is_default = 0 where account_id <> '" + sAccountID + "'";
-                    if (!oTrans.ExecUpdate(ref sErr))
-                        throw new Exception("Error updating defaults: " + sErr);
-                }
-		
-                oTrans.Commit();
-	 
-				//refresh the cloud account list in the session
-	            if (!ui.PutCloudAccountsInSession(ref sErr))
-					throw new Exception("Error refreshing accounts in session: " + sErr);
+	            else if (sMode == "edit")
+	            {
+					//TODO: test the two passwords and confirm they match!
+					
+					CloudAccount ca = new CloudAccount(sAccountID);
+					if (ca == null) {
+						return "{}";
+					}
+					else
+					{
+						ca.ID = sAccountID;
+						ca.Name = sAccountName;
+						ca.AccountNumber = sAccountNumber;
+						ca.LoginID = sLoginID;
+						ca.LoginPassword = sLoginPassword;
+						ca.IsDefault = (sIsDefault == "1" ? true : false);
+						
+						//note: simply changing the provider NAME will tell the update method to switch providers.
+						//no need to redo the whole object
+						ca.Provider.Name = sProvider;
+						
+						if (!ca.DBUpdate(ref sErr))
+							throw new Exception(sErr);	
+						
+						return ca.AsJSON();
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -313,69 +247,40 @@ namespace Web.pages
 			}
 			
             // no errors to here, so return an empty string
-            return "{'account_id':'" + sAccountID + "', 'account_name':'" + sAccountName + "', 'provider':'" + sProvider + "'}";
+            return "{}";
         }
 
         [WebMethod(EnableSession = true)]
-        public static string LoadAccount(string sID)
+        public static string wmGetCloudAccount(string sID)
         {
-
-            dataAccess dc = new dataAccess();
-            string sSql = null;
-            string sErr = null;
-
-            string sAccountName = null;
-            string sAccountNumber = null;
-            string sProvider = null;
-            string sIsDefault = null;
-            string sAutoManage = null;
-            string sLoginID = null;
-            string sLoginPassword = null;
-
-
-            sSql = "select account_id, account_name, account_number, provider, login_id, is_default, auto_manage_security" +
-                " from cloud_account where account_id = '" + sID + "'";
-
-            StringBuilder sb = new StringBuilder();
-            DataRow dr = null;
-            if (!dc.sqlGetDataRow(ref dr, sSql, ref sErr))
-            {
-                throw new Exception(sErr);
-            }
+			CloudAccount ca = new CloudAccount(sID);
+			if (ca == null) {
+				return "{'result':'fail','error':'Failed to get Cloud Account details for Cloud Account ID [" + sID + "].'}";
+			}
             else
             {
-                if (dr != null)
-                {
-                    sAccountName = (object.ReferenceEquals(dr["account_name"], DBNull.Value) ? "" : dr["account_name"].ToString());
-                    sAccountNumber = (object.ReferenceEquals(dr["account_number"], DBNull.Value) ? "" : dr["account_number"].ToString());
-                    sProvider = (object.ReferenceEquals(dr["provider"], DBNull.Value) ? "" : dr["provider"].ToString());
-                    sIsDefault = (object.ReferenceEquals(dr["is_default"], DBNull.Value) ? "0" : (dc.IsTrue(dr["is_default"].ToString()) ? "1" : "0"));
-                    sAutoManage = (object.ReferenceEquals(dr["auto_manage_security"], DBNull.Value) ? "" : dr["auto_manage_security"].ToString());
-                    sLoginID = (object.ReferenceEquals(dr["login_id"], DBNull.Value) ? "" : dr["login_id"].ToString());
-                    sLoginPassword = "($%#d@x!&";
-
-                    // Return the object as a JSON 
-
-                    sb.Append("{");
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sAccountName", sAccountName);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sAccountNumber", sAccountNumber);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sProvider", sProvider);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sIsDefault", sIsDefault);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sAutoManage", sAutoManage);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "sLoginID", sLoginID);
-                    sb.AppendFormat("\"{0}\" : \"{1}\"", "sLoginPassword", sLoginPassword);
-                    sb.Append("}");
-
-                }
-                else
-                {
-                    sb.Append("{}");
-                }
-
-            }
-
-            return sb.ToString();
+				return ca.AsJSON();
+			}
         }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmGetProviderClouds(string sProvider)
+        {
+			acUI.acUI ui = new acUI.acUI();
+			
+			CloudProviders cp = ui.GetCloudProviders();
+			if (cp == null) {
+				return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}";
+			}
+            else
+			{
+				Provider p = cp[sProvider];
+				if (p != null)
+					return p.AsJSON();
+				else
+					return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}";
+			}
+		}
 
         [WebMethod(EnableSession = true)]
         public static string GetKeyPairs(string sID)
