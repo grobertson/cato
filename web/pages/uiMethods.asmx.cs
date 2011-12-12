@@ -1401,7 +1401,7 @@ namespace ACWebMethods
         {
 			
             dataAccess dc = new dataAccess();
-            awsMethods acAWS = new awsMethods();
+            ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
 			acUI.acUI ui = new acUI.acUI();
 			
             try
@@ -1786,16 +1786,24 @@ namespace ACWebMethods
 					//otherwise we use the version specified.
 					
 					//but, rather than do queries inside the loop, we'll do it with a union of two exclusive queries.
-					
-					
-					
-                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.action_icon," +
+                    sSQL = "select * from (" +
+						"select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.action_icon," +
                         " t.task_id, t.task_name, t.version" +
                         " from ecotemplate_action ea" +
-                        " left outer join task t on ea.original_task_id = t.original_task_id" +
+                        " join task t on ea.original_task_id = t.original_task_id" +
 							" and t.default_version = 1" +
                         " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" +
-                        " order by ea.action_name";
+						" and ea.task_version IS null" +
+						" UNION" +
+						" select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.action_icon," +
+                        " t.task_id, t.task_name, t.version" +
+                        " from ecotemplate_action ea" +
+                        " join task t on ea.original_task_id = t.original_task_id" +
+							" and ea.task_version = t.version" +
+                        " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" +
+						" and ea.task_version IS NOT null" +
+                        " ) foo" +
+						" order by action_name";
 
                     DataTable dt = new DataTable();
                     if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
@@ -1829,7 +1837,7 @@ namespace ACWebMethods
                                " action=\"" + sActionName + "\"" +
                                " task_id=\"" + sTaskID + "\"" +
                                " task_name=\"" + sTaskName + "\"" +
-                               " version=\"" + sVersion + "\"" +
+                               " task_version=\"" + sVersion + "\"" +
                                " category=\"" + dr["category"].ToString() + "\"" +
                                ">";
 
@@ -2292,7 +2300,7 @@ namespace ACWebMethods
                     string sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
 
                     //some columns on this table allow nulls... in their case an empty sValue is a null
-                    if (sColumn == "action_desc" || sColumn == "category")
+                    if (sColumn == "action_desc" || sColumn == "category" || sColumn == "task_version")
                     {
                         if (sValue.Replace(" ", "").Length == 0)
                             sSetClause = sColumn + " = null";

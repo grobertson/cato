@@ -56,7 +56,7 @@ $(document).ready(function () {
         //if ($("[id$='lblCurrentStatus']").text() == "Inactive") {
 
         var task_id = $("#ctl00_phDetail_hidTaskID").val();
-        var task_name = $("#ctl00_phDetail_lblTaskNameHeader").html();
+        var task_name = $("#ctl00_phDetail_lblTaskNameHeader").html() + " - " + $("#ctl00_phDetail_lblVersionHeader").html();
         var asset_id = $("#ctl00_phDetail_txtTestAsset").attr("asset_id");
 
         var args = '{"task_id":"' + task_id + '", "task_name":"' + task_name + '", "debug_level":"4"}';

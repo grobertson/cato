@@ -1,1 +1,1 @@
-﻿<%@ WebService Language="C#" CodeBehind="awsMethods.asmx.cs" Class="Web.pages.awsMethods" %>
+﻿<%@ WebService Language="C#" CodeBehind="awsMethods.asmx.cs" Class="ACWebMethods.awsMethods" %>

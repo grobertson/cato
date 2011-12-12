@@ -76,10 +76,11 @@ $(document).ready(function () {
         var action_id = $(this).attr("id");
         var task_id = $(this).attr("task_id").replace(/t_/, "");
         var task_name = $(this).attr("task_name")
+        var task_version = $(this).attr("task_version")
 
         //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
         //another goofy argument.
-        task_name = $(this).attr("action") + " : (" + task_name + ")";
+        task_name = $(this).attr("action") + " : (" + task_name + " - " + task_version + ")";
 
         //show the dialog
         //note: we are not passing account_id - the dialog will pick the default
