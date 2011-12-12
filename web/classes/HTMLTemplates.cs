@@ -1188,7 +1188,7 @@ namespace FunctionTemplates
                 {
                     foreach (DataRow dr in dt.Rows)
                     {
-                        sHTML += "<option " + SetOption(dr["version"].ToString(), sVersion) + " value=\"" + dr["version"] + "\">" + dr["version"].ToString() + "</option>" + Environment.NewLine;
+                        sHTML += "<option " + SetOption(dr["version"].ToString(), sVersion) + " value=\"" + dr["version"].ToString() + "\">" + dr["version"].ToString() + "</option>" + Environment.NewLine;
                     }
                 }
                 else
@@ -1906,8 +1906,8 @@ namespace FunctionTemplates
                 foreach (DataRow dr in dt.Rows)
                 {
                     sHTML += "<option " + SetOption(dr["connection_type"].ToString(), sConnType) +
-                        " value=\"" + dr["connection_type"] + "\">" +
-                        dr["connection_type"] + "</option>" + Environment.NewLine;
+                        " value=\"" + dr["connection_type"].ToString() + "\">" +
+                        dr["connection_type"].ToString() + "</option>" + Environment.NewLine;
                 }
             }
             else
@@ -2268,7 +2268,7 @@ namespace FunctionTemplates
                 {
                     foreach (DataRow dr in dt.Rows)
                     {
-                        sHTML += "<option " + SetOption(dr["version"].ToString(), sVersion) + " value=\"" + dr["version"] + "\">" + dr["version"].ToString() + "</option>" + Environment.NewLine;
+                        sHTML += "<option " + SetOption(dr["version"].ToString(), sVersion) + " value=\"" + dr["version"].ToString() + "\">" + dr["version"].ToString() + "</option>" + Environment.NewLine;
                     }
                 }
                 else

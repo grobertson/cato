@@ -31,7 +31,7 @@ using System.Xml.Serialization;
 
 using Globals;
 
-namespace Web.pages
+namespace ACWebMethods
 {
     /// <summary>
     /// Summary description for awsMethods

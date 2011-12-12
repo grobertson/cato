@@ -169,7 +169,7 @@ namespace Web.pages
         [WebMethod(EnableSession = true)]
         public static string wmGetAWSObjectList(string sCloudID, string sObjectType)
         {
-            awsMethods acAWS = new awsMethods();
+            ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
 
             string sHTML = "";
             string sErr = "";

@@ -84,7 +84,7 @@ namespace Web.pages
         public static string wmGetCloudObjectList(string sCloudID, string sObjectType)
         {
             acUI.acUI ui = new acUI.acUI();
-            awsMethods acAWS = new awsMethods();
+            ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
 
             string sXML = "";
             string sErr = "";

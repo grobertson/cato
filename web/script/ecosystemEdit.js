@@ -242,7 +242,7 @@ function getEcosystemObjectList() {
 
     $.ajax({
         type: "POST",
-        url: "ecosystemEdit.aspx/wmGetEcosystemObjects",
+        url: "uiMethods.asmx/wmGetEcosystemObjects",
         data: '{"sEcosystemID":"' + g_eco_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -267,7 +267,7 @@ function getEcosystemObject(drilldowntype, label) {
 
     $.ajax({
         type: "POST",
-        url: "ecosystemEdit.aspx/wmGetEcosystemObjectByType",
+        url: "uiMethods.asmx/wmGetEcosystemObjectByType",
         data: '{"sEcosystemID":"' + g_eco_id + '", "sType":"' + drilldowntype + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
