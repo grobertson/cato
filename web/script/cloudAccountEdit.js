@@ -399,36 +399,40 @@ function SaveItem(close_after_save) {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-            var account = eval('(' + response.d + ')');
-	        if (account) {
-                // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-				GetAccounts();
-	            
-	            if (close_after_save) {
-	            	$("#edit_dialog").dialog('close');
-            	} else {
-	            	//we aren't closing? fine, we're now in 'edit' mode.
-	            	$("#hidMode").val("edit");
-            		$("#hidCurrentEditID").val(account.ID);
-            		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
-            	}
-
-				var dropdown_label = account.Name + ' (' + account.Provider + ')';
-				//if we are adding a new one, add it to the dropdown too
-				if ($("#hidMode").val() == "add") {
-		            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : account.ID }).text(dropdown_label)); 
-		          	//if this was the first one, get it in the session by nudging the change event.
-		          	if ($("#ctl00_ddlCloudAccounts option").length == 1)
-		          		$("#ctl00_ddlCloudAccounts").change();
-          		} else {
-          			//we've only changed it.  update the name in the drop down if it changed.
-          			if (old_label != dropdown_label)
-          				$('#ctl00_ddlCloudAccounts option[value="' + account.ID + '"]').text(dropdown_label);
-          		}
-	        } else {
-	            showAlert(response.d);
-	        }
+        	try {
+	            var account = eval('(' + response.d + ')');
+		        if (account) {
+	                // clear the search field and fire a search click, should reload the grid
+	                $("[id*='txtSearch']").val("");
+					GetAccounts();
+		            
+		            if (close_after_save) {
+		            	$("#edit_dialog").dialog('close');
+	            	} else {
+		            	//we aren't closing? fine, we're now in 'edit' mode.
+		            	$("#hidMode").val("edit");
+	            		$("#hidCurrentEditID").val(account.ID);
+	            		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
+	            	}
+	
+					var dropdown_label = account.Name + ' (' + account.Provider + ')';
+					//if we are adding a new one, add it to the dropdown too
+					if ($("#hidMode").val() == "add") {
+			            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : account.ID }).text(dropdown_label)); 
+			          	//if this was the first one, get it in the session by nudging the change event.
+			          	if ($("#ctl00_ddlCloudAccounts option").length == 1)
+			          		$("#ctl00_ddlCloudAccounts").change();
+	          		} else {
+	          			//we've only changed it.  update the name in the drop down if it changed.
+	          			if (old_label != dropdown_label)
+	          				$('#ctl00_ddlCloudAccounts option[value="' + account.ID + '"]').text(dropdown_label);
+	          		}
+		        } else {
+		            showAlert(response.d);
+		        }
+			} catch (ex) {
+				showInfo(response.d);
+			}
         },
         error: function (response) {
             showAlert(response.responseText);

@@ -165,16 +165,20 @@ function SaveItem() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-            var cloud = eval('(' + response.d + ')');
-	        if (cloud) {
-                // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-				GetClouds();
-	            
-            	$("#edit_dialog").dialog('close');
-	        } else {
-	            showAlert(response.d);
-	        }
+	       try {
+	            var cloud = eval('(' + response.d + ')');
+		        if (cloud) {
+	                // clear the search field and fire a search click, should reload the grid
+	                $("[id*='txtSearch']").val("");
+					GetClouds();
+		            
+	            	$("#edit_dialog").dialog('close');
+		        } else {
+		            showAlert(response.d);
+		        }
+			} catch (ex) {
+				showInfo(response.d);
+			}
         },
         error: function (response) {
             showAlert(response.responseText);

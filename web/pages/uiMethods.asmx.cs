@@ -2884,8 +2884,12 @@ namespace ACWebMethods
 				if (sMode == "add")
                 {
 					Cloud c = Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, ref sErr);
+
+					if (!string.IsNullOrEmpty(sErr))
+					    return sErr;
+					    
 					if (c == null) {
-						return "{}";
+						return "Unable to create Cloud.";
 					}
 					else
 					{
@@ -2896,7 +2900,7 @@ namespace ACWebMethods
                 {
 					Cloud c = new Cloud(sCloudID);
 					if (c == null) {
-						return "{}";
+						return "Unable to get Cloud using ID [" + sCloudID + "].";
 					}
 					else
 					{
@@ -3001,8 +3005,11 @@ namespace ACWebMethods
 	            {
 					CloudAccount ca = CloudAccount.DBCreateNew(sAccountName, sAccountNumber, sProvider, 
 					                                           sLoginID, sLoginPassword, sIsDefault, ref sErr);
+					if (!string.IsNullOrEmpty(sErr))
+					    return sErr;
+					    
 					if (ca == null) {
-						return "{}";
+						return "Unable to create Cloud Account.";
 					}
 					else
 					{
@@ -3015,7 +3022,7 @@ namespace ACWebMethods
 					
 					CloudAccount ca = new CloudAccount(sAccountID);
 					if (ca == null) {
-						return "{}";
+						return "Unable to get Cloud Account using ID [" + sAccountID + "].";
 					}
 					else
 					{
