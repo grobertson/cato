@@ -459,11 +459,11 @@ namespace Globals
 					if (xProvider.Attribute ("name") == null) 
 						throw new Exception ("Cloud Providers XML: All Providers must have the 'name' attribute.");
 					
-					Provider pv = new Provider();
-					pv.Name = xProvider.Attribute ("name").Value;
-					pv.TestProduct = (xProvider.Attribute ("test_product") == null ? "" : xProvider.Attribute ("test_product").Value);
-					pv.TestObject = (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value);
-					pv.UserDefinedClouds = (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true));
+					Provider pv = new Provider(xProvider.Attribute ("name").Value, 
+					                           (xProvider.Attribute ("test_product") == null ? "" : xProvider.Attribute ("test_product").Value),
+					                           (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value),
+					                           (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true))
+					                           );
 					
 					IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
 					
@@ -580,14 +580,23 @@ namespace Globals
 	}
 	public class Provider
 	{
-		public string Name;
-		public string TestProduct;
-		public string TestObject;
-		public bool UserDefinedClouds;
+		private string _Name;
+		private string _TestProduct;
+		private string _TestObject;
+		private bool _UserDefinedClouds;
+		
+		public string Name { get { return _Name; } }
+		public string TestProduct { get { return _TestProduct; } }
+		public string TestObject { get { return _TestObject; } }
+		public bool UserDefinedClouds { get { return _UserDefinedClouds; } }
 		
 		//default empty constructor
-		public Provider()
+		public Provider(string sName, string sTestProduct, string sTestObject, bool bUserDefinedClouds)
 		{
+			_Name = sName;
+			_TestProduct = sTestProduct;
+			_TestObject = sTestObject;
+			_UserDefinedClouds = bUserDefinedClouds;
 		}
 		
 		//get it by ID from the session
@@ -834,34 +843,6 @@ namespace Globals
 				}
 			}
 			
-			//this check is no longer necessary, as any addition to the clouds table calls an update to the CloudProviders class in the session.
-//			//if we are here it didn't find it... check the database
-//			string sErr = "";
-//            string sSQL = "select cloud_name, provider, api_url, api_protocol" +
-//                " from clouds" +
-//                " where cloud_id = '" + sCloudID + "'";
-//
-//            DataRow dr = null;
-//            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-//            {
-//                if (dr != null)
-//                {
-//					IsUserDefined = true;
-//					ID = sCloudID;
-//					Name = dr["cloud_name"].ToString();
-//					APIUrl = dr["api_url"].ToString();
-//					APIProtocol = dr["api_protocol"].ToString();
-//					
-//					Provider p = cp[dr["provider"].ToString()];
-//					Provider = p;
-//					return;
-//				}
-//			}
-//			else 
-//			{
-//				throw new Exception("Error building Cloud object: " + sErr);	
-//			}
-			
 			//well, if we got here we have a problem... the ID provided wasn't found anywhere.
 			//this should never happen, so bark about it.
 			throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
@@ -935,15 +916,14 @@ namespace Globals
 				
 				ui.WriteObjectAddLog(Globals.acObjectTypes.Cloud, sNewID, sCloudName, "Cloud Created");
 				
+				//update the CloudProviders in the session
+				CloudProviders cp = ui.GetCloudProviders();  //get the session object
+				cp[sProvider].RefreshClouds(); //find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+				ui.UpdateCloudProviders(cp); //update the session
 				
 				//now it's inserted... lets get it back from the db as a complete object for confirmation.
 				Cloud c = new Cloud(sNewID);
 
-				//update the CloudProviders in the session
-				CloudProviders cp = ui.GetCloudProviders();  //get the session object
-				cp[c.Provider.Name].RefreshClouds(); //find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-				ui.UpdateCloudProviders(cp); //update the session
-				
 				//yay!
 				return c;
 			}
@@ -1184,14 +1164,13 @@ namespace Globals
                         throw new Exception("Error resetting default Cloud Account: " + sErr);
                 }
 
-				
-				//now it's inserted... lets get it back from the db as a complete object for confirmation.
-				CloudAccount ca = new CloudAccount(sNewID);
-
 				//refresh the cloud account list in the session
 	            if (!ui.PutCloudAccountsInSession(ref sErr))
 					throw new Exception("Error refreshing Cloud Accounts in session: " + sErr);
 				
+				//now it's inserted... lets get it back from the db as a complete object for confirmation.
+				CloudAccount ca = new CloudAccount(sNewID);
+
 				//yay!
 				return ca;
 			}

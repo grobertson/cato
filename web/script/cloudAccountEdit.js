@@ -159,7 +159,7 @@ function GetProviderClouds() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/wmGetProviderClouds",
+        url: "uiMethods.asmx/wmGetProviderClouds",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -287,7 +287,7 @@ function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/wmGetCloudAccount",
+        url: "uiMethods.asmx/wmGetCloudAccount",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -386,7 +386,7 @@ function SaveItem(close_after_save) {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/wmSaveAccount",
+        url: "uiMethods.asmx/wmSaveAccount",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -496,7 +496,7 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "cloudAccountEdit.aspx/DeleteAccounts",
+        url: "uiMethods.asmx/wmDeleteAccounts",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",

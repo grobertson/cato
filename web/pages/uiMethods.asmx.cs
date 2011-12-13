@@ -2785,7 +2785,251 @@ namespace ACWebMethods
 
             return "";
         }
-		        #endregion
+        [WebMethod(EnableSession = true)]
+        public static string wmDeleteClouds(string sDeleteArray)
+        {
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+            string sSql = null;
+            string sErr = "";
+
+            if (sDeleteArray.Length < 36)
+                return "";
+
+            sDeleteArray = ui.QuoteUp(sDeleteArray);
+			
+            DataTable dt = new DataTable();
+            // get important data that will be deleted for the log
+            sSql = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")";
+            if (!dc.sqlGetDataTable(ref dt, sSql, ref sErr))
+                throw new Exception(sErr);
+
+            try
+            {
+                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
+                sSql = "delete from clouds where cloud_id in (" + sDeleteArray + ")";
+                oTrans.Command.CommandText = sSql;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
+                oTrans.Commit();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+			//reget the cloud providers class in the session
+			ui.SetCloudProviders(ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+				throw new Exception("Error: Unable to load Cloud Providers XML." + sErr);
+
+			// if we made it here, so save the logs
+            foreach (DataRow dr in dt.Rows)
+            {
+                ui.WriteObjectDeleteLog(Globals.acObjectTypes.Cloud, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["provider"].ToString() + " Cloud Deleted.");
+            }
+
+            return sErr;
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
+        {
+            string sErr = null;
+
+            try
+            {
+				if (sMode == "add")
+                {
+					Cloud c = Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, ref sErr);
+					if (c == null) {
+						return "{}";
+					}
+					else
+					{
+						return c.AsJSON();
+					}
+				}
+                else if (sMode == "edit")
+                {
+					Cloud c = new Cloud(sCloudID);
+					if (c == null) {
+						return "{}";
+					}
+					else
+					{
+						c.Name = sCloudName;
+						c.APIProtocol = sAPIProtocol;
+						c.APIUrl = sAPIUrl;
+						if (!c.DBUpdate(ref sErr))
+						{
+							throw new Exception(sErr);	
+						}
+					}
+				}
+			}
+            catch (Exception ex)
+            {
+                throw new Exception("Error: General Exception: " + ex.Message);
+            }
+			
+            // no errors to here, so return an empty object
+            return "{}";
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmGetCloud(string sID)
+        {
+			Cloud c = new Cloud(sID);
+			if (c == null) {
+				return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}";
+			}
+            else
+            {
+				return c.AsJSON();
+			}
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmDeleteAccounts(string sDeleteArray)
+        {
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+            string sSql = null;
+            string sErr = "";
+
+            if (sDeleteArray.Length < 36)
+                return "";
+
+            sDeleteArray = ui.QuoteUp(sDeleteArray);
+
+            DataTable dt = new DataTable();
+            // get data that will be deleted for the log
+            sSql = "select account_id, account_name, provider, login_id from cloud_account where account_id in (" + sDeleteArray + ")";
+            if (!dc.sqlGetDataTable(ref dt, sSql, ref sErr))
+                throw new Exception(sErr);
+
+            try
+            {
+
+                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
+                sSql = "delete from cloud_account where account_id in (" + sDeleteArray + ")";
+                oTrans.Command.CommandText = sSql;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
+				//refresh the cloud account list in the session
+                if (!ui.PutCloudAccountsInSession(ref sErr))
+					throw new Exception(sErr);
+
+                oTrans.Commit();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            // if we made it here, so save the logs
+            foreach (DataRow dr in dt.Rows)
+            {
+                ui.WriteObjectDeleteLog(Globals.acObjectTypes.CloudAccount, dr["account_id"].ToString(), dr["account_name"].ToString(), dr["provider"].ToString() + " Account for LoginID [" + dr["login_id"].ToString() + "] Deleted");
+            }
+
+            return sErr;
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmSaveAccount(string sMode, string sAccountID, string sAccountName, string sAccountNumber, string sProvider, 
+			string sLoginID, string sLoginPassword, string sLoginPasswordConfirm, string sIsDefault, string sAutoManageSecurity)
+        {
+            string sErr = null;
+
+			try
+			{
+				if (sMode == "add")
+	            {
+					CloudAccount ca = CloudAccount.DBCreateNew(sAccountName, sAccountNumber, sProvider, 
+					                                           sLoginID, sLoginPassword, sIsDefault, ref sErr);
+					if (ca == null) {
+						return "{}";
+					}
+					else
+					{
+						return ca.AsJSON();
+					}
+				}
+	            else if (sMode == "edit")
+	            {
+					//TODO: test the two passwords and confirm they match!
+					
+					CloudAccount ca = new CloudAccount(sAccountID);
+					if (ca == null) {
+						return "{}";
+					}
+					else
+					{
+						ca.ID = sAccountID;
+						ca.Name = sAccountName;
+						ca.AccountNumber = sAccountNumber;
+						ca.LoginID = sLoginID;
+						ca.LoginPassword = sLoginPassword;
+						ca.IsDefault = (sIsDefault == "1" ? true : false);
+						
+						//note: we must reassign the whole provider
+						//changing the name screws up the CloudProviders object in the session, which is writable! (oops)
+						ca.Provider = Provider.GetFromSession(sProvider);
+						
+						if (!ca.DBUpdate(ref sErr))
+							throw new Exception(sErr);	
+						
+						return ca.AsJSON();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+			    throw new Exception("Error: General Exception: " + ex.Message);
+			}
+			
+            // no errors to here, so return an empty string
+            return "{}";
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmGetCloudAccount(string sID)
+        {
+			CloudAccount ca = new CloudAccount(sID);
+			if (ca == null) {
+				return "{'result':'fail','error':'Failed to get Cloud Account details for Cloud Account ID [" + sID + "].'}";
+			}
+            else
+            {
+				return ca.AsJSON();
+			}
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static string wmGetProviderClouds(string sProvider)
+        {
+			acUI.acUI ui = new acUI.acUI();
+			
+			CloudProviders cp = ui.GetCloudProviders();
+			if (cp == null) {
+				return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}";
+			}
+            else
+			{
+				Provider p = cp[sProvider];
+				if (p != null)
+					return p.AsJSON();
+				else
+					return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}";
+			}
+		}
+#endregion
 
         #region "Task Launch Dialog"
 		//this one is used by several functions... 

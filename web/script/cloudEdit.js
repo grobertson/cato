@@ -99,7 +99,7 @@ function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudEdit.aspx/wmGetCloud",
+        url: "uiMethods.asmx/wmGetCloud",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -160,7 +160,7 @@ function SaveItem() {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "cloudEdit.aspx/wmSaveCloud",
+        url: "uiMethods.asmx/wmSaveCloud",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -205,7 +205,7 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "cloudEdit.aspx/DeleteClouds",
+        url: "uiMethods.asmx/wmDeleteClouds",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
