@@ -892,11 +892,11 @@ function loadRecurringPlan(schedule_id) {
         data: '{"sScheduleID":"' + schedule_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
+        success: function (response) {
+            if (response.d.length == 0) {
                 showAlert('error no response');
             } else {
-                var oResultData = eval('(' + msg.d + ')');
+                var oResultData = jQuery.parseJSON(response.d);
                 populateTimetable(oResultData);
 
                 //move it to the edit dialog

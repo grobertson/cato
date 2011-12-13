@@ -1159,7 +1159,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmDeleteEcosystems(string sDeleteArray)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sSQL = null;
             string sErr = "";
@@ -2393,7 +2392,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmDeleteEcotemplateAction(string sActionID)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sSQL = null;
             string sErr = "";
@@ -2877,7 +2875,7 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
         {
-            string sErr = null;
+            string sErr = "";
 
             try
             {
@@ -2886,10 +2884,10 @@ namespace ACWebMethods
 					Cloud c = Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, ref sErr);
 
 					if (!string.IsNullOrEmpty(sErr))
-					    return sErr;
+					    return "{\"error\" : \"" + sErr + "\"}";
 					    
 					if (c == null) {
-						return "Unable to create Cloud.";
+						return "{\"error\" : \"Unable to create Cloud.\"}";
 					}
 					else
 					{
@@ -2900,7 +2898,7 @@ namespace ACWebMethods
                 {
 					Cloud c = new Cloud(sCloudID);
 					if (c == null) {
-						return "Unable to get Cloud using ID [" + sCloudID + "].";
+						return "{\"error\" : \"Unable to get Cloud using ID [" + sCloudID + "].\"}";
 					}
 					else
 					{
@@ -2997,7 +2995,7 @@ namespace ACWebMethods
         public string wmSaveAccount(string sMode, string sAccountID, string sAccountName, string sAccountNumber, string sProvider, 
 			string sLoginID, string sLoginPassword, string sLoginPasswordConfirm, string sIsDefault, string sAutoManageSecurity)
         {
-            string sErr = null;
+            string sErr = "";
 
 			try
 			{
@@ -3006,10 +3004,10 @@ namespace ACWebMethods
 					CloudAccount ca = CloudAccount.DBCreateNew(sAccountName, sAccountNumber, sProvider, 
 					                                           sLoginID, sLoginPassword, sIsDefault, ref sErr);
 					if (!string.IsNullOrEmpty(sErr))
-					    return sErr;
+					    return "{\"error\" : \"" + sErr + "\"}";
 					    
 					if (ca == null) {
-						return "Unable to create Cloud Account.";
+						return "{\"error\" : \"Unable to create Cloud Account.\"}";
 					}
 					else
 					{
@@ -3022,7 +3020,7 @@ namespace ACWebMethods
 					
 					CloudAccount ca = new CloudAccount(sAccountID);
 					if (ca == null) {
-						return "Unable to get Cloud Account using ID [" + sAccountID + "].";
+						return "{\"error\" : \"Unable to get Cloud Account using ID [" + sAccountID + "].\"}";
 					}
 					else
 					{
@@ -3049,7 +3047,7 @@ namespace ACWebMethods
 			    throw new Exception("Error: General Exception: " + ex.Message);
 			}
 			
-            // no errors to here, so return an empty string
+            // no errors to here, so return an empty object
             return "{}";
         }
 

@@ -21,9 +21,77 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Globals
 {
+	//a new class for handling api responses consistently.
+	public class apiResponse
+	{
+		public string Method = "";
+		public string Response = "";
+		public string ErrorCode = "";
+		public string ErrorMessage = "";
+		public string ErrorDetail = "";
+		
+		//default constructor
+		public apiResponse()
+		{
+		}
+		
+		//default constructor
+		public apiResponse(string sMethod, string sResponse, string sErrorCode, string sErrorMessage, string sErrorDetail)
+		{
+			Method = sMethod;
+			Response = sResponse;
+			ErrorCode = sErrorCode;
+			ErrorMessage = sErrorMessage;
+			ErrorDetail = sErrorDetail;
+		}
+
+		public string AsXML()
+		{
+            acUI.acUI ui = new acUI.acUI();
+
+			//well, for XML we have to do a little cleanup
+			//it's entirely possible there may be some invalid stuff in the Message or Detail
+			//so, let's just use some patterns to remove the most common offenders, like an xml declaration.
+			Regex rx = new Regex("<\\?xml.*\\?>");
+			this.ErrorMessage = rx.Replace(this.ErrorMessage, "");
+			this.ErrorDetail = rx.Replace(this.ErrorDetail, "");
+			//there may be more later.
+			
+			// validate the response and error detail as valid XML
+			// OR
+			// escape any offending characters.
+			XDocument x = null;
+			x = XDocument.Parse(this.Response);
+			if (x == null)
+				this.Response = ui.SafeHTML(this.Response);
+
+			x = XDocument.Parse(this.ErrorDetail);
+			if (x == null)
+				this.ErrorDetail = ui.SafeHTML(this.ErrorDetail);
+
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.Append("<apiResponse>");
+			sb.AppendFormat("<method>{0}</method>", this.Method);
+			sb.AppendFormat("<response>{0}</response>", this.Response);
+			
+			sb.Append("<error>");
+			sb.AppendFormat("<code>{0}</code>", this.ErrorCode);
+			sb.AppendFormat("<message>{0}</message>", this.ErrorMessage);
+			sb.AppendFormat("<detail>{0}</detail>", this.ErrorDetail);
+			sb.Append("</error>");
+
+			sb.Append("</apiResponse>");
+			
+			return sb.ToString();
+
+		}
+	}
 	#region "Enums"
     public enum acObjectTypes : int
     {

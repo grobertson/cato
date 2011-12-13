@@ -90,7 +90,7 @@ function FillEditForm(sEditID) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var oResultData = eval('(' + response.d + ')');
+                var oResultData = jQuery.parseJSON(response.d);
 
                 // show the assets current values
                 $("#txtCredName").val(oResultData.sCredName);

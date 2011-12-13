@@ -75,7 +75,7 @@ function FillEditForm(sEditID) {
                 showAlert('error no response');
             } else {
 
-                var oResultData = eval('(' + response.d + ')');
+                var oResultData = jQuery.parseJSON(response.d);
                 // show the assets current values
                 $("#txtDomain").val(oResultData.sDomain);
                 $("#txtAddress").val(oResultData.sAddress)

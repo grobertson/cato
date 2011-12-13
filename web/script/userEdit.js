@@ -499,14 +499,14 @@ function FillEditForm(sUserID) {
         data: '{"sUserID":"' + sUserID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
+        success: function (response) {
             //update the list in the dialog
-            if (msg.d.length == 0) {
+            if (response.d.length == 0) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
 
-                var oResultData = eval('(' + msg.d + ')');
+                var oResultData = jQuery.parseJSON(response.d);
                 $("#txtUserLoginID").val(oResultData.sEditUserID);
                 $("#txtUserFullName").val(oResultData.sUserFullName)
                 $("#txtUserEmail").val(oResultData.sEmail);

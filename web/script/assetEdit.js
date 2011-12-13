@@ -513,7 +513,7 @@ function FillEditForm(sAssetID) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var oResultData = eval('(' + response.d + ')');
+                var oResultData = jQuery.parseJSON(response.d);
 
                 // show the assets current values
                 $("#txtAssetName").val(unpackJSON(oResultData.sAssetName));

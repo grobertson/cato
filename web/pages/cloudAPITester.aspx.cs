@@ -108,7 +108,7 @@ namespace Web.pages
             sXML = acAWS.GetCloudObjectsAsXML(sCloudID, cot, ref sErr, null);
 			if (!string.IsNullOrEmpty(sErr))
 			{
-				return "GetCloudObjectsAsXML failed with error: " + sErr;
+				return sErr;
 			}
 			if (string.IsNullOrEmpty(sXML))
 			{

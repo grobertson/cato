@@ -109,7 +109,7 @@ function FillEditForm(sEditID) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var cloud = eval('(' + response.d + ')');
+                var cloud = jQuery.parseJSON(response.d);
 
                 // show the assets current values
                 $("#txtCloudName").val(cloud.Name);
@@ -166,18 +166,24 @@ function SaveItem() {
         dataType: "json",
         success: function (response) {
 	       try {
-	            var cloud = eval('(' + response.d + ')');
+	            var cloud = jQuery.parseJSON(response.d);
 		        if (cloud) {
-	                // clear the search field and fire a search click, should reload the grid
-	                $("[id*='txtSearch']").val("");
-					GetClouds();
-		            
-	            	$("#edit_dialog").dialog('close');
+		        	if (cloud.info) {
+		        		showInfo(cloud.info);
+		        	} else if (cloud.error) {
+		        		showAlert(cloud.error);
+		        	} else {
+		                // clear the search field and fire a search click, should reload the grid
+		                $("[id*='txtSearch']").val("");
+						GetClouds();
+			            
+		            	$("#edit_dialog").dialog('close');
+	            	}
 		        } else {
 		            showAlert(response.d);
 		        }
 			} catch (ex) {
-				showInfo(response.d);
+				showAlert(response.d);
 			}
         },
         error: function (response) {
