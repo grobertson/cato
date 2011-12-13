@@ -346,6 +346,9 @@ function GetKeyPairs(sEditID) {
 }
 
 function SaveItem(close_after_save) {
+	//used for changing the global dropdown if needed
+	var old_label = $('#ctl00_ddlCloudAccounts option:selected').text();
+    
     var bSave = true;
     var strValidationError = '';
 
@@ -403,12 +406,17 @@ function SaveItem(close_after_save) {
             		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
             	}
 
+				var dropdown_label = account.Name + ' (' + account.Provider + ')';
 				//if we are adding a new one, add it to the dropdown too
 				if ($("#hidMode").val() == "add") {
-		            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : account.ID }).text(account.Name + ' (' + account.Provider + ')')); 
+		            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : account.ID }).text(dropdown_label)); 
 		          	//if this was the first one, get it in the session by nudging the change event.
 		          	if ($("#ctl00_ddlCloudAccounts option").length == 1)
 		          		$("#ctl00_ddlCloudAccounts").change();
+          		} else {
+          			//we've only changed it.  update the name in the drop down if it changed.
+          			if (old_label != dropdown_label)
+          				$('#ctl00_ddlCloudAccounts option[value="' + account.ID + '"]').text(dropdown_label);
           		}
 	        } else {
 	            showAlert(response.d);

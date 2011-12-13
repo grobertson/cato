@@ -22,7 +22,7 @@ using System.Web.Security;
 using System.Data;
 using System.Xml.Linq;
 using System.Xml.XPath;
-
+using Globals;
 
 namespace Web
 {
@@ -165,8 +165,8 @@ namespace Web
                         ddlCloudAccounts.DataValueField = "account_id";
                         ddlCloudAccounts.DataSource = dtCloudAccounts;
                         ddlCloudAccounts.DataBind();
-
-                        ddlCloudAccounts.SelectedValue = ui.GetSessionObject("cloud_account_id", "Security").ToString();
+						
+                        ddlCloudAccounts.SelectedValue = ui.GetSelectedCloudAccountID();
                     }
                 }
 			}

@@ -230,9 +230,9 @@ namespace Web.pages
 						ca.LoginPassword = sLoginPassword;
 						ca.IsDefault = (sIsDefault == "1" ? true : false);
 						
-						//note: simply changing the provider NAME will tell the update method to switch providers.
-						//no need to redo the whole object
-						ca.Provider.Name = sProvider;
+						//note: we must reassign the whole provider
+						//changing the name screws up the CloudProviders object in the session, which is writable! (oops)
+						ca.Provider = Provider.GetFromSession(sProvider);
 						
 						if (!ca.DBUpdate(ref sErr))
 							throw new Exception(sErr);	

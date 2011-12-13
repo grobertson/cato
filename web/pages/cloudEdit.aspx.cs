@@ -152,7 +152,8 @@ namespace Web.pages
                 return "";
 
             sDeleteArray = ui.QuoteUp(sDeleteArray);
-
+			
+			//TODO: this could be eliminated and just loop the sDeleteArray to write the log entries.
             DataTable dt = new DataTable();
             // get a list of ids that will be deleted for the log
             sSql = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")";
@@ -167,10 +168,6 @@ namespace Web.pages
                 oTrans.Command.CommandText = sSql;
                 if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
-
-				//refresh the cloud account list in the session
-                if (!ui.PutCloudAccountsInSession(ref sErr))
-					throw new Exception(sErr);
 
                 oTrans.Commit();
             }

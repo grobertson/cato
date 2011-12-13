@@ -284,6 +284,7 @@ namespace Web
                 }
 				
                 // CLOUD ACCOUNTS (data table)
+				//NOTE: MUST be done AFTER the CloudProviders are put in the session.
                 if (!ui.PutCloudAccountsInSession(ref sErr))
                 {
                     lblErrorMessage.Text = sErr;

@@ -1226,23 +1226,13 @@ namespace acUI
 
                 if (dc.sqlGetDataRow(ref drCloudAccounts, sSQL, ref sErr))
                 {
-                    if (((drCloudAccounts != null)))
+                    if (drCloudAccounts != null)
                     {
-	                    SetSessionObject("cloud_account_id", drCloudAccounts["account_id"].ToString(), "Security");
-	                    SetSessionObject("cloud_login_id", drCloudAccounts["login_id"].ToString(), "Security");
-	
-	                    string sEncryptedPassword = drCloudAccounts["login_password"].ToString();
-	                    string sPassword = (!string.IsNullOrEmpty(sEncryptedPassword) ? dc.DeCrypt(sEncryptedPassword) : "").ToString();
-	
-	                    SetSessionObject("cloud_login_password", sPassword, "Security");
-	
-						//we'll get the whole Provider object for the selected one
-						CloudProviders cp = GetCloudProviders();
-						if (cp != null)
+						//put the default Account in the session as the 'selected' Account.
+						CloudAccount ca = new CloudAccount(drCloudAccounts["account_id"].ToString());
+						if (ca != null)
 						{
-							Provider p = cp[drCloudAccounts["provider"].ToString()];
-		                    SetSessionObject("cloud_provider", p, "Security");
-	                    	SetSessionObject("cloud_provider_name", drCloudAccounts["provider"].ToString(), "Security");
+							SetSessionObject("selected_cloud_account", ca, "Security");
 						}
                     }
                     else
@@ -1278,7 +1268,6 @@ namespace acUI
             if (!dc.sqlGetDataTable(ref dtCloudAccounts, sSQL, ref sErr))
             {
                 return false;
-
             }
             else
             {
@@ -1286,32 +1275,18 @@ namespace acUI
 
                 if ((dtCloudAccounts.Rows.Count > 0))
                 {
-                    //and using the first row (default) put those credentials in the session
-                    SetSessionObject("cloud_account_id", dtCloudAccounts.Rows[0]["account_id"].ToString(), "Security");
-                    SetSessionObject("cloud_login_id", dtCloudAccounts.Rows[0]["login_id"].ToString(), "Security");
-
-                    string sEncryptedPassword = dtCloudAccounts.Rows[0]["login_password"].ToString();
-                    string sPassword = (!string.IsNullOrEmpty(sEncryptedPassword) ? dc.DeCrypt(sEncryptedPassword) : "").ToString();
-
-                    SetSessionObject("cloud_login_password", sPassword, "Security");
-
-					//we'll get the whole Provider object for the selected one
-					CloudProviders cp = GetCloudProviders();
-					if (cp != null)
+					//the first row is the default
+					//put the default Account in the session as the 'selected' Account.
+					CloudAccount ca = new CloudAccount(dtCloudAccounts.Rows[0]["account_id"].ToString());
+					if (ca != null)
 					{
-						Provider p = cp[dtCloudAccounts.Rows[0]["provider"].ToString()];
-	                    SetSessionObject("cloud_provider", p, "Security");
-                    	SetSessionObject("cloud_provider_name", dtCloudAccounts.Rows[0]["provider"].ToString(), "Security");
+						SetSessionObject("selected_cloud_account", ca, "Security");
 					}
 				}
                 else
                 {
-                    //have to set empty ones... these fields arent important enough to cause a session drop.
-                    SetSessionObject("cloud_account_id", "", "Security");
-                    SetSessionObject("cloud_login_id", "", "Security");
-                    SetSessionObject("cloud_login_password", "", "Security");
-                    SetSessionObject("cloud_provider_name", "", "Security");
-                    SetSessionObject("cloud_provider", null, "Security");
+                    //have to set it as empty ... this isn't important enough to cause a session drop.
+                    SetSessionObject("selected_cloud_account", null, "Security");
                 }
 
                 return true;
@@ -1321,42 +1296,19 @@ namespace acUI
 
         public string GetSelectedCloudAccountID()
         {
-            object o = GetSessionObject("cloud_account_id", "Security");
-            if (o == null)
-                o = Convert.ToString("");
-            return o.ToString();
-        }
-        public string GetSelectedCloudLoginID()
-        {
-            object o = GetSessionObject("cloud_login_id", "Security");
-            if (o == null)
-                o = Convert.ToString("");
-            return o.ToString();
-        }
-        public string GetSelectedCloudLoginPassword()
-        {
-            object o = GetSessionObject("cloud_login_password", "Security");
-            if (o == null)
-                o = Convert.ToString("");
-            return o.ToString();
-        }
-        public string GetSelectedCloudProviderName()
-        {
-            object o = GetSessionObject("cloud_provider_name", "Security");
-            if (o == null)
-                o = Convert.ToString("");
-            return o.ToString();
+            CloudAccount ca = (CloudAccount) GetSessionObject("selected_cloud_account", "Security");
+            if (ca != null)
+				return ca.ID;
+			else
+				return "";
         }
         public Provider GetSelectedCloudProvider()
         {
-			object o = GetSessionObject("cloud_provider", "Security");
-            if (o != null)
-			{
-				Provider p = (Provider) o;
-				return p;
-			}
-			
-			return null; 
+            CloudAccount ca = (CloudAccount) GetSessionObject("selected_cloud_account", "Security");
+            if (ca != null)
+				return ca.Provider;
+			else
+				return null;
         }
 		//this one returns the entire Cloud Providers class... all data
         public CloudProviders GetCloudProviders()

@@ -580,10 +580,29 @@ namespace Globals
 	}
 	public class Provider
 	{
-		public string Name { get; set; }
-		public string TestProduct { get; set; }
-		public string TestObject { get; set; }
-		public bool UserDefinedClouds { get; set; }
+		public string Name;
+		public string TestProduct;
+		public string TestObject;
+		public bool UserDefinedClouds;
+		
+		//default empty constructor
+		public Provider()
+		{
+		}
+		
+		//get it by ID from the session
+		static public Provider GetFromSession(string sProvider)
+		{
+            acUI.acUI ui = new acUI.acUI();
+
+			//get the provider record from the CloudProviders object in the session
+			CloudProviders cp = ui.GetCloudProviders();
+			if (cp == null) {
+				throw new Exception("Error building Provider object: Unable to GetCloudProviders.");	
+			}
+
+			return cp[sProvider];
+		}
 		
 		//Provider CONTAINS a named dictionary of Clouds;
 		public Dictionary<string, Cloud> Clouds = new Dictionary<string, Cloud>();
@@ -1007,7 +1026,6 @@ namespace Globals
 				throw new Exception("Error building Cloud Account object: Cloud Account ID is required.");	
 			
             dataAccess dc = new dataAccess();
-			acUI.acUI ui = new acUI.acUI();
 			
             string sErr = "";
 
@@ -1027,13 +1045,7 @@ namespace Globals
 					LoginPassword = (string.IsNullOrEmpty (dr["login_password"].ToString()) ? "" : dc.DeCrypt(dr["login_password"].ToString()));
 					IsDefault = (dr["is_default"].ToString() == "1" ? true : false);
 					
-					//get the provider record from the CloudProviders object in the session
-					CloudProviders cp = ui.GetCloudProviders();
-					if (cp == null) {
-						throw new Exception("Error building CloudAccount object: Unable to GetCloudProviders.");	
-					}
-
-					Provider p = cp[dr["provider"].ToString()];
+					Provider p = Provider.GetFromSession(dr["provider"].ToString());
 					if (p == null) {
 						throw new Exception("Error building CloudAccount object: No Provider for name [" + dr["provider"].ToString() + "] defined in session.");	
 					}
