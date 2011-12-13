@@ -1706,13 +1706,19 @@ namespace ACWebMethods
 
                 if (iResults == 0)
                 {
-                    sSQL = "delete from ecotemplate_action where ecotemplate_id in (" + sDeleteArray.ToString() + ")";
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                        throw new Exception(sErr);
-
+					dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+					
+					sSQL = "delete from ecotemplate_action where ecotemplate_id in (" + sDeleteArray.ToString() + ")";
+					oTrans.Command.CommandText = sSQL;
+					if (!oTrans.ExecUpdate(ref sErr))
+						throw new Exception(sErr);
+					
                     sSQL = "delete from ecotemplate where ecotemplate_id in (" + sDeleteArray.ToString() + ")";
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                        throw new Exception(sErr);
+					oTrans.Command.CommandText = sSQL;
+					if (!oTrans.ExecUpdate(ref sErr))
+						throw new Exception(sErr);
+
+					oTrans.Commit();
 
                     // if we made it here, so save the logs
                     ui.WriteObjectDeleteLog(acObjectTypes.EcoTemplate, "", "", "Eco Templates(s) Deleted [" + sDeleteArray.ToString() + "]");
@@ -2397,12 +2403,25 @@ namespace ACWebMethods
 
             try
             {
-                sSQL = "delete from ecotemplate_action" +
-                    " where action_id ='" + sActionID + "'";
+                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				sSQL = "delete from action_plan where action_id = '" + sActionID + "'";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
-            }
+
+				sSQL = "delete from action_schedule where action_id = '" + sActionID + "'";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
+				sSQL = "delete from ecotemplate_action where action_id = '" + sActionID + "'";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
+				oTrans.Commit();
+			}
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);

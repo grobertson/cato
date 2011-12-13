@@ -31,6 +31,8 @@
                     <p>
                         Select one or more Templates from the list to the right, using the checkboxes. Select
                         an action to modify or delete the Templates you've selected.</p>
+                    <p>
+                        Templates cannot be deleted if they are referenced by any Ecosystems.</p>
 					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Ecosystems?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
 						for a more detailed introduction to Ecosystem Templates.</p>
                 </div>

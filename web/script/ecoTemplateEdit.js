@@ -146,7 +146,7 @@ $(document).ready(function () {
     $(".action_remove_btn").live("click", function () {
         var action_id = $(this).parents("li").attr('id').replace(/ac_/, "");
 
-        if (confirm("Are you sure?")) {
+        if (confirm("Removing this Action will remove it from all associated Ecosystems, and cancel any future Action Schedules.\n\nThis cannot be undone.\n\nAre you sure?")) {
             $("#actions").block({ message: null, cursor: 'wait' });
 
             var search_text = $("#task_search_text").val();
