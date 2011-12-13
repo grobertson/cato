@@ -80,7 +80,8 @@ namespace Web.pages
             }
 
             sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," +
-                " case is_default when 1 then 'Yes' else 'No' end as is_default" +
+                " case is_default when 1 then 'Yes' else 'No' end as is_default," +
+				" (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" +
                 " from cloud_account" +
                 " where 1=1 " + sWhereString +
                 " order by is_default desc, account_name";
@@ -115,13 +116,26 @@ namespace Web.pages
             foreach (DataRow dr in dt.Rows)
             {
                 sHTML += "<tr account_id=\"" + dr["account_id"].ToString() + "\">";
-                sHTML += "<td class=\"chkboxcolumn\">";
-                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
-                    " id=\"chk_" + dr[0].ToString() + "\"" +
-                    " object_id=\"" + dr[0].ToString() + "\"" +
-                    " tag=\"chk\" />";
-                sHTML += "</td>";
-
+                
+				if (dr["has_ecosystems"].ToString() == "0")
+				{
+					sHTML += "<td class=\"chkboxcolumn\">";
+	                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
+	                    " id=\"chk_" + dr[0].ToString() + "\"" +
+	                    " object_id=\"" + dr[0].ToString() + "\"" +
+	                    " tag=\"chk\" />";
+	                sHTML += "</td>";
+				}
+				else 
+				{
+					sHTML += "<td>";
+					sHTML += "<img class=\"account_help_btn trans50\"" +
+	                    " src=\"../images/icons/info.png\" alt=\"\" style=\"padding: 2px 0 0 2px; width: 12px; height: 12px;\"" +
+	                    " title=\"This account has associated Ecosystems and cannot be deleted.\" />";
+					sHTML += "</td>";
+				}
+				
+				
                 sHTML += "<td tag=\"selectable\">" + dr["account_name"].ToString() +  "</td>";
                 sHTML += "<td tag=\"selectable\">" + dr["account_number"].ToString() +  "</td>";
                 sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";

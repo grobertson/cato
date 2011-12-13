@@ -147,6 +147,14 @@ $(document).ready(function () {
 	$("#test_connection_btn").live("click", function () {
         TestConnection();
     });
+
+    $(".account_help_btn").tipTip({
+        defaultPosition: "right",
+        keepAlive: false,
+        activation: "hover",
+        maxWidth: "400px",
+        fadeIn: 100
+    });
 });
 
 function pageLoad() {
@@ -433,6 +441,7 @@ function ShowItemAdd() {
     $("#hidMode").val("add");
 
 	setLabels();	
+	GetProviderClouds();
 
 	//clear out any test results
 	$("#conn_test_result").css("color","green");
@@ -503,13 +512,14 @@ function DeleteItems() {
         success: function (msg) {
         	var do_refresh = false;
         	
-        	//remove the selected ones from the cloud account dropdown
+			//first, which one is selected?
+			var current = $("#mySelect option:selected").val();
+
+        	//remove the deleted ones from the cloud account dropdown
 			myArray = $("#hidSelectedArray").val().split(',');
 			$.each(myArray, function(name, value) {
-				//first, which one is selected?
-				var current = $("#mySelect option:selected").val();
 				//whack it
-				$('#ctl00_ddlCloudAccounts [value="' + value + '"]').remove();
+				$('#ctl00_ddlCloudAccounts option[value="' + value + '"]').remove();
 				//if we whacked what was selected, flag for change push
 				if (value == current)
 					do_refresh = true;

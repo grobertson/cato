@@ -44,6 +44,7 @@
                     <p>
                         Select an Account from the list or select an action to edit or delete the Accounts
                         you've selected.</p>
+					<p>Cloud Accounts can not be deleted if they are associated with any Ecosystems.</p>
  					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/CloudAccount?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
 						for a more detailed introduction to Cloud Accounts.</p>
                 </div>
@@ -219,7 +220,9 @@
         </table>
         <input type="hidden" id="keypair_id" />
     </div>
-    <div id="delete_dialog" class="hidden" title="Delete Account">
+    <div id="delete_dialog" class="hidden" title="Delete">
         Are you sure you want to delete these Accounts?
+		<br /><br />
+		This action cannot be undone.
     </div>
 </asp:Content>

@@ -2903,18 +2903,22 @@ namespace ACWebMethods
             if (sDeleteArray.Length < 36)
                 return "";
 
-            sDeleteArray = ui.QuoteUp(sDeleteArray);
+			sDeleteArray = ui.QuoteUp(sDeleteArray);
 
-            DataTable dt = new DataTable();
-            // get data that will be deleted for the log
-            sSql = "select account_id, account_name, provider, login_id from cloud_account where account_id in (" + sDeleteArray + ")";
-            if (!dc.sqlGetDataTable(ref dt, sSql, ref sErr))
-                throw new Exception(sErr);
-
-            try
+			try
             {
+				DataTable dtLogInfo = new DataTable();
+	            // get data that will be deleted for the log
+	            sSql = "select account_id, account_name, provider, login_id from cloud_account where account_id in (" + sDeleteArray + ")";
+	            if (!dc.sqlGetDataTable(ref dtLogInfo, sSql, ref sErr))
+	                throw new Exception(sErr);
 
                 dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
+                sSql = "delete from cloud_account_keypair where account_id in (" + sDeleteArray + ")";
+                oTrans.Command.CommandText = sSql;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
 
                 sSql = "delete from cloud_account where account_id in (" + sDeleteArray + ")";
                 oTrans.Command.CommandText = sSql;
@@ -2926,16 +2930,20 @@ namespace ACWebMethods
 					throw new Exception(sErr);
 
                 oTrans.Commit();
+				
+				//after deleting ... refresh the session
+	            if (!ui.PutCloudAccountsInSession(ref sErr))
+					throw new Exception("Error refreshing Cloud Accounts in session: " + sErr);
+
+	            // if we made it here, so save the logs
+	            foreach (DataRow dr in dtLogInfo.Rows)
+	            {
+	                ui.WriteObjectDeleteLog(Globals.acObjectTypes.CloudAccount, dr["account_id"].ToString(), dr["account_name"].ToString(), dr["provider"].ToString() + " Account for LoginID [" + dr["login_id"].ToString() + "] Deleted");
+	            }
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
-            }
-
-            // if we made it here, so save the logs
-            foreach (DataRow dr in dt.Rows)
-            {
-                ui.WriteObjectDeleteLog(Globals.acObjectTypes.CloudAccount, dr["account_id"].ToString(), dr["account_name"].ToString(), dr["provider"].ToString() + " Account for LoginID [" + dr["login_id"].ToString() + "] Deleted");
             }
 
             return sErr;

@@ -1130,7 +1130,8 @@ namespace Globals
 
 				string sNewID = ui.NewGUID();
 				
-				oTrans.Command.CommandText = "insert into cloud_account (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" +
+				oTrans.Command.CommandText = "insert into cloud_account" +
+					" (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" +
                     " values ('" + sNewID + "'," +
                     "'" + sAccountName + "'," +
                     "'" + sAccountNumber + "'," +
@@ -1151,11 +1152,6 @@ namespace Globals
 						throw new Exception(sErr);
 				}
 				
-				oTrans.Commit();
-				
-				
-				ui.WriteObjectAddLog(Globals.acObjectTypes.CloudAccount, sNewID, sAccountName, "Account Created");
-				
                 //if "default" was selected, unset all the others
                 if (dc.IsTrue(sIsDefault))
                 {
@@ -1163,6 +1159,10 @@ namespace Globals
                     if (!oTrans.ExecUpdate(ref sErr))
                         throw new Exception("Error resetting default Cloud Account: " + sErr);
                 }
+
+				oTrans.Commit();
+
+				ui.WriteObjectAddLog(Globals.acObjectTypes.CloudAccount, sNewID, sAccountName, "Account Created");
 
 				//refresh the cloud account list in the session
 	            if (!ui.PutCloudAccountsInSession(ref sErr))
