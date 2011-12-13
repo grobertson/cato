@@ -126,5 +126,9 @@
     </div>
     <div id="delete_dialog" class="hidden" title="Delete Ecosystems">
         Are you sure you want to delete these Ecosystems?
+		<br /><br />
+		Deleting an Ecosystem will cancel all associated future Action Plans.
+		<br /><br />
+		This cannot be undone.
     </div>
 </asp:Content>

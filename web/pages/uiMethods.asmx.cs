@@ -1171,14 +1171,35 @@ namespace ACWebMethods
 
             try
             {
+                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
+				sSQL = "delete from action_plan where ecosystem_id in (" + sDeleteArray.ToString() + ")";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
+                sSQL = "delete from action_schedule where ecosystem_id in (" + sDeleteArray.ToString() + ")";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
+				sSQL = "delete from object_registry where object_id in (" + sDeleteArray.ToString() + ")";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
                 sSQL = "delete from ecosystem_object where ecosystem_id in (" + sDeleteArray.ToString() + ")";
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
 
                 sSQL = "delete from ecosystem where ecosystem_id in (" + sDeleteArray.ToString() + ")";
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
-            }
+				
+				oTrans.Commit();
+			}
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
