@@ -2786,7 +2786,7 @@ namespace ACWebMethods
             return "";
         }
         [WebMethod(EnableSession = true)]
-        public static string wmDeleteClouds(string sDeleteArray)
+        public string wmDeleteClouds(string sDeleteArray)
         {
             dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
@@ -2835,7 +2835,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
+        public string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
         {
             string sErr = null;
 
@@ -2880,7 +2880,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmGetCloud(string sID)
+        public string wmGetCloud(string sID)
         {
 			Cloud c = new Cloud(sID);
 			if (c == null) {
@@ -2893,7 +2893,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmDeleteAccounts(string sDeleteArray)
+        public string wmDeleteAccounts(string sDeleteArray)
         {
             dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
@@ -2942,7 +2942,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmSaveAccount(string sMode, string sAccountID, string sAccountName, string sAccountNumber, string sProvider, 
+        public string wmSaveAccount(string sMode, string sAccountID, string sAccountName, string sAccountNumber, string sProvider, 
 			string sLoginID, string sLoginPassword, string sLoginPasswordConfirm, string sIsDefault, string sAutoManageSecurity)
         {
             string sErr = null;
@@ -2999,7 +2999,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmGetCloudAccount(string sID)
+        public string wmGetCloudAccount(string sID)
         {
 			CloudAccount ca = new CloudAccount(sID);
 			if (ca == null) {
@@ -3012,7 +3012,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmGetProviderClouds(string sProvider)
+        public string wmGetProviderClouds(string sProvider)
         {
 			acUI.acUI ui = new acUI.acUI();
 			
