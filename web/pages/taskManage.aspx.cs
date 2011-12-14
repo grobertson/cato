@@ -40,7 +40,7 @@ namespace Web.pages
             if (!Page.IsPostBack)
             {
                 // first time on the page, get the sortcolumn last used if one exists.
-				Dictionary<string, string> dSort = ui.GetUsersSort("ecosystem");
+				Dictionary<string, string> dSort = ui.GetUsersSort("task");
 				if (dSort != null)
 				{
 					hidSortColumn.Value = dSort["sort_column"];

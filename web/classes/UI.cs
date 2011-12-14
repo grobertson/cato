@@ -39,7 +39,7 @@ namespace acUI
 			string sUserID = GetSessionUserID();
 			if (!string.IsNullOrEmpty(sUserID))
 			{
-	            string sSQL = "select setting_xml from users where id = '" + sUserID + "'";
+	            string sSQL = "select settings_xml from users where user_id = '" + sUserID + "'";
 				string sSettingXML = "";
 				if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
 	            {
@@ -52,7 +52,7 @@ namespace acUI
 						//there are no settings!
 						//create the row
 						sSettingXML = "<settings></settings>";
-						sSQL = "update users set setting_xml = '" + sSettingXML + "' where user_id = '" + sUserID + "'";
+						sSQL = "update users set settings_xml = '" + sSettingXML + "' where user_id = '" + sUserID + "'";
 						if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
 			                return false;
 					}

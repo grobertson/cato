@@ -61,7 +61,7 @@ namespace Web.pages
                 }
 
                 // first time on the page, get the sortcolumn last used if one exists.
-				Dictionary<string, string> dSort = ui.GetUsersSort("ecosystem");
+				Dictionary<string, string> dSort = ui.GetUsersSort("user");
 				if (dSort != null)
 				{
 					hidSortColumn.Value = dSort["sort_column"];
