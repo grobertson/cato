@@ -41,8 +41,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Literal ltCodeblocks;
 		
-		protected System.Web.UI.WebControls.Button btnCBDelete;
-		
 		protected System.Web.UI.WebControls.Button btnCBRefresh;
 		
 		protected System.Web.UI.WebControls.Literal ltCategories;
@@ -67,8 +65,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Label lblVersionHeader;
 		
-		protected System.Web.UI.WebControls.Label lblStepSectionTitle;
-		
 		protected System.Web.UI.WebControls.HiddenField hidCodeblockName;
 		
 		protected System.Web.UI.WebControls.HiddenField hidTaskID;
@@ -78,8 +74,6 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.HiddenField hidDefault;
 		
 		protected System.Web.UI.WebControls.HiddenField hidStepDelete;
-		
-		protected System.Web.UI.WebControls.HiddenField hidCodeblockDelete;
 		
 		protected System.Web.UI.WebControls.HiddenField hidParamDelete;
 		

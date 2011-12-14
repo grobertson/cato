@@ -59,7 +59,7 @@ $(document).ready(function () {
 
     //the onclick event of the 'delete' link of each codeblock
     $("#div_codeblocks .codeblock_delete_btn").live("click", function () {
-        $("#ctl00_phDetail_hidCodeblockDelete").val($(this).attr("remove_id"));
+        $("#codeblock_to_delete").val($(this).attr("remove_id"));
         $("#codeblock_delete_confirm_dialog").dialog('open');
     });
 
@@ -233,19 +233,39 @@ function doCodeblockAdd() {
 }
 
 function doCodeblockDelete() {
-    //don't need to block, the dialog blocks.
+    var codeblock_name = $("#codeblock_to_delete").val();
+
+        //don't need to block, the dialog blocks.
     $("#update_success_msg").text("Updating...").show();
 
-    //do this with a webmethod
-    //(the function on the delete button does a reload of the steps in code
-    //for the MAIN codeblock)
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "taskMethods.asmx/wmDeleteCodeblock",
+        data: '{"sTaskID":"' + g_task_id + '","sCodeblockID":"' + codeblock_name + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+        	//remove it from the list of codeblocks
+		    $("#codeblocks #cb_" + codeblock_name).remove();
 
-    $("#ctl00_phDetail_btnCBDelete").click();
-    $("#ctl00_phDetail_hidCodeblockDelete").val("");
-    //when we delete a codeblock we reset the step list to MAIN.
-    $("#codeblock_steps_title").text("MAIN");
-    $("#ctl00_phDetail_hidCodeblockName").val("MAIN");
+			//clear the dialog value
+		    $("#codeblock_to_delete").val("");
+		
+		    //when we delete a codeblock we reset the step list to MAIN.
+		    $("#ctl00_phDetail_hidCodeblockName").val("MAIN");
+			getSteps();
+		
+		    $("#update_success_msg").text("Update Successful").fadeOut(2000);
+        },
+        error: function (response) {
+            $("#update_success_msg").fadeOut(2000);
+            showAlert(response.responseText);
+            hidePleaseWait();
+        }
+    });
 
-    $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
 
 }
+

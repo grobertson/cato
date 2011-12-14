@@ -98,11 +98,10 @@
                                 <asp:Button ID="btnCBAdd" runat="server" Text="Add" UseSubmitBehavior="false" OnClick="btnCBAdd_Click" /></div>
                             <span id="codeblock_add_btn">Add New</span>
                             <hr />
-                            <ul>
+                            <ul id="codeblocks">
 								<asp:Literal id="ltCodeblocks" runat="server"></asp:Literal>
 							</ul>
                             <div class="hidden">
-                                <asp:Button ID="btnCBDelete" runat="server" OnClick="btnCBDelete_Click" />
                                 <asp:Button ID="btnCBRefresh" runat="server" OnClick="btnCBRefresh_Click" />
                             </div>
                         </ContentTemplate>
@@ -251,7 +250,6 @@
         <asp:HiddenField ID="hidOriginalTaskID" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidDefault" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidStepDelete" runat="server"></asp:HiddenField>
-        <asp:HiddenField ID="hidCodeblockDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidParamDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidDebugActiveInstance" runat="server"></asp:HiddenField>
 
@@ -275,6 +273,7 @@
             <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span>
             <span>Are you sure you want to delete this Codeblock and all the Steps it contains?</span>
         </p>
+		<input type="hidden" id="codeblock_to_delete" value=""/>
     </div>
     <div id="asset_picker_dialog" title="Select an Asset" class="hidden ui-state-highlight">
         <center>

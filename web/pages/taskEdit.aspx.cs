@@ -74,19 +74,6 @@ namespace Web.pages
                     ui.RaiseError(Page, "Unable to continue.  Could not retrieve Codeblocks. " + sErr, true, "");
                     return;
                 }
-
-                //if we have a codeblock on the querystring (that means some other page want's us to go there)
-                //if not, take the one in the hidden field (that means the user clicked one from the list)
-                //if the hidden field is empty, show 'MAIN'
-//                string sCodeblockName = "MAIN";
-//                if (!string.IsNullOrEmpty(sQSCodeblock)) sCodeblockName = sQSCodeblock;
-//                if (!string.IsNullOrEmpty(hidCodeblockName.Value)) sCodeblockName = hidCodeblockName.Value;
-
-//                if (!GetSteps(sCodeblockName, ref sErr))
-//                {
-//                    ui.RaiseError(Page, "Error getting Steps.<br />" + sErr, true, "");
-//					return;
-//                }
             }
         }
 
@@ -438,95 +425,8 @@ namespace Web.pages
                 ui.RaiseError(Page, "Unable to add Codeblock. " + ex.Message, true, "");
             }
         }
-        private void DeleteCodeblock(string sCodeblockID)
-        {
-            try
-            {
-                string sErr = "";
-
-                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
-
-                //first, delete any steps that are embedded content on steps in this codeblock
-                //(because embedded steps have their parent step_id as the codeblock name.)
-                oTrans.Command.CommandText = "delete em from task_step em" +
-                    " join task_step p on em.task_id = p.task_id" +
-                    " and em.codeblock_name = p.step_id" +
-                    " where p.task_id = '" + sTaskID + "'" +
-                    " and p.codeblock_name = '" + sCodeblockID + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to delete embedded Steps from Codeblock.", true, sErr);
-                    return;
-                }
-
-                oTrans.Command.CommandText = "delete u from task_step_user_settings u" +
-                    " join task_step ts on u.step_id = ts.step_id" +
-                    " where ts.task_id = '" + sTaskID + "'" +
-                    " and ts.codeblock_name = '" + sCodeblockID + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to delete Steps user settings for Steps in Codeblock.", true, sErr);
-                    return;
-                }
-
-                oTrans.Command.CommandText = "delete from task_step" +
-                    " where task_id = '" + sTaskID + "'" +
-                    " and codeblock_name = '" + sCodeblockID + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to delete Steps from Codeblock.", true, sErr);
-                    return;
-                }
-
-                oTrans.Command.CommandText = "delete from task_codeblock" +
-                    " where task_id = '" + sTaskID + "'" +
-                    " and codeblock_name = '" + sCodeblockID + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to delete Codeblock.", true, sErr);
-                    return;
-                }
-
-                oTrans.Commit();
-
-                if (!GetCodeblocks(ref sErr))
-                {
-                    ui.RaiseError(Page, "Warning.  Successfully deleted the Codeblock" +
-                        " but there was an error refreshing the page.  Please reload the page manually. " + sErr, true, "");
-                    return;
-                }
-
-//                if (!GetSteps("MAIN", ref sErr))
-//                {
-//                    ui.RaiseError(Page, "Warning.  Successfully deleted the Codeblock" +
-//                        " but there was an error refreshing the page.  Please reload the page manually. " + sErr, true, "");
-//                    return;
-//                }
-//
-//                udpSteps.Update();
-
-            }
-            catch (Exception ex)
-            {
-                ui.RaiseError(Page, "Exception:", true, ex.Message);
-            }
-        }
 
         #region "Buttons"
-//        protected void btnStepLoad_Click(object sender, System.EventArgs e)
-//        {
-//            string sErr = "";
-//
-//            if (!GetSteps(hidCodeblockName.Value, ref sErr))
-//            {
-//                ui.RaiseError(Page, "Error getting Steps:" + sErr, true, "");
-//                return;
-//            }
-//        }
-        protected void btnCBDelete_Click(object sender, System.EventArgs e)
-        {
-            DeleteCodeblock(hidCodeblockDelete.Value);
-        }
         protected void btnCBAdd_Click(object sender, System.EventArgs e)
         {
             AddCodeblock();

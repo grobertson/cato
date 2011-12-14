@@ -39,7 +39,53 @@ namespace ACWebMethods
     {
 
         #region "Steps"
-        [WebMethod(EnableSession = true)]
+		[WebMethod(EnableSession = true)]
+        public void wmDeleteCodeblock(string sTaskID, string sCodeblockID)
+        {
+            try
+            {
+                string sErr = "";
+
+                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
+                //first, delete any steps that are embedded content on steps in this codeblock
+                //(because embedded steps have their parent step_id as the codeblock name.)
+                oTrans.Command.CommandText = "delete em from task_step em" +
+                    " join task_step p on em.task_id = p.task_id" +
+                    " and em.codeblock_name = p.step_id" +
+                    " where p.task_id = '" + sTaskID + "'" +
+                    " and p.codeblock_name = '" + sCodeblockID + "'";
+                if (!oTrans.ExecUpdate(ref sErr))
+					throw new Exception("Unable to delete embedded Steps from Codeblock." + sErr);
+
+                oTrans.Command.CommandText = "delete u from task_step_user_settings u" +
+                    " join task_step ts on u.step_id = ts.step_id" +
+                    " where ts.task_id = '" + sTaskID + "'" +
+                    " and ts.codeblock_name = '" + sCodeblockID + "'";
+                if (!oTrans.ExecUpdate(ref sErr))
+					throw new Exception("Unable to delete Steps user settings for Steps in Codeblock." + sErr);
+
+                oTrans.Command.CommandText = "delete from task_step" +
+                    " where task_id = '" + sTaskID + "'" +
+                    " and codeblock_name = '" + sCodeblockID + "'";
+                if (!oTrans.ExecUpdate(ref sErr))
+					throw new Exception("Unable to delete Steps from Codeblock." + sErr);
+
+                oTrans.Command.CommandText = "delete from task_codeblock" +
+                    " where task_id = '" + sTaskID + "'" +
+                    " and codeblock_name = '" + sCodeblockID + "'";
+                if (!oTrans.ExecUpdate(ref sErr))
+					throw new Exception("Unable to delete Codeblock." + sErr);
+
+                oTrans.Commit();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Exception: " + ex.Message);
+            }
+        }
+
+		[WebMethod(EnableSession = true)]
         public string wmUpdateStep(string sStepID, string sFunction, string sXPath, string sValue)
         {
             dataAccess dc = new dataAccess();

@@ -193,14 +193,13 @@ $(document).ready(function () {
 function getSteps() {
 	//this codeblock thing has always been an issue.  What codeblock are we getting?
 	//for now, we're gonna try keeping the codeblock in a hidden field
-    var task_id = $("#ctl00_phDetail_hidTaskID").val();
     var codeblock_name = $("#ctl00_phDetail_hidCodeblockName").val();
 
 		$.ajax({
         type: "POST",
         async: false,
         url: "taskMethods.asmx/wmGetSteps",
-        data: '{"sTaskID":"' + task_id + '","sCodeblockName":"' + codeblock_name + '"}',
+        data: '{"sTaskID":"' + g_task_id + '","sCodeblockName":"' + codeblock_name + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
