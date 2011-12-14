@@ -67,13 +67,6 @@ namespace Web.pages
                     ui.RaiseError(Page, "Error getting Debugging information.<br />" + sErr, true, "");
                     return;
                 }
-
-                //codeblocks
-                if (!GetCodeblocks(ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to continue.  Could not retrieve Codeblocks. " + sErr, true, "");
-                    return;
-                }
             }
         }
 
@@ -274,41 +267,6 @@ namespace Web.pages
             }
 
         }
-        private bool GetCodeblocks(ref string sErr)
-        {
-			//TODO: this will need to move asap to a jquery ajax web method, because adding/deleting is using a MS ajax postback which is bad and wrong.
-            try
-            {
-				string sCBHTML = "";
-				
-				foreach (Codeblock cb in oTask.Codeblocks.Values)
-				{
-					sCBHTML += "<li class=\"ui-widget-content ui-corner-all codeblock\" id=\"cb_" + cb.Name + "\">";
-					sCBHTML += "<div>";
-					sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">";
-					sCBHTML += "<span>" + cb.Name + "</span>";
-					sCBHTML += "</div>";
-					sCBHTML += "<div class=\"codeblock_icons pointer\">";
-					sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\">";
-					sCBHTML += "<img class=\"codeblock_rename\" codeblock_name=\"" + cb.Name + "\"";
-					sCBHTML += " src=\"../images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\"";
-					sCBHTML += " codeblock_name=\"" + cb.Name + "\">";
-					sCBHTML += "<img src=\"../images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\"";
-					sCBHTML += " class=\"codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">";
-					sCBHTML += "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>";
-					sCBHTML += "</div>";
-					sCBHTML += "</div>";
-					sCBHTML += "</li>";
-				}
-				ltCodeblocks.Text = sCBHTML;
-				return true;
-            }
-            catch (Exception ex)
-            {
-                sErr = ex.Message;
-                return false;
-            }
-        }
         private bool GetCategories(ref string sErr)
         {
             try
@@ -378,17 +336,6 @@ namespace Web.pages
         }
         #endregion
  
-        #region "Buttons"
-        protected void btnCBRefresh_Click(object sender, System.EventArgs e)
-        {
-            string sErr = "";
-            if (!GetCodeblocks(ref sErr))
-            {
-                ui.RaiseError(Page, "Error getting codeblocks:" + sErr, true, "");
-            }
-        }
-        #endregion
-
         private bool GetMaxVersion(string sTaskID, ref string sErr)
         {
             try

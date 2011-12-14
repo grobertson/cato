@@ -92,18 +92,10 @@
             </div>
             <div id="div_codeblocks" class="toolbox_panel hidden">
                 <div>
-                    <asp:UpdatePanel ID="udpCodeblocks" runat="server" UpdateMode="Conditional">
-                        <ContentTemplate>
-                            <span id="codeblock_add_btn">Add New</span>
-                            <hr />
-                            <ul id="codeblocks">
-								<asp:Literal id="ltCodeblocks" runat="server"></asp:Literal>
-							</ul>
-                            <div class="hidden">
-                                <asp:Button ID="btnCBRefresh" runat="server" OnClick="btnCBRefresh_Click" />
-                            </div>
-                        </ContentTemplate>
-                    </asp:UpdatePanel>
+                    <span id="codeblock_add_btn">Add New</span>
+                    <hr />
+                    <ul id="codeblocks">
+					</ul>
                 </div>
             </div>
             <div id="div_commands" class="toolbox_panel hidden">

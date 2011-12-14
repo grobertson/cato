@@ -186,11 +186,13 @@ $(document).ready(function () {
     //this will also be called when items are added/removed from the clipboard.
     initDraggable();
 
-	//all is good... get the steps
-	getSteps();
+	//get the codeblocks
+	doGetCodeblocks();
+	//get the steps
+	doGetSteps();
 });
 
-function getSteps() {
+function doGetSteps() {
 	//this codeblock thing has always been an issue.  What codeblock are we getting?
 	//for now, we're gonna try keeping the codeblock in a hidden field
     var codeblock_name = $("#ctl00_phDetail_hidCodeblockName").val();

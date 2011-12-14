@@ -35,12 +35,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Label lblStatus2;
 		
-		protected System.Web.UI.UpdatePanel udpCodeblocks;
-		
-		protected System.Web.UI.WebControls.Literal ltCodeblocks;
-		
-		protected System.Web.UI.WebControls.Button btnCBRefresh;
-		
 		protected System.Web.UI.WebControls.Literal ltCategories;
 		
 		protected System.Web.UI.WebControls.Literal ltFunctions;

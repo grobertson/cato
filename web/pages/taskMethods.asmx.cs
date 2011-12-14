@@ -40,6 +40,46 @@ namespace ACWebMethods
 
         #region "Steps"
 		[WebMethod(EnableSession = true)]
+        public string wmGetCodeblocks(string sTaskID)
+        {
+            try
+            {
+				string sErr = "";
+				//instantiate the new Task object
+				Task oTask = new Task(sTaskID, ref sErr);
+				if (oTask == null)
+                    return "{\"error\" : \"wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr + "\"}";
+
+				string sCBHTML = "";
+				
+				foreach (Codeblock cb in oTask.Codeblocks.Values)
+				{
+					sCBHTML += "<li class=\"ui-widget-content ui-corner-all codeblock\" id=\"cb_" + cb.Name + "\">";
+					sCBHTML += "<div>";
+					sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">";
+					sCBHTML += "<span>" + cb.Name + "</span>";
+					sCBHTML += "</div>";
+					sCBHTML += "<div class=\"codeblock_icons pointer\">";
+					sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\">";
+					sCBHTML += "<img class=\"codeblock_rename\" codeblock_name=\"" + cb.Name + "\"";
+					sCBHTML += " src=\"../images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\"";
+					sCBHTML += " codeblock_name=\"" + cb.Name + "\">";
+					sCBHTML += "<img src=\"../images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\"";
+					sCBHTML += " class=\"codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">";
+					sCBHTML += "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>";
+					sCBHTML += "</div>";
+					sCBHTML += "</div>";
+					sCBHTML += "</li>";
+				}
+				return sCBHTML;
+            }
+            catch (Exception ex)
+            {
+                return "{\"error\" : \"" + ex.Message + "\"}";
+            }
+        }
+
+		[WebMethod(EnableSession = true)]
         public void wmAddCodeblock(string sTaskID, string sNewCodeblockName)
         {
             dataAccess dc = new dataAccess();
@@ -559,7 +599,7 @@ namespace ACWebMethods
 				Task oTask = new Task(sTaskID, ref sErr);
 				
 				if (oTask == null)
-                    return "{\"error\" : \"Unable to get Task for ID [" + sTaskID + "].\"}";
+                    return "{\"error\" : \"wmGetSteps: Unable to get Task for ID [" + sTaskID + "].\"}";
 				
                 //if the codeblock is empty, die.
                 if (string.IsNullOrEmpty(sCodeblockName))

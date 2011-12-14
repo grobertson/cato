@@ -84,7 +84,7 @@ $(document).ready(function () {
     $("#steps .codeblock_goto_btn").live("click", function () {
         cb = $(this).attr("codeblock");
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
-        getSteps();
+        doGetSteps();
     });
 });
 

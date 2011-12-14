@@ -68,7 +68,7 @@ $(document).ready(function () {
         cb = $(this).attr("name");
 
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
-        getSteps();
+        doGetSteps();
     });
     //the onclick event of the 'codeblock rename icon'
     $("#div_codeblocks .codeblock_rename").live("click", function () {
@@ -114,7 +114,22 @@ $(document).ready(function () {
 
 });
 
-
+function doGetCodeblocks() {
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "taskMethods.asmx/wmGetCodeblocks",
+        data: '{"sTaskID":"' + g_task_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (retval) {
+            $("#codeblocks").html(retval.d);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function ShowCodeblockEdit(codeblock_name) {
     $("#codeblock_edit_dialog_msg").text("");
@@ -146,8 +161,7 @@ function ShowCodeblockEdit(codeblock_name) {
 }
 
 function doCodeblockUpdate(old_name) {
-    showPleaseWait();
-
+    $("#update_success_msg").text("Updating...").show();
     var sNewCodeblockName = $("#new_codeblock_name").val();
 
     // before doing the postback, make sure the user entered something in the new name, and that its different than the old name.
@@ -172,17 +186,12 @@ function doCodeblockUpdate(old_name) {
                     $("#ctl00_phDetail_hidCodeblockName").val(sNewCodeblockName);
                 }
 
-
                 //refresh the codeblock list
-                $("#ctl00_phDetail_btnCBRefresh").click();
+                doGetCodeblocks();
 
-                //reload the steps
-                setTimeout('getSteps()', 500);
-
-                setTimeout('hidePleaseWait()', 1000);
+				$("#update_success_msg").text("Update Successful").fadeOut(2000);
             } else {
                 showInfo(msg.d);
-                hidePleaseWait();
             }
         },
         error: function (response) {
@@ -217,17 +226,16 @@ function doCodeblockAdd() {
 		        $("#ctl00_phDetail_hidCodeblockName").val(codeblock_name);
 		        $("#codeblock_steps_title").text(codeblock_name);
 		
-				//TODO: add it to the codeblock list?
-				//probably by just regetting all the codeblocks so the links and stuff will work?
-				//yes! so they will also be sorted correctly
-				//getCodeblocks();
-				
+				//refresh the list
+				doGetCodeblocks();				
+		        
 		        //clear the 'add' box
 		        $("#new_codeblock_name").val("");
 		
-		        //and clear the step sortable
-		        $("#steps").empty();
-		
+		        //it's an extra call, but the best way to set up the new codeblock is to get its steps
+		        //sure, there will be none, but this sets up the sortable, dropzone and all that.
+				doGetSteps();
+				
 		        $.unblockUI();
 		        $("#codeblock_edit_dialog").dialog('close');
 		        $("#update_success_msg").text("Update Successful").fadeOut(2000);
@@ -268,7 +276,7 @@ function doCodeblockDelete() {
 		
 		    //when we delete a codeblock we reset the step list to MAIN.
 		    $("#ctl00_phDetail_hidCodeblockName").val("MAIN");
-			getSteps();
+			doGetSteps();
 		
 		    $("#update_success_msg").text("Update Successful").fadeOut(2000);
         },
