@@ -45,36 +45,13 @@ namespace Web.pages
             if (!Page.IsPostBack)
             {
                 // first time on the page, get the sortcolumn last used if one exists.
-                string sSettingXML = "";
-                sSQL = "select settings_xml from users where user_id = '" + ui.GetSessionUserID() + "'";
-
-                if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to get settings for user.", false, sErr);
-                }
-
-                //we don't care to do anything if there were no settings
-                if (sSettingXML != "")
-                {
-                    XDocument xDoc = XDocument.Parse(sSettingXML);
-                    if (xDoc == null) ui.RaiseError(Page, "XML settings data for user is invalid.", false, "");
-
-                    XElement xSortSettings = xDoc.Descendants("sort").Where(x => (string)x.Attribute("screen") == "ecosystem").LastOrDefault();
-                    if (xSortSettings != null)
-                    {
-                        if (xSortSettings.Attribute("sort_column") != null)
-                        {
-                            hidSortColumn.Value = xSortSettings.Attribute("sort_column").Value.ToString();
-                        }
-                        if (xSortSettings.Attribute("sort_direction") != null)
-                        {
-                            hidSortDirection.Value = xSortSettings.Attribute("sort_direction").Value.ToString();
-                        }
-
-                    }
-
-                }
-
+				Dictionary<string, string> dSort = ui.GetUsersSort("ecosystem");
+				if (dSort != null)
+				{
+					hidSortColumn.Value = dSort["sort_column"];
+					hidSortDirection.Value = dSort["sort_direction"];
+				}
+				
                 //build the list of eco templates for the create dialog
                 sSQL = "select ecotemplate_id, ecotemplate_name from ecotemplate order by ecotemplate_name";
                 DataTable dt = new DataTable();
@@ -86,7 +63,6 @@ namespace Web.pages
                 ddlEcotemplates.DataValueField = "ecotemplate_id";
                 ddlEcotemplates.DataSource = dt;
                 ddlEcotemplates.DataBind();
-
 
                 BindList();
             }

@@ -58,7 +58,7 @@ $(document).ready(function () {
         // ok how to determine the sort direction
         // if the column clicked is the same as the last time
         // then reverse the order
-        // if its a new colun then its asc
+        // if its a new column then its asc
         var lastOrderColumn = $("#ctl00_phDetail_hidLastSortColumn").val();
         //alert(lastOrderColumn + ":" + $(this).attr("sortcolumn"));
         if (lastOrderColumn == $(this).attr("sortcolumn")) {

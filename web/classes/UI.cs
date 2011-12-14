@@ -1153,7 +1153,46 @@ namespace acUI
 
             return sb.ToString();
         }
-        public void SaveUsersSort(string sScreen, string sColumn, string sSortDirection, ref string sErr)
+        public Dictionary<string, string> GetUsersSort(string sScreen)
+        {
+			//this should eventually be replaced with whatever is necessary to support a
+			//new feature rich ajax grid, like DataTAbles.net or another
+			
+			//no warnings or failures along the way, just don't return anything if there are errors.
+            Dictionary<string, string> d = new Dictionary<string, string>();
+			string sSettingXML = "";
+            string sSQL = "select settings_xml from users where user_id = '" + GetSessionUserID() + "'";
+			string sErr = "";
+			
+			//don't complain if it doesn't work, just don't return anything.
+            if (dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
+			{
+				//we don't care to do anything if there were no settings
+				if (sSettingXML != "")
+				{
+					XDocument xDoc = XDocument.Parse(sSettingXML);
+					if (xDoc == null) return null; //ui.RaiseError(Page, "XML settings data for user is invalid.", false, "");
+					
+					XElement xSortSettings = xDoc.Descendants("sort").Where(x => (string)x.Attribute("screen") == sScreen).LastOrDefault();
+					if (xSortSettings != null)
+					{
+						
+						if (xSortSettings.Attribute("sort_column") != null)
+						{
+							d.Add("sort_column", xSortSettings.Attribute("sort_column").Value.ToString());
+						}
+						if (xSortSettings.Attribute("sort_direction") != null)
+						{
+							d.Add("sort_direction",xSortSettings.Attribute("sort_direction").Value.ToString());
+						}
+					}
+				}
+			}
+	
+			return d;	
+		}
+		
+		public void SaveUsersSort(string sScreen, string sColumn, string sSortDirection, ref string sErr)
         {
             // takes the screen name ie. users
             // column  ie.  full_name
