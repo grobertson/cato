@@ -34,6 +34,59 @@ namespace acUI
         dataAccess dc = new dataAccess();
 
         #region "Session Functions"
+		public bool PutUserSettingsInSession(ref string sErr)
+		{
+			string sUserID = GetSessionUserID();
+			if (!string.IsNullOrEmpty(sUserID))
+			{
+	            string sSQL = "select setting_xml from users where id = '" + sUserID + "'";
+				string sSettingXML = "";
+				if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
+	            {
+	                return false;
+	            }
+	            else
+	            {
+	                if (string.IsNullOrEmpty(sSettingXML))
+					{
+						//there are no settings!
+						//create the row
+						sSettingXML = "<settings></settings>";
+						sSQL = "update users set setting_xml = '" + sSettingXML + "' where user_id = '" + sUserID + "'";
+						if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+			                return false;
+					}
+					
+	
+	                if (string.IsNullOrEmpty(sSettingXML))
+					{
+						//something is just wrong if we land here... error out
+						sErr = "Unable to find/repair application_settings.";
+						return false;
+					}
+					else
+					{
+						//woot! we have settings.
+						XDocument xd = XDocument.Parse(sSettingXML);
+						if (xd != null)
+						{
+							SetSessionObject("user_settings", xd, "Security");
+							return true;
+						}
+						else
+						{
+							sErr = "Unable to parse and load User Settings.";
+							return false;
+						}
+					}
+	            }	
+			}
+			else
+			{
+				sErr = "Unable to load User Settings - GetSessionUserID returned nothing.";
+				return false;
+			}
+		}
 		public bool PutApplicationSettingsInSession(ref string sErr)
 		{
             string sSQL = "select setting_xml from application_settings where id = 1";
@@ -620,7 +673,7 @@ namespace acUI
         }
         public void Logout(string sMsg)
         {
-            string sErr = "";
+			string sErr = "";
 
             if (string.IsNullOrEmpty(sMsg))
                 sMsg = "Session Ended";
@@ -1160,63 +1213,68 @@ namespace acUI
 			
 			//no warnings or failures along the way, just don't return anything if there are errors.
             Dictionary<string, string> d = new Dictionary<string, string>();
-			string sSettingXML = "";
-            string sSQL = "select settings_xml from users where user_id = '" + GetSessionUserID() + "'";
-			string sErr = "";
 			
-			//don't complain if it doesn't work, just don't return anything.
-            if (dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
+			XDocument xDoc = (XDocument)GetSessionObject("user_settings", "Security");
+			if (xDoc == null) return null;
+			
+			XElement xSortSettings = xDoc.Descendants("sort").Where(x => (string)x.Attribute("screen") == sScreen).LastOrDefault();
+			if (xSortSettings != null)
 			{
-				//we don't care to do anything if there were no settings
-				if (sSettingXML != "")
-				{
-					XDocument xDoc = XDocument.Parse(sSettingXML);
-					if (xDoc == null) return null; //ui.RaiseError(Page, "XML settings data for user is invalid.", false, "");
-					
-					XElement xSortSettings = xDoc.Descendants("sort").Where(x => (string)x.Attribute("screen") == sScreen).LastOrDefault();
-					if (xSortSettings != null)
-					{
-						
-						if (xSortSettings.Attribute("sort_column") != null)
-						{
-							d.Add("sort_column", xSortSettings.Attribute("sort_column").Value.ToString());
-						}
-						if (xSortSettings.Attribute("sort_direction") != null)
-						{
-							d.Add("sort_direction",xSortSettings.Attribute("sort_direction").Value.ToString());
+				if (xSortSettings.Attribute("sort_column") != null)
+					d.Add("sort_column", xSortSettings.Attribute("sort_column").Value.ToString());
+				if (xSortSettings.Attribute("sort_direction") != null)
+					d.Add("sort_direction",xSortSettings.Attribute("sort_direction").Value.ToString());
+			}
+	
+			return d;	
+		}
+        public Dictionary<string, string> GetUsersTaskDebug(string sTaskID)
+        {
+			//this should eventually be replaced with whatever is necessary to support a
+			//new feature rich ajax grid, like DataTAbles.net or another
+			
+			//no warnings or failures along the way, just don't return anything if there are errors.
+            Dictionary<string, string> d = new Dictionary<string, string>();
+			
+			XDocument xDoc = (XDocument)GetSessionObject("user_settings", "Security");
+			if (xDoc == null) return null;
+			
+			XElement xTask = xDoc.Descendants("task").Where(
+                x => (string)x.Attribute("task_id") == sTaskID).LastOrDefault();
+            if (xTask != null)
+            {
+                //test asset?
+                if (xTask.Attribute("asset_id") != null)
+                {
+                    string sDebugAssetID = xTask.Attribute("asset_id").Value.ToString();
+
+                    if (IsGUID(sDebugAssetID))
+                    {
+                        string sErr = "";
+						string sDebugAssetName = "";
+                        string sSQL = "select asset_name from asset where asset_id = '" + sDebugAssetID + "'";
+                        if (!dc.sqlGetSingleString(ref sDebugAssetName, sSQL, ref sErr))
+                        {
+                        }
+						else {
+							d.Add("asset_id", sDebugAssetID); //txtTestAsset.Text = sDebugAssetName;
+							d.Add("asset_name", sDebugAssetName); //txtTestAsset.Attributes["asset_id"] = sDebugAssetID;
 						}
 					}
-				}
-			}
+                }
+            }
 	
 			return d;	
 		}
 		
 		public void SaveUsersSort(string sScreen, string sColumn, string sSortDirection, ref string sErr)
         {
+			//if we can't save the sort settings... so what.
             // takes the screen name ie. users
             // column  ie.  full_name
             // and sort direction asc or des
-            string sUserID = GetSessionUserID();
-
-            string sSQL = "select settings_xml from users where user_id = '" + sUserID + "'";
-            string sSettingXML = "";
-            if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
-            {
-                sErr = "Unable to get settings for user.<br />" + sErr;
-                return;
-            }
-
-            if (string.IsNullOrEmpty(sSettingXML))
-            {
-                sSettingXML = "<settings><debug><tasks></tasks></debug><sorting><sort></sort></sorting></settings>";
-            }
-
-            XDocument xDoc = XDocument.Parse(sSettingXML);
-            if (xDoc == null)
-            {
-                throw new Exception("XML settings data for user is invalid.");
-            }
+			XDocument xDoc = (XDocument)GetSessionObject("user_settings", "Security");
+            if (xDoc == null) return;
 
             //we have to analyze the doc and see if the appropriate section exists.
             //if not, we need to construct it
@@ -1230,24 +1288,21 @@ namespace acUI
                 xDoc.Element("settings").Element("sorting").Add(new XElement("sort"));
             }
 
-            XElement xTasks = xDoc.Element("settings").Element("sorting").Element("sort");
+            XElement xSorts = xDoc.Element("settings").Element("sorting").Element("sort");
 
-            xTasks.Descendants("sort").Where(p => p.Attribute("screen").Value == sScreen).Remove();
+            xSorts.Descendants("sort").Where(p => p.Attribute("screen").Value == sScreen).Remove();
 
             //add it
-            XElement xTask = new XElement("sort");
-            xTask.Add(new XAttribute("screen", sScreen));
-            xTask.Add(new XAttribute("sort_column", sColumn));
-            xTask.Add(new XAttribute("sort_direction", sSortDirection));
-            xTasks.Add(xTask);
-
-
-            sSQL = "update users set settings_xml = '" + xDoc.ToString() + "'" + " where user_id = '" + sUserID + "'";
-            if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-            {
-                sErr = "Unable to update sort settings." + sErr;
-                return;
-            }
+            XElement xSort = new XElement("sort");
+            xSort.Add(new XAttribute("screen", sScreen));
+            xSort.Add(new XAttribute("sort_column", sColumn));
+            xSort.Add(new XAttribute("sort_direction", sSortDirection));
+            xSorts.Add(xSort);
+			
+			//put it back in the session
+			SetSessionObject("user_settings", xDoc, "Security");			
+			
+			return;
         }
         #endregion
         #region "Cloud Functions"

@@ -292,46 +292,12 @@ namespace Web.pages
 
 
                 //see if a debug asset was saved for this user
-                string sSettingXML = "";
-                sSQL = "select settings_xml from users where user_id = '" + ui.GetSessionUserID() + "'";
-
-                if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to get settings for user.<br />", false, sErr);
-                }
-
-                //we don't care to do anything if there were no settings
-                if (sSettingXML != "")
-                {
-                    XDocument xDoc = XDocument.Parse(sSettingXML);
-                    if (xDoc == null) ui.RaiseError(Page, "XML settings data for user is invalid.", false, "");
-
-                    XElement xTask = xDoc.Descendants("task").Where(
-                        x => (string)x.Attribute("task_id") == sTaskID).LastOrDefault();
-                    if (xTask != null)
-                    {
-                        string sDebugAssetID = "";
-                        if (xTask.Attribute("asset_id") != null)
-                        {
-                            sDebugAssetID = xTask.Attribute("asset_id").Value.ToString();
-
-                            if (ui.IsGUID(sDebugAssetID))
-                            {
-                                string sDebugAssetName = "";
-                                sSQL = "select asset_name from asset where asset_id = '" + sDebugAssetID + "'";
-                                if (!dc.sqlGetSingleString(ref sDebugAssetName, sSQL, ref sErr))
-                                {
-                                    throw new Exception("Unable to get asset name for asset [" + sDebugAssetID + "].<br />" + sErr);
-                                }
-
-                                //txtTestAsset.Text = sDebugAssetName;
-                                //txtTestAsset.Attributes["asset_id"] = sDebugAssetID;
-                            }
-                        }
-                    }
-
-                }
-
+//				Dictionary<string, string> d = ui.GetUsersTaskDebug(sTaskID);
+//				if (d != null)
+//				{
+//					txtTestAsset.Text = d["asset_name"];
+//					txtTestAsset.Attributes["asset_id"] = d["asset_id"];
+//				}
 
                 return true;
             }

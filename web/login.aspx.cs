@@ -276,7 +276,14 @@ namespace Web
                     ui.SetSessionObject("admin_email", sAdminEmail, "Security");
                 }
 
-				// SETTINGS (XDocument)
+				// USER SETTINGS (XDocument)
+                if (!ui.PutUserSettingsInSession(ref sErr))
+                {
+                    lblErrorMessage.Text = sErr;
+                    return;
+                }
+				
+				// APPLICATION SETTINGS (XDocument)
                 if (!ui.PutApplicationSettingsInSession(ref sErr))
                 {
                     lblErrorMessage.Text = sErr;

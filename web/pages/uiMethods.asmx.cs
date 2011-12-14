@@ -109,7 +109,16 @@ namespace ACWebMethods
             {
 				string sUserID = ui.GetSessionUserID();
 				string sUserName = ui.GetSessionUsername();
-	            string sErr = "";
+				string sErr = "";
+				
+				//push user settings back to the db, but no errors if it fails.
+				XDocument xDoc = (XDocument)ui.GetSessionObject("user_settings", "Security");
+	            if (xDoc != null)
+				{
+		            string sSQL = "update users set settings_xml = '" + xDoc.ToString() + "'" + " where user_id = '" + sUserID + "'";
+		            dc.sqlExecuteUpdate(sSQL, ref sErr);
+				}
+			
 	            dc.addSecurityLog(sUserID, Globals.SecurityLogTypes.Security, Globals.SecurityLogActions.UserLogout, Globals.acObjectTypes.None, sUserName, "Manual Log Out", ref sErr);
 	            System.Web.Security.FormsAuthentication.SignOut();
             }

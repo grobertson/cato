@@ -3860,8 +3860,6 @@ namespace ACWebMethods
 
         public void wmSaveTaskUserSetting(string sTaskID, string sSettingKey, string sSettingValue)
         {
-            dataAccess dc = new dataAccess();
-
             acUI.acUI ui = new acUI.acUI();
 
             try
@@ -3874,21 +3872,8 @@ namespace ACWebMethods
                     //2) update/add the appropriate value
                     //3) update the settings to the db
 
-                    string sSettingXML = "";
-                    string sErr = "";
-                    string sSQL = "select settings_xml from users where user_id = '" + sUserID + "'";
-
-                    if (!dc.sqlGetSingleString(ref sSettingXML, sSQL, ref sErr))
-                    {
-                        throw new Exception("Unable to get settings for user." + sErr);
-                    }
-
-                    if (sSettingXML == "")
-                        sSettingXML = "<settings><debug><tasks></tasks></debug></settings>";
-
-                    XDocument xDoc = XDocument.Parse(sSettingXML);
-                    if (xDoc == null) throw new Exception("XML settings data for user is invalid.");
-
+					XDocument xDoc = (XDocument)ui.GetSessionObject("user_settings", "Security");
+					if (xDoc == null) return;
 
                     //we have to analyze the doc and see if the appropriate section exists.
                     //if not, we need to construct it
@@ -3914,13 +3899,8 @@ namespace ACWebMethods
 
                     xTasks.Add(xTask);
 
-
-                    sSQL = "update users set settings_xml = '" + xDoc.ToString(SaveOptions.DisableFormatting) + "'" +
-                        " where user_id = '" + sUserID + "'";
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                    {
-                        throw new Exception("Unable to save Task User Setting." + sErr);
-                    }
+					//put it back in the session
+					ui.SetSessionObject("user_settings", xDoc, "Security");			
 
                     return;
                 }
