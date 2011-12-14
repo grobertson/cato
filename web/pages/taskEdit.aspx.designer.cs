@@ -67,25 +67,15 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Label lblVersionHeader;
 		
-		protected System.Web.UI.UpdatePanel udpSteps;
-		
 		protected System.Web.UI.WebControls.Label lblStepSectionTitle;
 		
-		protected System.Web.UI.WebControls.Literal ltSteps;
-		
-		protected System.Web.UI.WebControls.Button btnStepLoad;
+		protected System.Web.UI.WebControls.HiddenField hidCodeblockName;
 		
 		protected System.Web.UI.WebControls.HiddenField hidTaskID;
 		
 		protected System.Web.UI.WebControls.HiddenField hidOriginalTaskID;
 		
-		protected System.Web.UI.WebControls.HiddenField hidOriginalStatus;
-		
 		protected System.Web.UI.WebControls.HiddenField hidDefault;
-		
-		protected System.Web.UI.WebControls.HiddenField hidCodeblockName;
-		
-		protected System.Web.UI.WebControls.HiddenField hidStepArray;
 		
 		protected System.Web.UI.WebControls.HiddenField hidStepDelete;
 		
@@ -94,8 +84,6 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.HiddenField hidParamDelete;
 		
 		protected System.Web.UI.WebControls.HiddenField hidDebugActiveInstance;
-		
-		protected System.Web.UI.WebControls.HiddenField hidV3;
 		
 		protected System.Web.UI.WebControls.Label lblCurrentVersion;
 		

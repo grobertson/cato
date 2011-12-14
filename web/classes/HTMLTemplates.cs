@@ -1762,7 +1762,7 @@ namespace FunctionTemplates
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
-            if (xCommand == null) return "Error: XML does not contain timeout.";
+            if (xTimeout == null) return "Error: XML does not contain timeout.";
             XElement xPos = xd.XPathSelectElement("//positive_response");
             if (xPos == null) return "Error: XML does not contain positive_response.";
             XElement xNeg = xd.XPathSelectElement("//negative_response");
@@ -4181,85 +4181,88 @@ namespace FunctionTemplates
 			XDocument xDoc = oStep.VariableXDoc;
 
             string sHTML = "";
-
-			XElement xVars = xDoc.Element("variables");
-			if (xVars == null)
-				return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
 			
-			if (xVars.Elements("variable").Count() > 0)
+			if (xDoc != null)
 			{
-				//build the HTML
-				sHTML += "<table class=\"step_variables\" width=\"99%\" border=\"0\">" + Environment.NewLine;
-				sHTML += "<tbody>";
+				XElement xVars = xDoc.Element("variables");
+				if (xVars == null)
+					return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
 				
-				//loop
-				foreach (XElement xVar in xVars.Elements("variable"))
+				if (xVars.Elements("variable").Count() > 0)
 				{
-					string sName = ui.SafeHTML(xVar.Element("name").Value);
-					string sType = xVar.Element("type").Value.ToLower();
+					//build the HTML
+					sHTML += "<table class=\"step_variables\" width=\"99%\" border=\"0\">" + Environment.NewLine;
+					sHTML += "<tbody>";
 					
-					sHTML += "<tr>";
-					sHTML += "<td class=\"row\"><span class=\"code\">" + sName + "</span></td>";
-					
-					switch (sType)
+					//loop
+					foreach (XElement xVar in xVars.Elements("variable"))
 					{
-					case "range":
-						string sLProp = "";
-						string sRProp = "";
-						//the markers can be a range indicator or a string.
-						if (xVar.Element("range_begin") != null)
+						string sName = ui.SafeHTML(xVar.Element("name").Value);
+						string sType = xVar.Element("type").Value.ToLower();
+						
+						sHTML += "<tr>";
+						sHTML += "<td class=\"row\"><span class=\"code\">" + sName + "</span></td>";
+						
+						switch (sType)
 						{
-							sLProp = " Position [" + xVar.Element("range_begin").Value + "]";
+						case "range":
+							string sLProp = "";
+							string sRProp = "";
+							//the markers can be a range indicator or a string.
+							if (xVar.Element("range_begin") != null)
+							{
+								sLProp = " Position [" + xVar.Element("range_begin").Value + "]";
+							}
+							else if (xVar.Element("prefix") != null)
+							{
+								sLProp = " Prefix [" + xVar.Element("prefix").Value + "]";
+							}
+							else
+							{
+								return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker.";
+							}
+							if (xVar.Element("range_end") != null)
+							{
+								sRProp = " Position [" + xVar.Element("range_end").Value + "]";
+							}
+							else if (xVar.Element("suffix") != null)
+							{
+								sRProp = " Suffix [" + xVar.Element("suffix").Value + "]";
+							}
+							else
+							{
+								return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker.";
+							}
+							
+							
+							
+							sHTML += "<td class=\"row\">Characters in Range:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(sLProp) + " - " + ui.SafeHTML(sRProp) + "</span></td>";
+							break;
+							
+							
+						case "delimited":
+							sHTML += "<td class=\"row\">Value at Index Position:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("position").Value) + "</span></td>";
+							break;
+							
+							
+						case "regex":
+							sHTML += "<td class=\"row\">Regular Expression:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("regex").Value) + "</span></td>";
+							break;
+						case "xpath":
+							sHTML += "<td class=\"row\">Xpath:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("xpath").Value) + "</span></td>";
+							break;
+						default:
+							sHTML += "INVALID TYPE";
+							break;
 						}
-						else if (xVar.Element("prefix") != null)
-						{
-							sLProp = " Prefix [" + xVar.Element("prefix").Value + "]";
-						}
-						else
-						{
-							return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker.";
-						}
-						if (xVar.Element("range_end") != null)
-						{
-							sRProp = " Position [" + xVar.Element("range_end").Value + "]";
-						}
-						else if (xVar.Element("suffix") != null)
-						{
-							sRProp = " Suffix [" + xVar.Element("suffix").Value + "]";
-						}
-						else
-						{
-							return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker.";
-						}
 						
+						sHTML += "</tr>";
 						
-						
-						sHTML += "<td class=\"row\">Characters in Range:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(sLProp) + " - " + ui.SafeHTML(sRProp) + "</span></td>";
-						break;
-						
-						
-					case "delimited":
-						sHTML += "<td class=\"row\">Value at Index Position:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("position").Value) + "</span></td>";
-						break;
-						
-						
-					case "regex":
-						sHTML += "<td class=\"row\">Regular Expression:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("regex").Value) + "</span></td>";
-						break;
-					case "xpath":
-						sHTML += "<td class=\"row\">Xpath:</td><td class=\"row\"><span class=\"code\">" + ui.SafeHTML(xVar.Element("xpath").Value) + "</span></td>";
-						break;
-					default:
-						sHTML += "INVALID TYPE";
-						break;
 					}
 					
-					sHTML += "</tr>";
-					
+					//close it out
+					sHTML += "</tbody></table>" + Environment.NewLine;
 				}
-				
-				//close it out
-				sHTML += "</tbody></table>" + Environment.NewLine;
 			}
 			return sHTML;
 		}

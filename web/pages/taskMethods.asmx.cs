@@ -457,6 +457,55 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
+        public string wmGetSteps(string sTaskID, string sCodeblockName)
+        {
+			FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
+			
+			//so, for this change our jquery will need to set the StepSectionTitle with the new codeblock name
+			//and update a div with the complete steps document
+            string sErr = "";
+            string sHTML = "";
+			
+			try
+            {
+				//instantiate the new Task object
+				Task oTask = new Task(sTaskID, ref sErr);
+				
+				if (oTask == null)
+                    return "{\"error\" : \"Unable to get Task for ID [" + sTaskID + "].\"}";
+				
+                //if the codeblock is empty, die.
+                if (string.IsNullOrEmpty(sCodeblockName))
+                    return "{\"error\" : \"No Codeblock specified for wmGetSteps.\"}";
+
+				//set the text of the step 'add' message...
+	            string sAddHelpMsg =  "No Commands have been defined in this Codeblock. Drag a Command here to add it.";
+	
+	            if (oTask.Codeblocks[sCodeblockName].Steps.Count > 0)
+	            {
+	                //we always need the no_step item to be there, we just hide it if we have other items
+	                //it will get unhidden if someone deletes the last step.
+	                sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>";
+	
+	                foreach (Step oStep in oTask.Codeblocks[sCodeblockName].Steps.Values)
+	                {
+						sHTML += ft.DrawFullStep(oStep);
+	                }
+	            }
+	            else
+	            {
+	                sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>";
+	            }
+	            return sHTML;
+
+            }
+            catch (Exception ex)
+            {
+				return "{\"error\" : \"" + ex.Message + "\"}";
+			}
+        }
+		
+        [WebMethod(EnableSession = true)]
         public string wmGetStep(string sStepID)
         {
             FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();

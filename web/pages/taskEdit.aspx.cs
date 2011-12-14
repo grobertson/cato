@@ -27,19 +27,17 @@ namespace Web.pages
     {
         dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
-        FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
         ACWebMethods.taskMethods tm = new ACWebMethods.taskMethods();
 		
 		//Get a global Task object for this task
 		Task oTask;
 		string sTaskID;
-        string sQSCodeblock;
         protected void Page_Load(object sender, EventArgs e)
         {
             string sErr = "";
 			
             sTaskID = ui.GetQuerystringValue("task_id", typeof(string)).ToString();
-            sQSCodeblock = ui.GetQuerystringValue("codeblock_name", typeof(string)).ToString();
+            //sQSCodeblock = ui.GetQuerystringValue("codeblock_name", typeof(string)).ToString();
 
 			//instantiate the new Task object
 			oTask = new Task(sTaskID, ref sErr);
@@ -80,15 +78,15 @@ namespace Web.pages
                 //if we have a codeblock on the querystring (that means some other page want's us to go there)
                 //if not, take the one in the hidden field (that means the user clicked one from the list)
                 //if the hidden field is empty, show 'MAIN'
-                string sCodeblockName = "MAIN";
-                if (!string.IsNullOrEmpty(sQSCodeblock)) sCodeblockName = sQSCodeblock;
-                if (!string.IsNullOrEmpty(hidCodeblockName.Value)) sCodeblockName = hidCodeblockName.Value;
+//                string sCodeblockName = "MAIN";
+//                if (!string.IsNullOrEmpty(sQSCodeblock)) sCodeblockName = sQSCodeblock;
+//                if (!string.IsNullOrEmpty(hidCodeblockName.Value)) sCodeblockName = hidCodeblockName.Value;
 
-                if (!GetSteps(sCodeblockName, ref sErr))
-                {
-                    ui.RaiseError(Page, "Error getting Steps.<br />" + sErr, true, "");
-					return;
-                }
+//                if (!GetSteps(sCodeblockName, ref sErr))
+//                {
+//                    ui.RaiseError(Page, "Error getting Steps.<br />" + sErr, true, "");
+//					return;
+//                }
             }
         }
 
@@ -127,7 +125,6 @@ namespace Web.pages
 
                     //lblStatus.Text = dr["task_status"].ToString();
                     lblStatus2.Text = oTask.Status;
-                    hidOriginalStatus.Value = oTask.Status;
 
                     /*                    
                      * ok, this is important.
@@ -394,61 +391,6 @@ namespace Web.pages
         }
         #endregion
  
-        #region "Steps"
-        private bool GetSteps(string sCodeblockName, ref string sErr)
-        {
-            try
-            {
-                //if it's passed in as an arg, change nothing.
-                //if the arg is empty, die.
-                if (string.IsNullOrEmpty(sCodeblockName))
-                {
-                    sErr += "Error: No Codeblock specified for GetSteps.";
-                    return false;
-                }
-
-                //set the label and the hidden field
-                lblStepSectionTitle.Text = sCodeblockName;
-
-                if (!BuildSteps(sCodeblockName, ref sErr))
-                {
-                    sErr += "Error building steps.<br />" + sErr;
-                    return false;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                sErr = "Exception:" + ex.Message;
-                return false;
-            }
-
-            return true;
-        }
-        private bool BuildSteps(string sCodeblockName, ref string sErr)
-        {
-            //set the text of the step 'add' message...
-            string sAddHelpMsg =  "No Commands have been defined in this Codeblock. Drag a Command here to add it.";
-
-            if (oTask.Codeblocks[sCodeblockName].Steps.Count > 0)
-            {
-                //we always need the no_step item to be there, we just hide it if we have other items
-                //it will get unhidden if someone deletes the last step.
-                ltSteps.Text = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>";
-
-                foreach (Step oStep in oTask.Codeblocks[sCodeblockName].Steps.Values)
-                {
-					ltSteps.Text += ft.DrawFullStep(oStep);
-                }
-            }
-            else
-            {
-                ltSteps.Text = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>";
-            }
-            return true;
-        }
-        #endregion
-
         private void AddCodeblock()
         {
             try
@@ -476,14 +418,15 @@ namespace Web.pages
                         return;
 
                     }
+					
+					//this won't matter, as the upcoming ajax codeblock call will clear the steps array.
+//                    if (!GetSteps(sNewCBName, ref sErr))
+//                    {
+//                        ui.RaiseError(Page, "The Codeblock was added, but there was an error refreshing the page.  Please refresh the page manually. " + sErr, true, "");
+//                        return;
+//                    }
 
-                    if (!GetSteps(sNewCBName, ref sErr))
-                    {
-                        ui.RaiseError(Page, "The Codeblock was added, but there was an error refreshing the page.  Please refresh the page manually. " + sErr, true, "");
-                        return;
-                    }
-
-                    udpSteps.Update();
+//                    udpSteps.Update();
                 }
                 else
                 {
@@ -553,14 +496,14 @@ namespace Web.pages
                     return;
                 }
 
-                if (!GetSteps("MAIN", ref sErr))
-                {
-                    ui.RaiseError(Page, "Warning.  Successfully deleted the Codeblock" +
-                        " but there was an error refreshing the page.  Please reload the page manually. " + sErr, true, "");
-                    return;
-                }
-
-                udpSteps.Update();
+//                if (!GetSteps("MAIN", ref sErr))
+//                {
+//                    ui.RaiseError(Page, "Warning.  Successfully deleted the Codeblock" +
+//                        " but there was an error refreshing the page.  Please reload the page manually. " + sErr, true, "");
+//                    return;
+//                }
+//
+//                udpSteps.Update();
 
             }
             catch (Exception ex)
@@ -570,16 +513,16 @@ namespace Web.pages
         }
 
         #region "Buttons"
-        protected void btnStepLoad_Click(object sender, System.EventArgs e)
-        {
-            string sErr = "";
-
-            if (!GetSteps(hidCodeblockName.Value, ref sErr))
-            {
-                ui.RaiseError(Page, "Error getting Steps:" + sErr, true, "");
-                return;
-            }
-        }
+//        protected void btnStepLoad_Click(object sender, System.EventArgs e)
+//        {
+//            string sErr = "";
+//
+//            if (!GetSteps(hidCodeblockName.Value, ref sErr))
+//            {
+//                ui.RaiseError(Page, "Error getting Steps:" + sErr, true, "");
+//                return;
+//            }
+//        }
         protected void btnCBDelete_Click(object sender, System.EventArgs e)
         {
             DeleteCodeblock(hidCodeblockDelete.Value);

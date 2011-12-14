@@ -221,51 +221,40 @@
             </div>
         </div>
         <div id="all">
-            <asp:UpdatePanel ID="udpSteps" runat="server" UpdateMode="Conditional">
-                <ContentTemplate>
-                    <div class="ui-state-default te_header">
-                        <div class="step_section_title">
-                            <span id="step_toggle_all_btn" class="pointer">
-                                <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Steps"
-                                    title="Expand/Collapse All Steps" />
-                            </span><span class="step_title">
-                                <asp:Label ID="lblStepSectionTitle" runat="server"></asp:Label></span>
-                        </div>
-                        <div class="step_section_icons">
-                            <span id="print_link" class="pointer">
-                                <img class="task_print_link" alt="" src="../images/icons/printer.png" />
-                            </span>
-                        </div>
-                    </div>
-                    <div id="task_steps">
-                        <ul id="steps" class="sortable">
-                            <asp:Literal ID="ltSteps" runat="server"></asp:Literal>
-                        </ul>
-                        <div class="hidden">
-                            <asp:Button ID="btnStepLoad" runat="server" OnClick="btnStepLoad_Click" Text="Load" />
-                        </div>
-                    </div>
-                </ContentTemplate>
-            </asp:UpdatePanel>
+            <div class="ui-state-default te_header">
+                <div class="step_section_title">
+                    <span id="step_toggle_all_btn" class="pointer">
+                        <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Steps"
+                            title="Expand/Collapse All Steps" />
+                    </span><span id="codeblock_steps_title" class="step_title">
+                        </span>
+                </div>
+                <div class="step_section_icons">
+                    <span id="print_link" class="pointer">
+                        <img class="task_print_link" alt="" src="../images/icons/printer.png" />
+                    </span>
+                </div>
+            </div>
+            <div id="task_steps">
+                <ul id="steps" class="sortable">
+                </ul>
+            </div>
         </div>
     </div>
     <div id="step_update_array" class="hidden">
     </div>
     <div class="hidden">
+        <asp:HiddenField ID="hidCodeblockName" runat="server" Value="MAIN"></asp:HiddenField>
         <input type="hidden" id="hidParamType" value="task" />
-        <input id="hidPageSaveType" type="hidden" value="dynamic" />
         <input id="hidObjectType" type="hidden" value="3" />
         <asp:HiddenField ID="hidTaskID" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidOriginalTaskID" runat="server"></asp:HiddenField>
-        <asp:HiddenField ID="hidOriginalStatus" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidDefault" runat="server"></asp:HiddenField>
-        <asp:HiddenField ID="hidCodeblockName" runat="server" Value="MAIN"></asp:HiddenField>
-        <asp:HiddenField ID="hidStepArray" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidStepDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidCodeblockDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidParamDelete" runat="server"></asp:HiddenField>
         <asp:HiddenField ID="hidDebugActiveInstance" runat="server"></asp:HiddenField>
-        <asp:HiddenField ID="hidV3" runat="server"></asp:HiddenField>
+
     </div>
     <div id="step_delete_confirm_dialog" title="Delete Step" class="hidden ui-state-highlight">
         <p>

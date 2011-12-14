@@ -83,9 +83,8 @@ $(document).ready(function () {
 $(document).ready(function () {
     $("#steps .codeblock_goto_btn").live("click", function () {
         cb = $(this).attr("codeblock");
-        $("#ctl00_phDetail_lblStepSectionTitle").text(cb);
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
-        $("#ctl00_phDetail_btnStepLoad").click();
+        getSteps();
     });
 });
 

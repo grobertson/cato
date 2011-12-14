@@ -186,7 +186,42 @@ $(document).ready(function () {
     //this will also be called when items are added/removed from the clipboard.
     initDraggable();
 
+	//all is good... get the steps
+	getSteps();
 });
+
+function getSteps() {
+	//this codeblock thing has always been an issue.  What codeblock are we getting?
+	//for now, we're gonna try keeping the codeblock in a hidden field
+    var task_id = $("#ctl00_phDetail_hidTaskID").val();
+    var codeblock_name = $("#ctl00_phDetail_hidCodeblockName").val();
+
+		$.ajax({
+        type: "POST",
+        async: false,
+        url: "taskMethods.asmx/wmGetSteps",
+        data: '{"sTaskID":"' + task_id + '","sCodeblockName":"' + codeblock_name + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+	       try {
+				//the result is an html snippet
+				//we have to redo the sortable for the new content
+				$("#steps").empty();
+			    $("#steps").sortable("destroy");
+			    $("#steps").append(response.d);
+				initSortable();
+				$("#codeblock_steps_title").text(codeblock_name);
+			} catch (ex) {
+				showAlert(response.d);
+			}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+
+}
 
 function doDetailFieldUpdate(ctl) {
     var column = $(ctl).attr("column");

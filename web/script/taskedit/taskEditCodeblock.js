@@ -68,7 +68,7 @@ $(document).ready(function () {
         cb = $(this).attr("name");
 
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
-        $("#ctl00_phDetail_btnStepLoad").click();
+        getSteps();
     });
     //the onclick event of the 'codeblock rename icon'
     $("#div_codeblocks .codeblock_rename").live("click", function () {
@@ -170,7 +170,7 @@ function doCodeblockUpdate(old_name) {
 
                 //if we are looking at the codeblock we are changing... gotta reset the hidden field
                 if ($("#ctl00_phDetail_hidCodeblockName").val() == old_name) {
-                    $("#ctl00_phDetail_lblStepSectionTitle").text(sNewCodeblockName);
+                    $("#codeblock_steps_title").text(sNewCodeblockName);
                     $("#ctl00_phDetail_hidCodeblockName").val(sNewCodeblockName);
                 }
 
@@ -179,7 +179,7 @@ function doCodeblockUpdate(old_name) {
                 $("#ctl00_phDetail_btnCBRefresh").click();
 
                 //reload the steps
-                setTimeout('$("#ctl00_phDetail_btnStepLoad").click()', 500);
+                setTimeout('getSteps()', 500);
 
                 setTimeout('hidePleaseWait()', 1000);
             } else {
@@ -209,7 +209,7 @@ function doCodeblockAdd() {
 
         //set the hidden field and label
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
-        $("#ctl00_phDetail_lblStepSectionTitle").text(cb);
+        $("#codeblock_steps_title").text(cb);
 
         //clear the 'add' box
         $("#ctl00_phDetail_txtCodeblockNameAdd").val("");
@@ -243,7 +243,7 @@ function doCodeblockDelete() {
     $("#ctl00_phDetail_btnCBDelete").click();
     $("#ctl00_phDetail_hidCodeblockDelete").val("");
     //when we delete a codeblock we reset the step list to MAIN.
-    $("#ctl00_phDetail_lblStepSectionTitle").text("MAIN");
+    $("#codeblock_steps_title").text("MAIN");
     $("#ctl00_phDetail_hidCodeblockName").val("MAIN");
 
     $("#update_success_msg").text("Update Successful").fadeOut(2000);
