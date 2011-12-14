@@ -378,59 +378,7 @@ namespace Web.pages
         }
         #endregion
  
-        private void AddCodeblock()
-        {
-            try
-            {
-                string sErr = "";
-                string sSQL = "";
-
-                string sNewCBName = hidCodeblockName.Value.Replace("'", "''").Trim();
-                if (sNewCBName != "")
-                {
-                    sSQL = "insert into task_codeblock (task_id, codeblock_name)" +
-                           " values (" + "'" + sTaskID + "'," +
-                           "'" + sNewCBName + "'" +
-                           ")";
-
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                    {
-                        ui.RaiseError(Page, "Unable to add Codeblock [" + sNewCBName + "]. " + sErr, true, "");
-                        return;
-                    }
-
-                    if (!GetCodeblocks(ref sErr))
-                    {
-                        ui.RaiseError(Page, "The Codeblock was added, but there was an error refreshing the page.  Please refresh the page manually. " + sErr, true, "");
-                        return;
-
-                    }
-					
-					//this won't matter, as the upcoming ajax codeblock call will clear the steps array.
-//                    if (!GetSteps(sNewCBName, ref sErr))
-//                    {
-//                        ui.RaiseError(Page, "The Codeblock was added, but there was an error refreshing the page.  Please refresh the page manually. " + sErr, true, "");
-//                        return;
-//                    }
-
-//                    udpSteps.Update();
-                }
-                else
-                {
-                    ui.RaiseError(Page, "Unable to add Codeblock.", true, "Invalid or missing Codeblock Name.");
-                }
-            }
-            catch (Exception ex)
-            {
-                ui.RaiseError(Page, "Unable to add Codeblock. " + ex.Message, true, "");
-            }
-        }
-
         #region "Buttons"
-        protected void btnCBAdd_Click(object sender, System.EventArgs e)
-        {
-            AddCodeblock();
-        }
         protected void btnCBRefresh_Click(object sender, System.EventArgs e)
         {
             string sErr = "";

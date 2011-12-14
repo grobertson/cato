@@ -40,6 +40,42 @@ namespace ACWebMethods
 
         #region "Steps"
 		[WebMethod(EnableSession = true)]
+        public void wmAddCodeblock(string sTaskID, string sNewCodeblockName)
+        {
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+
+			try
+            {
+                string sErr = "";
+                string sSQL = "";
+
+                if (sNewCodeblockName != "")
+                {
+                    sSQL = "insert into task_codeblock (task_id, codeblock_name)" +
+                           " values (" + "'" + sTaskID + "'," +
+                           "'" + sNewCodeblockName + "'" +
+                           ")";
+
+                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+                        throw new Exception("Unable to add Codeblock [" + sNewCodeblockName + "]. " + sErr);
+
+					ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, sTaskID, sNewCodeblockName,
+					                        "Added Codeblock.");
+
+				}
+                else
+                {
+					throw new Exception("Unable to add Codeblock. Invalid or missing Codeblock Name.");
+                }
+            }
+            catch (Exception ex)
+            {
+				throw new Exception("Unable to add Codeblock. " + ex.Message);
+            }
+        }
+
+		[WebMethod(EnableSession = true)]
         public void wmDeleteCodeblock(string sTaskID, string sCodeblockID)
         {
             try
@@ -47,6 +83,7 @@ namespace ACWebMethods
                 string sErr = "";
 
                 dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+				acUI.acUI ui = new acUI.acUI();
 
                 //first, delete any steps that are embedded content on steps in this codeblock
                 //(because embedded steps have their parent step_id as the codeblock name.)
@@ -78,6 +115,10 @@ namespace ACWebMethods
 					throw new Exception("Unable to delete Codeblock." + sErr);
 
                 oTrans.Commit();
+
+				ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, sTaskID, sCodeblockID,
+				                        "Deleted Codeblock.");
+
             }
             catch (Exception ex)
             {

@@ -37,8 +37,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.UpdatePanel udpCodeblocks;
 		
-		protected System.Web.UI.WebControls.Button btnCBAdd;
-		
 		protected System.Web.UI.WebControls.Literal ltCodeblocks;
 		
 		protected System.Web.UI.WebControls.Button btnCBRefresh;
@@ -86,7 +84,5 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.Label lblNewMajor;
 		
 		protected System.Web.UI.WebControls.CheckBox chkMakeDefault;
-		
-		protected System.Web.UI.WebControls.TextBox txtCodeblockNameAdd;
 	}
 }

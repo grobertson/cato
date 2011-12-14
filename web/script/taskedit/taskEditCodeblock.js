@@ -23,7 +23,7 @@ $(document).ready(function () {
         ShowCodeblockEdit('');
     });
     // also if the user hits the enter key in the new codeblock textbox
-    //    $("#ctl00_phDetail_txtCodeblockNameAdd").live("keypress", function(e) {
+    //    $("#new_codeblock_name").live("keypress", function(e) {
     //        //alert('keypress');
     //        if (e.which == 13) {
     //            doCodeblockAdd();
@@ -127,8 +127,7 @@ function ShowCodeblockEdit(codeblock_name) {
             showInfo('The MAIN codeblock can not be renamed.');
             return false;
         };
-        $("#ctl00_phDetail_txtCodeblockNameAdd").val(codeblock_name);
-        //$("#ctl00_phDetail_hidCodeblockName").val(codeblock_name);
+        $("#new_codeblock_name").val(codeblock_name);
         $("#codeblock_edit_dialog").dialog("option", "buttons", {
             "Save": function () { doCodeblockUpdate(codeblock_name) },
             "Cancel": function () { $(this).dialog("close"); }
@@ -136,7 +135,7 @@ function ShowCodeblockEdit(codeblock_name) {
     }
     else {
         //Enter a name for the new Codeblock:
-        $("#ctl00_phDetail_txtCodeblockNameAdd").val('');
+        $("#new_codeblock_name").val('');
         $("#codeblock_edit_dialog").dialog("option", "buttons", {
             "Add": function () { doCodeblockAdd() },
             "Cancel": function () { $(this).dialog("close"); }
@@ -149,8 +148,7 @@ function ShowCodeblockEdit(codeblock_name) {
 function doCodeblockUpdate(old_name) {
     showPleaseWait();
 
-    var sNewCodeblockName = $("#ctl00_phDetail_txtCodeblockNameAdd").val();
-    //var sOldCodeBlockName = $("#ctl00_phDetail_hidCodeblockName").val();
+    var sNewCodeblockName = $("#new_codeblock_name").val();
 
     // before doing the postback, make sure the user entered something in the new name, and that its different than the old name.
     if (sNewCodeblockName == '') {
@@ -201,34 +199,50 @@ function doCodeblockUpdate(old_name) {
 }
 
 function doCodeblockAdd() {
-    cb = $("#ctl00_phDetail_txtCodeblockNameAdd").val();
+    codeblock_name = $("#new_codeblock_name").val();
 
-    if (cb != "") {
+    if (codeblock_name != "") {
         $.blockUI({ message: null });
         $("#update_success_msg").text("Updating...").show();
 
-        //set the hidden field and label
-        $("#ctl00_phDetail_hidCodeblockName").val(cb);
-        $("#codeblock_steps_title").text(cb);
-
-        //clear the 'add' box
-        $("#ctl00_phDetail_txtCodeblockNameAdd").val("");
-
-        //and clear the step sortable
-        $("#steps").empty();
-
-        //add it (click the hidden button)
-        $("#ctl00_phDetail_btnCBAdd").click();
-
-        //this isn't quite true... as we don't have a hook on when the updatepanel is refreshed.
-        //we'll fix this when it's jquery AJAX
-        $.unblockUI();
-        $("#codeblock_edit_dialog").dialog('close');
-        $("#update_success_msg").text("Update Successful").fadeOut(2000);
+	    $.ajax({
+	        async: false,
+	        type: "POST",
+	        url: "taskMethods.asmx/wmAddCodeblock",
+	        data: '{"sTaskID":"' + g_task_id + '","sNewCodeblockName":"' + codeblock_name + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function (response) {
+		        //set the hidden field and label
+		        $("#ctl00_phDetail_hidCodeblockName").val(codeblock_name);
+		        $("#codeblock_steps_title").text(codeblock_name);
+		
+				//TODO: add it to the codeblock list?
+				//probably by just regetting all the codeblocks so the links and stuff will work?
+				//yes! so they will also be sorted correctly
+				//getCodeblocks();
+				
+		        //clear the 'add' box
+		        $("#new_codeblock_name").val("");
+		
+		        //and clear the step sortable
+		        $("#steps").empty();
+		
+		        $.unblockUI();
+		        $("#codeblock_edit_dialog").dialog('close');
+		        $("#update_success_msg").text("Update Successful").fadeOut(2000);
+	        },
+	        error: function (response) {
+	            $("#update_success_msg").fadeOut(2000);
+	            showAlert(response.responseText);
+	            hidePleaseWait();
+	        }
+	    });
+	
     } else {
         //this would be better if you couldn't click the Add button if it was blank
         $("#codeblock_edit_dialog_msg").text("Codeblock Name is required.");
-        $("#ctl00_phDetail_txtCodeblockNameAdd").focus();
+        $("#new_codeblock_name").focus();
     }
 }
 
@@ -264,8 +278,5 @@ function doCodeblockDelete() {
             hidePleaseWait();
         }
     });
-
-
-
 }
 

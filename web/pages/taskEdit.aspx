@@ -94,8 +94,6 @@
                 <div>
                     <asp:UpdatePanel ID="udpCodeblocks" runat="server" UpdateMode="Conditional">
                         <ContentTemplate>
-                            <div class="hidden">
-                                <asp:Button ID="btnCBAdd" runat="server" Text="Add" UseSubmitBehavior="false" OnClick="btnCBAdd_Click" /></div>
                             <span id="codeblock_add_btn">Add New</span>
                             <hr />
                             <ul id="codeblocks">
@@ -396,7 +394,7 @@
     <div id="codeblock_edit_dialog" title="Codeblock" class="hidden">
         <p>
             Enter a name for the Codeblock:</p>
-        <asp:TextBox ID="txtCodeblockNameAdd" runat="server" validate_as="identifier" Width="100%"></asp:TextBox>
+        <input id="new_codeblock_name" validate_as="identifier" />
         <div id="codeblock_edit_dialog_msg" style="color: Red;">
         </div>
     </div>
