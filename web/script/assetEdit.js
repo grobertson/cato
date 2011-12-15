@@ -298,10 +298,6 @@ function SaveAsset() {
                 bSave = false;
                 strValidationError += 'Credential Passwords do not match.';
             }
-            if (sCredPasword == '') {
-                bSave = false;
-                strValidationError += 'Credential Password required.';
-            }
             // check the privileged password if one is filled in they should match
             if (sPrivilegedPassword != sPrivilegedPasswordConfirm) {
                 bSave = false;
