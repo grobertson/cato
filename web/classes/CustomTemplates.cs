@@ -153,6 +153,7 @@ namespace FunctionTemplates
 		{
 			Dictionary<string,string> data = new Dictionary<string,string>();
 			
+			//AWS regions
 			Provider p = Provider.GetFromSession("Amazon AWS");
 			if (p != null)
 			{
@@ -160,9 +161,18 @@ namespace FunctionTemplates
 				{
 					data.Add(c.Name, c.Name);
 				}
-				return data;
 			}
-			return null;
+			//Eucalyptus clouds
+			p = Provider.GetFromSession("Eucalyptus");
+			if (p != null)
+			{
+				foreach (Cloud c in p.Clouds.Values)
+				{
+					data.Add(c.Name, c.Name);
+				}
+			}
+
+			return data;
 		}
 
 	}
