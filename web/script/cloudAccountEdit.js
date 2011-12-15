@@ -320,10 +320,8 @@ function FillEditForm(sEditID) {
                 
                 //the account result will have a list of all the clouds on this account.
                 $("#ddlTestCloud").empty();
-                $.each(account.Clouds, function(id, c){
-                	var cloud = jQuery.parseJSON(c);                	
+                $.each(account.Clouds, function(id, cloud){
                 	$("#ddlTestCloud").append("<option value=\"" + id + "\">" + cloud.Name + "</option>");
-                	//alert( "Index #" + i + ": " + l );
    				});	
             }
         },
