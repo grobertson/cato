@@ -584,6 +584,25 @@ function initSortable() {
             }
         }
     });
+
+	//this turns on the "combobox" controls on steps.
+	$(function () {
+		$("#steps select:.combo").ufd({submitFreeText: true});
+
+		
+		//NOTE: we are using the ufd plugin, but in this case we need more.
+		//This copies all the attributes from the source 'select' onto the new 'input' it created.	
+		$("#steps select:.combo").each(function(i, cbo) {
+			var id = $(cbo).attr("id");
+			$(cbo.attributes).each(function(i, attrib) {
+	     		var name = attrib.name;
+	     		if (name != "type" && name != "id" && name != "class" && name != "name") {
+	    			var value = attrib.value;
+			    	$("#ufd-" + id).attr(name, value);
+		    	}
+			});
+		});
+	});
 }
 
 function showVarPicker(e) {
@@ -843,7 +862,7 @@ function doStepDetailUpdate(field, step_id, func, xpath) {
         //are special characters that need to be escaped for the JSON data.
         //on the web service we are using the actual javascript unescape to unpack this.
         var val = packJSON($("#" + field).val());
-
+        
         $.ajax({
             async: false,
             type: "POST",

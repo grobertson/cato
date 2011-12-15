@@ -5,6 +5,9 @@
     <link type="text/css" href="../style/registry.css" rel="stylesheet" />
     <link type="text/css" href="../style/taskEdit.css" rel="stylesheet" />
     <link type="text/css" href="../style/taskView.css" rel="stylesheet" />
+	<link href="../script/jquery/jquery.ui.ufd-0.6/css/ufd-base.css" rel="stylesheet" type="text/css" />
+	<link href="../script/jquery/jquery.ui.ufd-0.6/css/plain/plain.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../script/jquery/jquery.ui.ufd-0.6/jquery.ui.ufd.js"></script>	
     <script type="text/javascript" src="../script/taskedit/taskEdit.js"></script>
     <script type="text/javascript" src="../script/taskedit/taskView.js"></script>
     <script type="text/javascript" src="../script/taskedit/taskVersions.js"></script>

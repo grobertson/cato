@@ -146,5 +146,24 @@ namespace FunctionTemplates
             return sHTML;
 		}
 
-    }
+		//NOTE: the following functions are internal, but support dynamic dropdowns on step functions.
+		//the function name is referenced by the "dataset" value of a dropdown type of input, where the datasource="function"
+		//dropdowns expect a Dictionary<string,string> object return
+		private Dictionary<string,string> ddDataSource_GetAWSClouds()
+		{
+			Dictionary<string,string> data = new Dictionary<string,string>();
+			
+			Provider p = Provider.GetFromSession("Amazon AWS");
+			if (p != null)
+			{
+				foreach (Cloud c in p.Clouds.Values)
+				{
+					data.Add(c.Name, c.Name);
+				}
+				return data;
+			}
+			return null;
+		}
+
+	}
 }

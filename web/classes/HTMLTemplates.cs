@@ -23,6 +23,7 @@ using System.Xml.Linq;
 using System.Xml;
 using System.Xml.XPath;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Globals;
 
@@ -4798,58 +4799,93 @@ namespace FunctionTemplates
             }
             else if (sInputType == "dropdown")
             {
-                //the data source of a drop down can be a) an xml file, b) an internal web method or c) an "local" inline list
+                //the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
                 //there is no "default" datasource... if nothing is available, it draws an empty picker
                 string sDatasource = (xe.Attribute("datasource") == null ? "" : xe.Attribute("datasource").Value);
                 string sDataSet = (xe.Attribute("dataset") == null ? "" : xe.Attribute("dataset").Value);
+                string sFieldStyle = (xe.Attribute("style") == null ? "" : xe.Attribute("style").Value);
 
-                sHTML += sNodeLabel + " <select " + CommonAttribs(sStepID, sFunction, false, sXPath, "") + ">" + Environment.NewLine;
+                sHTML += sNodeLabel + " <select " + CommonAttribs(sStepID, sFunction, false, sXPath, sFieldStyle) + ">" + Environment.NewLine;
                 
                 //empty one
                 sHTML += "<option " + SetOption("", sNodeValue) + " value=\"\"></option>" + Environment.NewLine;
+				
+				//if it's a combo, it's possible we may have a value that isn't actually in the list.
+				//but we will need to add it to the list otherwise we can't select it!
+				//so, first let's keep track of if we find the value anywhere in the various datasets.
+				bool bValueWasInData = false;
+				
+				switch (sDatasource)
+				{
+				case "file":
+					try
+					{
+						//sDataset is an XML file name.
+						//sTable is the parent node in the XML containing the data
+						string sTable = (xe.Attribute("table") == null ? "" : xe.Attribute("table").Value);
+						string sValueNode = (xe.Attribute("valuenode") == null ? "" : xe.Attribute("valuenode").Value);
+						
+						if (sTable == "" || sValueNode == "")
+							return "Unable to render input element - missing required attribute 'table' or 'valuenode'.";
+						
+						DataSet ds = new DataSet();
+						ds.ReadXml(Server.MapPath("~/pages/" + sDataSet));
+						
+						if (ds.Tables[sTable].Rows.Count > 0)
+						{
+							foreach (DataRow dr in ds.Tables[sTable].Rows)
+							{
+								string sVal = dr[sValueNode].ToString();
+								sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>" + Environment.NewLine;
 
-                switch (sDatasource)
-                {
-                    case "file":
-                        try
-                        {
-                            //sDataset is an XML file name.
-                            //sTable is the parent node in the XML containing the data
-                            string sTable = (xe.Attribute("table") == null ? "" : xe.Attribute("table").Value);
-                            string sValueNode = (xe.Attribute("valuenode") == null ? "" : xe.Attribute("valuenode").Value);
+								if (sVal.Equals(sNodeValue)) bValueWasInData = true;
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.Message;
+					}
+					
+					break;
+				case "function":
+					//this uses reflection to execute the function specified in the sDataSet property
+					//at this time, the function must exist in this namespace!
+					//since it's populating a dropdown, we expect the function to return a dictionary
+					Dictionary<string, string> data = new Dictionary<string, string>();
+					System.Reflection.MethodInfo info = this.GetType().GetMethod(sDataSet, BindingFlags.NonPublic | BindingFlags.Instance);
+					if (info != null)
+					{
+						data = (Dictionary<string, string>) info.Invoke(this, null);
+						
+						if (data != null)
+						{
+							foreach (KeyValuePair<string, string> pair in data)
+							{
+								sHTML += "<option " + SetOption(pair.Key, sNodeValue) + " value=\"" + pair.Key + "\">" + pair.Value + "</option>" + Environment.NewLine;
 
-                            if (sTable == "" || sValueNode == "")
-                                return "Unable to render input element - missing required attribute 'table' or 'valuenode'.";
+								if (pair.Key.Equals(sNodeValue)) bValueWasInData = true;
+							}
+						}
+					}
+					break;
+				default: //default is "local"
+					//data is pipe delimited
+					string[] aValues = sDataSet.Split('|');
+					foreach (string sVal in aValues)
+					{
+						sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>" + Environment.NewLine;
 
-                            DataSet ds = new DataSet();
-                            ds.ReadXml(Server.MapPath("~/pages/" + sDataSet));
-
-                            if (ds.Tables[sTable].Rows.Count > 0)
-                            {
-                                foreach (DataRow dr in ds.Tables[sTable].Rows)
-                                {
-                                    string sVal = dr[sValueNode].ToString();
-                                    sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>" + Environment.NewLine;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.Message;
-                        }
-
-                        break;
-                    case "ajax":
-                        break;
-                    default: //default is "local"
-                        //data is pipe delimited
-                        string[] aValues = sDataSet.Split('|');
-                        foreach (string sVal in aValues)
-                        {
-                            sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>" + Environment.NewLine;
-                        }
-                        break;
+						if (sVal.Equals(sNodeValue)) bValueWasInData = true;
+					}
+					break;
                 }
+				
+				//NOTE: If it has the "combo" style and a value, that means we're allowing the user to enter a value that may not be 
+				//in the dataset.  If that's the case, we must add the actual saved value to the list too. 
+				if (!bValueWasInData) //we didn't find it in the data ...
+					if (sFieldStyle.Contains("combo") && !string.IsNullOrEmpty(sNodeValue))  //and it's a combo and not empty 
+						sHTML += "<option " + SetOption(sNodeValue, sNodeValue) + " value=\"" + sNodeValue + "\">" + sNodeValue + "</option>" + Environment.NewLine;			
 
                 sHTML += "</select>";
             }
