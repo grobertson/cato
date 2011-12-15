@@ -70,13 +70,14 @@ $(document).ready(function () {
 
     //bind the debug show log button
     $("#ctl00_phDetail_debug_view_latest_log").click(function () {
-        openDialogWindow('taskRunLog.aspx?task_id=' + $("#ctl00_phDetail_hidTaskID").val(), 'TaskRunLog', 950, 750, 'true');
+    	var id = $("#ctl00_phDetail_hidTaskID").val();
+        openDialogWindow('taskRunLog.aspx?task_id=' + id, 'TaskRunLog' + id, 950, 750, 'true');
     });
     //bind the debug show active log button
     $("#debug_view_active_log").click(function () {
         var aid = $("#ctl00_phDetail_hidDebugActiveInstance").val();
         if (aid != "") {
-            openDialogWindow('taskRunLog.aspx?task_instance=' + aid, 'TaskRunLog', 950, 750, 'true');
+            openDialogWindow('taskRunLog.aspx?task_instance=' + aid, 'TaskRunLog' + aid, 950, 750, 'true');
         }
     });
 

@@ -482,7 +482,7 @@ function LaunchTask() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
-            openDialogWindow('taskRunLog.aspx?task_instance=' + msg.d, 'TaskRunLog', 950, 750, 'true');
+            openDialogWindow('taskRunLog.aspx?task_instance=' + msg.d, 'TaskRunLog' + msg.d, 950, 750, 'true');
 
             $("#update_success_msg").text("Start Successful").fadeOut(2000);
             hidePleaseWait();
