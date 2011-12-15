@@ -726,7 +726,7 @@ namespace Web.pages
                     sbUserValues.AppendFormat("\"{0}\" : \"{1}\",", "sRole", (object.ReferenceEquals(dr["user_role"], DBNull.Value) ? "" : dr["user_role"].ToString()));
                     sbUserValues.AppendFormat("\"{0}\" : \"{1}\",", "sPasswordMasked", "($%#d@x!&");
                     sbUserValues.AppendFormat("\"{0}\" : \"{1}\",", "sFailedLogins", (object.ReferenceEquals(dr["failed_login_attempts"], DBNull.Value) ? "0" : dr["failed_login_attempts"].ToString()));
-                    sbUserValues.AppendFormat("\"{0}\" : \"{1}\",", "sUserStatus", (object.ReferenceEquals(dr["status"], DBNull.Value) ? "0" : dr["status"].ToString()));
+                    sbUserValues.AppendFormat("\"{0}\" : \"{1}\"", "sUserStatus", (object.ReferenceEquals(dr["status"], DBNull.Value) ? "0" : dr["status"].ToString()));
                     sbUserValues.Append("}");
 
                 }
