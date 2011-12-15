@@ -27,9 +27,7 @@ textarea
 
 .log
 {
-	margin: 0px 4px 0px 4px;
-	height: 535px;
-	overflow: auto;
+	margin: 0px 4px 10px 4px;
 }
 .log_item
 {
