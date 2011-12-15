@@ -1301,7 +1301,7 @@ namespace ACWebMethods
 
                     sSQL = "update task_instance set task_status = 'Cancelled'" +
                         " where task_instance = '" + sInstance + "'" +
-                        " and task_status in ('Submitted','Queued')";
+                        " and task_status in ('Submitted','Queued','Staged')";
 
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     {
