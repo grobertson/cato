@@ -307,15 +307,19 @@ namespace Web.pages
             string sBody = "";
             if (!dc.sqlGetSingleString(ref sBody, "select new_user_email_message from login_security_settings where id = 1", ref sErr))
                 throw new Exception(sErr);
-
+			
+			string sURL = ui.GetSessionObject("app_url", "Security").ToString();
+			
             //default message if undefined in the table
             if (string.IsNullOrEmpty(sBody))
                 sBody = sFullName + " - an account has been created for you in " + ag.APP_NAME + "." + Environment.NewLine + Environment.NewLine +
                 "Your User Name: " + sLoginID + "." + Environment.NewLine +
-                "Your temporary password: " + sUserPassword + "." + Environment.NewLine;
+                "Your temporary password: " + sUserPassword + "." + Environment.NewLine + Environment.NewLine +
+					"Access the application at <a href='" + sURL + "' target='_blank'>" + sURL + "</a>.";
+			
 
             //replace our special tokens with the values
-            sBody = sBody.Replace("##FULLNAME##", sFullName).Replace("##USERNAME##", sLoginID);
+            sBody = sBody.Replace("##FULLNAME##", sFullName).Replace("##USERNAME##", sLoginID).Replace("##URL##", sURL);
 				
 			if (sGeneratePW == "1")
 				sBody = sBody.Replace("##PASSWORD##", sUserPassword);
@@ -666,6 +670,8 @@ namespace Web.pages
                     // add security log
                     ui.WriteObjectAddLog(Globals.acObjectTypes.User, sUserID, sUserID, "Password Reset");
 
+					string sURL = ui.GetSessionObject("app_url", "Security").ToString();
+			
                     //email out the password
                     string sBody = "";
                     if (!dc.sqlGetSingleString(ref sBody, "select new_user_email_message from login_security_settings where id = 1", ref sErr))
@@ -674,10 +680,11 @@ namespace Web.pages
                     //default message if undefined in the table
                     if (string.IsNullOrEmpty(sBody))
                         sBody = dr["full_name"].ToString() + " - your password has been reset by an Administrator." + Environment.NewLine + Environment.NewLine +
-                        "Your temporary password is: " + sNewPassword + "." + Environment.NewLine;
+                        "Your temporary password is: " + sNewPassword + "." + Environment.NewLine + Environment.NewLine +
+						"Access the application at <a href='" + sURL + "' target='_blank'>" + sURL + "</a>.";
 
                     //replace our special tokens with the values
-                    sBody = sBody.Replace("##FULLNAME##", dr["full_name"].ToString()).Replace("##USERNAME##", dr["username"].ToString()).Replace("##PASSWORD##", sNewPassword);
+                    sBody = sBody.Replace("##FULLNAME##", dr["full_name"].ToString()).Replace("##USERNAME##", dr["username"].ToString()).Replace("##PASSWORD##", sNewPassword).Replace("##URL##", sURL);
 
                     if (!ui.SendEmailMessage(sEmail.Trim(), ag.APP_COMPANYNAME + " Account Management", "Account Action in " + ag.APP_NAME, sBody, ref sErr))
                         throw new Exception(sErr);

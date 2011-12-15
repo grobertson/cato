@@ -32,7 +32,8 @@ namespace Web
     {
         dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
-
+		acUI.AppGlobals ag = new acUI.AppGlobals();
+		
         string sSQL = "";
         string sErr = "";
         string sLoginDefaultError = "";
@@ -82,7 +83,7 @@ namespace Web
 	            //FIRST THINGS FIRST... hitting the login page resets the session.
 	            HttpContext.Current.Session.Clear();
 				
-				
+				ui.SetSessionObject("app_url", HttpContext.Current.Request.Url.Authority, "Security");
 				
 				//now, for some reason we were having issues with the initial startup of apache
 				//not able to perform the very first database hit.
