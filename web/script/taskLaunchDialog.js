@@ -92,15 +92,18 @@ $(document).ready(function () {
     $(".datetimepicker").datetimepicker();
     $("#run_now_btn").button({ icons: { primary: "ui-icon-play"} });
     $("#run_now_btn").live("click", function () {
-        LaunchTask();
+		if (checkRequiredParams())
+	    	LaunchTask();
     });
     $("#run_later_btn").button({ icons: { primary: "ui-icon-seek-next"} });
     $("#run_later_btn").live("click", function () {
-        RunLater();
+		if (checkRequiredParams())
+	    	RunLater();
     });
     $("#run_repeatedly_btn").button({ icons: { primary: "ui-icon-calculator"} });
     $("#run_repeatedly_btn").live("click", function () {
-        RunRepeatedly();
+        if (checkRequiredParams())
+	    	RunRepeatedly();
     });
 
 
@@ -278,6 +281,43 @@ $(document).ready(function () {
 
 });
 
+//check parameters before launching or scheduling
+function checkRequiredParams() {
+	//at this time it doesn't seem necesary to do anything for encrypted values.
+	//if the encrypted value is required, it will hightlight if blank.
+	//if it was prepopulated by a default, the "********" in the box will count as a value and it will not warn.
+
+	var warn = false;
+	$(".task_launch_parameter_required").each(function(){
+		var has_val = false;
+
+		//lists and single values are the same, a single is just a one item list.
+		$(this).find(".task_launch_parameter_value_input").each(function(i, fld){
+			if ($(fld).val() && $(fld).val() != '')
+				has_val = true;
+		});
+
+		//mark or unmark it
+		if (has_val)
+		{
+			$(this).removeClass("ui-state-highlight");
+		} else {
+			$(this).addClass("ui-state-highlight");
+			warn = true;
+		}
+	});
+
+	if (warn)
+		if (confirm("Some Parameters have empty values.\n\nWhile Parameters are allowed to be blank, " +
+			" the highlighted ones are required.\n\nClick 'OK' to proceed, or 'Cancel' to update the Parameters."))
+		{
+			//if they selected OK, clear the highlights and proceed
+			$(".task_launch_parameter_required").removeClass("ui-state-highlight");
+			return true;		
+		}
+	else
+		return true;
+}
 //get rid of run on, change ecosystemID to "filterbyecosystemid"
 function getParamXML(id, type, eco_id) {
     var task_parameter_xml = "";
