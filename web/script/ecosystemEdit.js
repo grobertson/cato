@@ -398,6 +398,28 @@ function GetEcosystemSchedules() {
                 maxWidth: "500px",
                 fadeIn: 100
             });
+		    //click on a schedule in the detail panel pops the dialog AND the inner dialog
+		    $("#ecosystem_schedules .schedule_name").click(function () {
+		        var action_id = $(this).parent().attr("action_id");
+		        var task_id = $(this).parent().attr("task_id");
+		        var task_name = $(this).parent().attr("task_name")
+		        var task_version = $(this).parent().attr("task_version")
+		
+		        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
+		        //another goofy argument.
+		        task_name = $(this).parent().attr("action") + " : (" + task_name + " - " + task_version + ")";
+		
+		        //show the dialog
+		        //note: we are not passing account_id - the dialog will pick the default
+		        var args = '{"task_id":"' + task_id + '", \
+		            "task_name":"' + task_name + '", \
+		            "ecosystem_id":"' + g_eco_id + '", \
+            		"action_id":"' + action_id + '"}';
+		        
+		        ShowTaskLaunchDialog(args);
+
+		        ShowPlanEditDialog(this);
+		    });
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -412,14 +434,29 @@ function GetEcosystemSchedules() {
         dataType: "json",
         success: function (retval) {
             $("#ecosystem_plans").html(retval.d);
-//            //schedule icon tooltips
-//            $("#ecosystem_schedules .schedule_tip").tipTip({
-//                defaultPosition: "right",
-//                keepAlive: false,
-//                activation: "hover",
-//                maxWidth: "500px",
-//                fadeIn: 100
-//            });
+
+		    //click on a schedule in the detail panel pops the dialog AND the inner dialog
+		    $("#ecosystem_plans .action_plan_name").click(function () {
+		        var action_id = $(this).parent().attr("action_id");
+		        var task_id = $(this).parent().attr("task_id");
+		        var task_name = $(this).parent().attr("task_name")
+		        var task_version = $(this).parent().attr("task_version")
+		
+		        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
+		        //another goofy argument.
+		        task_name = $(this).parent().attr("action") + " : (" + task_name + " - " + task_version + ")";
+		
+		        //show the dialog
+		        //note: we are not passing account_id - the dialog will pick the default
+		        var args = '{"task_id":"' + task_id + '", \
+		            "task_name":"' + task_name + '", \
+		            "ecosystem_id":"' + g_eco_id + '", \
+            		"action_id":"' + action_id + '"}';
+		        
+		        ShowTaskLaunchDialog(args);
+
+		        ShowPlanEditDialog(this);
+		    });
         },
         error: function (response) {
             showAlert(response.responseText);

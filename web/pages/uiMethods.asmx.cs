@@ -2453,7 +2453,7 @@ namespace ACWebMethods
 
                 string sHTML = "";
 
-                sSQL = "select s.schedule_id, s.label, s.descr, t.task_name, a.action_name" +
+                sSQL = "select s.schedule_id, s.label, s.descr, t.task_name, a.action_id, a.action_name, t.task_id, t.task_name, t.version" +
                     " from action_schedule s" +
                     " join task t on s.task_id = t.task_id" +
                     " left outer join ecotemplate_action a on s.action_id = a.action_id" +
@@ -2469,6 +2469,11 @@ namespace ACWebMethods
                     {
                         sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_schedule\"" +
                             " id=\"as_" + dr["schedule_id"].ToString() + "\"" +
+                            " action_id=\"" + dr["action_id"].ToString() + "\"" +
+                            " action=\"" + dr["action_name"].ToString() + "\"" +
+                            " task_id=\"" + dr["task_id"].ToString() + "\"" +
+                            " task_name=\"" + dr["task_name"].ToString() + "\"" +
+                            " task_version=\"" + dr["version"].ToString() + "\"" +
                         ">";
                         sHTML += " <div class=\"floatleft schedule_name\">";
 
@@ -2516,7 +2521,7 @@ namespace ACWebMethods
                 string sHTML = "";
 
                 sSQL = "select ap.plan_id, date_format(ap.run_on_dt, '%m/%d/%Y %H:%i') as run_on_dt, ap.source, ap.action_id, t.task_id," +
-                    " ea.action_name, t.task_name, ap.source, ap.schedule_id" +
+                    " ea.action_name, t.task_name, t.version, ap.source, ap.schedule_id" +
                     " from action_plan ap" +
                     " join task t on ap.task_id = t.task_id" +
                     " left outer join ecotemplate_action ea on ap.action_id = ea.action_id" +
@@ -2537,6 +2542,11 @@ namespace ACWebMethods
                             " run_on=\"" + dr["run_on_dt"].ToString() + "\"" +
                             " source=\"" + dr["source"].ToString() + "\"" +
                             " schedule_id=\"" + dr["schedule_id"].ToString() + "\"" +
+                            " action_id=\"" + dr["action_id"].ToString() + "\"" +
+                            " action=\"" + dr["action_name"].ToString() + "\"" +
+                            " task_id=\"" + dr["task_id"].ToString() + "\"" +
+                            " task_name=\"" + dr["task_name"].ToString() + "\"" +
+                            " task_version=\"" + dr["version"].ToString() + "\"" +
                         ">";
                         sHTML += " <div class=\"floatleft action_plan_name\">";
 
