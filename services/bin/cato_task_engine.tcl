@@ -3301,7 +3301,7 @@ proc add_summary_item {command} {
 	set detail [replace_variables_all [$::ROOT selectNodes string(detail)]]
 	del_xml_root
 
-	set $::RESULT_SUMMARY "$::RESULT_SUMMARY<item><name>$name</name><detail>$detail</detail><item>"
+	set ::RESULT_SUMMARY "$::RESULT_SUMMARY<item><name>$name</name><detail>$detail</detail></item>"
 }
 
 proc new_connection {connection_system conn_name conn_type {cloud_name ""}} {
@@ -4347,6 +4347,7 @@ proc process_task {} {
 	global SYSTEMS
 	set ::TEST_RESULT ""
 	set ::STEP_ID ""
+	set ::RESULT_SUMMARY ""
 
 	
 	set sql "select A.task_instance, B.task_name, A.asset_id, 
