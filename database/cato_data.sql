@@ -1,4 +1,3 @@
---Default Required Data
 INSERT INTO `users` (`user_id`, `username`, `full_name`, `status`, `authentication_type`, `user_password`, `expiration_dt`, `security_question`, `security_answer`, `last_login_dt`, `failed_login_attempts`, `force_change`, `email`, `settings_xml`, `user_role`) 
 	VALUES ('0002bdaf-bfd5-4b9d-82d1-fd39c2947d19','administrator','Administrator',1,'local','#ADMINPASSWORD#',NULL,NULL,NULL,NULL,0,1,'',NULL,'Administrator');
 INSERT INTO `user_password_history` (`user_id`, `password`, `change_time`) 
@@ -14,7 +13,6 @@ INSERT INTO `poller_settings` (`id`, `mode_off_on`, `loop_delay_sec`, `max_proce
 INSERT INTO `scheduler_settings` (`id`, `mode_off_on`, `loop_delay_sec`, `schedule_min_depth`, `schedule_max_days`, `clean_app_registry`) 
 	VALUES (1,'on',5,10,60,5);
 
--- Example Tasks
 INSERT INTO `task` VALUES ('070dfda0-3ed2-4362-b2c2-51155b4f4d9d','070dfda0-3ed2-4362-b2c2-51155b4f4d9d','1.000','Create and Manage EC2 SDB Domain','example - aws002','Creates a SDB domain and adds items with attributes then loops through one of the items and prints to the log. Deletes the domain at the end.\n\nShows how to use Xpath to loop through the results of an AWS query.','Development',0,1,NULL,NULL,'2011-07-11 21:18:56','');
 INSERT INTO `task_codeblock` VALUES ('070dfda0-3ed2-4362-b2c2-51155b4f4d9d','MAIN');
 INSERT INTO `task_step` VALUES ('88b05c82-1c49-4a10-a221-ee77367ba656','070dfda0-3ed2-4362-b2c2-51155b4f4d9d','73b3b3d7-2074-4113-bb74-14a11b0c1de4',-1,0,0,'log_msg','<function command_type=\"log_msg\"><message input_type=\"text\">Attribute # [[Z]] for Item_02, name = [[get.//Attribute[ [[Z]] ]/Name]], value = [[get.//Attribute[ [[Z]] ]/Value]]</message></function>','Display name value pairs for Item_02',0,0,0,NULL);
