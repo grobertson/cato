@@ -32,7 +32,6 @@ namespace Web
     {
         dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
-		acUI.AppGlobals ag = new acUI.AppGlobals();
 		
         string sSQL = "";
         string sErr = "";

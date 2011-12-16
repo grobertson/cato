@@ -45,7 +45,6 @@
 	top: 37px;
 	bottom: 0px;
 	width: 350px;
-	font-size: 1.2em;
 	z-index: 0;
 	overflow: hidden;
 	background: #f8f8f8;
@@ -233,16 +232,19 @@
 {
 	padding: 5px 4px 0px 1px;
 	height: 60px;
+	font-size: 1.2em;
 }
 .toolbox_tabs_2row
 {
 	padding: 5px 4px 0px 1px;
 	height: 42px;
+	font-size: 1.2em;
 }
 .toolbox_tabs_1row
 {
 	padding: 5px 4px 0px 1px;
 	height: 20px;
+	font-size: 1.2em;
 }
 
 .toolbox_tab

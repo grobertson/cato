@@ -102,15 +102,6 @@ namespace Web.pages
 		
 		        if (!GetMaxVersion(sTaskID, ref sErr)) return false;
 		
-		        //schedules (only if this is default)
-		        if (oTask.IsDefaultVersion)
-		        {
-		            if (!GetSchedule(oTask.OriginalTaskID, ref sErr)) return false;
-		            tab_schedules.Visible = true;
-		        }
-		        else
-		            tab_schedules.Visible = false;
-		
 		        return true;
 		    }
 		    else
@@ -119,37 +110,7 @@ namespace Web.pages
 		
 		    }
         }
-        private bool GetSchedule(string sTaskID, ref string sErr)
-        {
-            return true;
-            //try
-            //{
-            //    string sSQL = "select s.schedule_id, s.schedule_name, s.status from schedule s, schedule_object so " +
-            //                  " where so.object_id = '" + sTaskID + "'" +
-            //                  " and so.schedule_id = s.schedule_id";
-
-
-            //    DataTable dt = new DataTable();
-            //    if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            //    {
-            //        return false;
-            //    }
-
-            //    if (dt.Rows.Count > 0)
-            //    {
-            //        rpSchedules.DataSource = dt;
-            //        rpSchedules.DataBind();
-            //    }
-            //    return true;
-            //}
-            //catch (Exception ex)
-            //{
-            //    sErr = ex.Message;
-            //    return false;
-            //}
-        }
         #region "Steps"
-
         private bool GetSteps(ref string sErr)
         {
             try

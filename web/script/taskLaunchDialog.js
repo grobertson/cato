@@ -92,17 +92,17 @@ $(document).ready(function () {
     $(".datetimepicker").datetimepicker();
     $("#run_now_btn").button({ icons: { primary: "ui-icon-play"} });
     $("#run_now_btn").live("click", function () {
-		if (checkRequiredParams())
+		if (checkRequiredParams() == true)
 	    	LaunchTask();
     });
     $("#run_later_btn").button({ icons: { primary: "ui-icon-seek-next"} });
     $("#run_later_btn").live("click", function () {
-		if (checkRequiredParams())
+		if (checkRequiredParams() == true)
 	    	RunLater();
     });
     $("#run_repeatedly_btn").button({ icons: { primary: "ui-icon-calculator"} });
     $("#run_repeatedly_btn").live("click", function () {
-        if (checkRequiredParams())
+        if (checkRequiredParams() == true)
 	    	RunRepeatedly();
     });
 
@@ -287,36 +287,38 @@ function checkRequiredParams() {
 	//if the encrypted value is required, it will hightlight if blank.
 	//if it was prepopulated by a default, the "********" in the box will count as a value and it will not warn.
 
-	var warn = false;
-	$(".task_launch_parameter_required").each(function(){
-		var has_val = false;
-
-		//lists and single values are the same, a single is just a one item list.
-		$(this).find(".task_launch_parameter_value_input").each(function(i, fld){
-			if ($(fld).val() && $(fld).val() != '')
-				has_val = true;
+	if ($(".task_launch_parameter_required").length > 0) {
+		var warn = false;
+		$(".task_launch_parameter_required").each(function(){
+			var has_val = false;
+	
+			//lists and single values are the same, a single is just a one item list.
+			$(this).find(".task_launch_parameter_value_input").each(function(i, fld){
+				if ($(fld).val() && $(fld).val() != '')
+					has_val = true;
+			});
+	
+			//mark or unmark it
+			if (has_val == true) {
+				$(this).removeClass("ui-state-highlight");
+			} else {
+				$(this).addClass("ui-state-highlight");
+				warn = true;
+			}
 		});
-
-		//mark or unmark it
-		if (has_val)
-		{
-			$(this).removeClass("ui-state-highlight");
-		} else {
-			$(this).addClass("ui-state-highlight");
-			warn = true;
-		}
-	});
-
-	if (warn)
-		if (confirm("Some Parameters have empty values.\n\nWhile Parameters are allowed to be blank, " +
-			" the highlighted ones are required.\n\nClick 'OK' to proceed, or 'Cancel' to update the Parameters."))
-		{
-			//if they selected OK, clear the highlights and proceed
-			$(".task_launch_parameter_required").removeClass("ui-state-highlight");
-			return true;		
-		}
-	else
-		return true;
+	
+		if (warn == true)
+			if (confirm("Some Parameters have empty values.\n\nWhile Parameters are allowed to be blank, " +
+				" the highlighted ones are required.\n\nClick 'OK' to proceed, or 'Cancel' to update the Parameters."))
+			{
+				//if they selected OK, clear the highlights and proceed
+				$(".task_launch_parameter_required").removeClass("ui-state-highlight");
+				return true;		
+			}
+		else
+			return true;
+	} else
+		return true; //there are no parameters
 }
 //get rid of run on, change ecosystemID to "filterbyecosystemid"
 function getParamXML(id, type, eco_id) {

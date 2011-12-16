@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../script/taskedit/taskEditDebug.js"></script>
     <script type="text/javascript" src="../script/objectTag.js"></script>
     <script type="text/javascript" src="../script/registry.js"></script>
+    <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/taskLaunchDialog.js"></script>
     <script type="text/javascript">
         //here because other pages (task edit, print) share the taskView.js file.
@@ -28,7 +29,7 @@
                 <span id="tab_versions" linkto="div_versions" class="ui-state-default ui-corner-top toolbox_tab ui-tabs-selected ui-state-active">
                     Versions&nbsp;</span><span id="tab_parameters" linkto="div_parameters" class="ui-state-default ui-corner-top toolbox_tab"
                         style="padding-left: 6px; padding-right: 6px;">Parameters</span><span id="tab_schedules"
-                            linkto="div_schedules" class="ui-state-default ui-corner-top toolbox_tab" runat="server"
+                            linkto="div_schedules" class="ui-state-default ui-corner-top toolbox_tab" 
                             style="padding-left: 6px; padding-right: 6px;">Schedules</span><span id="tab_debug"
                                 linkto="div_debug" class="ui-state-default ui-corner-top toolbox_tab">Run</span>
                 <!--<span
@@ -44,10 +45,6 @@
                 <span id="show_runlog_link" class="pointer">
                     <img alt="" src="../images/icons/view_text_16.png" />
                     View Most Recent Run Log</span>
-                <br />
-                <span id="show_assets_link" class="pointer">
-                    <img alt="" height="16" width="16" src="../images/manage_asset_24.png" />
-                    View Associated Assets</span>
                 <br />
                 <br />
                 <span class="detail_label">Selected Version:</span>
@@ -112,26 +109,17 @@
                 </div>
             </div>
             <div id="div_schedules" class="toolbox_panel hidden">
-                <asp:UpdatePanel ID="udpSchedule" runat="server" UpdateMode="Conditional">
-                    <ContentTemplate>
-                        <ul>
-                            <asp:Repeater ID="rpSchedules" runat="server">
-                                <ItemTemplate>
-                                    <li class="schedule" id="schedule_<%#(((System.Data.DataRowView)Container.DataItem)["schedule_id"])%>"
-                                        schedule_id="<%#(((System.Data.DataRowView)Container.DataItem)["schedule_id"])%>">
-                                        <div style="text-align: left;">
-                                            <h5>
-                                                <img alt="Schedule" src="../images/icons/1day.png" border="0" />
-                                                <%#(((System.Data.DataRowView)Container.DataItem)["schedule_name"])%>
-                                                -
-                                                <%#(((System.Data.DataRowView)Container.DataItem)["status"])%></h5>
-                                        </div>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </ul>
-                    </ContentTemplate>
-                </asp:UpdatePanel>
+	        	<div class="ui-state-default">        
+					<span class="detail_label">Action Plans</span>
+				</div>
+				<div id="toolbox_plans" class="ui-widget-content">
+                </div>
+				<br />
+				<div class="ui-state-default">
+					<span class="detail_label">Schedules</span>
+				</div>
+                <div id="toolbox_schedules" class="ui-widget-content">
+                </div>
             </div>
         </div>
     </div>

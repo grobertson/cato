@@ -42,12 +42,6 @@ $(document).ready(function () {
         openWindow(url, "TaskRunLog" + g_task_id, "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
 
-    //the show assets report link
-    $("#show_assets_link").click(function () {
-        var url = "taskAssets.aspx?task_id=" + g_task_id;
-        openWindow(url, "taskAssets", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
-    });
-
     //VERSION TOOLBOX
     $("#versions .version").disableSelection();
     //the onclick event of the 'version' elements
