@@ -194,6 +194,13 @@ function doSaveParam() {
         		///the oev is already "packed"
         		if ($(this).attr("dirty")==null && $(this).attr("oev")!=null)
         			val = "oev:" + $(this).attr("oev");
+        			
+        		//if it's dirty, and the value is empty, clear the oev
+        		if ($(this).attr("dirty")==true && val == "")
+        		{
+        			val = "oev:";
+        			$(this).attr("oev", "");
+    			}
         	}
         	
             if (vals == "")

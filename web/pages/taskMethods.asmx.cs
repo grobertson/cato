@@ -3014,7 +3014,7 @@ namespace ACWebMethods
 									// 1) obscure the ENCRYPTED value and make it safe to be an html attribute
 				                    // 2) return some stars so the user will know a value is there.
 									sObscuredValue = "oev=\"" + ui.packJSON(sValue) + "\"";
-									sValue = "";
+									sValue = (string.IsNullOrEmpty(sValue) ? "" : "********");
 								}
 
                                 sValuesHTML += "<div id=\"" + sPID + "\">" +
@@ -3210,7 +3210,7 @@ namespace ACWebMethods
 				if (dc.IsTrue(sEncrypt))
 				{
 					if (sVal.IndexOf("oev:") > -1)
-						sReadyValue = sVal.Replace("oev:", "");
+						sReadyValue = ui.unpackJSON(sVal.Replace("oev:", ""));
 					else
 						sReadyValue = dc.EnCrypt(ui.unpackJSON(sVal));						
 				} else {

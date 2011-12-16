@@ -519,7 +519,14 @@ namespace Web
                 return;
             }
 
-            if (sRole != "Administrator")
+            if (string.IsNullOrEmpty(sRole))
+            {
+                //no rows in the users table
+                lblErrorMessage.Text = "There are no users defined.  Please contact an Administrator.";
+                return;
+            }
+
+			if (sRole != "Administrator")
             {
                 int iAllow = 0;
                 sSQL = "select allow_login from login_security_settings limit 1";
@@ -560,7 +567,7 @@ namespace Web
 			
 			if (string.IsNullOrEmpty(sUserAuthType))
             {
-                lblErrorMessage.Text = "Invalid User Name or Password.";
+                lblErrorMessage.Text = "Invalid User Name or Password.  (Authentication type not defined.)";
                 return;
             }
 
@@ -570,7 +577,7 @@ namespace Web
 
                 //get all of the values from the login_security_settings table
                 DataTable dtLoginSecurity = new DataTable();
-                sSQL = "Select * from login_security_settings where id = 1";
+                sSQL = "select * from login_security_settings where id = 1";
                 if (!dc.sqlGetDataTable(ref dtLoginSecurity, sSQL, ref sErr))
                 {
                     lblErrorMessage.Text = sErr;
