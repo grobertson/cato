@@ -212,6 +212,7 @@ function doGetSteps() {
 			    $("#steps").sortable("destroy");
 			    $("#steps").append(response.d);
 				initSortable();
+				validateStep();
 				$("#codeblock_steps_title").text(codeblock_name);
 			} catch (ex) {
 				showAlert(response.d);
