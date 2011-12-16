@@ -131,6 +131,7 @@
         </table>
         <hr />
     </asp:Panel>
+    <asp:PlaceHolder ID="phSummary" runat="server"></asp:PlaceHolder>
     <asp:PlaceHolder ID="phLog" runat="server"></asp:PlaceHolder>
     <div id="resubmit_dialog" title="Run Task" class="ui-state-highlight">
         <asp:Label ID="lblResubmitMessage" runat="server" />

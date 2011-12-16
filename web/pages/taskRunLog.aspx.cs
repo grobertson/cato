@@ -16,6 +16,11 @@ using System;
 using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.IO;
+using System.Text;
+using System.Xml;
+using System.Xml.Xsl;
+using System.Xml.Linq;
 
 namespace Web.pages
 {
@@ -266,6 +271,12 @@ namespace Web.pages
 
         private void GetLog(string sTaskInstance, string sRows)
         {
+			//OK, here's something weird.
+			//the TE *might* write a row in the log table with some xml content for a "results summary".
+			//we don't wanna hardcode much, so we'll just inspect each log row looking for a flag.
+			//if we find it, we'll hold on to the data until the end and display it nicely instead of the log.
+			string sResultSummary = "";
+			
             try
             {
                 string sErr = "";
@@ -279,9 +290,9 @@ namespace Web.pages
                         sLimitClause = " limit " + sRows;
                 }
 
-                string sSQL = "select til.task_instance, til.entered_dt, til.connection_name, FormatTextToHTML(til.log) as log," +
+                string sSQL = "select til.task_instance, til.entered_dt, til.connection_name, til.log," +
                     " til.step_id, s.step_order, s.function_name, s.function_name as function_label, s.codeblock_name, " +
-                    " FormatTextToHTML(til.command_text) as command_text," +
+                    " til.command_text," +
                     " '' as variable_name,  '' as variable_value, " +
                     " case when length(til.log) > 256 then 1 else 0 end as large_text" +
                     " from task_instance_log til" +
@@ -303,6 +314,17 @@ namespace Web.pages
 
                     foreach (DataRow dr in dt.Rows)
                     {
+						//first, check if this row contains the 'results summary'
+						//this will be indicated by the text "Results Summary" in the *command* field.
+						if (!string.IsNullOrEmpty(dr["command_text"].ToString()))
+						{
+							if (dr["command_text"].ToString() == "result_summary")
+							{
+								sResultSummary = dr["log"].ToString();
+								continue;
+							}
+						}		
+						
                         sThisStepID = dr["step_id"].ToString();
 
 
@@ -345,7 +367,7 @@ namespace Web.pages
                             lt.Text += "    </div>" + Environment.NewLine;
                         }
 
-
+						//detail section
                         lt.Text += "<div class=\"log_detail\">" + Environment.NewLine;
 
                         //it might have a command
@@ -357,7 +379,7 @@ namespace Web.pages
 
                                 //the command text might hold special information we want to display differently
                                 string sCommandText = ParseCommandForFlags(dr["command_text"].ToString());
-                                lt.Text += sCommandText + Environment.NewLine;
+                                lt.Text += ui.SafeHTML(sCommandText) + Environment.NewLine;
                                 lt.Text += "</div>" + Environment.NewLine;
                             }
                         }
@@ -371,29 +393,31 @@ namespace Web.pages
                                 //commented out to save space
                                 //lt.Text += "Results:" + Environment.NewLine;
                                 lt.Text += "    <div class=\"log_results ui-widget-content ui-corner-all\">" + Environment.NewLine;
-                                lt.Text += dr["log"].ToString() + Environment.NewLine;
+                                lt.Text += ui.SafeHTML(dr["log"].ToString()) + Environment.NewLine;
                                 lt.Text += "    </div>" + Environment.NewLine;
                             }
                         }
 
 
+// VARIABLE STUFF IS NOT YET ACTIVE
+//                        //it could be a variable:value entry
+//                        if (!dr["variable_name"].Equals(System.DBNull.Value))
+//                        {
+//                            if (!string.IsNullOrEmpty(dr["variable_name"].ToString().Trim()))
+//                            {
+//                                lt.Text += "Variable:" + Environment.NewLine;
+//                                lt.Text += "<div class=\"log_variable_name ui-widget-content ui-corner-all\">" + Environment.NewLine;
+//                                lt.Text += dr["variable_name"].ToString() + Environment.NewLine;
+//                                lt.Text += "</div>" + Environment.NewLine;
+//                                lt.Text += "Set To:" + Environment.NewLine;
+//                                lt.Text += "<div class=\"log_variable_value ui-widget-content ui-corner-all\">" + Environment.NewLine;
+//                                lt.Text += dr["variable_value"].ToString() + Environment.NewLine;
+//                                lt.Text += "</div>" + Environment.NewLine;
+//                            }
+//                        }
 
-                        //it could be a variable:value entry
-                        if (!dr["variable_name"].Equals(System.DBNull.Value))
-                        {
-                            if (!string.IsNullOrEmpty(dr["variable_name"].ToString().Trim()))
-                            {
-                                lt.Text += "Variable:" + Environment.NewLine;
-                                lt.Text += "<div class=\"log_variable_name ui-widget-content ui-corner-all\">" + Environment.NewLine;
-                                lt.Text += dr["variable_name"].ToString() + Environment.NewLine;
-                                lt.Text += "</div>" + Environment.NewLine;
-                                lt.Text += "Set To:" + Environment.NewLine;
-                                lt.Text += "<div class=\"log_variable_value ui-widget-content ui-corner-all\">" + Environment.NewLine;
-                                lt.Text += dr["variable_value"].ToString() + Environment.NewLine;
-                                lt.Text += "</div>" + Environment.NewLine;
-                            }
-                        }
-                        //end detail
+						
+						//end detail
                         lt.Text += "</div>" + Environment.NewLine;
 
                         sPrevStepID = sThisStepID;
@@ -404,8 +428,53 @@ namespace Web.pages
                     lt.Text += "</ul>" + Environment.NewLine;
 
                     phLog.Controls.Add(lt);
+					
+					try {
+						//almost done... if there is a Result Summary ... display that.
+						if (!string.IsNullOrEmpty(sResultSummary))
+						{
+							//now, are we crazy enough to try an xslt transform?
+							string sXSL = @"<?xml version='1.0'?>
+<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0' >
+<xsl:output method='html' indent='yes' />
+<xsl:template match='/'>
+<xsl:for-each select='//items/item'>
+<div class='result_summary_item_name'>
+<xsl:value-of select='name'/>
+</div>
+<div class='result_summary_item_detail'>
+<xsl:value-of select='detail'/>
+</div>
+</xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>";
+							
+							//using xdocument.parse cleans up and ensures our xml and xsl is valid.
+							XDocument xdSummary = XDocument.Parse(sResultSummary);
+							XDocument xdXSL = XDocument.Parse(sXSL);
+							
+							// Load the style sheet.
+							XslCompiledTransform xslt = new XslCompiledTransform();
+							xslt.Load(xdXSL.CreateReader());
+							
+							StringBuilder sb = new StringBuilder();
+							XmlWriter writer = XmlWriter.Create(sb, xslt.OutputSettings);
+							
+							// Execute the transform and output the results to a writer.
+							xslt.Transform(xdSummary.CreateReader(), writer);
+							
+							Literal ltSummary = new Literal();
+							ltSummary.Text = sb.ToString();  //the string builder is the output of the writer
+							phSummary.Controls.Add(ltSummary);
+							
+						}
+					}
+					catch (Exception ex)
+					{
+						throw ex;
+					}
 
-                    return;
+					return;
                 }
                 else
                 {

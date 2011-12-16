@@ -53,6 +53,8 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Repeater rpOtherInstances;
 		
+		protected System.Web.UI.WebControls.PlaceHolder phSummary;
+		
 		protected System.Web.UI.WebControls.PlaceHolder phLog;
 		
 		protected System.Web.UI.WebControls.Label lblResubmitMessage;

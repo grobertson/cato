@@ -146,6 +146,12 @@
 					<body input_type="text" />
 				</function>
 			</command>
+			<command name="add_summary_item" label="Add Summary Item" description="Adds an item to the Task 'Results Summary' dialog that appears when a Task is completed." help="&lt;b&gt;Add Summary Item &lt;/b&gt;&lt;br&gt;When a Task is complete, a detailed log is available but often it's too detailed.  The 'Results Summary' is a more concise output dialog that will appear instead of the log if any Summary items are defined. This will typically be useful output data from the task. Variable substitution occurs prior to the message insertion into the database." icon="icons/add_summary_item_32.png">
+				<function command_type="add_summary_item">
+					<name label="Item Name" input_type="text" break_after="true" style="display: block;" />
+					<detail input_type="textarea" rows="3" label="Detail" class="w95pct" />
+				</function>
+			</command>
 			<command name="log_msg" label="Log Message" description="Places a message in the logging table." help="&lt;b&gt;Log Message&lt;/b&gt;&lt;br&gt;Use Log Message to place a message in the logging table. This can be informational, for debugging purposes, or for saving error messages. Variable substitution occurs prior to the message insertion into the database." icon="icons/signature_32.png">
 				<function command_type="log_msg">
 					<message input_type="text" />
