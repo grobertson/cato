@@ -3293,6 +3293,16 @@ proc log_msg {command} {
 	del_xml_root
 	insert_audit $::STEP_ID  "" $message ""
 }
+proc add_summary_item {command} {
+	set proc_name add_summary_item
+
+	get_xml_root $command
+	set name [replace_variables_all [$::ROOT selectNodes string(name)]]
+	set detail [replace_variables_all [$::ROOT selectNodes string(detail)]]
+	del_xml_root
+
+	set $::RESULT_SUMMARY "$::RESULT_SUMMARY<item><name>$name</name><detail>$detail</detail><item>"
+}
 
 proc new_connection {connection_system conn_name conn_type {cloud_name ""}} {
 	set proc_name new_connection
@@ -3871,6 +3881,9 @@ proc process_step {step_id task_name} {
 		}
 		"log_msg" {
 			log_msg $command
+		}
+		"add_summary_item" {
+			add_summary_item $command
 		}
 		"http" {
 			http_command $command
@@ -5605,6 +5618,11 @@ proc main_ce {} {
 		update_status Error
 	}
 	release_all
+
+	### might not be the best place/way to do this... but it should be at the end of all step processing
+	insert_audit "" "result_summary" "<result_summary><items>$::RESULT_SUMMARY</items></result_summary>" ""
+
+
 	close_logfile
 	catch {$::db_disconnect $::CONN}
 }
