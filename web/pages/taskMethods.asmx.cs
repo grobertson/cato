@@ -1448,40 +1448,6 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public string wmGetWmiNamespaces()
-        {
-            string sHTML = "";
-            string sNamespace = "";
-            try
-            {
-
-                XDocument xGlobals = XDocument.Load(Server.MapPath("~/pages/luWmiNamespaces.xml"));
-
-                if (xGlobals == null)
-                {
-                    return "";
-                }
-                else
-                {
-
-                    IEnumerable<XElement> xTemplates = xGlobals.XPathSelectElement("namespaces").XPathSelectElements("namespace");
-                    foreach (XElement xEl in xTemplates)
-                    {
-                        sNamespace = xEl.XPathSelectElement("name").Value.ToString();
-                        sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">" + sNamespace + "</div>";
-                    }
-
-                }
-                return sHTML;
-
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        [WebMethod(EnableSession = true)]
         public string wmGetTaskCodeblocks(string sTaskID, string sStepID)
         {
             dataAccess dc = new dataAccess();

@@ -423,54 +423,6 @@ $(document).ready(function () {
 
 //end adding/deleting variables on set_variable AND clear_variable.
 
-// wmi section
-$(document).ready(function () {
-    //the onclick event of 'namespace picker' buttons on selected fields
-    $("#steps .namespace_picker_btn").live("click", function (e) {
-        //hide any open pickers
-        $("div[id$='_picker']").hide();
-        var field = $("#" + $(this).attr("link_to"));
-
-        //first, populate the picker
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods.asmx/wmGetWmiNamespaces",
-            data: '{}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
-                $("#namespace_picker_namespaces").html(retval.d);
-                $("#namespace_picker_namespaces .value_picker_value").hover(
-            function () {
-                $(this).toggleClass("value_picker_value_hover");
-            },
-                function () {
-                    $(this).toggleClass("value_picker_value_hover");
-                }
-            );
-                $("#namespace_picker_namespaces .value_picker_value").click(function () {
-
-                    field.val($(this).text());
-                    field.change();
-                    $("#namespace_picker").slideUp();
-
-                });
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-
-
-        $("#namespace_picker").css({ top: e.clientY, left: e.clientX });
-        $("#namespace_picker").slideDown();
-
-
-    });
-});
-// end wmi section
-
 //FUNCTIONS for adding and removing handles from the Wait For Task command
 $(document).ready(function () {
     $("#steps .fn_wft_add_btn").live("click", function () {

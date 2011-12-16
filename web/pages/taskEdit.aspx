@@ -298,15 +298,6 @@
             No connections have been defined on this Task.
         </div>
     </div>
-    <div id="namespace_picker" class="ui-widget-content ui-corner-all value_picker hidden">
-        <span class="ui-state-default value_picker_title">
-            <img src="../images/icons/connect_no.png" alt="" />
-            Select a Namespace &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <img id="namespace_picker_close_btn" class="pointer" alt="" src="../images/icons/fileclose.png" /></span>
-        <div id="namespace_picker_namespaces">
-            No namespaces have been defined.
-        </div>
-    </div>
     <div id="key_picker" class="ui-widget-content ui-corner-all value_picker hidden">
         <span class="ui-state-default value_picker_title">
             <img src="../images/icons/connect_no.png" alt="" />
