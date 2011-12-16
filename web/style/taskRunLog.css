@@ -9,6 +9,22 @@ textarea
 {
 	width: 90%;
 }
+.result_summary
+{
+	margin: 2px 4px 2px 4px;
+}
+.result_summary_detail
+{
+	padding: 1px 8px 1px 8px;
+}
+.result_summary_item_name
+{
+	font-weight: bold;
+}
+.result_summary_item_detail
+{
+	padding: 1px 8px 1px 8px;
+}
 .instance_header
 {
 	margin: 2px 4px 2px 4px;

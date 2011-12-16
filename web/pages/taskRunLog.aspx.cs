@@ -304,11 +304,11 @@ namespace Web.pages
                 if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
                     ui.RaiseError(Page, sErr, false);
 
-                Literal lt = new Literal();
+				string sLog = "";
 
                 if (dt.Rows.Count > 0)
                 {
-                    lt.Text += "<ul class=\"log\">" + Environment.NewLine;
+                    sLog += "<ul class=\"log\">" + Environment.NewLine;
                     string sThisStepID = "";
                     string sPrevStepID = "";
 
@@ -337,50 +337,50 @@ namespace Web.pages
                             //only if this loop is a different step_id than the last.
                             //but not on the first loop (sPrevStepID = "")
                             if (sPrevStepID != "")
-                                lt.Text += "</li>" + Environment.NewLine;
+                                sLog += "</li>" + Environment.NewLine;
 
                             //new item
-                            lt.Text += "<li class=\"ui-widget-content ui-corner-bottom log_item\">" + Environment.NewLine;
-                            lt.Text += "    <div class=\"log_header ui-state-default ui-widget-header\">" + Environment.NewLine;
+                            sLog += "<li class=\"ui-widget-content ui-corner-bottom log_item\">" + Environment.NewLine;
+                            sLog += "    <div class=\"log_header ui-state-default ui-widget-header\">" + Environment.NewLine;
                             if (!dr["function_label"].Equals(System.DBNull.Value))
                             {
                                 if (!dr["function_label"].Equals(""))
                                 {
                                     if (Convert.ToInt32(dr["step_order"]) > 0)
-                                        lt.Text += "[" + dr["codeblock_name"].ToString() + " - " + dr["function_label"].ToString() + " - Step " + dr["step_order"].ToString() + "]" + Environment.NewLine;
+                                        sLog += "[" + dr["codeblock_name"].ToString() + " - " + dr["function_label"].ToString() + " - Step " + dr["step_order"].ToString() + "]" + Environment.NewLine;
                                     else
-                                        lt.Text += "[Action - " + dr["function_label"].ToString() + Environment.NewLine;
+                                        sLog += "[Action - " + dr["function_label"].ToString() + Environment.NewLine;
                                 }
                             }
 
-                            lt.Text += "At: [" + dr["entered_dt"].ToString() + "]" + Environment.NewLine;
+                            sLog += "At: [" + dr["entered_dt"].ToString() + "]" + Environment.NewLine;
                             if (!dr["connection_name"].Equals(System.DBNull.Value))
                             {
 
                                 if (!dr["connection_name"].Equals(""))
                                 {
-                                    lt.Text += "On Connection: [" + dr["connection_name"].ToString() + "]" + Environment.NewLine;
+                                    sLog += "On Connection: [" + dr["connection_name"].ToString() + "]" + Environment.NewLine;
                                 }
                             }
 
 
-                            lt.Text += "    </div>" + Environment.NewLine;
+                            sLog += "    </div>" + Environment.NewLine;
                         }
 
 						//detail section
-                        lt.Text += "<div class=\"log_detail\">" + Environment.NewLine;
+                        sLog += "<div class=\"log_detail\">" + Environment.NewLine;
 
                         //it might have a command
                         if (!dr["command_text"].Equals(System.DBNull.Value))
                         {
                             if (!string.IsNullOrEmpty(dr["command_text"].ToString().Trim()))
                             {
-                                lt.Text += "<div class=\"log_command ui-widget-content ui-corner-all hidden\">" + Environment.NewLine;
+                                sLog += "<div class=\"log_command ui-widget-content ui-corner-all hidden\">" + Environment.NewLine;
 
                                 //the command text might hold special information we want to display differently
                                 string sCommandText = ParseCommandForFlags(dr["command_text"].ToString());
-                                lt.Text += ui.SafeHTML(sCommandText) + Environment.NewLine;
-                                lt.Text += "</div>" + Environment.NewLine;
+                                sLog += ui.SafeHTML(sCommandText) + Environment.NewLine;
+                                sLog += "</div>" + Environment.NewLine;
                             }
                         }
 
@@ -391,10 +391,10 @@ namespace Web.pages
                             if (!string.IsNullOrEmpty(dr["log"].ToString().Trim()))
                             {
                                 //commented out to save space
-                                //lt.Text += "Results:" + Environment.NewLine;
-                                lt.Text += "    <div class=\"log_results ui-widget-content ui-corner-all\">" + Environment.NewLine;
-                                lt.Text += ui.SafeHTML(dr["log"].ToString()) + Environment.NewLine;
-                                lt.Text += "    </div>" + Environment.NewLine;
+                                //sLog += "Results:" + Environment.NewLine;
+                                sLog += "    <div class=\"log_results ui-widget-content ui-corner-all\">" + Environment.NewLine;
+                                sLog += ui.SafeHTML(dr["log"].ToString()) + Environment.NewLine;
+                                sLog += "    </div>" + Environment.NewLine;
                             }
                         }
 
@@ -405,29 +405,29 @@ namespace Web.pages
 //                        {
 //                            if (!string.IsNullOrEmpty(dr["variable_name"].ToString().Trim()))
 //                            {
-//                                lt.Text += "Variable:" + Environment.NewLine;
-//                                lt.Text += "<div class=\"log_variable_name ui-widget-content ui-corner-all\">" + Environment.NewLine;
-//                                lt.Text += dr["variable_name"].ToString() + Environment.NewLine;
-//                                lt.Text += "</div>" + Environment.NewLine;
-//                                lt.Text += "Set To:" + Environment.NewLine;
-//                                lt.Text += "<div class=\"log_variable_value ui-widget-content ui-corner-all\">" + Environment.NewLine;
-//                                lt.Text += dr["variable_value"].ToString() + Environment.NewLine;
-//                                lt.Text += "</div>" + Environment.NewLine;
+//                                sLog += "Variable:" + Environment.NewLine;
+//                                sLog += "<div class=\"log_variable_name ui-widget-content ui-corner-all\">" + Environment.NewLine;
+//                                sLog += dr["variable_name"].ToString() + Environment.NewLine;
+//                                sLog += "</div>" + Environment.NewLine;
+//                                sLog += "Set To:" + Environment.NewLine;
+//                                sLog += "<div class=\"log_variable_value ui-widget-content ui-corner-all\">" + Environment.NewLine;
+//                                sLog += dr["variable_value"].ToString() + Environment.NewLine;
+//                                sLog += "</div>" + Environment.NewLine;
 //                            }
 //                        }
 
 						
 						//end detail
-                        lt.Text += "</div>" + Environment.NewLine;
+                        sLog += "</div>" + Environment.NewLine;
 
                         sPrevStepID = sThisStepID;
 
                     }
                     //the last one get's closed no matter what
-                    lt.Text += "</li>" + Environment.NewLine;
-                    lt.Text += "</ul>" + Environment.NewLine;
+                    sLog += "</li>" + Environment.NewLine;
+                    sLog += "</ul>" + Environment.NewLine;
 
-                    phLog.Controls.Add(lt);
+                    ltLog.Text = sLog;
 					
 					try {
 						//almost done... if there is a Result Summary ... display that.
@@ -442,7 +442,7 @@ namespace Web.pages
 <div class='result_summary_item_name'>
 <xsl:value-of select='name'/>
 </div>
-<div class='result_summary_item_detail'>
+<div class='result_summary_item_detail ui-widget-content ui-corner-all'>
 <xsl:value-of select='detail'/>
 </div>
 </xsl:for-each>
@@ -463,9 +463,7 @@ namespace Web.pages
 							// Execute the transform and output the results to a writer.
 							xslt.Transform(xdSummary.CreateReader(), writer);
 							
-							Literal ltSummary = new Literal();
 							ltSummary.Text = sb.ToString();  //the string builder is the output of the writer
-							phSummary.Controls.Add(ltSummary);
 							
 						}
 					}

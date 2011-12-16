@@ -131,8 +131,15 @@
         </table>
         <hr />
     </asp:Panel>
-    <asp:PlaceHolder ID="phSummary" runat="server"></asp:PlaceHolder>
-    <asp:PlaceHolder ID="phLog" runat="server"></asp:PlaceHolder>
+	<div class="ui-widget-content ui-corner-all result_summary">
+		<div class="ui-widget-header ui-corner-top result_summary_header">
+			Result Summary
+		</div>
+		<div class="result_summary_detail">
+			<asp:Literal ID="ltSummary" runat="server"></asp:Literal>
+		</div>
+    </div>
+	<asp:Literal ID="ltLog" runat="server"></asp:Literal>
     <div id="resubmit_dialog" title="Run Task" class="ui-state-highlight">
         <asp:Label ID="lblResubmitMessage" runat="server" />
         Are you sure?
