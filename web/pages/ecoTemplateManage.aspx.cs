@@ -46,8 +46,8 @@ namespace Web.pages
 				Dictionary<string, string> dSort = ui.GetUsersSort("ecotemplate");
 				if (dSort != null)
 				{
-					hidSortColumn.Value = dSort["sort_column"];
-					hidSortDirection.Value = dSort["sort_direction"];
+					hidSortColumn.Value = (dSort.ContainsKey("sort_column") ? dSort["sort_column"] : "");
+					hidSortDirection.Value = (dSort.ContainsKey("sort_direction") ? dSort["sort_direction"] : "");
 				}
 
                 BindList();
