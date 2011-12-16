@@ -28,8 +28,8 @@
     <div id="left_panel_te">
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_2row">
-                <span id="tab_schedules" linkto="div_schedules" class="ui-state-default ui-corner-top toolbox_tab"
-                    runat="server">Schedules</span><span id="tab_parameters" linkto="div_parameters"
+                <span id="tab_schedules" linkto="div_schedules" class="ui-state-default ui-corner-top toolbox_tab">Schedules</span><span id="tab_parameters" 
+					linkto="div_parameters"
                         class="ui-state-default ui-corner-top toolbox_tab">Parameters</span><span id="tab_clipboard"
                             linkto="div_clipboard" class="ui-state-default ui-corner-top toolbox_tab" runat="server">Clipboard</span><span
                                 id="tab_debug" linkto="div_debug" class="ui-state-default ui-corner-top toolbox_tab">Run</span><br />
@@ -159,26 +159,17 @@
                 </div>
             </div>
             <div id="div_schedules" class="toolbox_panel hidden">
-                <asp:UpdatePanel ID="udpSchedule" runat="server" UpdateMode="Conditional">
-                    <ContentTemplate>
-                        <ul>
-                            <asp:Repeater ID="rpSchedules" runat="server">
-                                <ItemTemplate>
-                                    <li class="schedule" id="schedule_<%#(((System.Data.DataRowView)Container.DataItem)["schedule_id"])%>"
-                                        schedule_id="<%#(((System.Data.DataRowView)Container.DataItem)["schedule_id"])%>">
-                                        <div style="text-align: left;">
-                                            <h5>
-                                                <img alt="Schedule" src="../images/icons/1day.png" border="0" />
-                                                <%#(((System.Data.DataRowView)Container.DataItem)["schedule_name"])%>
-                                                -
-                                                <%#(((System.Data.DataRowView)Container.DataItem)["status"])%></h5>
-                                        </div>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </ul>
-                    </ContentTemplate>
-                </asp:UpdatePanel>
+	        	<div class="ui-state-default">        
+					<span class="detail_label">Action Plans</span>
+				</div>
+				<div id="toolbox_plans" class="ui-widget-content">
+                </div>
+				<br />
+				<div class="ui-state-default">
+					<span class="detail_label">Schedules</span>
+				</div>
+                <div id="toolbox_schedules" class="ui-widget-content">
+                </div>
             </div>
             <div id="div_clipboard" class="toolbox_panel hidden">
                 <span id="clear_clipboard_btn">Clear All</span>

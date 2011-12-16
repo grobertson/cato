@@ -812,8 +812,8 @@ function getPlans() {
             showAlert(response.responseText);
         }
     });
-
 }
+
 function deleteSchedule(ctl) {
     var schedule_id = $(ctl).parents(".action_schedule").attr("id").replace(/as_/, "");
     var msg = "Are you sure you want to delete this Recurring Action Plan?";

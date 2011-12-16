@@ -69,6 +69,7 @@ function tabWasClicked(tab) {
     } else if (tab == "versions") {
         doGetVersions();
     } else if (tab == "schedules") {
+    	doGetPlans();
     } else if (tab == "registry") {
         GetRegistry($("#ctl00_phDetail_hidOriginalTaskID").val());
     } else if (tab == "tags") {
@@ -77,3 +78,75 @@ function tabWasClicked(tab) {
         doGetClips();
     }
 }
+
+function doGetPlans() {
+    $.ajax({
+        async: true,
+        type: "POST",
+        url: "uiMethods.asmx/wmGetActionPlans",
+        data: '{"sTaskID":"' + g_task_id + '","sActionID":"","sEcosystemID":""}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (retval) {
+        	if (retval.d == "") {
+        		$("#div_schedules #toolbox_plans").html("No Active Plans");
+    		} else {
+            	$("#div_schedules #toolbox_plans").html(retval.d);
+
+			    //click on an action plan in the toolbox pops the dialog AND the inner dialog
+			    $("#div_schedules #toolbox_plans .action_plan_name").click(function () {
+			        var task_name = $("#ctl00_phDetail_lblTaskNameHeader").html() + " - " + $("#ctl00_phDetail_lblVersionHeader").html();
+			        var asset_id = $("#ctl00_phDetail_txtTestAsset").attr("asset_id");
+			
+			        var args = '{"task_id":"' + g_task_id + '", "task_name":"' + task_name + '", "debug_level":"4"}';
+			        ShowTaskLaunchDialog(args);
+
+			        ShowPlanEditDialog(this);
+			    });
+        	}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+    $.ajax({
+        async: true,
+        type: "POST",
+        url: "uiMethods.asmx/wmGetActionSchedules",
+        data: '{"sTaskID":"' + g_task_id + '","sActionID":"","sEcosystemID":""}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (retval) {
+        	if (retval.d == "") {
+        		$("#div_schedules #toolbox_schedules").html("No Active Schedules");
+    		} else {
+	            $("#div_schedules #toolbox_schedules").html(retval.d);
+
+	            //schedule icon tooltips
+	            $("#div_schedules #toolbox_schedules .schedule_tip").tipTip({
+	                defaultPosition: "right",
+	                keepAlive: false,
+	                activation: "hover",
+	                maxWidth: "500px",
+	                fadeIn: 100
+	            });
+	            
+                //click on a schedule in the toolbox - pops the edit dialog and the inner dialog
+				$("#div_schedules #toolbox_schedules .schedule_name").click(function () {
+			        var task_name = $("#ctl00_phDetail_lblTaskNameHeader").html() + " - " + $("#ctl00_phDetail_lblVersionHeader").html();
+			        var asset_id = $("#ctl00_phDetail_txtTestAsset").attr("asset_id");
+			
+			        var args = '{"task_id":"' + g_task_id + '", "task_name":"' + task_name + '", "debug_level":"4"}';
+			        ShowTaskLaunchDialog(args);
+
+				    ShowPlanEditDialog(this);
+				});
+
+			}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+

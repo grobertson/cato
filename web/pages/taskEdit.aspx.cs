@@ -126,16 +126,11 @@ namespace Web.pages
                     lblTaskNameHeader.Text = oTask.Name;
                     lblVersionHeader.Text = oTask.Version + (oTask.IsDefaultVersion ? " (default)" : "");
 					
-					//NSC: WHY?  Why is this just checking to see if it can get the max version, then doing nothing with it?
+					//TODO: this populates the "new" version options on the add version dialog.
+					//the web method could do it when the dialog is popped instead of here.
+					//or this can stay, just call the WM and make it return both values so we can get rid of this
+					//and the identical func in taskView.
                     if (!GetMaxVersion(sTaskID, ref sErr)) return false;
-
-                    //schedules (only if this is default)
-                    if (oTask.IsDefaultVersion)
-                    {
-                        tab_schedules.Visible = true;
-                    }
-                    else
-                        tab_schedules.Visible = false;
 
                     return true;
                 }

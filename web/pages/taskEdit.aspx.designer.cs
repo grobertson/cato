@@ -17,8 +17,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Content cDetail;
 		
-		protected System.Web.UI.HtmlControls.HtmlGenericControl tab_schedules;
-		
 		protected System.Web.UI.HtmlControls.HtmlGenericControl tab_clipboard;
 		
 		protected System.Web.UI.WebControls.TextBox txtTaskCode;
@@ -46,10 +44,6 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.Image debug_view_latest_log;
 		
 		protected System.Web.UI.WebControls.Label lblCurrentStatus;
-		
-		protected System.Web.UI.UpdatePanel udpSchedule;
-		
-		protected System.Web.UI.WebControls.Repeater rpSchedules;
 		
 		protected System.Web.UI.WebControls.PlaceHolder phClipboard;
 		
