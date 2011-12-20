@@ -39,6 +39,12 @@ namespace Globals
 		{
 		}
 		
+		//constructor for a method
+		public apiResponse(string sMethod)
+		{
+			Method = sMethod;
+		}
+		
 		//default constructor
 		public apiResponse(string sMethod, string sResponse, string sErrorCode, string sErrorMessage, string sErrorDetail)
 		{
@@ -64,14 +70,29 @@ namespace Globals
 			// validate the response and error detail as valid XML
 			// OR
 			// escape any offending characters.
-			XDocument x = null;
-			x = XDocument.Parse(this.Response);
-			if (x == null)
-				this.Response = ui.SafeHTML(this.Response);
+			if (!string.IsNullOrEmpty(this.Response))
+			{
+				try {
+					XDocument x = null;
+					x = XDocument.Parse(this.Response);
+					if (x == null)
+						this.Response = ui.SafeHTML(this.Response);			
+				} catch (Exception) {
+					this.Response = ui.SafeHTML(this.Response);
+				}
+			}
 
-			x = XDocument.Parse(this.ErrorDetail);
-			if (x == null)
-				this.ErrorDetail = ui.SafeHTML(this.ErrorDetail);
+			if (!string.IsNullOrEmpty(this.ErrorDetail))
+			{
+				try {
+					XDocument x = null;
+					x = XDocument.Parse(this.ErrorDetail);
+					if (x == null)
+						this.ErrorDetail = ui.SafeHTML(this.ErrorDetail);			
+				} catch (Exception) {
+					this.ErrorDetail = ui.SafeHTML(this.ErrorDetail);
+				}
+			}
 
 			
 			StringBuilder sb = new StringBuilder();
@@ -80,16 +101,36 @@ namespace Globals
 			sb.AppendFormat("<method>{0}</method>", this.Method);
 			sb.AppendFormat("<response>{0}</response>", this.Response);
 			
-			sb.Append("<error>");
-			sb.AppendFormat("<code>{0}</code>", this.ErrorCode);
-			sb.AppendFormat("<message>{0}</message>", this.ErrorMessage);
-			sb.AppendFormat("<detail>{0}</detail>", this.ErrorDetail);
-			sb.Append("</error>");
-
+			if (!string.IsNullOrEmpty(this.ErrorCode))
+			{
+				sb.Append("<error>");
+				sb.AppendFormat("<code>{0}</code>", this.ErrorCode);
+				sb.AppendFormat("<message>{0}</message>", this.ErrorMessage);
+				sb.AppendFormat("<detail>{0}</detail>", this.ErrorDetail);
+				sb.Append("</error>");
+			}
 			sb.Append("</apiResponse>");
 			
 			return sb.ToString();
 
+		}
+	
+
+		//there are some standard responses... so rather than have code everywhere, we'll have class methods for the common ones.
+	
+		//API authentication failure
+		public void CommonResponse(string sErrorCode)
+		{
+			switch (sErrorCode) {
+			case "1004":
+				this.ErrorCode = "1004";
+				this.ErrorMessage = "Authentication Failure";
+				break;
+			default:
+				break;
+			}
+			
+			return;
 		}
 	}
 	#region "Enums"
@@ -1544,7 +1585,6 @@ namespace Globals
 	public class Step
 	{
 		public string ID;
-		public string TaskID;
 		public string Codeblock;
 		public int Order;
 		public string Description;
@@ -1564,10 +1604,11 @@ namespace Globals
 		public StepUserSettings UserSettings; //Step has user settings from the db
 		
 		//constructor from an xElement
-		public Step(XElement xStep, Codeblock c)
+		public Step(XElement xStep, Codeblock c, Task t)
 		{
 			this.ID = Guid.NewGuid().ToString().ToLower();
 			this.Codeblock = c.Name;
+			this.Task = t;
 			
 			//stuff that shouldn't matter from the XML and we need to work out if it's required.
 			this.Order = 0;
@@ -1599,8 +1640,12 @@ namespace Globals
 			{
 				this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
 
-				if (!string.IsNullOrEmpty(this.FunctionXML)) 
+				if (!string.IsNullOrEmpty(this.FunctionXML))
+				{
+					//once parsed, it's cleaner.  update the object with the cleaner xml
 					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+					this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+				}
 			}
 			
 			if (xStep.Element("variable_xml") != null)
@@ -1608,7 +1653,11 @@ namespace Globals
 				this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
 
 				if (!string.IsNullOrEmpty(this.VariableXML)) 
+				{
+					//once parsed, it's cleaner.  update the object with the cleaner xml
 					this.VariableXDoc = XDocument.Parse(this.VariableXML);
+					this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+				}
 			}
 			
 			//this is gonna have to load from the function xml
@@ -1772,10 +1821,27 @@ namespace Globals
 		{
 		}
 
+		//constructor for a new blank task from a few key values
+		public Task(string sTaskName, string sTaskCode, string sTaskDesc)
+		{
+			this.ID = Guid.NewGuid().ToString().ToLower();
+			this.Name = sTaskName;
+			this.Code = sTaskCode;
+			this.Description = sTaskDesc;
+			
+			this.Version = "1.000";
+			this.Status = "Development";
+			this.OriginalTaskID = this.ID;
+			this.IsDefaultVersion = true;
+			
+			//blank new task always gets a MAIN codeblock
+			Codeblock c = new Codeblock("MAIN");
+			this.Codeblocks.Add(c.Name, c);
+		}
+
 		//Constructor, from an XML document
 		public Task(string sTaskXML)
 		{
-		
 			XDocument xTask = XDocument.Parse(sTaskXML);
 			if (xTask != null)
 			{
@@ -1791,13 +1857,13 @@ namespace Globals
 				
 				//this stuff needs discussion for how it would run on a non-local task
 				
-				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "");
-				this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "");
+				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
+				this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
 				this.OriginalTaskID = this.ID;
 				this.IsDefaultVersion = true;
 
-				//this.ConcurrentInstances = xeTask.Attribute("concurrent_instances").ToString();
-				//this.QueueDepth = xeTask.Attribute("queue_depth").ToString();
+				this.ConcurrentInstances = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "");
+				this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
 				//this.UseConnectorSystem = false;
 				
 				
@@ -1812,7 +1878,7 @@ namespace Globals
 					{
 						//steps.
 						foreach (XElement xStep in xCodeblock.XPathSelectElements("//steps/step")) {
-							Step s = new Step(xStep, c);
+							Step s = new Step(xStep, c, this);
 							
 							if (s != null)
 							{
@@ -1975,6 +2041,94 @@ namespace Globals
             {
 				throw ex;
             }
+		}
+		
+		//take this Task and create the database records 
+		public bool DBCreate(ref string sErr)
+		{
+			try
+			{
+                dataAccess dc = new dataAccess();
+                acUI.acUI ui = new acUI.acUI();
+				
+				//if the ID or original_id exists we bail.
+				//if the name or code exists we bail.
+				string sSQL = "select task_id from task " +
+					" where (task_id = '" + this.ID + "' or original_task_id = '" + this.ID + "' or task_code = '" + this.Code + "' or task_name = '" + this.Name + "')";
+	
+				string sValueExists = "";
+				if (!dc.sqlGetSingleString(ref sValueExists, sSQL, ref sErr))
+				{
+					sErr = "Unable to check for existing names." + sErr;
+					return false;
+				}
+				
+				if (sValueExists != "")
+				{
+					sErr = "Another Task with that Code or Name exists, please choose another value.";
+					return false;
+				}
+			
+				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				// all good, save the new user and redirect to the user edit page.
+				sSQL = "insert task" +
+					" (task_id, original_task_id, version, default_version," +
+						" task_name, task_code, task_desc, task_status, created_dt)" +
+						" values " +
+						"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
+						this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
+						"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+				oTrans.Command.CommandText = sSQL;
+				if (!oTrans.ExecUpdate(ref sErr))
+					return false;
+				
+				//now, codeblocks.
+				foreach (Codeblock c in this.Codeblocks.Values) {
+					sSQL = "insert task_codeblock (task_id, codeblock_name)" +
+						" values ('" + this.ID + "', '" + c.Name + "')";
+					oTrans.Command.CommandText = sSQL;
+					if (!oTrans.ExecUpdate(ref sErr))
+						return false;
+									
+					//steps.
+					int iStepOrder = 1;
+					foreach (Step s in c.Steps.Values) {
+						sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
+							" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
+								" function_name, function_xml)" +
+								" values (" +
+								"'" + s.ID + "'," +
+								"'" + s.Task.ID + "'," +
+								(string.IsNullOrEmpty(s.Codeblock) ? "NULL" : "'" + s.Codeblock + "'") + "," +
+								iStepOrder.ToString() + "," +
+								"0,0," + 
+								s.OutputParseType.ToString() + "," + 
+								s.OutputRowDelimiter.ToString() + "," + 
+								s.OutputColumnDelimiter.ToString() + "," +
+								"'" + s.Function.Name + "'," +
+								"'" + s.FunctionXML + "'" +
+								")";
+						oTrans.Command.CommandText = sSQL;
+						if (!oTrans.ExecUpdate(ref sErr))
+							return false;
+						
+						iStepOrder++;
+					}
+				}
+				
+				oTrans.Commit();
+			
+				// add security log
+				ui.WriteObjectAddLog(Globals.acObjectTypes.Task, this.ID, this.Name, "");
+			}
+			catch (Exception ex)
+			{
+				sErr = "Error updating the DB." + ex.Message;
+				return false;
+			}
+			
+			return true;
 		}
 	}
 	public class StepUserSettings

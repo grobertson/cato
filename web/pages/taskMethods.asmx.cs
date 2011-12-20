@@ -1990,91 +1990,35 @@ namespace ACWebMethods
         }
 
 		[WebMethod(EnableSession = true)]
-        public string wmCreateTask(object[] oObj)
+        public string wmCreateTask(string sTaskName, string sTaskCode, string sTaskDesc)
         {
             try
             {
+				acUI.acUI ui = new acUI.acUI();
 
-                dataAccess dc = new dataAccess();
-                acUI.acUI ui = new acUI.acUI();
-                string sSql = null;
-                string sErr = null;
+				string sErr = "";
 
-                // we are passing in 8 elements, if we have 8 go
-                //if (oObj.Length != 8) return "Incorrect list of attributes";
+				//create a new Task object
+				Task t = new Task(ui.unpackJSON(sTaskName), ui.unpackJSON(sTaskCode), ui.unpackJSON(sTaskDesc));
 
-                string sTaskName = oObj[0].ToString().Replace("'", "''").Trim();
-                string sTaskCode = oObj[1].ToString().Replace("'", "''").Trim();
-                string sTaskDesc = oObj[2].ToString().Replace("'", "''").Trim();
-
-                //string sTaskOrder = "";
-
-                //if (oObj.Length > 4)
-                //    sTaskOrder = oObj[4].ToString().Trim();
-
-                // checks that cant be done on the client side
-                // is the name unique?
-                sSql = "select task_id from task " +
-                        " where (task_code = '" + sTaskCode + "' or task_name = '" + sTaskName + "')";
-
-                string sValueExists = "";
-                if (!dc.sqlGetSingleString(ref sValueExists, sSql, ref sErr))
-                {
-                    throw new Exception("Unable to check for existing names." + sErr);
-                }
-
-                if (sValueExists != "")
-                {
-                    return "Another Task with that Code or Name exists, please choose another value.";
-                }
-
-
-                // passed client and server validations, create the user
-                string sNewID = ui.NewGUID();
-
-                try
-                {
-                    dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
-
-                    // all good, save the new user and redirect to the user edit page.
-                    sSql = "insert task" +
-                        " (task_id, original_task_id, version, default_version," +
-                        " task_name, task_code, task_desc, created_dt)" +
-                           " values " +
-                           "('" + sNewID + "', '" + sNewID + "', 1.0000, 1, '" +
-                           sTaskName + "', '" + sTaskCode + "', '" + sTaskDesc + "', now())";
-                    oTrans.Command.CommandText = sSql;
-                    if (!oTrans.ExecUpdate(ref sErr))
-                    {
-                        throw new Exception(sErr);
-                    }
-
-                    // every task gets a MAIN codeblock... period.
-                    sSql = "insert task_codeblock (task_id, codeblock_name)" +
-                           " values ('" + sNewID + "', 'MAIN')";
-                    oTrans.Command.CommandText = sSql;
-                    if (!oTrans.ExecUpdate(ref sErr))
-                    {
-                        throw new Exception(sErr);
-                    }
-
-                    oTrans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error updating the DB." + ex.Message);
-                }
-
-                // add security log
-                ui.WriteObjectAddLog(Globals.acObjectTypes.Task, sNewID, sTaskName, "");
-
-                // success, return the new task_id
-                return "task_id=" + sNewID;
-
+				//commit it
+				if (t.DBCreate(ref sErr))
+				{
+					//success, but was there an error?
+					if (!string.IsNullOrEmpty(sErr))
+						throw new Exception(sErr);
+					
+					return "task_id=" + t.ID;
+				}	
+				else
+				{
+					//failed
+					return sErr;
+				}
             }
             catch (Exception ex)
             {
-                throw new Exception("One or more invalid or missing AJAX arguments." + ex.Message);
+                throw new Exception(ex.Message);
             }
 
         }

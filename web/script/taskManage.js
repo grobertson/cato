@@ -306,62 +306,48 @@ function ExportTasks() {
     });
 }
 
-// Callback function invoked on successful completion of the MS AJAX page method.
-function OnSuccess(result, userContext, methodName) {
-    if (methodName == "wmCreateTask") {
-        if (result.length != 0) {
-            //I don't like this.. evidently an ajax call can only have one return value, a string.
-            //so it might be the success value (my task_id) or it may be an error.
-            //I gotta parse the result to know for sure. Ugh.
-            //so instead of just returning the guid, I'm returning task_id=guid.
-            //that way I can peek in the string for 'task_id' and know I have what I want.
-            if (result.indexOf("task_id") == 0) {
-                location.href = "taskEdit.aspx?" + result;
-            } else {
-                hidePleaseWait();
-                showAlert(result);
-            }
-        } else {
-            hidePleaseWait();
-            showAlert("Error: Task was created, but id was not returned.");
-        }
-    }
-}
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnFailure(error, userContext, methodName) {
-    //alert('failure');
-    if (error !== null) {
-        hidewPleaseWait();
-        showAlert(error.get_message());
-    }
-}
-
-
 function SaveNewTask() {
     var bSave = true;
     var strValidationError = '';
+    
     //some client side validation before we attempt to save
-    var sTaskName = $("[jqname='txtTaskName']").val();
-    var sTaskCode = $("[jqname='txtTaskCode']").val();
-    var sTaskDesc = $("[jqname='txtTaskDesc']").val();
+    var sTaskName = packJSON($("[jqname='txtTaskName']").val());
+    var sTaskCode = packJSON($("[jqname='txtTaskCode']").val());
+    var sTaskDesc = packJSON($("[jqname='txtTaskDesc']").val());
 
     if (bSave != true) {
         showAlert(strValidationError);
         return false;
     }
 
-    // using ajax post send
-    var stuff = new Array();
-    stuff[0] = sTaskName;
-    stuff[1] = sTaskCode;
-    stuff[2] = sTaskDesc;
-
-    if (stuff.length > 0) {
-        //Doing the Microsoft ajax call because the jQuery one doesn't work.
-        ACWebMethods.taskMethods.wmCreateTask(stuff, OnSuccess, OnFailure);
-
-    }
+    $.ajax({
+        type: "POST",
+        url: "taskMethods.asmx/wmCreateTask",
+        data: '{"sTaskName":"' + sTaskName + '","sTaskCode":"' + sTaskCode + '","sTaskDesc":"' + sTaskDesc + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+	        if (msg.d.length != 0) {
+	            //I don't like this.. evidently an ajax call can only have one return value, a string.
+	            //so it might be the success value (my task_id) or it may be an error.
+	            //I gotta parse the result to know for sure. Ugh.
+	            //so instead of just returning the guid, I'm returning task_id=guid.
+	            //that way I can peek in the string for 'task_id' and know I have what I want.
+	            if (msg.d.indexOf("task_id") == 0) {
+	                location.href = "taskEdit.aspx?" + msg.d;
+	            } else {
+	                hidePleaseWait();
+	                showAlert(msg.d);
+	            }
+	        } else {
+	            hidePleaseWait();
+	            showAlert("Error: Task was created, but ID was not returned.");
+	        }
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 
 }
 
