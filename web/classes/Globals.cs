@@ -1640,9 +1640,9 @@ namespace Globals
 			{
 				this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
 
+				//once parsed, it's cleaner.  update the object with the cleaner xml
 				if (!string.IsNullOrEmpty(this.FunctionXML))
 				{
-					//once parsed, it's cleaner.  update the object with the cleaner xml
 					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
 					this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
 				}
@@ -1652,9 +1652,9 @@ namespace Globals
 			{
 				this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
 
+				//once parsed, it's cleaner.  update the object with the cleaner xml
 				if (!string.IsNullOrEmpty(this.VariableXML)) 
 				{
-					//once parsed, it's cleaner.  update the object with the cleaner xml
 					this.VariableXDoc = XDocument.Parse(this.VariableXML);
 					this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
 				}
@@ -1686,10 +1686,18 @@ namespace Globals
 			this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
 			this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
 			
+			//once parsed, it's cleaner.  update the object with the cleaner xml
 			if (!string.IsNullOrEmpty(this.FunctionXML)) 
+			{
 				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+				this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+			}
 			if (!string.IsNullOrEmpty(this.VariableXML)) 
+			{
 				this.VariableXDoc = XDocument.Parse(this.VariableXML);
+				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+			}
+
 			
 			this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
 			
@@ -1772,10 +1780,18 @@ namespace Globals
 			this.FunctionXML = cs.FunctionXML;
 			this.VariableXML = cs.VariableXML;
 			
+			//once parsed, it's cleaner.  update the object with the cleaner xml
 			if (!string.IsNullOrEmpty(this.FunctionXML)) 
-				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-			if (!string.IsNullOrEmpty(this.VariableXML)) 
+			{
 				this.VariableXDoc = XDocument.Parse(this.VariableXML);
+				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+			}
+			if (!string.IsNullOrEmpty(this.VariableXML)) 
+			{
+				this.VariableXDoc = XDocument.Parse(this.VariableXML);
+				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+			}
+
 			
 			this.Function = cs.Function;
 		}
@@ -1803,6 +1819,8 @@ namespace Globals
 		public string Version;
 		public string Status;
 		public string Description;
+		public bool DBExists;
+		public string OnConflict = "cancel";  //the default behavior for all conflicts is to cancel the operation
 		public bool UseConnectorSystem;
 		public bool IsDefaultVersion;
 		public string ConcurrentInstances;
@@ -1849,12 +1867,15 @@ namespace Globals
 				
 				//some of these properties will not be required coming from the XML.
 				
-				//TODO: if there's no ID, make one
-				this.ID = Guid.NewGuid().ToString().ToLower();
+				//if there's no ID we create one
+				this.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
 				this.Name = xeTask.Attribute("name").Value;
 				this.Code = xeTask.Attribute("code").Value;
 				this.Description = xeTask.Element("description").Value;
 				
+				//if there are conflicts when we try to save this Task, what do we do?
+				this.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+
 				//this stuff needs discussion for how it would run on a non-local task
 				
 				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
@@ -1866,7 +1887,13 @@ namespace Globals
 				this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
 				//this.UseConnectorSystem = false;
 				
-				
+				//parameters
+				if (xeTask.Element("parameters") != null)
+				{
+					this.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
+					this.ParameterXML = this.ParameterXDoc.ToString(SaveOptions.DisableFormatting);
+				}
+
 				//now, codeblocks.
 				foreach (XElement xCodeblock in xeTask.XPathSelectElements("//codeblocks/codeblock")) {
 					if (xCodeblock.Attribute("name") == null) 
@@ -2051,39 +2078,122 @@ namespace Globals
                 dataAccess dc = new dataAccess();
                 acUI.acUI ui = new acUI.acUI();
 				
-				//if the ID or original_id exists we bail.
-				//if the name or code exists we bail.
-				string sSQL = "select task_id from task " +
-					" where (task_id = '" + this.ID + "' or original_task_id = '" + this.ID + "' or task_code = '" + this.Code + "' or task_name = '" + this.Name + "')";
+				//task_id is the PK, and task_name+version is a unique index.
+				//so, we check the conflict property, and act accordingly
+				string sSQL = "select task_id from task where task_name = '" + this.Name + "' and version = '" + this.Version + "'";
 	
-				string sValueExists = "";
-				if (!dc.sqlGetSingleString(ref sValueExists, sSQL, ref sErr))
+				string sExistingTaskID = "";
+				if (!dc.sqlGetSingleString(ref sExistingTaskID, sSQL, ref sErr))
 				{
-					sErr = "Unable to check for existing names." + sErr;
+					sErr = "Unable to check for existing Name/Version. " + sErr;
 					return false;
 				}
 				
-				if (sValueExists != "")
+				sSQL = "select count(*) from task where task_id = '" + this.ID + "'";
+	
+				int iIDExists = 0;
+				if (!dc.sqlGetSingleInteger(ref iIDExists, sSQL, ref sErr))
 				{
-					sErr = "Another Task with that Code or Name exists, please choose another value.";
+					sErr = "Unable to check for existing IDs. " + sErr;
 					return false;
 				}
-			
+				
 				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 				
-				// all good, save the new user and redirect to the user edit page.
-				sSQL = "insert task" +
-					" (task_id, original_task_id, version, default_version," +
-						" task_name, task_code, task_desc, task_status, created_dt)" +
-						" values " +
-						"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
-						this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
-						"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
-				oTrans.Command.CommandText = sSQL;
-				if (!oTrans.ExecUpdate(ref sErr))
-					return false;
-				
-				//now, codeblocks.
+				if (iIDExists > 0 || !string.IsNullOrEmpty(sExistingTaskID))
+				{
+					//uh oh... this task exists.  unless told to do so, we stop here.
+					if (this.OnConflict == "cancel") {
+						sErr = "Another Task with that ID or Name/Version exists.  Conflict directive set to 'cancel'.";
+						return false;
+					}
+					else {
+						//ok, what are we supposed to do then?
+						switch (this.OnConflict) {
+						case "replace":
+							//whack it all so we can re-insert
+							//but by name or ID?  which was the conflict?
+							//if it's the ID no problem, the history will be fine.
+							//but if it's the name, we'll need to change our ID here to the ID of the one in the database.
+							
+							//task_id first, means we had a name/version collision we'll just plow and go
+							//but we need to use the ID from the database
+							if (ui.IsGUID(sExistingTaskID))
+							    this.ID = sExistingTaskID;
+							
+							//if the ID existed it doesn't matter, we'll be plowing it anyway.
+							//by "plow" I mean drop and recreate the codeblocks and steps... the task row will be UPDATED
+							
+		                    oTrans.Command.CommandText = "delete from task_step_user_settings" +
+		                        " where step_id in" +
+		                        " (select step_id from task_step where task_id = '" + this.ID + "')";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+		
+		                    oTrans.Command.CommandText = "delete from task_step where task_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+		
+		                    oTrans.Command.CommandText = "delete from task_codeblock where task_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+		
+							//update the task row
+		                    oTrans.Command.CommandText = "update task set" +
+								" version = '" + this.Version + "'," +
+								" task_name = '" + this.Name.Replace("'","") + "'," +
+								" task_code = '" + this.Code.Replace("'","") + "'," +
+								" task_desc = '" + this.Description.Replace("'","") + "'," +
+								" task_status = '" + this.Status + "'," +
+								" default_version = '" + (this.IsDefaultVersion ? 1 : 0) + "'," +
+								" concurrent_instances = '" + this.ConcurrentInstances + "'," +
+								" queue_depth = '" + this.QueueDepth + "'," +
+								" created_dt = now()," +
+								" parameter_xml = " + (string.IsNullOrEmpty(this.ParameterXML) ? "null" : "'" + this.ParameterXML.Replace("'","") + "'") +
+								" where task_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+		
+		                    ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, this.ID, this.Name, "Task Updated");
+
+							break;
+						case "minor":
+							//THIS WILL CALL THE asNewMinorVersion
+							sErr = "Not yet implemented.";
+							return false;
+							//break;
+						case "major":
+							//THIS WILL CALL THE asNewMajorVersion method
+							sErr = "Not yet implemented.";
+							return false;
+							break;//
+						default:
+							//there is no default action... if the on_conflict didn't match we have a problem... bail.
+							sErr = "There is an ID or Name/Version conflict, and the on_conflict directive isn't a valid option. (replace/major/minor/cancel)";
+							return false;
+						}
+					}
+				}
+				else 
+				{
+					//the default action is to ADD the new task row... nothing
+					sSQL = "insert task" +
+						" (task_id, original_task_id, version, default_version," +
+							" task_name, task_code, task_desc, task_status, created_dt)" +
+							" values " +
+							"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
+							this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
+							"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+					oTrans.Command.CommandText = sSQL;
+					if (!oTrans.ExecUpdate(ref sErr))
+						return false;
+					
+					// add security log
+					ui.WriteObjectAddLog(Globals.acObjectTypes.Task, this.ID, this.Name, "");
+				}
+			
+				//by the time we get here, there should for sure be a task row, either new or updated.				
+				//now, codeblocks
 				foreach (Codeblock c in this.Codeblocks.Values) {
 					sSQL = "insert task_codeblock (task_id, codeblock_name)" +
 						" values ('" + this.ID + "', '" + c.Name + "')";
@@ -2091,7 +2201,7 @@ namespace Globals
 					if (!oTrans.ExecUpdate(ref sErr))
 						return false;
 									
-					//steps.
+					//and steps
 					int iStepOrder = 1;
 					foreach (Step s in c.Steps.Values) {
 						sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
@@ -2119,8 +2229,6 @@ namespace Globals
 				
 				oTrans.Commit();
 			
-				// add security log
-				ui.WriteObjectAddLog(Globals.acObjectTypes.Task, this.ID, this.Name, "");
 			}
 			catch (Exception ex)
 			{
