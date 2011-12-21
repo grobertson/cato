@@ -246,23 +246,14 @@ namespace acUI
 			//load the task_commands.xml file into the session.  If it doesn't exist, we can't proceed.
 			try 
 			{
-				XDocument xCommands = XDocument.Load(HttpContext.Current.Server.MapPath("~/pages/luCommands.xml"));
+				//we load two classes here...
+				//first, the category/function hierarchy
+				FunctionCategories cats = FunctionCategories.Load(HttpContext.Current.Server.MapPath("~/pages/luCommands.xml"));
+				SetSessionObject("function_categories", cats, "Security");
 				
-				if (xCommands == null)
-				{
-					sErr = "Task Commands XML file is missing or unreadable.";
-				}
-				else 
-				{
-					//we load two classes here...
-					//first, the category/function hierarchy
-					FunctionCategories cats = new FunctionCategories(xCommands);
-					SetSessionObject("function_categories", cats, "Security");
-
-					//then the flat list of all functions for fastest lookups
-					Functions funcs = new Functions(cats);
-					SetSessionObject("functions", funcs, "Security");
-				}
+				//then the flat list of all functions for fastest lookups
+				Functions funcs = new Functions(cats);
+				SetSessionObject("functions", funcs, "Security");
 			} catch (Exception ex) {
 				sErr = "Unable to load Task Commands XML." + ex.Message;
 			}

@@ -1357,13 +1357,21 @@ namespace Globals
 	//it's useful for spinning categories and functions hierarchically, as when building the command toolbox
 	public class FunctionCategories : Dictionary<string, Category>
 	{
-		//the constructor requires an XDocument
-		public FunctionCategories (XDocument xCategories)
+		//this default constructor - an empty object
+		public FunctionCategories ()
 		{
+		}
+		
+		//class method to load from the disk
+		static public FunctionCategories Load(string sFileName)
+		{
+			XDocument xCategories = XDocument.Load(sFileName);
 			if (xCategories == null) {
 				//crash... we can't do anything if the XML is busted
 				throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
 			} else {
+				
+				FunctionCategories fc = new FunctionCategories();
 				
 				foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
 				{
@@ -1413,8 +1421,9 @@ namespace Globals
 						cat.Functions.Add(fn.Name, fn);
 					}
 				
-					this.Add(cat.Name, cat);
+					fc.Add(cat.Name, cat);
 				}
+				return fc;
 			}
         }
 	}
@@ -1442,6 +1451,11 @@ namespace Globals
 				}
 			}
         }
+		
+		//this default constructor
+		public Functions ()
+		{
+		}
 	}
 	
 	public class Category
@@ -1451,8 +1465,8 @@ namespace Globals
 		public string Description;
 		public string Icon;
 
-		//Product CONTAINS a named dictionary of Function objects;
-		public Dictionary<string, Function> Functions = new Dictionary<string, Function>();
+		//Category CONTAINS a named dictionary of Function objects;
+		public Functions Functions = new Functions();
 }
 	public class Function
 	{
@@ -1464,7 +1478,12 @@ namespace Globals
 		public Category Category; //Function has a parent Category
 		public string TemplateXML;
 		public XDocument TemplateXDoc;
-
+		
+		//blank constructor
+		public Function()
+		{
+		}
+		
 		//constructor by Category object
 		public Function(Category parent)
 		{
@@ -1595,6 +1614,7 @@ namespace Globals
 		public int OutputColumnDelimiter;
 		public string FunctionXML;
 		public string VariableXML;
+		public string FunctionName; //denormalized here from the Function object because sometimes all we need is a name not a full function
 		
 		public XDocument FunctionXDoc;
 		public XDocument VariableXDoc;
@@ -1660,8 +1680,9 @@ namespace Globals
 				}
 			}
 			
-			//this is gonna have to load from the function xml
-			this.Function = Function.GetFunctionByName(this.FunctionXDoc.Element("function").Attribute("command_type").Value);
+			//well for now this method is for the API and xml based task creation, not the gui.
+			//so, the full function object is not required.
+			this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
 		}
 		
 		//constructor from a DataRow
@@ -1783,8 +1804,8 @@ namespace Globals
 			//once parsed, it's cleaner.  update the object with the cleaner xml
 			if (!string.IsNullOrEmpty(this.FunctionXML)) 
 			{
-				this.VariableXDoc = XDocument.Parse(this.VariableXML);
-				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+				this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
 			}
 			if (!string.IsNullOrEmpty(this.VariableXML)) 
 			{
@@ -2154,7 +2175,8 @@ namespace Globals
 		                    if (!oTrans.ExecUpdate(ref sErr))
 		                        throw new Exception(sErr);
 		
-		                    ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, this.ID, this.Name, "Task Updated");
+		                    //need to update this to work without session
+							//ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, this.ID, this.Name, "Task Updated");
 
 							break;
 						case "minor":
@@ -2166,7 +2188,7 @@ namespace Globals
 							//THIS WILL CALL THE asNewMajorVersion method
 							sErr = "Not yet implemented.";
 							return false;
-							break;//
+							//break;
 						default:
 							//there is no default action... if the on_conflict didn't match we have a problem... bail.
 							sErr = "There is an ID or Name/Version conflict, and the on_conflict directive isn't a valid option. (replace/major/minor/cancel)";
@@ -2189,7 +2211,8 @@ namespace Globals
 						return false;
 					
 					// add security log
-					ui.WriteObjectAddLog(Globals.acObjectTypes.Task, this.ID, this.Name, "");
+					//need to update this to work without session
+							//ui.WriteObjectAddLog(Globals.acObjectTypes.Task, this.ID, this.Name, "");
 				}
 			
 				//by the time we get here, there should for sure be a task row, either new or updated.				
@@ -2216,7 +2239,7 @@ namespace Globals
 								s.OutputParseType.ToString() + "," + 
 								s.OutputRowDelimiter.ToString() + "," + 
 								s.OutputColumnDelimiter.ToString() + "," +
-								"'" + s.Function.Name + "'," +
+								"'" + s.FunctionName + "'," +
 								"'" + s.FunctionXML + "'" +
 								")";
 						oTrans.Command.CommandText = sSQL;
