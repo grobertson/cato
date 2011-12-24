@@ -40,6 +40,21 @@ namespace Web
 			// context.Response.ContentType = "image/png";
 			// context.Response.WriteFile("~/Flower1.png");
 			
+			//if we're getting data from a requestor like jQuery ajax, it may be in the inputstream instead of a form
+			//if that's the case, we'll need to do something like this
+			//--untested, but this is the idea.
+			/*
+			System.IO.Stream st = context.Request.InputStream;
+			byte []buf = new byte[100];
+			while (true)
+			{
+				int iRead = st.Read(buf, 0, 100);
+				if ( iRead == 0 )
+				break;
+			}
+			st.Close();
+			*/
+			
 			try 
 			{
 				//xml
