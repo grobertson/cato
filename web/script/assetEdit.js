@@ -59,9 +59,8 @@ $(document).ready(function() {
     //the hook for the 'show log' link
     $("#show_log_link").click(function() {
         var sAssetID = $("#hidCurrentEditID").val();
-        var url = "securityLogView.aspx?type=21&id=" + sAssetID;
+        var url = "securityLogView.aspx?type=2&id=" + sAssetID;
         openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
-
     });
 
     $("#rbShared").live("change", function() {
@@ -72,7 +71,7 @@ $(document).ready(function() {
     });
     
     //what happens when you click a asset row
-    $("[tag='selectablecrd']").live("click", function() {
+    $(".selectablecrd").live("click", function() {
         $("#hidCredentialID").val($(this).parent().attr("credential_id"));
         $('#tblCredentialSelector td').removeClass('row_over'); //unselect them all
         $(this).parent().find('td').addClass("row_over"); //select this one

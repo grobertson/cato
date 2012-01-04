@@ -779,7 +779,7 @@ namespace Web.pages
 
                 foreach (DataRow dr in dt.Rows)
                 {
-                    sb.Append("<tr class='select_credential' credential_id='" + dr["credential_id"].ToString() + "'><td tag='selectablecrd' class='row'>" + dr["username"].ToString() + "</td><td tag='selectablecrd' class='row'>" + dr["domain"].ToString() + "</td><td class='row'>" + dr["shared_cred_desc"].ToString() + "</td></tr>");
+                    sb.Append("<tr class='select_credential' credential_id='" + dr["credential_id"].ToString() + "'><td class='selectablecrd row'>" + dr["username"].ToString() + "</td><td class='selectablecrd row'>" + dr["domain"].ToString() + "</td><td class='selectablecrd row'>" + dr["shared_cred_desc"].ToString() + "</td></tr>");
                 }
 
             }

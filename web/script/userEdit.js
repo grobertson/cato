@@ -52,6 +52,12 @@ $(document).ready(function () {
 
     });
 
+    //the hook for the 'show log' link
+    $("#show_log_link").click(function() {
+        var sID = $("#hidCurrentEditID").val();
+        var url = "securityLogView.aspx?type=1&id=" + sID;
+        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+    });
 
     //buttons
     $("#clear_failed_btn").button({ icons: { primary: "ui-icon-refresh" }, text: false });

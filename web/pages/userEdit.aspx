@@ -234,6 +234,10 @@
                         </tr>
                     </tbody>
                 </table>
+                <br />
+                <span id="show_log_link" class="pointer">
+                <img alt="" src="../images/icons/view_text_16.png" />
+                View Change Log</span>
             </div>
             <!--
             <div id="GroupsTab">
