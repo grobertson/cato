@@ -82,7 +82,7 @@
         <br />
         <div class="ui-widget-content ui-corner-all">
             <div class="ui-widget-header">
-                <span>Current Users</span> <span class="security_log_link" id="show_log_link" class="pointer">
+                <span>Current Users</span> <span class="security_log_link pointer" id="show_log_link">
                     <img alt="" src="../images/icons/view_text_16.png" />
                     View Login History</span>
 			</div>
