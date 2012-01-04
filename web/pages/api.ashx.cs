@@ -161,7 +161,14 @@ namespace Web
 			string sTimestamp = QS["timestamp"];
 			if (string.IsNullOrEmpty(sTimestamp))
 				return false;
-			//url decoded
+			
+			//check the timestamp for timeliness
+			DateTime dtTimestamp = DateTime.Parse(sTimestamp);
+			
+			if (DateTime.UtcNow.Subtract(dtTimestamp).TotalSeconds > 60)
+				return false;
+			
+			//we must re-encode the timestamp, as the signature was created using an encoded timestamp
 			sTimestamp = Uri.EscapeDataString(sTimestamp);
 			
 			//signature is the methodname, key and timestamp, SHA-256 hashed using the password
