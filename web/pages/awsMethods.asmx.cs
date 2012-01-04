@@ -61,33 +61,33 @@ namespace ACWebMethods
 			
 			Cloud c = new Cloud(sCloudID);
 			if (c.ID == null) {
-				return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sCloudID + "].'}";
+				return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud details for Cloud ID [" + sCloudID + "].\"}";
 			}
 			
 			CloudAccount ca = new CloudAccount(sAccountID);
 			if (ca.ID == null) {
-				return "{'result':'fail','error':'Failed to get Cloud Account details for Cloud Account ID [" + sAccountID + "].'}";
+				return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud Account details for Cloud Account ID [" + sAccountID + "].\"}";
 			}
 
 			//get the test cloud object type for this provider
 			CloudObjectType cot = ui.GetCloudObjectType(c.Provider, c.Provider.TestObject);
 			if (cot != null) {
 				if (string.IsNullOrEmpty(cot.ID)) {
-					return "{'result':'fail','error':'Cannot find definition for requested object type [" + c.Provider.TestObject + "].'}";
+					return "{\"result\":\"fail\",\"error\":\"Cannot find definition for requested object type [" + c.Provider.TestObject + "].\"}";
 				}
 			} else {
-				return "{'result':'fail','error':'GetCloudObjectType failed for [" + c.Provider.TestObject + "].'}";
+				return "{\"result\":\"fail\",\"error\":\"GetCloudObjectType failed for [" + c.Provider.TestObject + "].\"}";
 			}
 			
 			string sURL = GetURL(ca, c, cot, null, ref sErr);			
 			if (!string.IsNullOrEmpty(sErr))
-				return "{'result':'fail','error':'" + ui.packJSON(sErr) +"'}";
+				return "{\"result\":\"fail\",\"error\":\"" + ui.packJSON(sErr) +"\"}";
 			
 			string sResult = ui.HTTPGet(sURL, 15000, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
-				return "{'result':'fail','error':'" + ui.packJSON(sErr) + "'}";
+				return "{\"result\":\"fail\",\"error\":\"" + ui.packJSON(sErr) + "\"}";
 
-			return "{'result':'success','response':'" + ui.packJSON(sResult) + "'}";
+			return "{\"result\":\"success\",\"response\":\"" + ui.packJSON(sResult) + "\"}";
 		}
 
         #region "Request Building Methods"

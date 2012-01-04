@@ -203,10 +203,8 @@ function TestConnection() {
     //the field level validation.
     if (cloud_id != "")
     {    
-		
+		ClearTestResult();
 		$("#conn_test_result").text("Testing...");
-		$("#conn_test_error").empty();
-	
 	    
 	    $.ajax({
 	        type: "POST",
@@ -236,6 +234,7 @@ function TestConnection() {
 				catch(err)
 				{
 					alert(err);
+					ClearTestResult();
 				}
 	        },
 	        error: function (response) {
@@ -285,15 +284,19 @@ function LoadEditDialog(editID) {
 	setLabels();	
 	
 	//clear out any test results
-	$("#conn_test_result").css("color","green");
-	$("#conn_test_result").empty();
-	$("#conn_test_error").empty();
-
+	ClearTestResult();
+	
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
     $("#edit_dialog").dialog("option", "title", "Modify Account");
     $("#edit_dialog").dialog('open');
 
+}
+
+function ClearTestResult() {
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
 }
 
 function FillEditForm(sEditID) {
@@ -463,9 +466,7 @@ function ShowItemAdd() {
 	GetProviderClouds();
 
 	//clear out any test results
-	$("#conn_test_result").css("color","green");
-	$("#conn_test_result").empty();
-	$("#conn_test_error").empty();
+	ClearTestResult();
 
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [1] );
