@@ -15,7 +15,7 @@
                         Rows which highlight on mouse-over will display more detailed data when clicked.
                     </p>
                     <p>
-                        To refresh the data select the menu choice again.
+                        To refresh the data select the menu choice again or <a href="" onclick="location.reload();">click here</a>.
                     </p>
                 </div>
             </div>
