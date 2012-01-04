@@ -176,10 +176,15 @@ function GetProviderClouds() {
 
             // all we want here is to loop the clouds
             $("#ddlTestCloud").empty();
-            $.each(provider.Clouds, function(id, c){
-            	var cloud = jQuery.parseJSON(c);               	
+            $.each(provider.Clouds, function(id, cloud){
             	$("#ddlTestCloud").append("<option value=\"" + id + "\">" + cloud.Name + "</option>");
-			});	
+			});
+			
+			//we can't allow testing the connection if there are no clouds
+			if ($("#ddlTestCloud option").length == 0)
+				$("#test_connection_btn").hide();
+            else
+				$("#test_connection_btn").show();
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -323,7 +328,13 @@ function FillEditForm(sEditID) {
                 $.each(account.Clouds, function(id, cloud){
                 	$("#ddlTestCloud").append("<option value=\"" + id + "\">" + cloud.Name + "</option>");
    				});	
-            }
+			
+				//we can't allow testing the connection if there are no clouds
+				if ($("#ddlTestCloud option").length == 0)
+					$("#test_connection_btn").hide();
+	            else
+					$("#test_connection_btn").show();
+			}
         },
         error: function (response) {
             showAlert(response.responseText);

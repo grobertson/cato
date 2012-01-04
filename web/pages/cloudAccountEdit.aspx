@@ -159,13 +159,9 @@
 		                <td>
                             <select id="ddlTestCloud">
                             </select>
-						</td>
-		            </tr>
-					<tr>
-						<td colspan="2" style="text-align: center;">
 							<span id="test_connection_btn">Test Connection</span>
 						</td>
-					</tr>
+		            </tr>
 		             <tr>
 		                <td colspan="2">
 							<div id="conn_test_result" style="margin-top: 10px;"></div>
