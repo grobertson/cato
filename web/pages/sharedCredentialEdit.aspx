@@ -22,13 +22,12 @@
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Administer Shared Credentials screen
+                        <img src="../images/tooltip.png" alt="" />The Manage Shared Credentials screen
                         allows administrators to modify, add and delete credentials that will be shared
-                        across multiple assets.
+                        across multiple Assets.
                     </p>
                     <p>
-                        Select a shared credential from the list or select an action to add or delete the
-                        shared credentials you've selected.
+                        Click a Shared Credential row in the list to edit it, or use the buttons to add or delete Credentials.
                     </p>
                 </div>
             </div>

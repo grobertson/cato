@@ -249,7 +249,7 @@ namespace Web.pages
                     sSql = "update asset_credential set" +
                         " credential_name = '" + sCredentialName + "'," +
                         " username = '" + sUserName + "'," +
-                        " domain = '" + sDomain.Replace("'", "''") + "'," +
+                        " domain = '" + sDomain + "'," +
                         " shared_cred_desc = '" + sCredentialDesc + "'" +
                         sNewPassword +
                         sPriviledgedPasswordUpdate +
@@ -267,11 +267,11 @@ namespace Web.pages
 
                     sSql = "insert into asset_credential (credential_id, credential_name, username, password, domain, shared_cred_desc, shared_or_local, privileged_password)" +
                     " values (" + "'" + ui.NewGUID() + "'," +
-                    "'" + sCredentialName.Replace("'", "''") + "'," +
-                    "'" + sUserName.Replace("'", "''") + "'," +
+                    "'" + sCredentialName + "'," +
+                    "'" + sUserName + "'," +
                     "'" + dc.EnCrypt(sPassword) + "'," +
-                    "'" + sDomain.Replace("'", "''") + "'," +
-                    "'" + sCredentialDesc.Replace("'", "''") + "'," +
+                    "'" + sDomain + "'," +
+                    "'" + sCredentialDesc + "'," +
                     "'0'," + sPrivilegedPasswordUpdate + ")";
                 }
                 oTrans.Command.CommandText = sSql;
