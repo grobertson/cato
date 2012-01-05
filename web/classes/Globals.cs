@@ -1850,7 +1850,6 @@ namespace Globals
 		public bool IsDefaultVersion;
 		public string ConcurrentInstances;
 		public string QueueDepth;
-		public string ParameterXML;
 		public XDocument ParameterXDoc;
 		
 		public int NumberOfApprovedVersions;
@@ -1916,7 +1915,6 @@ namespace Globals
 				if (xeTask.Element("parameters") != null)
 				{
 					this.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
-					this.ParameterXML = this.ParameterXDoc.ToString(SaveOptions.DisableFormatting);
 				}
 
 				//now, codeblocks.
@@ -2185,7 +2183,7 @@ namespace Globals
 								" concurrent_instances = '" + this.ConcurrentInstances + "'," +
 								" queue_depth = '" + this.QueueDepth + "'," +
 								" created_dt = now()," +
-								" parameter_xml = " + (string.IsNullOrEmpty(this.ParameterXML) ? "null" : "'" + this.ParameterXML.Replace("'","") + "'") +
+								" parameter_xml = " + (this.ParameterXDoc != null ? "'" + this.ParameterXDoc.ToString(SaveOptions.DisableFormatting).Replace("'","") + "'" : "null") +
 								" where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
 		                        throw new Exception(sErr);
@@ -2302,8 +2300,7 @@ namespace Globals
 			XElement xCodeblocks = xTask.Element("codeblocks");
 			
 			foreach (Codeblock c in this.Codeblocks.Values) {
-				xCodeblocks.Add(new XElement("codeblock"));
-				XElement xCodeblock = xCodeblocks.Element("codeblock");
+				XElement xCodeblock = new XElement("codeblock");
 				xCodeblock.SetAttributeValue("name", c.Name);
 				
 				//steps
@@ -2311,20 +2308,32 @@ namespace Globals
 				XElement xSteps = xCodeblock.Element("steps");
 
 				foreach (Step s in c.Steps.Values) {
-					xSteps.Add(new XElement("step"));
-					XElement xStep = xSteps.Element("step");
-					
-					xStep.SetAttributeValue("id", s.ID);
-					xStep.SetAttributeValue("output_parse_type", s.OutputParseType);
-					xStep.SetAttributeValue("output_column_delimiter", s.OutputColumnDelimiter);
-					xStep.SetAttributeValue("output_row_delimiter", s.OutputRowDelimiter);
-					xStep.SetAttributeValue("commented", s.Commented);
-
-					xStep.SetElementValue("description", s.Description);
-					
-					xStep.Add(s.FunctionXDoc);
-					xStep.Add(s.VariableXDoc);
+					//if there's no function XML we're not doing anything... this step is busted.
+					if (s.FunctionXDoc != null) {
+						XElement xStep = new XElement("step");
+						
+						xStep.SetAttributeValue("id", s.ID);
+						xStep.SetAttributeValue("output_parse_type", s.OutputParseType);
+						xStep.SetAttributeValue("output_column_delimiter", s.OutputColumnDelimiter);
+						xStep.SetAttributeValue("output_row_delimiter", s.OutputRowDelimiter);
+						xStep.SetAttributeValue("commented", s.Commented);
+						
+						xStep.SetElementValue("description", s.Description);
+						
+						XElement xeFunc = XElement.Parse(s.FunctionXDoc.ToString(SaveOptions.DisableFormatting));
+						xStep.Add(xeFunc);
+						
+						//variables aren't required but might be here.
+						if (s.VariableXDoc != null) {	
+							XElement xeVars = XElement.Parse(s.VariableXDoc.ToString(SaveOptions.DisableFormatting));
+							xStep.Add(xeVars);
+						}
+						
+						xSteps.Add(xStep);
+					}
 				}
+				
+				xCodeblocks.Add(xCodeblock);
 			}
 			
 			
