@@ -33,6 +33,28 @@ function HelloWorld()
 	});
 }
 
+function GetTask()
+{	
+	$("#result").text("");
+
+	var key = "12-34-56-78-90";
+	var task_id = '545b60a5-17e7-4fe0-b28f-7c4722c76544';
+
+	$.ajax({
+		async: false,
+		type: "POST",
+		url: "pages/api.ashx?action=GetTask&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=b3d3e6a85d1a23e1d7b286ce0c8de16dfcfd194ddd936b5913c2efcd437a43f7",
+		data: 'TaskID=' + task_id,
+		dataType: "json",
+		success: function (msg) {
+			$("#result").text(msg.d);
+		},	
+		error: function (response) {
+			$("#result").text(response.responseText);
+		}
+	});
+}
+
 function StopTask()
 {	
 	$("#result").text("");
@@ -174,6 +196,7 @@ function CreateTask()
 	<button onclick="CreateTask()">Create Task</button>
 	<button onclick="RunTask()">Run Task</button>
 	<button onclick="StopTask()">Stop Task</button>
+	<button onclick="GetTask()">Get Task</button>
 	<pre>
 		<div id="result"></div>
 	</pre>

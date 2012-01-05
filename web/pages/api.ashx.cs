@@ -93,6 +93,9 @@ namespace Web
 					case "CreateTask":
 						CreateTask(ref context);
 						break;
+					case "GetTask":
+						GetTask(ref context);
+						break;
 					case "HelloWorld":
 						RESPONSE.Response = "Hello there!";
 						break;
@@ -324,7 +327,25 @@ namespace Web
 				RESPONSE.ErrorDetail = "Unable to stop Task. Missing or invalid Task Instance.";
 			}
         }
-        #endregion
+
+
+        private void GetTask(ref HttpContext context)
+        {
+			string sTaskID = FORM["TaskID"];
+			if (string.IsNullOrEmpty(sTaskID))
+			{
+				RESPONSE.ErrorCode = "3040";
+				RESPONSE.ErrorMessage = "TaskID argument was not provided.";
+				ThrowResponseAndEnd(ref context);
+			}
+
+			string sErr = "";
+			Task t = new Task(sTaskID, false, ref sErr);
+			
+			string sTaskXML = t.AsXML();
+			RESPONSE.Response = sTaskXML;
+        }
+#endregion
 
 		
 		public virtual bool IsReusable {
