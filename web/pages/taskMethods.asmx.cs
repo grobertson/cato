@@ -46,7 +46,7 @@ namespace ACWebMethods
             {
 				string sErr = "";
 				//instantiate the new Task object
-				Task oTask = new Task(sTaskID, ref sErr);
+				Task oTask = new Task(sTaskID, false, ref sErr);
 				if (oTask == null)
                     return "{\"error\" : \"wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr + "\"}";
 
@@ -596,7 +596,7 @@ namespace ACWebMethods
 			try
             {
 				//instantiate the new Task object
-				Task oTask = new Task(sTaskID, ref sErr);
+				Task oTask = new Task(sTaskID, true, ref sErr);
 				
 				if (oTask == null)
                     return "{\"error\" : \"wmGetSteps: Unable to get Task for ID [" + sTaskID + "].\"}";
@@ -1018,9 +1018,13 @@ namespace ACWebMethods
 				{
 	                foreach (ClipboardStep cs in oCSteps.Values)
 					{
+						Function fn = ui.GetTaskFunction(cs.FunctionName);
+						if (fn == null)
+							return "Error building Clip - Unable to get the details for the Command type '" + cs.FunctionName + "'.";
+			
 						string sStepID = cs.ID;
-						string sLabel = cs.Function.Label;
-						string sIcon = cs.Function.Icon;
+						string sLabel = fn.Label;
+						string sIcon = fn.Icon;
 						string sDesc = ui.GetSnip(cs.Description, 75);
 						string sClipDT = cs.ClipDT;
 						
@@ -1044,7 +1048,7 @@ namespace ACWebMethods
 						//that contains the step_id is hardcoded and the node names differ.
 						//and GetSingleStep requires a step_id which must be mined from the XML.
 						//so.... don't show a preview icon for them
-						string sFunction = cs.Function.Name;
+						string sFunction = fn.Name;
 						
 						if (!"loop,exists,if,while".Contains(sFunction))
 						{

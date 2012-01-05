@@ -43,7 +43,7 @@ namespace Web.pages
             sTaskID = ui.GetQuerystringValue("task_id", typeof(string)).ToString();
 
 			//instantiate the new Task object
-			oTask = new Task(sTaskID, ref sErr);
+			oTask = new Task(sTaskID, false, ref sErr);
             
             //details
             if (!GetDetails(ref sErr))

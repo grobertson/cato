@@ -1572,11 +1572,10 @@ namespace Globals
 		public int OutputColumnDelimiter;
 		public string FunctionXML;
 		public string VariableXML;
-
+		public string FunctionName;
+		
 		public XDocument FunctionXDoc;
 		public XDocument VariableXDoc;
-
-		public Function Function; //Step has a parent Function
 
 		public ClipboardStep(DataRow dr)
 		{
@@ -1597,12 +1596,18 @@ namespace Globals
 			if (!string.IsNullOrEmpty(this.VariableXML)) 
 				this.VariableXDoc = XDocument.Parse(this.VariableXML);
 			
-			this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+			//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+			this.FunctionName = dr["function_name"].ToString();
 		}
 	}
 	
 	public class Step
 	{
+		//So, why does the step not have a full Function object associated with it?
+		//easy - the function definitions are in an xml file, and we don't wanna be hitting that every single time we draw a step.
+		//and since many times these objects are instantiated via web methods, we can't use a session like the gui does.
+		//so, it's left to store the function "name" here, and get a function object using that name only when it's necessary.
+		
 		public string ID;
 		public string Codeblock;
 		public int Order;
@@ -1620,7 +1625,6 @@ namespace Globals
 		public XDocument VariableXDoc;
 			
 		public Task Task; // step has a parent task
-		public Function Function; //Step has a parent Function
 		public StepUserSettings UserSettings; //Step has user settings from the db
 		
 		//constructor from an xElement
@@ -1719,8 +1723,8 @@ namespace Globals
 				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
 			}
 
-			
-			this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+			//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+			this.FunctionName = dr["function_name"].ToString();
 			
 			this.UserSettings = new StepUserSettings();
 			this.UserSettings.Visible = (string.IsNullOrEmpty(dr["visible"].ToString()) ? true : (dr["visible"].ToString() == "0" ? false : true));
@@ -1814,7 +1818,7 @@ namespace Globals
 			}
 
 			
-			this.Function = cs.Function;
+			this.FunctionName = cs.FunctionName;
 		}
 	}
 	
@@ -1941,7 +1945,7 @@ namespace Globals
 		}
 
 		//constructor - from the database by ID
-		public Task(string sTaskID, ref string sErr)
+		public Task(string sTaskID, bool IncludeUserSettings, ref string sErr)
 		{
 			try
             {
@@ -2041,21 +2045,32 @@ namespace Globals
 					
 					
 					//GET THE STEPS
-					//we need the userID to get the user settings
-					string sUserID = ui.GetSessionUserID();
-					
-					//NOTE: it may seem like sorting will be an issue, but it shouldn't.
-					//sorting ALL the steps by their ID here will ensure they get added to their respective 
-					// codeblocks in the right order.
-					sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-		                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-		                " us.visible, us.breakpoint, us.skip, us.button" +
-		                " from task_step s" +
-		                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-		                " where s.task_id = '" + sTaskID + "'" +
-		                " order by s.step_order";
-		
-		            DataTable dtSteps = new DataTable();
+					//we need the userID to get the user settings in some cases
+					if (IncludeUserSettings) {
+						string sUserID = ui.GetSessionUserID();
+						
+						//NOTE: it may seem like sorting will be an issue, but it shouldn't.
+						//sorting ALL the steps by their ID here will ensure they get added to their respective 
+						// codeblocks in the right order.
+						sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+			                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+			                " us.visible, us.breakpoint, us.skip, us.button" +
+			                " from task_step s" +
+			                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
+			                " where s.task_id = '" + sTaskID + "'" +
+			                " order by s.step_order";
+					}
+					else
+					{
+						sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+			                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+							" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
+							" from task_step s" +
+			                " where s.task_id = '" + sTaskID + "'" +
+			                " order by s.step_order";
+					}
+
+					DataTable dtSteps = new DataTable();
 		            if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
 		                sErr += "Database Error: " + sErr;
 		
@@ -2261,6 +2276,65 @@ namespace Globals
 			
 			return true;
 		}
+
+		//INSTANCE METHOD - returns the object as XML
+		public string AsXML()
+		{
+			XDocument xd = new XDocument();
+			
+			xd.Add(new XElement("task"));
+			XElement xTask = xd.Element("task");
+			
+			xTask.SetAttributeValue("id", this.ID);
+			xTask.SetAttributeValue("original_id", this.OriginalTaskID);
+			xTask.SetAttributeValue("name", this.Name);
+			xTask.SetAttributeValue("code", this.Code);
+			xTask.SetAttributeValue("status", this.Status);
+			xTask.SetAttributeValue("version", this.Version);
+			xTask.SetAttributeValue("concurrent_instances", this.ConcurrentInstances);
+			xTask.SetAttributeValue("queue_depth", this.QueueDepth);
+			
+			xTask.SetElementValue("description", this.Description);
+			
+			
+			//codeblocks
+			xTask.Add(new XElement("codeblocks"));
+			XElement xCodeblocks = xTask.Element("codeblocks");
+			
+			foreach (Codeblock c in this.Codeblocks.Values) {
+				xCodeblocks.Add(new XElement("codeblock"));
+				XElement xCodeblock = xCodeblocks.Element("codeblock");
+				xCodeblock.SetAttributeValue("name", c.Name);
+				
+				//steps
+				xCodeblock.Add(new XElement("steps"));
+				XElement xSteps = xCodeblock.Element("steps");
+
+				foreach (Step s in c.Steps.Values) {
+					xSteps.Add(new XElement("step"));
+					XElement xStep = xSteps.Element("step");
+					
+					xStep.SetAttributeValue("id", s.ID);
+					xStep.SetAttributeValue("output_parse_type", s.OutputParseType);
+					xStep.SetAttributeValue("output_column_delimiter", s.OutputColumnDelimiter);
+					xStep.SetAttributeValue("output_row_delimiter", s.OutputRowDelimiter);
+					xStep.SetAttributeValue("commented", s.Commented);
+
+					xStep.SetElementValue("description", s.Description);
+					
+					xStep.Add(s.FunctionXDoc);
+					xStep.Add(s.VariableXDoc);
+				}
+			}
+			
+			
+			//parameters should already be an XDocument
+			xd.Add(this.ParameterXDoc);
+
+					
+			return xd.ToString();
+		}
+
 	}
 	public class StepUserSettings
 	{

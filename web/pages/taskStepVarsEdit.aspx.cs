@@ -54,6 +54,10 @@ namespace Web.pages
             string sErr = "";
             Step oStep = ft.GetSingleStep(sStepID, sUserID, ref sErr);
 
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null)
+				throw new Exception("Error - Unable to get the details for the Command type '" + oStep.FunctionName + "'.");
+			
             //we need these on the page
             hidOutputParseType.Value = oStep.OutputParseType.ToString();
             hidRowDelimiter.Value = oStep.OutputRowDelimiter.ToString();
@@ -62,7 +66,7 @@ namespace Web.pages
             //header
             lblTaskName.Text = "[ " + oStep.Task.Name + " ] Version: [ " + oStep.Task.Version + " ]";
             lblCommandName.Text = oStep.Order.ToString() + " : " +
-                oStep.Function.Category.Label + " - " + oStep.Function.Label;
+                fn.Category.Label + " - " + fn.Label;
 
 
             Literal lt = new Literal();

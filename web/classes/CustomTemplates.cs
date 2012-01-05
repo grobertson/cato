@@ -29,7 +29,7 @@ namespace FunctionTemplates
         
         public string GetCustomStepTemplate(Step oStep, ref string sOptionHTML, ref string sVariableHTML)
         {
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
             string sHTML = "";
 
             switch (sFunction.ToLower())
@@ -47,7 +47,7 @@ namespace FunctionTemplates
         }
         public string GetCustomStepTemplate_View(Step oStep, ref string sOptionHTML)
         {
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
             string sHTML = "";
 
             switch (sFunction.ToLower())
@@ -67,7 +67,7 @@ namespace FunctionTemplates
         public string GetEcosystemObjects(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xObjectType = xd.XPathSelectElement("//object_type");

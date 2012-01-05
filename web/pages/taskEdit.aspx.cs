@@ -41,7 +41,7 @@ namespace Web.pages
             //sQSCodeblock = ui.GetQuerystringValue("codeblock_name", typeof(string)).ToString();
 
 			//instantiate the new Task object
-			oTask = new Task(sTaskID, ref sErr);
+			oTask = new Task(sTaskID, true, ref sErr);
 
             if (!Page.IsPostBack)
             {

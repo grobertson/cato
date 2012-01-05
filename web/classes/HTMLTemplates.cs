@@ -52,6 +52,10 @@ namespace FunctionTemplates
         }
         public string DrawFullStep(Step oStep)
         {
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null)
+				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
+			
 			string sStepID = oStep.ID;
 			
             string sExpandedClass = (!oStep.UserSettings.Visible ? "step_collapsed" : "");
@@ -77,11 +81,11 @@ namespace FunctionTemplates
             //(hate this... wish the label was consistent across all step types)
             //hack for initial loading of the step... don't show the order if it's a "-1"... it's making a
             //strange glitch in the browser...you can see it update
-            string sIcon = (string.IsNullOrEmpty(oStep.Function.Icon) ? "" : "../images/" + oStep.Function.Icon);
+            string sIcon = (string.IsNullOrEmpty(fn.Icon) ? "" : "../images/" + fn.Icon);
             string sStepOrder = (oStep.Order == -1 ? "" : oStep.Order.ToString());
             string sLabel = "<img class=\"step_header_function_icon\" src=\"" + sIcon + "\" alt=\"\" />" +
                 "<span class=\"step_order_label\">" + sStepOrder + "</span> : " +
-                oStep.Function.Category.Label + " - " + oStep.Function.Label;
+                fn.Category.Label + " - " + fn.Label;
 
             //show a useful snip in the title bar.
             //notes trump values, and not all commands show a value snip
@@ -146,6 +150,10 @@ namespace FunctionTemplates
         }
         public string DrawEmbeddedStep(Step oStep)
         {
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null)
+				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
+			
 			string sStepID = oStep.ID;
 			
             string sExpandedClass = (!oStep.UserSettings.Visible ? "step_collapsed" : "");
@@ -155,9 +163,9 @@ namespace FunctionTemplates
             string sOptionHTML = "";
 
             //labels are different here than in Full Steps.
-            string sIcon = (string.IsNullOrEmpty(oStep.Function.Icon) ? "" : "../images/" + oStep.Function.Icon);
+            string sIcon = (string.IsNullOrEmpty(fn.Icon) ? "" : "../images/" + fn.Icon);
             string sLabel = "<img class=\"step_header_function_icon\" src=\"" + sIcon + "\" alt=\"\" /> " +
-                oStep.Function.Category.Label + " - " + oStep.Function.Label;
+                fn.Category.Label + " - " + fn.Label;
 
             string sSnip = ui.GetSnip(oStep.Description, 75);
             sLabel += (string.IsNullOrEmpty(oStep.Description) ? "" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[" + sSnip + "]");
@@ -203,6 +211,10 @@ namespace FunctionTemplates
         }
         public string DrawReadOnlyStep(Step oStep, bool bDisplayNotes)
         {
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null)
+				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
+			
 			string sStepID = oStep.ID;
 
             //set this global flag so embedded steps will know what to do
@@ -214,7 +226,7 @@ namespace FunctionTemplates
             string sStepOrder = (oStep.Order == -1 ? "" : oStep.Order.ToString() + ":");
 
             //labels are different here than in Full Steps.
-            string sLabel = sStepOrder + oStep.Function.Category.Label + " - " + oStep.Function.Label;
+            string sLabel = sStepOrder + fn.Category.Label + " - " + fn.Label;
             string sSkipHeaderClass = (oStep.Commented ? "step_header_skip" : "");
             string sSkipStepClass = (oStep.Commented ? "step_skip" : "");
 			
@@ -250,6 +262,10 @@ namespace FunctionTemplates
         }
         public string DrawEmbeddedReadOnlyStep(Step oStep, bool bDisplayNotes)
         {
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null)
+				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
+			
             string sStepID = oStep.ID;
 			
 			//set this global flag so embedded steps will know what to do
@@ -261,7 +277,7 @@ namespace FunctionTemplates
             string sStepOrder = (oStep.Order == -1 ? "" : oStep.Order + ":");
 
             //labels are different here than in Full Steps.
-            string sLabel = sStepOrder + oStep.Function.Category.Label + " - " + oStep.Function.Label;
+            string sLabel = sStepOrder + fn.Category.Label + " - " + fn.Label;
             string sSkipHeaderClass = (oStep.Commented ? "step_header_skip" : "");
             string sSkipStepClass = (oStep.Commented ? "step_skip" : "");
 			
@@ -297,12 +313,16 @@ namespace FunctionTemplates
         }
         public string DrawClipboardStep(ClipboardStep cs, bool bDisplayNotes)
         {
+			Function fn = ui.GetTaskFunction(cs.FunctionName);
+			if (fn == null)
+				return "Error building Step - Unable to get the details for the Command type '" + cs.FunctionName + "'.";
+			
             string sStepID = cs.ID;
 			
             string sMainHTML = "";
             string sOptionHTML = "";
 
-            string sLabel = cs.Function.Category.Label + " - " + cs.Function.Label;
+            string sLabel = fn.Category.Label + " - " + fn.Label;
 
             sMainHTML += "<div class=\"embedded_step\" id=\"" + sStepID + "\">";
             sMainHTML += "<div class=\"view_step\" id=\"" + sStepID + "\">";
@@ -334,6 +354,10 @@ namespace FunctionTemplates
         #region "Edit Templates"
         public string DrawStepCommon(Step oStep, string sOptionHTML, string sVariableHTML)
         {
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null)
+				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
+			
 			string sStepID = oStep.ID;
 			
             //this is the section that is common to all steps.
@@ -391,7 +415,7 @@ namespace FunctionTemplates
             sHTML += "            <div id=\"step_common_detail_" + sStepID + "_help\"" +
                 " class=\"step_common_detail " + (sShowOnLoad == "help" ? "" : "step_common_collapsed") + "\"" +
                 " style=\"height: 200px;\">";
-            sHTML += oStep.Function.Help;
+            sHTML += fn.Help;
             sHTML += "            </div>";
 
             //some steps generate custom options we want in this pane
@@ -425,7 +449,7 @@ namespace FunctionTemplates
         }
         public string GetStepTemplate(Step oStep, ref string sOptionHTML, ref string sVariableHTML)
         {
-            string sFunction = oStep.Function.Name;
+            string sFunction = oStep.FunctionName;
 
             string sHTML = "";
 
@@ -551,7 +575,7 @@ namespace FunctionTemplates
         }
         public string GetValueSnip(Step oStep)
         {
-            string sFunction = oStep.Function.Name;
+            string sFunction = oStep.FunctionName;
             string sSnip = "";
             XDocument xd = oStep.FunctionXDoc;
 
@@ -627,7 +651,7 @@ namespace FunctionTemplates
         public string Transfer(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xFromAsset = xd.XPathSelectElement("//from_asset");
@@ -819,7 +843,7 @@ namespace FunctionTemplates
         public string ReadFile(Step oStep, ref string sVarHTML)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xFileName = xd.XPathSelectElement("//filename");
@@ -863,7 +887,7 @@ namespace FunctionTemplates
         public string ParseText(Step oStep, ref string sVarHTML)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xText = xd.XPathSelectElement("//text");
@@ -893,7 +917,7 @@ namespace FunctionTemplates
         public string SetTaskRegistry(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -927,7 +951,7 @@ namespace FunctionTemplates
         public string SetAssetRegistry(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sAssetID = "";
@@ -1020,7 +1044,7 @@ namespace FunctionTemplates
         public string RunTask(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sOriginalTaskID = "";
@@ -1263,7 +1287,7 @@ namespace FunctionTemplates
         public string End(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xStatus = xd.XPathSelectElement("//status");
@@ -1301,7 +1325,7 @@ namespace FunctionTemplates
         public string ClearVariable(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -1349,7 +1373,7 @@ namespace FunctionTemplates
         public string WaitForTasks(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -1400,7 +1424,7 @@ namespace FunctionTemplates
         public string Exists(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -1484,7 +1508,7 @@ namespace FunctionTemplates
         public string If(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -1595,7 +1619,7 @@ namespace FunctionTemplates
         public string SqlExec(Step oStep, ref string sVarHTML)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             /*TAKE NOTE:
@@ -1725,7 +1749,7 @@ namespace FunctionTemplates
         public string CmdLine(Step oStep, ref string sOptionHTML, ref string sVarHTML)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
 			XElement xCommand = xd.XPathSelectElement("//command");
@@ -1802,7 +1826,7 @@ namespace FunctionTemplates
         public string DOSCmd(Step oStep, ref string sOptionHTML, ref string sVarHTML)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xCommand = xd.XPathSelectElement("//command");
@@ -1868,7 +1892,7 @@ namespace FunctionTemplates
         public string NewConnection(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xAsset = xd.XPathSelectElement("//asset");
@@ -2014,7 +2038,7 @@ namespace FunctionTemplates
         public string DropConnection(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xConnName = xd.XPathSelectElement("//conn_name");
@@ -2038,7 +2062,7 @@ namespace FunctionTemplates
         public string HTTP(Step oStep, ref string sVarHTML)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xType = xd.XPathSelectElement("//type");
@@ -2094,7 +2118,7 @@ namespace FunctionTemplates
         public string Codeblock(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xCB = xd.XPathSelectElement("//codeblock");
@@ -2149,7 +2173,7 @@ namespace FunctionTemplates
         public string Subtask(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sOriginalTaskID = "";
@@ -2290,7 +2314,7 @@ namespace FunctionTemplates
         public string SetDebugLevel(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xDebugLevel = xd.XPathSelectElement("//debug_level");
@@ -2314,7 +2338,7 @@ namespace FunctionTemplates
         public string Sleep(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xSeconds = xd.XPathSelectElement("//seconds");
@@ -2333,7 +2357,7 @@ namespace FunctionTemplates
         public string GetTaskInstance(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xInstance = xd.XPathSelectElement("//instance");
@@ -2358,7 +2382,7 @@ namespace FunctionTemplates
         public string CancelTask(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xTaskInstance = xd.XPathSelectElement("//task_instance");
@@ -2376,7 +2400,7 @@ namespace FunctionTemplates
         public string SetVariable(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -2454,7 +2478,7 @@ namespace FunctionTemplates
         public string Substring(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xVariable = xd.XPathSelectElement("//variable_name");
@@ -2510,7 +2534,7 @@ namespace FunctionTemplates
         public string Loop(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xStart = xd.XPathSelectElement("//start");
@@ -2581,7 +2605,7 @@ namespace FunctionTemplates
         public string While(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xTest = xd.XPathSelectElement("//test");
@@ -2609,7 +2633,7 @@ namespace FunctionTemplates
         public string LogMessage(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xMessage = xd.XPathSelectElement("//message");
@@ -2637,7 +2661,7 @@ namespace FunctionTemplates
         public string Scriptlet(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xLanguage = xd.XPathSelectElement("//language");
@@ -2703,7 +2727,7 @@ namespace FunctionTemplates
         }
         public string GetStepTemplate_View(Step oStep, ref string sOptionHTML)
         {
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
             string sHTML = "";
 
             switch (sFunction.ToLower())
@@ -4011,7 +4035,7 @@ namespace FunctionTemplates
         private string DrawKeyValueSection(Step oStep, bool bShowPicker, bool bShowMaskOption, string sKeyLabel, string sValueLabel)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sElementID = "";
@@ -4581,7 +4605,7 @@ namespace FunctionTemplates
         private string DrawReadOnlyStepFromXMLDocument(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             string sHTML = "";
@@ -4601,7 +4625,7 @@ namespace FunctionTemplates
         private string DrawStepFromXMLDocument(Step oStep)
         {
 			string sStepID = oStep.ID;
-			string sFunction = oStep.Function.Name;
+			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
             /*
