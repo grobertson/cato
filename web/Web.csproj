@@ -55,6 +55,9 @@
     <Reference Include="MySql.Data">
       <HintPath>bin\ext\mysql.data.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>bin\ext\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Default.aspx.cs">
