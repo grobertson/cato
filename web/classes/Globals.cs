@@ -1927,7 +1927,7 @@ namespace Globals
 					if (c != null)
 					{
 						//steps.
-						foreach (XElement xStep in xCodeblock.XPathSelectElements("//steps/step")) {
+						foreach (XElement xStep in xCodeblock.XPathSelectElements("steps/step")) {
 							Step s = new Step(xStep, c, this);
 							
 							if (s != null)
