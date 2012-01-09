@@ -330,7 +330,7 @@ namespace Web
 					RESPONSE.ErrorDetail = "Unable to run Task. Key not provided.";
 				}
 
-				string sInstance = tm.wmRunTask(sUserID, TaskID, EcosystemID, AccountID, AssetID, ParameterXML, iDebugLevel);
+				string sInstance = tm.wmRunTaskByUser(sUserID, TaskID, EcosystemID, AccountID, AssetID, ParameterXML, iDebugLevel);
 				if (!string.IsNullOrEmpty(sInstance))
 				{
 					RESPONSE.Response = "<task_instance>" + sInstance + "</task_instance>";

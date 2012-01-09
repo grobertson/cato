@@ -1233,7 +1233,7 @@ namespace ACWebMethods
             }
         }
 		
-		//OVERLOAD WARNING - one requires a userid the other uses the session
+		//SIMILAR FUNCTION WARNING - one requires a userid the other uses the session
         [WebMethod(EnableSession = true)]
         public string wmRunTask(string sTaskID, string sEcosystemID, string sAccountID, string sAssetID, string sParameterXML, int iDebugLevel)
         {
@@ -1241,8 +1241,8 @@ namespace ACWebMethods
 			string sUserID = ui.GetSessionUserID();
 			return AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel);
         }
-        [WebMethod(EnableSession = true)]
-        public string wmRunTask(string sUserID, string sTaskID, string sEcosystemID, string sAccountID, string sAssetID, string sParameterXML, int iDebugLevel)
+        [WebMethod()]
+        public string wmRunTaskByUser(string sUserID, string sTaskID, string sEcosystemID, string sAccountID, string sAssetID, string sParameterXML, int iDebugLevel)
         {
 			return AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel);
         }
