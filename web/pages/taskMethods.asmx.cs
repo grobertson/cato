@@ -1232,10 +1232,22 @@ namespace ACWebMethods
                 throw ex;
             }
         }
-
+		
+		//OVERLOAD WARNING - one requires a userid the other uses the session
         [WebMethod(EnableSession = true)]
         public string wmRunTask(string sTaskID, string sEcosystemID, string sAccountID, string sAssetID, string sParameterXML, int iDebugLevel)
         {
+            acUI.acUI ui = new acUI.acUI();
+			string sUserID = ui.GetSessionUserID();
+			return AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel);
+        }
+        [WebMethod(EnableSession = true)]
+        public string wmRunTask(string sUserID, string sTaskID, string sEcosystemID, string sAccountID, string sAssetID, string sParameterXML, int iDebugLevel)
+        {
+			return AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel);
+        }
+		
+		private string AddTaskInstance(string sUserID, string sTaskID, string sEcosystemID, string sAccountID, string sAssetID, string sParameterXML, int iDebugLevel) {
             dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
 			uiMethods um = new uiMethods();
@@ -1250,8 +1262,6 @@ namespace ACWebMethods
 
             try
             {
-                string sUserID = ui.GetSessionUserID();
-
                 if (ui.IsGUID(sTaskID) && ui.IsGUID(sUserID))
                 {
 
@@ -1274,7 +1284,7 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    throw new Exception("Unable to run task. Missing or invalid task [" + sTaskID + "] or asset [" + sAssetID + "] id.");
+                    throw new Exception("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.");
                 }
 
             }
@@ -1282,8 +1292,8 @@ namespace ACWebMethods
             {
                 throw ex;
             }
-        }
-
+		}
+		
         [WebMethod(EnableSession = true)]
         public void wmStopTask(string sInstance)
         {

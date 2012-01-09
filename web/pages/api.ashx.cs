@@ -20,6 +20,21 @@ using System.Text;
 using Globals;
 using ACWebMethods;
 
+
+		/*
+		 An example of using JSON.Net to read JSON from a url into an object.
+		 using Newtonsoft.Json;
+		 using Newtonsoft.Json.Linq;
+		 
+		string sJSON = ui.HTTPGetNoFail("https://s3.amazonaws.com/cloudformation-templates-us-east-1/LAMP_Single_Instance.template");
+		if (!string.IsNullOrEmpty(sJSON)) {
+			//ltAnnouncement.Text = sResult;
+			JObject o = JObject.Parse(sJSON);
+			
+			JObject p = (JObject)o["Parameters"];
+		}
+		*/
+
 namespace Web
 {
 	public class api2 : System.Web.IHttpHandler
@@ -85,10 +100,10 @@ namespace Web
 					//this might get big enough to be it's own function
 					switch (sAction) {
 					case "RunTask":
-						//RunTask(ref context);
+						RunTask(ref context);
 						break;
 					case "StopTask":
-						//StopTask(ref context);
+						StopTask(ref context);
 						break;
 					case "CreateTask":
 						CreateTask(ref context);
@@ -100,7 +115,7 @@ namespace Web
 						RESPONSE.Response = "Hello there!";
 						break;
 					default:
-						context.Response.Write("<error>unrecognized action specified</error>");
+						context.Response.Write("<error>Unrecognized action specified.</error>");
 						break;
 					}
 				}
@@ -158,6 +173,9 @@ namespace Web
 			
 			//HACK workaround for testing, a specific key skips the authentication
 			if (sUserID == "12-34-56-78-90")
+				return true;
+			//HACK workaround for testing, the administrator user_id in our test database is allowed as well
+			if (sUserID == "0002bdaf-bfd5-4b9d-82d1-fd39c2947d19")
 				return true;
 			
 			// "timestamp" is a recent timestamp
@@ -224,12 +242,7 @@ namespace Web
         private void CreateTask(ref HttpContext context)
 		{
 			acUI.acUI ui = new acUI.acUI();
-			uiMethods um = new uiMethods();
 			
-			//required arguments from the form post
-			//how to get them??
-			string sParameterXML = "";
-
 			string sTaskXML = FORM["TaskXML"];
 			if (string.IsNullOrEmpty(sTaskXML))
 			{
@@ -243,10 +256,15 @@ namespace Web
 			
 			//we encoded this in javascript before the ajax call.
 			sTaskXML = ui.unpackJSON(sTaskXML).Replace("'", "''");
-			sParameterXML = ui.unpackJSON(sParameterXML).Replace("'", "''");
 			
-			//we gotta peek into the XML and encrypt any "encrypt" flagged values
-			um.PrepareAndEncryptParameterXML(ref sParameterXML);				
+			
+			//TODO: parameter xml will be inside the task xml...
+//			string sParameterXML = ui.unpackJSON(THENODEFROMTHETASK).Replace("'", "''");
+//			
+//			//we gotta peek into the XML and encrypt any "encrypt" flagged values
+//			um.PrepareAndEncryptParameterXML(ref sParameterXML);				
+			
+			
 			
 			//should be easy ... convert the XML into a real task
 			// insert that task into the db
@@ -284,13 +302,35 @@ namespace Web
 			RESPONSE.Response = "<task_id>" + t.ID + "</task_id>";
         }
 
-        private void RunTask(string TaskID, string EcosystemID, string AccountID, string AssetID, string ParameterXML, int DebugLevel)
+        private void RunTask(ref HttpContext context)
         {
 			taskMethods tm = new taskMethods();
 			
+			//string TaskID, string EcosystemID, string AccountID, string AssetID, string ParameterXML, int DebugLevel
+			string TaskID = FORM["TaskID"];
 			if (!string.IsNullOrEmpty(TaskID))
 			{
-				string sInstance = tm.wmRunTask(TaskID, EcosystemID, AccountID, AssetID, ParameterXML, DebugLevel);
+				string EcosystemID = FORM["EcosystemID"];
+				string AccountID = FORM["AccountID"];
+				string AssetID = FORM["AssetID"];
+				string ParameterXML = FORM["ParameterXML"];
+				string sDebugLevel = FORM["DebugLevel"];
+				
+				int iDebugLevel = 4;
+				iDebugLevel = (int.TryParse(sDebugLevel, out iDebugLevel) ? 4 : iDebugLevel);
+				
+				//running a task requires a user... luckily our "key" is a user id.
+				string sUserID = QS["key"];
+				if (string.IsNullOrEmpty(sUserID))
+				{
+					//I really don't see how this could be possible since Authentication would have thrown
+					//it back if there's no key, but why not check anyway? :-)
+					RESPONSE.ErrorCode = "3012";
+					RESPONSE.ErrorMessage = "Run Task Failed";
+					RESPONSE.ErrorDetail = "Unable to run Task. Key not provided.";
+				}
+
+				string sInstance = tm.wmRunTask(sUserID, TaskID, EcosystemID, AccountID, AssetID, ParameterXML, iDebugLevel);
 				if (!string.IsNullOrEmpty(sInstance))
 				{
 					RESPONSE.Response = "<task_instance>" + sInstance + "</task_instance>";
@@ -311,13 +351,14 @@ namespace Web
         }
 
 
-        private void StopTask(string Instance)
+        private void StopTask(ref HttpContext context)
         {
 			taskMethods tm = new taskMethods();
 			
-			if (!string.IsNullOrEmpty(Instance))
+			string sInstance = FORM["Instance"];
+			if (!string.IsNullOrEmpty(sInstance))
 			{
-				tm.wmStopTask(Instance);
+				tm.wmStopTask(sInstance);
 				RESPONSE.Response = "Success";
 			}
 			else
@@ -347,7 +388,7 @@ namespace Web
         }
 #endregion
 
-		
+		//required for the ashx file.	
 		public virtual bool IsReusable {
 			get {
 				return false;

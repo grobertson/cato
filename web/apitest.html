@@ -9,194 +9,165 @@
 			$(document).ready(function () {
 			});
 
-// found this very helpful for generating my test signatures.
-// http://hash.online-convert.com/sha256-generator
-
-function HelloWorld()
-{	
-	$("#result").text("");
-	var key = "12-34-56-78-90"; //0002bdaf-bfd5-4b9d-82d1-fd39c2947d19
-	
-	$.ajax({
-		async: false,
-		type: "POST",
-		url: "pages/api.ashx?action=HelloWorld&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=12f00fdafba39f5e108cf6154d68feaf2000877770fbb2aff14c1cc3ac8508ff",
-		data: '',
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			$("#result").text(msg.d);
-		},	
-		error: function (response) {
-			$("#result").text(response.responseText);
-		}
-	});
-}
-
-function GetTask()
-{	
-	$("#result").text("");
-
-	var key = "12-34-56-78-90";
-	var task_id = '545b60a5-17e7-4fe0-b28f-7c4722c76544';
-
-	$.ajax({
-		async: false,
-		type: "POST",
-		url: "pages/api.ashx?action=GetTask&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=b3d3e6a85d1a23e1d7b286ce0c8de16dfcfd194ddd936b5913c2efcd437a43f7",
-		data: 'TaskID=' + task_id,
-		dataType: "json",
-		success: function (msg) {
-			$("#result").text(msg.d);
-		},	
-		error: function (response) {
-			$("#result").text(response.responseText);
-		}
-	});
-}
-
-function StopTask()
-{	
-	$("#result").text("");
-
-	var task_instance = '2';
-
-	$.ajax({
-		async: false,
-		type: "POST",
-		url: "pages/api.ashx?action=StopTask&key=0002bdaf-bfd5-4b9d-82d1-fd39c2947d19&timestamp=2011-12-20T13%3A58%3A14&signature=b3d3e6a85d1a23e1d7b286ce0c8de16dfcfd194ddd936b5913c2efcd437a43f7",
-		data: '{"Instance":"' + task_instance + '"}',
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			$("#result").text(msg.d);
-		},	
-		error: function (response) {
-			$("#result").text(response.responseText);
-		}
-	});
-}
-
-function RunTask()
-{	
-	$("#result").text("");
-	
-	var task_id = '545b60a5-17e7-4fe0-b28f-7c4722c76544';
-	
-	//parameters can also be provided as an argument to the run task command.
-	//it is not required for parameters provided here to actually be defined on the task - but it's nice for the gui user if you're thorough
-	var parameter_xml = packJSON('<parameters>' +
-	'<parameter required="false" encrypt="false">' +
-	'<name>single</name>' +
-	'<desc />' +
-	'<values present_as="value">' +
-	'<value>woot</value>' +
-	'</values>' +
-	'</parameter>' +
-	'</parameters>');
-
-	$.ajax({
-		async: false,
-		type: "POST",
-		url: "pages/api.ashx?action=RunTask&key=0002bdaf-bfd5-4b9d-82d1-fd39c2947d19&timestamp=2011-12-20T13%3A58%3A14&signature=3c6214ec866b1e0440da9bf81e9f6c06d5ff0418321b08192634d299ee67e982",
-		data: '{"TaskID":"' + task_id + '","AssetID":"","AccountID":"","EcosystemID":"","ParameterXML":"' + parameter_xml + '","DebugLevel":"4"}',
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			$("#result").text(msg.d);
-		},	
-		error: function (response) {
-			$("#result").text(response.responseText);
-		}
-	});
-}
-
-function CreateTask()
-{
-	$("#result").text("");
-
-	//if parameters are provided INSIDE the task xml, they are meant to be saved as part of the task *definition* - ie: 'defaults'.
-
-	var task_xml = packJSON('<task name="xml task test" code="xml-001a" status="Development" on_conflict="replace">' +
-	'<description></description>' +
-	'<codeblocks>' +
-		'<codeblock name="MAIN">' +
-			'<steps>' +
-				'<step>' +
-					'<function command_type="log_msg">' +
-						'<message>het marwan</message>' +
-					'</function>' +
-				'</step>' +
-			'</steps>' +
-		'</codeblock>' +
-	'</codeblocks>' +
-	'<parameters>' +
-  	'<parameter id="p_d59406e6-8f0f-4a06-b89f-6bb12e64d601" required="false" prompt="true" encrypt="false">' +
-    '<name>single</name>' +
-    '<desc>' +
-    '</desc>' +
-    '<values present_as="value">' +
-      '<value id="pv_850cc060-0724-4897-8fe8-bca3d44e9a1f">superv1' +
-      '</value>' +
-    '</values>' +
-  '</parameter>' +
-  '<parameter id="p_f65ec1fa-c903-44b3-bab7-b8d9c49dc24f" required="true" prompt="true" encrypt="false">' +
-    '<name>list</name>' +
-    '<desc>desc</desc>' +
-    '<values present_as="list">' +
-      '<value id="pv_382a1072-f9c3-4484-a043-00b0659f8d24">v1a</value>' +
-      '<value id="pv_784c40a1-574c-4371-a88d-7647bf7d58cb">v2a</value>' +
-    '</values>' +
-  '</parameter>' +
-  '<parameter id="p_b83f4263-e2f4-4722-ae80-cca316f58ea3" required="false" prompt="true" encrypt="false">' +
-    '<name>dd</name>' +
-    '<desc>' +
-    '</desc>' +
-    '<values present_as="dropdown">' +
-      '<value id="pv_32d36747-d571-4e87-8674-1a30f0d37dfd">1q</value>' +
-      '<value id="pv_d68306c0-350e-4d02-a6ea-81de123b18cb">2q</value>' +
-    '</values>' +
-  '</parameter>' +
-  '<parameter id="p_0d7556dd-dc9f-4b4f-a88a-600ce1bd684d" required="true" prompt="true" encrypt="true">' +
-    '<name>enc</name>' +
-    '<desc>' +
-    '</desc>' +
-    '<values present_as="value">' +
-      '<value id="pv_b687ce9d-4dd8-4e22-9c8f-1d7ca8b16856">' +
-      '</value>' +
-    '</values>' +
-  '</parameter>' +
-'</parameters>' +
-'</task>');
-
-	
-	
-	$.ajax({
-		async: false,
-		type: "POST",
-		url: "pages/api.ashx?action=CreateTask&key=0002bdaf-bfd5-4b9d-82d1-fd39c2947d19&timestamp=2011-12-20T13%3A58%3A14&signature=35227d3e20098ccc8c4a87f4b1aa493d153d72ad736c792e193cacc152c34079",
-		data: '{"TaskXML":"' + task_xml + '","ParameterXML":""}',
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			$("#result").text(msg.d);    	
-		},	
-		error: function (response) {
-			$("#result").text(response.responseText);
-		}
-	});
-
-}
+			// found this very helpful for generating my test signatures.
+			// http://hash.online-convert.com/sha256-generator
+			
+			function HelloWorld()
+			{	
+				$("#result").text("");
+				var key = $("#key").val(); //0002bdaf-bfd5-4b9d-82d1-fd39c2947d19
+				
+				$.ajax({
+					async: false,
+					type: "POST",
+					url: "pages/api.ashx?action=HelloWorld&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=12f00fdafba39f5e108cf6154d68feaf2000877770fbb2aff14c1cc3ac8508ff",
+					data: '',
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (msg) {
+						$("#result").text(msg.d);
+					},	
+					error: function (response) {
+						$("#result").text(response.responseText);
+					}
+				});
+			}
+			
+			function GetTask()
+			{	
+				$("#result").text("");
+			
+				var key = $("#key").val();
+				var task_id = $("#get_task_id").val();
+			
+				$.ajax({
+					async: false,
+					type: "POST",
+					url: "pages/api.ashx?action=GetTask&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=b3d3e6a85d1a23e1d7b286ce0c8de16dfcfd194ddd936b5913c2efcd437a43f7",
+					data: 'TaskID=' + task_id,
+					dataType: "json",
+					success: function (msg) {
+						$("#result").text(msg.d);
+					},	
+					error: function (response) {
+						$("#result").text(response.responseText);
+					}
+				});
+			}
+			
+			function StopTask()
+			{	
+				$("#result").text("");
+			
+				var key = $("#key").val();
+				var task_instance =  $("#stop_task_instance").val();
+			
+				$.ajax({
+					async: false,
+					type: "POST",
+					url: "pages/api.ashx?action=StopTask&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=b3d3e6a85d1a23e1d7b286ce0c8de16dfcfd194ddd936b5913c2efcd437a43f7",
+					data: 'Instance=' + task_instance,
+					dataType: "json",
+					success: function (msg) {
+						$("#result").text(msg.d);
+					},	
+					error: function (response) {
+						$("#result").text(response.responseText);
+					}
+				});
+			}
+			
+			function RunTask()
+			{	
+				$("#result").text("");
+			
+				var key = $("#key").val();	
+				var task_id = '545b60a5-17e7-4fe0-b28f-7c4722c76544';
+				
+				//parameters can also be provided as an argument to the run task command.
+				//it is not required for parameters provided here to actually be defined on the task - but it's nice for the gui user if you're thorough
+				var parameter_xml = packJSON('<parameters>' +
+				'<parameter required="false" encrypt="false">' +
+				'<name>single</name>' +
+				'<desc />' +
+				'<values present_as="value">' +
+				'<value>woot</value>' +
+				'</values>' +
+				'</parameter>' +
+				'</parameters>');
+			
+				$.ajax({
+					async: false,
+					type: "POST",
+					url: "pages/api.ashx?action=RunTask&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=3c6214ec866b1e0440da9bf81e9f6c06d5ff0418321b08192634d299ee67e982",
+					data: 'TaskID=' + task_id + '&AssetID=&AccountID=&EcosystemID=&DebugLevel=4&ParameterXML=' + parameter_xml,
+					dataType: "json",
+					success: function (msg) {
+						$("#result").text(msg.d);
+					},	
+					error: function (response) {
+						$("#result").text(response.responseText);
+					}
+				});
+			}
+			
+			function CreateTask()
+			{
+				$("#result").text("");
+			
+				var key = $("#key").val();
+				//any parameters provided INSIDE the task xml are meant to be saved as part of the task *definition* - ie: 'defaults'.
+				var task_xml = packJSON($("#create_task_xml").val());
+				
+				$.ajax({
+					async: false,
+					type: "POST",
+					url: "pages/api.ashx?action=CreateTask&key=" + key + "&timestamp=2011-12-20T13%3A58%3A14&signature=35227d3e20098ccc8c4a87f4b1aa493d153d72ad736c792e193cacc152c34079",
+					data: 'TaskXML=' + task_xml,
+					contentType: "application/json; charset=utf-8",
+					dataType: "json",
+					success: function (msg) {
+						$("#result").text(msg.d);    	
+					},	
+					error: function (response) {
+						$("#result").text(response.responseText);
+					}
+				});
+			
+			}
 
 		</script>
 	</head>
 	<body>
 	This is a test page for the new API functions in Cato.  Currently has hardcoded values for unit testing.
+	<p>
+		This is the KEY passed with all the API calls.
+		<input id="key" type="text" value="12-34-56-78-90" />
+	</p>
+	
 	<button onclick="HelloWorld()">Hello World</button>
-	<button onclick="CreateTask()">Create Task</button>
-	<button onclick="RunTask()">Run Task</button>
-	<button onclick="StopTask()">Stop Task</button>
-	<button onclick="GetTask()">Get Task</button>
+	
+	<p>
+		CREATE TASK<br />
+		Put the task xml in this field:<br />
+		<textarea id="create_task_xml" cols="80" rows="10"></textarea>
+		<br />
+		<button onclick="CreateTask()">Create Task</button>
+	</p>
+
+	<p>
+		STOP TASK<br />
+		Instance: <input id="stop_task_instance" type="text" />
+		<button onclick="StopTask()">Stop Task</button>
+	</p>	
+
+	<p>
+		GET TASK and RUN TASK<br />
+		TaskID: <input id="get_task_id" type="text" value="66d3a971-e756-4164-ac52-92c157cadadb" />
+		<button onclick="GetTask()">Get Task</button>
+		<button onclick="RunTask()">Run Task</button>
+	</p>
+	
 	<pre>
 		<div id="result"></div>
 	</pre>
