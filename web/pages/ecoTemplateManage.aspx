@@ -97,17 +97,58 @@
                         Name
                     </td>
                     <td>
-                        <asp:TextBox ID="txtTemplateName" runat="server" class="usertextbox" Style="width: 300px;"
-                            MaxLength="256" jqname="txtTemplateName"></asp:TextBox>
+                        <asp:TextBox ID="txtTemplateName" runat="server" class="w400px"
+                            MaxLength="256" jqname="txtTemplateName">Wordpress Template</asp:TextBox>
+                    </td>
+                </tr>
+				<tr>
+                     <td>
+                        Description
+                     </td>
+                     <td>
+						<asp:TextBox ID="txtTemplateDesc" runat="server" class="w400px"
+						    jqname="txtTemplateDesc" TextMode="MultiLine">A Wordpress environment on a LAMP stack.</asp:TextBox>
+                     </td>
+                 </tr>
+                <tr>
+                    <td colspan="2">
+                        <hr />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: center;">
+                        <img src="../images/icons/storm_32.png" />
+                    </td>
+                    <td>
+                        <input type="checkbox" /> Use Storm?
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        Description
+                        Storm File
                     </td>
                     <td>
-                        <asp:TextBox ID="txtTemplateDesc" runat="server" class="usertextbox" Style="width: 300px;"
-                            jqname="txtTemplateDesc" TextMode="MultiLine"></asp:TextBox>
+                        <select><option>URL</option></select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                       	URL
+                    </td>
+                    <td>
+                        <textarea class="w400px">http://storm.cloudsidekick.com/examples/wordpress.storm</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <hr />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    </td>
+                    <td style="vertical-align:middle;">
+                        <input type="checkbox" /> Run Storm Now?
                     </td>
                 </tr>
             </tbody>
