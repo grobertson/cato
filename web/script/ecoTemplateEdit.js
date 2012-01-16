@@ -456,8 +456,8 @@ function doActionFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // Change the name in the header
-                    if (column == "action_name") { $(ctl).parents(".action_name_lbl").html(unescape(value)); };
-                    if (column == "category") { $(ctl).parents(".action_category_lbl").html(unescape(value) = " - "); };
+                    if (column == "action_name") { $(ctl).parents().find(".action_name_lbl").html(unpackJSON(value)); };
+                    if (column == "category") { $(ctl).parents().find(".action_category_lbl").html(unpackJSON(value) + " - "); };
                 }
             },
             error: function (response) {
@@ -505,7 +505,7 @@ function doDetailFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // Change the name in the header
-                    if (column == "ecotemplate_name") { $("#ctl00_phDetail_lblEcoTemplateHeader").html(unescape(value)); };
+                    if (column == "ecotemplate_name") { $("#ctl00_phDetail_lblEcoTemplateHeader").html(unpackJSON(value)); };
                 }
             },
             error: function (response) {

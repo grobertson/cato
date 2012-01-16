@@ -1356,7 +1356,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmGetEcosystemObjects(string sEcosystemID)
+        public string wmGetEcosystemObjects(string sEcosystemID)
         {
             dataAccess dc = new dataAccess();
 
@@ -1426,7 +1426,7 @@ namespace ACWebMethods
         }
 
 		[WebMethod(EnableSession = true)]
-        public static string wmGetEcosystemObjectByType(string sEcosystemID, string sType)
+        public string wmGetEcosystemObjectByType(string sEcosystemID, string sType)
         {
 			
             dataAccess dc = new dataAccess();
@@ -1538,7 +1538,7 @@ namespace ACWebMethods
             }
         }
 		//two private functions to support the wmGetEcosystemObjectByType
-        private static string DrawAllEcosystemObjectProperties(DataTable dt, string sObjectID)
+        private string DrawAllEcosystemObjectProperties(DataTable dt, string sObjectID)
         {
             string sHTML = "";
 
@@ -1564,7 +1564,7 @@ namespace ACWebMethods
             else { sHTML += "No data found for " + sObjectID; }
             return sHTML;
         }
-        private static string DrawEcosystemObjectProperty(DataRow dr, string sPropertyName)
+        private string DrawEcosystemObjectProperty(DataRow dr, string sPropertyName)
         {
             string sHTML = "";
             string sValue = (string.IsNullOrEmpty(dr[sPropertyName].ToString()) ? "" : dr[sPropertyName].ToString());
