@@ -307,16 +307,17 @@ function checkRequiredParams() {
 			}
 		});
 	
-		if (warn == true)
-			if (confirm("Some Parameters have empty values.\n\nWhile Parameters are allowed to be blank, " +
-				" the highlighted ones are required.\n\nClick 'OK' to proceed, or 'Cancel' to update the Parameters."))
-			{
+		if (warn == true) {
+			ask = confirm("Some Parameters have empty values.\n\nWhile Parameters are allowed to be blank, " +
+				" the highlighted ones are required.\n\nClick 'OK' to proceed, or 'Cancel' to update the Parameters.")
+			if (ask) {
 				//if they selected OK, clear the highlights and proceed
 				$(".task_launch_parameter_required").removeClass("ui-state-highlight");
 				return true;		
 			}
-		else
+		} else {
 			return true;
+		}
 	} else
 		return true; //there are no parameters
 }

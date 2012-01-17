@@ -28,3 +28,5 @@ web/bin/ICSharpCode.SharpZipLib.dll
 web/temp/*
 
 web/obj/*
+
+services/python/*
