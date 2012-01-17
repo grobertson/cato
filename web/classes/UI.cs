@@ -768,7 +768,7 @@ namespace acUI
         {
             string s = sInput;
 
-            s = s.Replace("\\r\\n", "<br />").Replace("\\r", "<br />").Replace("\\n", "<br />");
+            s = s.Replace("\\n\\r", "<br />").Replace("\\r\\n", "<br />").Replace("\\r", "<br />").Replace("\\n", "<br />");
             s = s.Replace("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 
             return s;
