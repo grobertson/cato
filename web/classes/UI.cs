@@ -766,12 +766,7 @@ namespace acUI
         }
         public string FixBreaks(string sInput)
         {
-            string s = sInput;
-
-            s = s.Replace("\\n\\r", "<br />").Replace("\\r\\n", "<br />").Replace("\\r", "<br />").Replace("\\n", "<br />");
-            s = s.Replace("\\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-
-            return s;
+            return sInput.Replace("\r\n", "<br />").Replace("\r", "<br />").Replace("\n", "<br />").Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
         }
 
         public void RaiseError(Page oPage, string sMsg, bool bLogToDatabase, string sAdditionalInformation = "")

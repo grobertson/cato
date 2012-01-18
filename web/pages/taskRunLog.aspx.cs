@@ -379,7 +379,7 @@ namespace Web.pages
 
                                 //the command text might hold special information we want to display differently
                                 string sCommandText = ParseCommandForFlags(dr["command_text"].ToString());
-                                sLog += ui.SafeHTML(sCommandText) + Environment.NewLine;
+                                sLog += ui.FixBreaks(ui.SafeHTML(sCommandText)) + Environment.NewLine;
                                 sLog += "</div>" + Environment.NewLine;
                             }
                         }
@@ -393,7 +393,7 @@ namespace Web.pages
                                 //commented out to save space
                                 //sLog += "Results:" + Environment.NewLine;
                                 sLog += "    <div class=\"log_results ui-widget-content ui-corner-all\">" + Environment.NewLine;
-                                sLog += ui.SafeHTML(dr["log"].ToString()) + Environment.NewLine;
+                                sLog += ui.FixBreaks(ui.SafeHTML(dr["log"].ToString())) + Environment.NewLine;
                                 sLog += "    </div>" + Environment.NewLine;
                             }
                         }
