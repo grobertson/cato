@@ -13,9 +13,11 @@
     <div id="left_panel_te">
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
-                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">
-                    Details</span><span id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span
-                        id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
+                <span 
+					id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">Details</span><span 
+					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span 
+					id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span
+                    id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
             </div>
             <div id="div_details" class="toolbox_panel">
                 <div style="padding: 0 0 0 5px;">
@@ -36,18 +38,36 @@
                         View Change Log</span>
                 </div>
             </div>
-            <div id="div_tasks" class="toolbox_panel hidden">
-                <span>Search:</span>
-                <input id="task_search_text" />
-                <span id="task_search_btn">Search</span>
-                <div id="task_picker_results">
-                </div>
-            </div>
-            <div id="div_ecosystems" class="toolbox_panel hidden">
-                <span id="ecosystem_create_btn">New Ecosystem</span>
-                <hr />
-                <div id="ecosystem_results">
-                </div>
+			<div id="div_storm" class="toolbox_panel hidden">
+				<div style="padding: 0 0 0 5px;">
+					<img src="../images/icons/storm_32.png" /><span class="detail_label">Storm File</span>
+					<hr />
+					<span class="detail_label">Source:</span>(URL)
+					<br />
+					http://storm.cloudsidekick.com/examples/wordpress.storm
+					<br />
+					<span class="detail_label">Description:</span>
+					desc goes here
+					<br />
+					<span class="detail_label">Parameters:</span>
+				</div>		
+			</div>
+			<div id="div_tasks" class="toolbox_panel hidden">
+			    <div style="padding: 0 0 0 5px;">
+					<span>Search:</span>
+				    <input id="task_search_text" />
+				    <span id="task_search_btn">Search</span>
+				    <div id="task_picker_results">
+				    </div>
+				</div>
+			</div>
+			<div id="div_ecosystems" class="toolbox_panel hidden">
+	           <div style="padding: 0 0 0 5px;">
+					<span id="ecosystem_create_btn">New Ecosystem</span>
+	                <hr />
+	                <div id="ecosystem_results">
+	                </div>
+				</div>
             </div>
         </div>
     </div>
@@ -122,7 +142,7 @@
         <input type="hidden" id="action_parameter_dialog_action_id" />
     </div>
     <div id="ecosystem_add_dialog" class="hidden" title="New Ecosystem">
-        <table id="tblNew" width="100%">
+        <table width="100%">
             <tbody>
                 <tr>
                     <td>

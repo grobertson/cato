@@ -39,6 +39,8 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.TextBox txtTemplateName;
 		
+		protected System.Web.UI.WebControls.TextBox txtTemplateDesc;
+		
 		protected System.Web.UI.WebControls.TextBox txtCopyEcotemplateName;
 	}
 }
