@@ -42,7 +42,10 @@ namespace Web.pages
 
 			//instantiate the new Task object
 			oTask = new Task(sTaskID, true, ref sErr);
-
+			if (oTask == null)
+				ui.RaiseError(Page, "Unable to continue.  Unable to build Task object" + sErr, true, "");
+                    return;
+			
             if (!Page.IsPostBack)
             {
 				hidTaskID.Value = sTaskID;
