@@ -605,45 +605,6 @@ CREATE TABLE `user_session` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `tv_application_registry` (
-  `id` bigint(20),
-  `app_name` varchar(255),
-  `app_instance` varchar(255),
-  `master` tinyint(1),
-  `heartbeat` datetime,
-  `last_processed_dt` datetime,
-  `logfile_name` varchar(255),
-  `load_value` decimal(18,3),
-  `hostname` varchar(255),
-  `userid` varchar(255),
-  `pid` int(11),
-  `executible_path` varchar(1024),
-  `command_line` varchar(255),
-  `platform` varchar(255)
-) ENGINE=InnoDB */;
-SET character_set_client = @saved_cs_client;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `tv_task_instance` (
-  `task_instance` bigint(20),
-  `task_id` varchar(36),
-  `task_status` varchar(16),
-  `debug_level` int(11),
-  `asset_id` varchar(36),
-  `submitted_by` varchar(36),
-  `submitted_dt` datetime,
-  `started_dt` datetime,
-  `completed_dt` datetime,
-  `schedule_instance` bigint(20),
-  `ce_node` int(11),
-  `pid` int(11),
-  `group_name` varchar(32),
-  `submitted_by_instance` bigint(20),
-  `ecosystem_id` varchar(36),
-  `account_id` varchar(36)
-) ENGINE=InnoDB */;
-SET character_set_client = @saved_cs_client;
-/*!50001 DROP TABLE IF EXISTS `tv_application_registry`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
@@ -653,10 +614,6 @@ SET character_set_client = @saved_cs_client;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER= CURRENT_USER SQL SECURITY DEFINER */
 /*!50001 VIEW `tv_application_registry` AS select `application_registry`.`id` AS `id`,`application_registry`.`app_name` AS `app_name`,`application_registry`.`app_instance` AS `app_instance`,`application_registry`.`master` AS `master`,`application_registry`.`heartbeat` AS `heartbeat`,`application_registry`.`last_processed_dt` AS `last_processed_dt`,`application_registry`.`logfile_name` AS `logfile_name`,`application_registry`.`load_value` AS `load_value`,`application_registry`.`hostname` AS `hostname`,`application_registry`.`userid` AS `userid`,`application_registry`.`pid` AS `pid`,`application_registry`.`executible_path` AS `executible_path`,`application_registry`.`command_line` AS `command_line`,`application_registry`.`platform` AS `platform` from `application_registry` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-/*!50001 DROP TABLE IF EXISTS `tv_task_instance`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;

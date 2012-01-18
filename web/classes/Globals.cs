@@ -1907,7 +1907,7 @@ namespace Globals
 				this.OriginalTaskID = this.ID;
 				this.IsDefaultVersion = true;
 
-				this.ConcurrentInstances = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "");
+				this.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
 				this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
 				//this.UseConnectorSystem = false;
 				
