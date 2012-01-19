@@ -870,6 +870,12 @@ namespace acUI
 		    }
 		}
 				
+		//a wrapper around the IsTrue function in the DataClass for pages that don't include the DataClass
+		public bool IsTrue(object o)
+		{
+			return dc.IsTrue(o);
+		}
+		
 		//Get data via HTTP
 		public string HTTPGet(string sURL, int iTimeout, ref string sErr)
 		{
