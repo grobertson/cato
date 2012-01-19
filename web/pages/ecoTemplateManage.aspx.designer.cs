@@ -37,10 +37,6 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Button btnGetPage;
 		
-		protected System.Web.UI.WebControls.TextBox txtTemplateName;
-		
-		protected System.Web.UI.WebControls.TextBox txtTemplateDesc;
-		
-		protected System.Web.UI.WebControls.TextBox txtCopyEcotemplateName;
+		protected System.Web.UI.WebControls.Panel pnlStormDialog;
 	}
 }

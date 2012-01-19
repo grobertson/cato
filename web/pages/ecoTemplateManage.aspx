@@ -97,8 +97,7 @@
                         Name
                     </td>
                     <td>
-                        <asp:TextBox ID="txtTemplateName" runat="server" class="w400px"
-                            MaxLength="256" jqname="txtTemplateName">Wordpress Template</asp:TextBox>
+                        <input type="text" id="txtTemplateName" class="w400px" />
                     </td>
                 </tr>
 				<tr>
@@ -106,10 +105,10 @@
                         Description
                      </td>
                      <td>
-						<asp:TextBox ID="txtTemplateDesc" runat="server" class="w400px"
-						    jqname="txtTemplateDesc" TextMode="MultiLine">A Wordpress environment on a LAMP stack.</asp:TextBox>
+						<input type="text" id="txtTemplateDesc" class="w400px" />
                      </td>
                  </tr>
+				<asp:Panel id="pnlStormDialog" runat="server">
                 <tr>
                     <td colspan="2">
                         <hr />
@@ -120,23 +119,20 @@
                         <img src="../images/icons/storm_32.png" />
                     </td>
                     <td>
-                        <input type="checkbox" /> Use Storm?
+                        Storm
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        Storm File
+                        Storm File Source
                     </td>
                     <td>
-                        <select><option>URL</option></select>
+                        <select id="ddlStormFileSource"><option>URL</option><option>Text</option></select>
                     </td>
                 </tr>
                 <tr>
-                    <td>
-                       	URL
-                    </td>
-                    <td>
-                        <textarea class="w400px">http://storm.cloudsidekick.com/examples/wordpress.storm</textarea>
+                    <td colspan="2">
+                        <textarea class="w500px"></textarea>
                     </td>
                 </tr>
                 <tr>
@@ -151,6 +147,7 @@
                         <input type="checkbox" /> Run Storm Now?
                     </td>
                 </tr>
+				</asp:Panel>
             </tbody>
         </table>
     </div>
@@ -164,8 +161,7 @@
                     New Eco Template Name
                 </td>
                 <td>
-                    <asp:TextBox ID="txtCopyEcotemplateName" runat="server" class="usertextbox" Style="width: 300px;"
-                        MaxLength="64" jqname="txtCopyEcotemplateName"></asp:TextBox>
+                    <input type="text" id="txtCopyEcotemplateName" class="w400px" />
                 </td>
             </tr>
         </table>

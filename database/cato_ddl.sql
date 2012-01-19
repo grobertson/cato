@@ -199,6 +199,8 @@ CREATE TABLE `ecotemplate` (
   `ecotemplate_id` varchar(36) NOT NULL,
   `ecotemplate_name` varchar(64) DEFAULT NULL,
   `ecotemplate_desc` varchar(512) DEFAULT NULL,
+  `storm_file_source` varchar(8) DEFAULT NULL,
+  `storm_file` text,
   PRIMARY KEY (`ecotemplate_id`),
   UNIQUE KEY `ecotemplate_name` (`ecotemplate_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
