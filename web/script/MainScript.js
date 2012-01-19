@@ -22,9 +22,9 @@ isiPad = navigator.userAgent.match(/iPad/i) != null;
 //used in many places where we send strings as json data, replaces the two critical json chars " and \
 //THESE CALL a jQuery plugin
 function packJSON(instr) {
-	//if it's nothing, return nothing
-	if (instr == "")
-		return instr;
+	//if it's empty or undefined, return ""
+	if (instr == "" || instr === undefined)
+		return "";
 	
 	//terrible ugly here, but this is a temporary fix to keep bad data from getting pasted in
 	//if there's a char > 255, remove it.
