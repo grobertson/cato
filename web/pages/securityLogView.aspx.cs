@@ -109,7 +109,7 @@ namespace Web.pages
                 sDateSearchString += " and usl.log_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y')";
             }
 
-            sSQL = "select FormatTextToHTML(usl.log_msg) as log_msg," +
+            sSQL = "select usl.log_msg as log_msg," +
                 " convert(usl.log_dt, CHAR(20)) as log_dt, u.full_name" +
                     " from user_security_log usl" +
                     " join users u on u.user_id = usl.user_id" +

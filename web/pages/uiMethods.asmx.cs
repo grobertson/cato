@@ -1680,13 +1680,20 @@ namespace ACWebMethods
 		}
 
         [WebMethod(EnableSession = true)]
-        public string wmCreateEcotemplate(string sName, string sDescription)
+        public string wmCreateEcotemplate(string sName, string sDescription, string sStormFileSource, string sStormFile)
         {
+            acUI.acUI ui = new acUI.acUI();
             string sErr = "";
 
-			Ecotemplate et = Ecotemplate.DBCreateNew(sName, sDescription, ref sErr);
-			if (et != null)
-				return et.ID;
+			Ecotemplate et = new Ecotemplate(ui.unpackJSON(sName), ui.unpackJSON(sDescription));
+			if (et != null) {
+				et.StormFileSource = ui.unpackJSON(sStormFileSource);
+				et.StormFile = ui.unpackJSON(sStormFile);
+				if(et.DBCreateNew(ref sErr))
+					return et.ID;
+				else
+					return sErr;
+			}
 			else
 				return sErr;
         }

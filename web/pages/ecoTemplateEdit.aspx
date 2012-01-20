@@ -1,6 +1,5 @@
 <%@ Page Language="C#" AutoEventWireup="True" MasterPageFile="~/pages/site.master"
     CodeBehind="ecoTemplateEdit.aspx.cs" Inherits="Web.pages.ecoTemplateEdit" %>
-
 <asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
     <link type="text/css" href="../style/taskEdit.css" rel="stylesheet" />
     <link type="text/css" href="../style/taskView.css" rel="stylesheet" />
@@ -13,40 +12,55 @@
     <div id="left_panel_te">
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
-                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">
-                    Details</span><span id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span
-                        id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
+                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">Details</span><span id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
             </div>
             <div id="div_details" class="toolbox_panel">
                 <div style="padding: 0 0 0 5px;">
                     <span class="detail_label">Name:</span>
-                    <asp:TextBox ID="txtEcoTemplateName" runat="server" CssClass="task_details code"
-                        te_group="detail_fields" column="ecotemplate_name"></asp:TextBox>
+                    <asp:TextBox ID="txtEcoTemplateName" runat="server" CssClass="task_details code" te_group="detail_fields" column="ecotemplate_name"></asp:TextBox>
                     <br />
                     <span class="detail_label">Description:</span>
                     <br />
-                    <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="5" runat="server" CssClass="code"
-                        te_group="detail_fields" column="ecotemplate_desc"></asp:TextBox>
+                    <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="5" runat="server" CssClass="code" te_group="detail_fields" column="ecotemplate_desc"></asp:TextBox>
                     <br />
                     <br />
                     <br />
                     <hr />
                     <span id="show_log_link" class="pointer">
-                        <img alt="" src="../images/icons/view_text_16.png" style="margin: 0px 4px 0px 4px;" />
-                        View Change Log</span>
+                    <img alt="" src="../images/icons/view_text_16.png" style="margin: 0px 4px 0px 4px;" />
+                    View Change Log</span>
+                </div>
+            </div>
+            <div id="div_storm" class="toolbox_panel hidden">
+                <div style="padding: 0 0 0 5px;">
+                    <img src="../images/icons/storm_32.png" /><span class="detail_label">Storm File</span>
+                    <hr />
+                    <span class="detail_label">Source:</span>(URL)
+                    <br />
+                    <span id="storm_file_source"></span>
+                    <br />
+                    <span class="detail_label">Description:</span>
+                    <span id="storm_file_desc"></span>
+                    <br />
+                    <span class="detail_label">Parameters:</span>
+                    <div id="storm_file_params"></div>
                 </div>
             </div>
             <div id="div_tasks" class="toolbox_panel hidden">
-                <span>Search:</span>
-                <input id="task_search_text" />
-                <span id="task_search_btn">Search</span>
-                <div id="task_picker_results">
+                <div style="padding: 0 0 0 5px;">
+                    <span>Search:</span>
+                    <input id="task_search_text" />
+                    <span id="task_search_btn">Search</span>
+                    <div id="task_picker_results">
+                    </div>
                 </div>
             </div>
             <div id="div_ecosystems" class="toolbox_panel hidden">
-                <span id="ecosystem_create_btn">New Ecosystem</span>
-                <hr />
-                <div id="ecosystem_results">
+                <div style="padding: 0 0 0 5px;">
+                    <span id="ecosystem_create_btn">New Ecosystem</span>
+                    <hr />
+                    <div id="ecosystem_results">
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,21 +75,23 @@
             <div class="ui-state-default te_header">
                 <div class="step_section_title">
                     <span id="step_toggle_all_btn" class="pointer">
-                        <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Tasks"
-                            title="Expand/Collapse All Tasks" />
-                    </span><span class="step_title">
-                        <asp:Label ID="lblActionTitle" runat="server"></asp:Label></span>
+                    <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Tasks" title="Expand/Collapse All Tasks" />
+                    </span>
+                    <span class="step_title">
+                        <asp:Label ID="lblActionTitle" runat="server"></asp:Label>
+                    </span>
                 </div>
                 <div class="step_section_icons">
                     <span id="print_link" class="pointer">
-                        <img class="task_print_link" alt="" src="../images/icons/printer.png" />
+                    <img class="task_print_link" alt="" src="../images/icons/printer.png" />
                     </span>
                 </div>
             </div>
             <div id="actions">
                 <div id="action_add" class="ui-widget-content ui-corner-all ui-state-active">
                     <div id="action_name_helper">
-                        Drag a Task from the Tasks tab here to create a new Action.</div>
+                        Drag a Task from the Tasks tab here to create a new Action.
+                    </div>
                     <div id="action_add_form" class="ui-widget-content hidden">
                         <input type="hidden" id="action_add_otid" />
                         <div class="ui-state-default">
@@ -101,19 +117,20 @@
         <p>
             <span class="ui-icon
     ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span><span>Are you sure you
-        want to remove this Task?</span>
+            want to remove this Task?</span>
         </p>
     </div>
     <div id="action_delete_confirm_dialog" title="Delete Action" class="hidden ui-state-highlight">
         <p>
             <span class="ui-icon
     ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span><span>Are you sure you
-        want to delete this Action?</span>
+            want to delete this Action?</span>
         </p>
     </div>
     <div id="action_edit_dialog" title="Edit Action" class="hidden">
         <p>
-            Name:</p>
+            Name:
+        </p>
         <input id="txtActionNameAdd" />
     </div>
     <div id="action_parameter_dialog" title="Edit Parameters" class="hidden">
@@ -122,7 +139,7 @@
         <input type="hidden" id="action_parameter_dialog_action_id" />
     </div>
     <div id="ecosystem_add_dialog" class="hidden" title="New Ecosystem">
-        <table id="tblNew" width="100%">
+        <table width="100%">
             <tbody>
                 <tr>
                     <td>

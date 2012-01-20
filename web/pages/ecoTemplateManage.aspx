@@ -85,7 +85,7 @@
         </asp:UpdatePanel>
     </div>
     <div id="edit_dialog" class="hidden" title="New Eco Template">
-        <table id="tblNew" width="100%">
+        <table width="100%">
             <tbody>
                 <tr>
                     <td colspan="2">
@@ -97,19 +97,57 @@
                         Name
                     </td>
                     <td>
-                        <asp:TextBox ID="txtTemplateName" runat="server" class="usertextbox" Style="width: 300px;"
-                            MaxLength="256" jqname="txtTemplateName"></asp:TextBox>
+                        <input type="text" id="txtTemplateName" class="w400px" />
+                    </td>
+                </tr>
+				<tr>
+                     <td>
+                        Description
+                     </td>
+                     <td>
+						<input type="text" id="txtTemplateDesc" class="w400px" />
+                     </td>
+                 </tr>
+				<asp:Panel id="pnlStormDialog" runat="server">
+                <tr>
+                    <td colspan="2">
+                        <hr />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: center;">
+                        <img src="../images/icons/storm_32.png" />
+                    </td>
+                    <td>
+                        Storm
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        Description
+                        Storm File Source
                     </td>
                     <td>
-                        <asp:TextBox ID="txtTemplateDesc" runat="server" class="usertextbox" Style="width: 300px;"
-                            jqname="txtTemplateDesc" TextMode="MultiLine"></asp:TextBox>
+                        <select id="ddlStormFileSource"><option>URL</option><option>Text</option></select>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="2">
+                        <textarea class="w500px"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <hr />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    </td>
+                    <td style="vertical-align:middle;">
+                        <input type="checkbox" /> Run Storm Now?
+                    </td>
+                </tr>
+				</asp:Panel>
             </tbody>
         </table>
     </div>
@@ -123,8 +161,7 @@
                     New Eco Template Name
                 </td>
                 <td>
-                    <asp:TextBox ID="txtCopyEcotemplateName" runat="server" class="usertextbox" Style="width: 300px;"
-                        MaxLength="64" jqname="txtCopyEcotemplateName"></asp:TextBox>
+                    <input type="text" id="txtCopyEcotemplateName" class="w400px" />
                 </td>
             </tr>
         </table>

@@ -89,7 +89,7 @@
         </asp:UpdatePanel>
     </div>
     <div id="edit_dialog" class="hidden" title="New Ecosystem">
-        <table id="tblNew" width="100%">
+        <table width="100%">
             <tbody>
                 <tr>
                     <td colspan="2">
