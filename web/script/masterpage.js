@@ -51,10 +51,24 @@ $(document).ready(function () {
         modal: false,
         width: 400
     });
+    
+    //the stack trace section on the error dialog is hidden by default
+    //this is the click handler for showing it.
+    $("#show_stack_trace").click(function () {
+	    $("#error_dialog_trace").parent().show();
+	    $(this).removeClass("ui-icon-triangle-1-e");
+	    $(this).addClass("ui-icon-triangle-1-s");
+    });
+
 });
 
 //This function shows the error dialog.
 function showAlert(msg, info) {
+	//reset the trace panel
+    $("#show_stack_trace").removeClass("ui-icon-triangle-1-s");
+    $("#show_stack_trace").addClass("ui-icon-triangle-1-e");
+	$("#error_dialog_trace").parent().hide();	
+	
 	var trace = '';
 	
 	// in many cases, the "msg" will be a json object with a stack trace
@@ -79,9 +93,6 @@ function showAlert(msg, info) {
     $("#error_dialog_info").html(info);
     if (trace != null && trace != '') {
     	$("#error_dialog_trace").html(trace);
-    	$("#error_dialog_trace").parent().show();
-    } else {
-    	$("#error_dialog_trace").parent().hide();
     }
     
     $("#error_dialog").dialog('open');
