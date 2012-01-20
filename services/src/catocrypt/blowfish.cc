@@ -312,7 +312,7 @@ const unsigned int CBlowfish::scm_auiInitS[4][256] = {
 CBlowfish::CBlowfish(char* ucKey, const SBlock& roChain) 
 : m_oChain0(roChain), m_oChain(roChain)
 {
-	int keysize=strlen(ucKey);
+	int keysize=(int)strlen(ucKey);
 	if(keysize<1)
 		throw;  // incorrect key length
 	//Check the Key - the key length should be between 1 and 56 bytes
@@ -723,11 +723,22 @@ encryptBuffer(const char *buffer, long length, char **retBuffer, const char *key
 
 long 
 encryptPassword(string orgPassword, string &ePassword, string key) {
-    char *data, *buffer;
+    char *data;
     long retVal;
-
+    static char key_string[33];
+    if (key.size() == 0) {
+        /*
+                To customize the secret encryption key, change the following line
+                and the same line in the decrypt function and recompile.
+                NOTE: if this key is changed AFTER installation, any
+                previously encrypted values will be worthless.
+        */
+        sprintf(key_string,"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",83,116,89,87,76,99,65,50,115,87,97,112,72,76,66,109,115,78,101,86,53,89,88,69,69,85,101,90,107,75,81,77);
+        //key = strdup((const char *)key_string);
+        key = key_string;
+    }
     retVal = encryptBuffer(orgPassword.c_str(), orgPassword.length(), &data, key.c_str());
-    ePassword = encodeBase64((const unsigned char *)data, retVal);
+    ePassword =	encodeBase64((const unsigned char *)data,retVal);
 
     delete[] data;
     return ePassword.length();
@@ -737,8 +748,20 @@ long
 decryptPassword(string ePassword, string &orgPassword, string key) {
     char *data, *buffer;
     long retVal;
+    static char key_string[33];
 
     orgPassword = decodeBase64(ePassword); 
+    if (key.size() == 0) {
+        /*
+                To customize the secret encryption key, change the following line
+                and the same line in the decrypt function and recompile.
+                NOTE: if this key is changed AFTER installation, any
+                previously encrypted values will be worthless.
+        */
+        sprintf(key_string,"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",83,116,89,87,76,99,65,50,115,87,97,112,72,76,66,109,115,78,101,86,53,89,88,69,69,85,101,90,107,75,81,77);
+        //key = strdup((const char *)key_string);
+        key = key_string;
+    }
     retVal = decryptBuffer(orgPassword.c_str(), orgPassword.length(), &data, key.c_str()); 
     buffer = new char[retVal + 1];
     memset(buffer, 0x0, retVal + 1);
@@ -752,91 +775,3 @@ decryptPassword(string ePassword, string &orgPassword, string key) {
     delete[] data;
     return orgPassword.length();
 }
-
-// Encrypt a file in place, storing it's original length as the last byte
-long
-encryptFile(const char *fname) {
-    FILE *efile = NULL;
-    int realLength = 0, readLength = 0, retval = 0;
-    char *buffer = NULL, *ebuffer = NULL;
-
-    if ((efile = fopen(fname, "rw")) == NULL)
-        return 0;
-
-    // Get the length of the file
-    fseek(efile, 0, SEEK_END);
-    realLength = ftell(efile);
-    rewind(efile);
-
-    // Allocate a buffer large enough to hold the data
-    buffer = new char[realLength + 1];
-    
-    // Read the data
-    readLength = fread(buffer, 1, realLength, efile);
-    fclose(efile);
-
-    if (readLength != realLength)
-        return 0;
-
-    // Now that we've read the buffer in, encrypt it 
-    retval = encryptBuffer(buffer, realLength, &ebuffer);
-
-    // Write out the encrypted buffer
-    if ((efile = fopen(fname, "w")) == NULL)
-        return 0;
-    fwrite(ebuffer, retval * sizeof(char), 1, efile);
-    // Write the original file length as the last byte
-    fwrite(&realLength, sizeof(int), 1, efile);
-    fclose(efile);
-
-    delete ebuffer;
-    delete buffer;
-
-    return retval;
-}
-
-// Decrypt file data into buffer.  We will ASSUME that this file has been
-// encrypted via the encryptFile() function.  Otherwise this is going to
-// fail.  If it becomes a problem we can write some kind of signature at
-// the end of the file.  Possibly a CRC check...
-long 
-decryptFile(const char *fname, char **buffer) {
-    FILE *efile = NULL;
-    char *ebuffer = NULL, *p = NULL;
-    int realLength = 0, readLength = 0, origLength = 0, retval = 0;
-
-    if ((efile = fopen(fname, "rw")) == NULL)
-        return 0;
-
-    // Get the length of the file
-    fseek(efile, 0, SEEK_END);
-    realLength = ftell(efile);
-    rewind(efile);
-
-    // Allocate a buffer large enough to hold the data
-    ebuffer = new char[realLength];
-    
-    // Read the data
-    readLength = fread(ebuffer, 1, realLength, efile);
-
-    if (readLength != realLength)
-        return 0;
-
-    // Store the last byte in origLength so that we can chop the trash
-    // off the end of the buffer
-    p = ebuffer + realLength - sizeof(int);   
-    memcpy(&origLength, p, sizeof(int));
-    *p = 0;
-
-    if (!origLength)
-        return 0;
-
-    retval = decryptBuffer(ebuffer, realLength - sizeof(int), buffer); 
-
-    delete[] ebuffer;
-    (*buffer)[origLength] = 0;
-    fclose(efile);
-
-    return retval;
-}
-

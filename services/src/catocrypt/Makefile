@@ -15,8 +15,8 @@ TCL_LIB_VERSION=8.5
 #  this line
 ########################################
 GCC = `which g++`
-LIBSRC = tcl_hooks.cc password.cc blowfish.cc base64.cc
-LIB_SO = ../../lib/catocrypt/libcatocrypt.so
+LIBSRC = tcl_hooks.cc blowfish.cc base64.cc
+LIB_SO = ./catocrypttcl.so
 PROJ_NAME = "Cato Encryption Library"
 
 ########################################
