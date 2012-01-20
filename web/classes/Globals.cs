@@ -268,7 +268,7 @@ namespace Globals
 		public string ID;
 		public string Name;
 		public string Description;
-		public string StormFileSource;
+		public string StormFileType;
 		public string StormFile;
 		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
 		
@@ -370,10 +370,13 @@ namespace Globals
 			
 			try
 			{
-				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc)" +
+				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
 					" values ('" + this.ID + "'," +
 						" '" + this.Name + "'," +
-						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description + "'") + ")";
+						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
+						")";
 				
 				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
 				{

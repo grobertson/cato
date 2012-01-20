@@ -288,14 +288,22 @@ function GetStorm() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-			var storm = jQuery.parseJSON(response.d);
-			if (storm) {
-	            $("#storm_file_source").html(storm.storm_file_source);
-	            
-	            //populate the description and parameters secttion too.
-			} else {
-	            showAlert(response.d);
-	        }
+        	try
+			{
+				var storm = jQuery.parseJSON(response.d);
+				if (storm) {
+		            $("#storm_file_source").html(storm.FileType);
+		            $("#storm_file_desc").html(storm.Description);
+		            
+		            //parameters secttion too?  Future enhancement.
+				} else {
+		            showAlert(response.d);
+		        }
+			}
+			catch(err)
+			{
+				showAlert(err.message);
+			}
         },
         error: function (response) {
             showAlert(response.responseText);

@@ -132,7 +132,7 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <textarea class="w500px"></textarea>
+                        <textarea class="w500px" id="txtStormFile"></textarea>
                     </td>
                 </tr>
                 <tr>

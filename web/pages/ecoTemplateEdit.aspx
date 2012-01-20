@@ -35,15 +35,11 @@
                 <div style="padding: 0 0 0 5px;">
                     <img src="../images/icons/storm_32.png" /><span class="detail_label">Storm File</span>
                     <hr />
-                    <span class="detail_label">Source:</span>(URL)
-                    <br />
-                    <span id="storm_file_source"></span>
-                    <br />
+                    <span class="detail_label">Source:</span>
+					<div id="storm_file_source"></div>
+					<br />
                     <span class="detail_label">Description:</span>
-                    <span id="storm_file_desc"></span>
-                    <br />
-                    <span class="detail_label">Parameters:</span>
-                    <div id="storm_file_params"></div>
+                    <div id="storm_file_desc">Getting Storm File ...</div>
                 </div>
             </div>
             <div id="div_tasks" class="toolbox_panel hidden">
