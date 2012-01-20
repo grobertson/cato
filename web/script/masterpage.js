@@ -65,6 +65,7 @@ $(document).ready(function () {
 //This function shows the error dialog.
 function showAlert(msg, info) {
 	//reset the trace panel
+	$("#stack_trace").hide();	
     $("#show_stack_trace").removeClass("ui-icon-triangle-1-s");
     $("#show_stack_trace").addClass("ui-icon-triangle-1-e");
 	$("#error_dialog_trace").parent().hide();	
@@ -93,6 +94,7 @@ function showAlert(msg, info) {
     $("#error_dialog_info").html(info);
     if (trace != null && trace != '') {
     	$("#error_dialog_trace").html(trace);
+    	$("#stack_trace").show();
     }
     
     $("#error_dialog").dialog('open');
