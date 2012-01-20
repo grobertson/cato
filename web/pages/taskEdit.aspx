@@ -71,14 +71,10 @@
                     <br />
                     <br />
                     <hr />
-                    <span id="show_log_link" class="pointer">
-                        <img alt="" src="../images/icons/view_text_16.png" style="margin: 0px 4px 0px 4px;" />
-                        View Change Log</span>
-                    <br />
-                    <span id="show_runlog_link" class="pointer">
-                        <img alt="" src="../images/icons/view_text_16.png" style="margin: 0px 4px 0px 4px;" />
-                        View Most Recent Run Log</span>
-                    <br />
+					<center>
+						<span id="show_log_link">View Change Log</span>						
+						<span id="show_runlog_link">View Last Run Log</span>
+					</center>
                 </div>
             </div>
             <div id="div_versions" class="toolbox_panel hidden">

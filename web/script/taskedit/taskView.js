@@ -31,12 +31,14 @@ $(document).ready(function () {
     });
 
     //the show log link
+    $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function () {
         var url = "securityLogView.aspx?type=3&id=" + g_task_id;
         openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
 
     //the show runlog link
+    $("#show_runlog_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_runlog_link").click(function () {
         var url = "taskRunLog.aspx?task_id=" + g_task_id;
         openWindow(url, "TaskRunLog" + g_task_id, "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");

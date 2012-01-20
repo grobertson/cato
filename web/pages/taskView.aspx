@@ -38,13 +38,10 @@
                             id="tab_tags" linkto="div_tags" class="ui-state-default ui-corner-top toolbox_tab">Tags</span>-->
             </div>
             <div id="div_versions" class="toolbox_panel">
-                <span id="show_log_link" class="pointer">
-                    <img alt="" src="../images/icons/view_text_16.png" />
-                    View Change Log</span>
-                <br />
-                <span id="show_runlog_link" class="pointer">
-                    <img alt="" src="../images/icons/view_text_16.png" />
-                    View Most Recent Run Log</span>
+				<center>
+					<span id="show_log_link">View Change Log</span>						
+					<span id="show_runlog_link">View Last Run Log</span>
+				</center>
                 <br />
                 <br />
                 <span class="detail_label">Selected Version:</span>

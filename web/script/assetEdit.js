@@ -57,6 +57,7 @@ $(document).ready(function() {
     });
 
     //the hook for the 'show log' link
+    $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function() {
         var sAssetID = $("#hidCurrentEditID").val();
         var url = "securityLogView.aspx?type=2&id=" + sAssetID;

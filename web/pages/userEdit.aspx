@@ -235,9 +235,9 @@
                     </tbody>
                 </table>
                 <br />
-                <span id="show_log_link" class="pointer">
-                <img alt="" src="../images/icons/view_text_16.png" />
-                View Change Log</span>
+				<center>
+					<span id="show_log_link">View Change Log</span>						
+				</center>
             </div>
             <!--
             <div id="GroupsTab">
