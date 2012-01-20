@@ -3914,7 +3914,8 @@ namespace ACWebMethods
 					
 					sb.Append("{");
                     sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
-                    sb.AppendFormat("\"{0}\" : \"{1}\"", "Description", sFileDesc);
+                    sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(ui.FixBreaks(sFileDesc)));
+                    sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(ui.FixBreaks(sJSON)));
 					sb.Append("}");
 					
 					return sb.ToString();

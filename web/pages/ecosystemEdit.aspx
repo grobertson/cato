@@ -17,9 +17,10 @@
     <div id="left_panel_te">
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
-                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top toolbox_tab">
-                    Details</span><span id="tab_objects" linkto="div_objects" class="ui-state-default ui-corner-top toolbox_tab">Objects</span><span
-                        id="tab_actions" linkto="div_actions" class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active toolbox_tab">Actions</span>
+                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top toolbox_tab">Details</span><span 
+					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span 
+					id="tab_objects" linkto="div_objects" class="ui-state-default ui-corner-top toolbox_tab">Objects</span><span
+                    id="tab_actions" linkto="div_actions" class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active toolbox_tab">Actions</span>
             </div>
             <div id="div_details" class="toolbox_panel hidden">
                 <div style="padding: 0 0 0 5px;">
@@ -41,9 +42,17 @@
                     <br />
                     <br />
                     <br />
-                    <span id="show_log_link" class="pointer">&nbsp;<br />
-                        <img alt="" src="../images/icons/view_text_16.png" />
-                        View Change Log</span>&nbsp;
+					<center>
+						<span id="show_log_link">View Change Log</span>						
+					</center>
+                </div>
+            </div>
+            <div id="div_storm" class="toolbox_panel hidden">
+                <div style="padding: 0 0 0 5px;">
+                    <img src="../images/icons/storm_32.png" /><span class="detail_label">Created by Storm</span>
+                    <hr />
+                    <span class="detail_label">Status:</span>
+					<div id="storm_status"></div>
                 </div>
             </div>
             <div id="div_objects" class="toolbox_panel hidden">

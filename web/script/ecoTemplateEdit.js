@@ -56,13 +56,24 @@ $(document).ready(function () {
     });
 
     //the hook for the 'show log' link
+    $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function () {
         var url = "securityLogView.aspx?type=42&id=" + g_id;
         openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
 
 
+    //Storm buttons
+    $("#view_storm_file_btn").button({ icons: { primary: "ui-icon-pencil"} });
+    $("#view_storm_file_btn").click(function () {
+        alert("NYI"); //ShowStormFile();
+    });
+    $("#run_storm_btn").button({ icons: { primary: "ui-icon-play"} });
+    $("#run_storm_btn").click(function () {
+        alert("NYI"); //RunStorm();
+    });
 
+	//Storm File view box
 
     //turn on the "add" button in the dropzone
     $("#action_add_btn").button({ icons: { primary: "ui-icon-plus"} });
@@ -270,18 +281,28 @@ $(document).ready(function () {
 });
 
 function tabWasClicked(tab) {
-    //the generic toolbox.js file handles the click event that will call this function if it exists
+    //we'll be hiding and showing right side content when tabs are selected.
+    //several tabs on the page use the same detail, so make it the default.
+    var detail_div = "#div_details_detail";
 
+    //the generic toolbox.js file handles the click event that will call this function if it exists
+	//several tabs here all use the same detail panel
     if (tab == "storm") {
         GetStorm();
+        detail_div = "#div_storm_detail";
     } else if (tab == "ecosystems") {
         GetEcosystems();
     }
+
+    //hide 'em all
+    $("#content_te .detail_panel").addClass("hidden");
+    //show the one you clicked
+    $(detail_div).removeClass("hidden");
 }
 
 function GetStorm() {
     $.ajax({
-        async: false,
+        async: true,
         type: "POST",
         url: "uiMethods.asmx/wmGetEcotemplateStorm",
         data: '{"sEcoTemplateID":"' + g_id + '"}',
@@ -293,7 +314,8 @@ function GetStorm() {
 				var storm = jQuery.parseJSON(response.d);
 				if (storm) {
 		            $("#storm_file_source").html(storm.FileType);
-		            $("#storm_file_desc").html(storm.Description);
+		            $("#storm_file_desc").html(unpackJSON(storm.Description));
+		            $("#storm_file_text").html(unpackJSON(storm.Text));
 		            
 		            //parameters secttion too?  Future enhancement.
 				} else {

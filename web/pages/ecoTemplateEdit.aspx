@@ -12,7 +12,10 @@
     <div id="left_panel_te">
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
-                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">Details</span><span id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
+                <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">Details</span><span 
+					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span 
+					id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span 
+					id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
             </div>
             <div id="div_details" class="toolbox_panel">
                 <div style="padding: 0 0 0 5px;">
@@ -26,9 +29,9 @@
                     <br />
                     <br />
                     <hr />
-                    <span id="show_log_link" class="pointer">
-                    <img alt="" src="../images/icons/view_text_16.png" style="margin: 0px 4px 0px 4px;" />
-                    View Change Log</span>
+					<center>
+						<span id="show_log_link">View Change Log</span>
+					</center>
                 </div>
             </div>
             <div id="div_storm" class="toolbox_panel hidden">
@@ -40,6 +43,11 @@
 					<br />
                     <span class="detail_label">Description:</span>
                     <div id="storm_file_desc">Getting Storm File ...</div>
+					<hr />
+					<center>
+						<span id="view_storm_file_btn">View Storm File</span>
+						<span id="run_storm_btn">Run Storm</span>
+					</center>
                 </div>
             </div>
             <div id="div_tasks" class="toolbox_panel hidden">
@@ -67,44 +75,49 @@
                 <asp:Label ID="lblEcoTemplateHeader" runat="server"></asp:Label>
             </h3>
         </center>
-        <div id="all">
-            <div class="ui-state-default te_header">
-                <div class="step_section_title">
-                    <span id="step_toggle_all_btn" class="pointer">
-                    <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Tasks" title="Expand/Collapse All Tasks" />
-                    </span>
-                    <span class="step_title">
-                        <asp:Label ID="lblActionTitle" runat="server"></asp:Label>
-                    </span>
-                </div>
-                <div class="step_section_icons">
-                    <span id="print_link" class="pointer">
-                    <img class="task_print_link" alt="" src="../images/icons/printer.png" />
-                    </span>
-                </div>
-            </div>
-            <div id="actions">
-                <div id="action_add" class="ui-widget-content ui-corner-all ui-state-active">
-                    <div id="action_name_helper">
-                        Drag a Task from the Tasks tab here to create a new Action.
-                    </div>
-                    <div id="action_add_form" class="ui-widget-content hidden">
-                        <input type="hidden" id="action_add_otid" />
-                        <div class="ui-state-default">
-                            Task: <span id="action_add_task_name"></span>
-                        </div>
-                        Action:
-                        <input id="new_action_name" />
-                        <br />
-                        <span id="action_add_btn">Add</span> <span id="action_add_cancel_btn">Cancel</span>
-                    </div>
-                </div>
-                <ul class="category_actions" id="category_actions">
-                    <asp:PlaceHolder ID="phActions" runat="server"></asp:PlaceHolder>
-                </ul>
-            </div>
-        </div>
-    </div>
+       	 <div id="div_details_detail" class="detail_panel">
+	        <div id="all">
+	            <div class="ui-state-default te_header">
+	                <div class="step_section_title">
+	                    <span id="step_toggle_all_btn" class="pointer">
+	                    <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Tasks" title="Expand/Collapse All Tasks" />
+	                    </span>
+	                    <span class="step_title">
+	                        <asp:Label ID="lblActionTitle" runat="server"></asp:Label>
+	                    </span>
+	                </div>
+	                <div class="step_section_icons">
+	                    <span id="print_link" class="pointer">
+	                    <img class="task_print_link" alt="" src="../images/icons/printer.png" />
+	                    </span>
+	                </div>
+	            </div>
+	            <div id="actions">
+	                <div id="action_add" class="ui-widget-content ui-corner-all ui-state-active">
+	                    <div id="action_name_helper">
+	                        Drag a Task from the Tasks tab here to create a new Action.
+	                    </div>
+	                    <div id="action_add_form" class="ui-widget-content hidden">
+	                        <input type="hidden" id="action_add_otid" />
+	                        <div class="ui-state-default">
+	                            Task: <span id="action_add_task_name"></span>
+	                        </div>
+	                        Action:
+	                        <input id="new_action_name" />
+	                        <br />
+	                        <span id="action_add_btn">Add</span> <span id="action_add_cancel_btn">Cancel</span>
+	                    </div>
+	                </div>
+	                <ul class="category_actions" id="category_actions">
+	                    <asp:PlaceHolder ID="phActions" runat="server"></asp:PlaceHolder>
+	                </ul>
+	            </div>
+	        </div>
+		</div>
+        <div id="div_storm_detail" class="detail_panel hidden">
+			<pre><div id="storm_file_text"></div></pre>
+		</div>
+	</div>
     <div class="hidden">
         <input type="hidden" id="hidParamType" value="task" />
         <asp:HiddenField ID="hidEcoTemplateID" runat="server"></asp:HiddenField>
@@ -156,4 +169,9 @@
             </tbody>
         </table>
     </div>
+    <div id="stormfile_dialog" title="Storm File" class="hidden">
+        <textarea id="storm_file_text" rows="20" class="code w100pct"></textarea>
+        <input type="hidden" id="big_box_link" />
+    </div>
+
 </asp:Content>
