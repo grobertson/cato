@@ -30,3 +30,7 @@ web/temp/*
 web/obj/*
 
 services/python/*
+
+*.pyc
+
+*.so

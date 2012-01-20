@@ -28,10 +28,9 @@ class Db(object):
 			self.conn = pymysql.connect(host=server, port=int(port), 
 				user=user, passwd=password, db=database)
 		except Exception, e:
-			print e
-			return None
+			raise Exception(e)
 	
-	def select_all(self, sql):
+	def select_all(self, sql, params=()):
 		"""Gets a row set for a provided query."""
 		if sql == "":
 			print "select_all: SQL cannot be empty."
@@ -39,12 +38,11 @@ class Db(object):
 		
 		try:
 			c = self.conn.cursor()
-			c.execute(sql)
+			c.execute(sql, params)
 			result = c.fetchall()
 			c.close()
 		except Exception, e:
-			print e
-			return None
+			raise Exception(e)
 
 		return result	
 
@@ -61,8 +59,7 @@ class Db(object):
 			result = c.fetchone()
 			c.close()
 		except Exception, e:
-			print e
-			return None
+			raise Exception(e)
 
 		return result
 
@@ -78,12 +75,14 @@ class Db(object):
 			result = c.fetchone()
 			c.close()
 		except Exception, e:
-			print e
-			return None
+			raise Exception(e)
 
-		return result[0]
+		if result:
+			return result[0]
+		else:
+			return False
 
-	def exec_db(self, sql):
+	def exec_db(self, sql, params=()):
 		"""Used for updates, inserts and deletes"""
 		if sql == "":
 			print "update: SQL cannot be empty."
@@ -91,12 +90,11 @@ class Db(object):
 		
 		try:
 			c = self.conn.cursor()
-			c.execute(sql)
+			c.execute(sql, params)
 			self.conn.commit()
 			c.close()
 		except Exception, e:
-			print e
-			return False
+			raise Exception(e)
 
 		return True
 
