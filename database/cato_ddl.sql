@@ -199,6 +199,8 @@ CREATE TABLE `ecotemplate` (
   `ecotemplate_id` varchar(36) NOT NULL,
   `ecotemplate_name` varchar(64) DEFAULT NULL,
   `ecotemplate_desc` varchar(512) DEFAULT NULL,
+  `storm_file_type` varchar(8) DEFAULT NULL,
+  `storm_file` text,
   PRIMARY KEY (`ecotemplate_id`),
   UNIQUE KEY `ecotemplate_name` (`ecotemplate_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -634,36 +636,6 @@ SET character_set_client = utf8;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50020 DEFINER= CURRENT_USER /*!50003 FUNCTION `FormatTextToHTML`(_str text) RETURNS text CHARSET latin1
-BEGIN
-	/*DECLARE @strFixed text
-	SET @strFixed = @str*/
-
-	SET _str = replace(_str, '<', '&lt;');
-	SET _str = replace(_str, '>', '&gt;');
-	SET _str = replace(_str, char(13,10 USING utf8), '<br />');
-	/*SET _str = replace(_str, char(13,10 USING utf8)+char(10 USING utf8), '<br />');*/
-	SET _str = replace(_str, char(13 USING utf8), '<br />');
-	SET _str = replace(_str, char(10 USING utf8), '<br />');
-	SET _str = replace(_str, '     ', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-
-	RETURN _str;
-
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_BACKSLASH_ESCAPES' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50020 DEFINER= CURRENT_USER /*!50003 PROCEDURE `addTaskInstance`(
   IN _task_id varchar(36), 

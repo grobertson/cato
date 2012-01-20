@@ -263,14 +263,27 @@ namespace Globals
 	}
 	public class Ecotemplate 
 	{
+		acUI.acUI ui = new acUI.acUI();
+		
 		public string ID;
 		public string Name;
 		public string Description;
+		public string StormFileType;
+		public string StormFile;
 		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
 		
 		//an empty constructor
 		public Ecotemplate()
 		{
+			this.ID = ui.NewGUID();
+		}
+		
+		//aname and desc
+		public Ecotemplate(string sName, string sDesription)
+		{
+			this.ID = ui.NewGUID();
+			this.Name = sName;
+			this.Description = sDesription;
 		}
 		
 		//the default constructor, given an ID loads it up.
@@ -331,7 +344,7 @@ namespace Globals
 			//2) batch copy all the steps from the old template to the new
 			
 			//1) 
-			Ecotemplate et = Ecotemplate.DBCreateNew(sNewName, this.Description, ref sErr);
+			Ecotemplate et = new Ecotemplate(sNewName, this.Description);
 			if (et != null)
 			{
 				//2
@@ -350,41 +363,36 @@ namespace Globals
 		}
 
 		//saves this template as a new template in the db
-		//and returns the object
-		static public Ecotemplate DBCreateNew(string sName, string sDescription, ref string sErr)
+		public bool DBCreateNew(ref string sErr)
 		{
             dataAccess dc = new dataAccess();
-            acUI.acUI ui = new acUI.acUI();
 			string sSQL = "";
 			
 			try
 			{
-				string sNewID = ui.NewGUID();
-				
-				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc)" +
-					" values ('" + sNewID + "'," +
-						" '" + sName + "'," +
-						(string.IsNullOrEmpty(sDescription) ? " null" : " '" + sDescription + "'") + ")";
+				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
+					" values ('" + this.ID + "'," +
+						" '" + this.Name + "'," +
+						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
+						")";
 				
 				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
 				{
 					if (sErr == "key_violation")
 					{
 						sErr = "An Ecotemplate with that name already exists.  Please select another name.";
-						return null;
+						return false;
 					}
 					else 
 						throw new Exception(sErr);
 				}
 				
-				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, sNewID, sName, "Ecotemplate created.");
+				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
 				
-				
-				//now it's inserted... lets get it back from the db as a complete object for confirmation.
-				Ecotemplate et = new Ecotemplate(sNewID);
-
 				//yay!
-				return et;
+				return true;
 			}
 			catch (Exception ex)
 			{

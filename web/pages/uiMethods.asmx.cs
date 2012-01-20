@@ -22,6 +22,7 @@ using System.Web.Services;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Globals;
+using Newtonsoft.Json.Linq;
 
 namespace ACWebMethods
 {
@@ -1680,13 +1681,21 @@ namespace ACWebMethods
 		}
 
         [WebMethod(EnableSession = true)]
-        public string wmCreateEcotemplate(string sName, string sDescription)
+        public string wmCreateEcotemplate(string sName, string sDescription, string sStormFileSource, string sStormFile)
         {
+            acUI.acUI ui = new acUI.acUI();
             string sErr = "";
 
-			Ecotemplate et = Ecotemplate.DBCreateNew(sName, sDescription, ref sErr);
-			if (et != null)
-				return et.ID;
+			Ecotemplate et = new Ecotemplate(ui.unpackJSON(sName), ui.unpackJSON(sDescription));
+			if (et != null) {
+				string sSrc = ui.unpackJSON(sStormFileSource);
+				et.StormFileType = (sSrc == "URL" ? "URL" : "Text");
+				et.StormFile = ui.unpackJSON(sStormFile);
+				if(et.DBCreateNew(ref sErr))
+					return et.ID;
+				else
+					return sErr;
+			}
 			else
 				return sErr;
         }
@@ -3836,7 +3845,92 @@ namespace ACWebMethods
 
 
 		#endregion
-	
+
+		#region "Storm"
+		[WebMethod(EnableSession = true)]
+        public string wmGetEcotemplateStorm(string sEcoTemplateID)
+        {
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+
+            string sSQL = "";
+            string sErr = "";
+
+            try
+            {
+                if (!string.IsNullOrEmpty(sEcoTemplateID))
+                {
+                    sSQL = "select storm_file_type, storm_file" +
+                        " from ecotemplate" +
+                        " where ecotemplate_id = '" + sEcoTemplateID + "'";
+
+                    DataRow dr = null;
+                    if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+                        throw new Exception(sErr);
+					
+					//now, we'll validate the json here as a safety precaution, but we're sending the whole storm file to the client
+					//where the parameters and description will be parsed out and displayed.
+					//this is really no different than where we send entire parameter_xml document to the client
+					
+					string sFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
+					string sStormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
+					string sFileDesc = "";
+					string sJSON = "";
+					
+					if (!string.IsNullOrEmpty(sStormFile)) {
+						if (sFileType == "URL") {
+							//if it's a URL we try to get it and parse it.
+							//if we can't, we just send back a nice message.
+							
+							//for display purposes, if it's a URL the "type" becomes the actual URL
+							sFileType = sStormFile;
+							
+							//using our no fail routine here, error handling later if needed
+							try {
+								sJSON = ui.HTTPGetNoFail(sStormFile);
+							} catch (Exception ex) {
+								throw new Exception("Error getting Storm from URL [" + sStormFile + "]. " + ex.Message);
+							}
+						} else {
+							//if it's not a URL we assume it's actual JSON text.
+							sJSON = sStormFile;
+						}
+						
+						if (!string.IsNullOrEmpty(sJSON)) {
+							try {
+								JObject jo = JObject.Parse(sJSON);
+								sFileDesc = jo["Description"].ToString ();
+							} catch (Exception ex) {
+								throw new Exception("The Storm File is invalid. " + ex.Message);
+							}
+						} else {
+							sFileDesc = "Storm File is empty or URL returned nothing.";
+						}
+					} else {
+						sFileDesc = "No Storm File or URL defined.";
+					}
+					
+					StringBuilder sb = new StringBuilder();
+					
+					sb.Append("{");
+                    sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
+                    sb.AppendFormat("\"{0}\" : \"{1}\"", "Description", sFileDesc);
+					sb.Append("}");
+					
+					return sb.ToString();
+				}
+                else
+                {
+                    throw new Exception("Unable to get Storm Details - Missing EcoTemplate ID");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+		#endregion
 	}
 
 }

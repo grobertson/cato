@@ -119,7 +119,7 @@
                 <!--<li><a href="#GroupsTab"><span>Groups (Tags)</span></a></li>-->
             </ul>
             <div id="GeneralTab" style="height: 350px;">
-                <table id="tblNewUser" style="width: 98%;">
+                <table style="width: 98%;">
                     <tbody>
                         <tr>
                             <td colspan="2">

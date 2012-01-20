@@ -125,7 +125,7 @@ function Save() {
     var strValidationError = '';
 
     //some client side validation before we attempt to save the user
-    if ($("[jqname='txtTemplateName']").val() == "") {
+    if ($("#txtTemplateName").val() == "") {
         bSave = false;
         strValidationError += 'Name is required.';
     };
@@ -135,11 +135,16 @@ function Save() {
         return false;
     }
 
+	var name = packJSON($("#txtTemplateName").val());
+	var desc = packJSON($("#txtTemplateDesc").val());
+	var sfs = packJSON($("#ddlStormFileSource").val());
+	var sf = packJSON($("#txtStormFile").val());
+	
     $.ajax({
         async: false,
         type: "POST",
         url: "uiMethods.asmx/wmCreateEcotemplate",
-        data: '{"sName":"' + $("[jqname='txtTemplateName']").val() + '","sDescription":"' + $("[jqname='txtTemplateDesc']").val() + '"}',
+        data: '{"sName":"' + name + '","sDescription":"' + desc + '","sStormFileSource":"' + sfs + '","sStormFile":"' + sf + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
@@ -147,7 +152,7 @@ function Save() {
             	showPleaseWait();
                 location.href = "ecoTemplateEdit.aspx?ecotemplate_id=" + msg.d;
             } else {
-            	showInfo(msg.d);
+            	showInfo(msg.d, "", true);
             }
         },
         error: function (response) {
@@ -175,7 +180,7 @@ function ShowItemCopy() {
 }
 function CopyTemplate() {
 	var sSelectedTemplateID = $("#hidSelectedArray").val();
-    var sNewTemplateName = $("[jqname='txtCopyEcotemplateName']").val();
+    var sNewTemplateName = $("#txtCopyEcotemplateName").val();
 
     // make sure we have all of the valid fields
     if (sNewTemplateName == '') {
@@ -200,7 +205,7 @@ function CopyTemplate() {
                 showInfo('Copy Successful.');
             } else {
                 showInfo(msg.d);
-            	$("[jqname='txtCopyEcotemplateName']").val("");
+            	$("#txtCopyEcotemplateName").val("");
             }
         },
         error: function (response) {

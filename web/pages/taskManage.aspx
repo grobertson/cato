@@ -96,7 +96,7 @@
         </asp:UpdatePanel>
     </div>
     <div id="edit_dialog" class="hidden" title="Create Task">
-        <table id="tblNew" width="100%">
+        <table width="100%">
             <tbody>
                 <tr>
                     <td colspan="2">

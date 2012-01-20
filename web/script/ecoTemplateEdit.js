@@ -267,11 +267,49 @@ $(document).ready(function () {
             }
         }
     });
-
-
-    //all done... load up the Ecosystems div
-    GetEcosystems();
 });
+
+function tabWasClicked(tab) {
+    //the generic toolbox.js file handles the click event that will call this function if it exists
+
+    if (tab == "storm") {
+        GetStorm();
+    } else if (tab == "ecosystems") {
+        GetEcosystems();
+    }
+}
+
+function GetStorm() {
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "uiMethods.asmx/wmGetEcotemplateStorm",
+        data: '{"sEcoTemplateID":"' + g_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+        	try
+			{
+				var storm = jQuery.parseJSON(response.d);
+				if (storm) {
+		            $("#storm_file_source").html(storm.FileType);
+		            $("#storm_file_desc").html(storm.Description);
+		            
+		            //parameters secttion too?  Future enhancement.
+				} else {
+		            showAlert(response.d);
+		        }
+			}
+			catch(err)
+			{
+				showAlert(err.message);
+			}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function CloudAccountWasChanged() {
     GetEcosystems();
