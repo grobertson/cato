@@ -21,8 +21,8 @@ $(document).ready(function () {
                 '       <div class="task_launch_params_title ui-widget-header ui-corner-all">' +
                 '       Parameters' +
                 '       </div>' +
-                '       <input type="radio" id="rbDefault" name="radio" /><label for="rbDefault">Task Defaults</label>' +
-                '       &nbsp;&nbsp;<span id="action_defaults_btn" class="hidden"><input type="radio" id="rbAction" name="radio" /><label for="rbAction">Action Defaults</label></span>' +
+                '       <span id="action_defaults_btn" class="hidden"><input type="radio" id="rbAction" name="radio" /><label for="rbAction">Action Defaults</label></span>' +
+                '       &nbsp;&nbsp;<input type="radio" id="rbDefault" name="radio" /><label for="rbDefault">Task Defaults</label>' +
                 '       &nbsp;&nbsp;<input type="radio" id="rbPrevious" name="radio" /><label for="rbPrevious">Previous Values</label>' +
                 '       <div id="task_launch_dialog_params"></div>' +
                 '   </div>' +
