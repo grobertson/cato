@@ -60,6 +60,13 @@ $(document).ready(function () {
 	    $(this).addClass("ui-icon-triangle-1-s");
     });
 
+	//Storm
+    if (typeof Storm == 'function') {
+        Storm();
+    } else {
+		$(".storm").hide();
+	}
+
 });
 
 //This function shows the error dialog.

@@ -2,6 +2,7 @@
     CodeBehind="ecosystemEdit.aspx.cs" Inherits="Web.pages.ecosystemEdit" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
+    <script type="text/javascript" src="../script/storm.js"></script>
     <script type="text/javascript" src="../script/ecosystemEdit.js"></script>
     <script type="text/javascript" src="../script/toolbox.js"></script>
     <script type="text/javascript" src="../script/taskedit/taskEditParams.js"></script>
@@ -18,7 +19,7 @@
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
                 <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top toolbox_tab">Details</span><span 
-					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span 
+					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab storm">Storm</span><span 
 					id="tab_objects" linkto="div_objects" class="ui-state-default ui-corner-top toolbox_tab">Objects</span><span
                     id="tab_actions" linkto="div_actions" class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active toolbox_tab">Actions</span>
             </div>
