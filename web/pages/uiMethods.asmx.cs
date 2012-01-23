@@ -21,7 +21,9 @@ using System.Text;
 using System.Web.Services;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using System.IO;
 using Globals;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace ACWebMethods
@@ -3847,16 +3849,15 @@ namespace ACWebMethods
 		#endregion
 
 		#region "Storm"
-		[WebMethod(EnableSession = true)]
-        public string wmGetEcotemplateStorm(string sEcoTemplateID)
-        {
+		public bool GetEcotemplateStormJSON(string sEcoTemplateID, ref string sFileType, ref string sFileDesc, ref string sStormFileJSON) 
+		{
             dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
 
             string sSQL = "";
             string sErr = "";
 
-            try
+			try
             {
                 if (!string.IsNullOrEmpty(sEcoTemplateID))
                 {
@@ -3872,10 +3873,8 @@ namespace ACWebMethods
 					//where the parameters and description will be parsed out and displayed.
 					//this is really no different than where we send entire parameter_xml document to the client
 					
-					string sFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
+					sFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
 					string sStormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
-					string sFileDesc = "";
-					string sJSON = "";
 					
 					if (!string.IsNullOrEmpty(sStormFile)) {
 						if (sFileType == "URL") {
@@ -3887,18 +3886,18 @@ namespace ACWebMethods
 							
 							//using our no fail routine here, error handling later if needed
 							try {
-								sJSON = ui.HTTPGetNoFail(sStormFile);
+								sStormFileJSON = ui.HTTPGetNoFail(sStormFile);
 							} catch (Exception ex) {
 								throw new Exception("Error getting Storm from URL [" + sStormFile + "]. " + ex.Message);
 							}
 						} else {
 							//if it's not a URL we assume it's actual JSON text.
-							sJSON = sStormFile;
+							sStormFileJSON = sStormFile;
 						}
 						
-						if (!string.IsNullOrEmpty(sJSON)) {
+						if (!string.IsNullOrEmpty(sStormFileJSON)) {
 							try {
-								JObject jo = JObject.Parse(sJSON);
+								JObject jo = JObject.Parse(sStormFileJSON);
 								sFileDesc = jo["Description"].ToString ();
 							} catch (Exception ex) {
 								throw new Exception("The Storm File is invalid. " + ex.Message);
@@ -3910,15 +3909,142 @@ namespace ACWebMethods
 						sFileDesc = "No Storm File or URL defined.";
 					}
 					
-					StringBuilder sb = new StringBuilder();
+				}
+                else
+                {
+                    throw new Exception("Unable to get Storm Details - Missing EcoTemplate ID");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+			
+			return true;
+		}
+		[WebMethod(EnableSession = true)]
+        public string wmGetEcotemplateStorm(string sEcoTemplateID)
+        {
+            acUI.acUI ui = new acUI.acUI();
+
+			string sFileType = "";
+			string sFileDesc = "";
+			string sStormFileJSON = "";
+			
+			GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sFileDesc, ref sStormFileJSON);
+
+			StringBuilder sb = new StringBuilder();
+			
+			sb.Append("{");
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(ui.FixBreaks(sFileDesc)));
+            sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(ui.FixBreaks(sStormFileJSON)));
+			sb.Append("}");
+			
+			return sb.ToString();
+        }
+		[WebMethod(EnableSession = true)]
+        public string wmGetEcotemplateStormParameterXML(string sEcoTemplateID)
+        {
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+
+            string sSQL = "";
+            string sErr = "";
+
+            try
+            {
+                if (!string.IsNullOrEmpty(sEcoTemplateID))
+				{
+					string sFileType = "";
+					string sFileDesc = "";
+					string sStormFileJSON = "";
 					
-					sb.Append("{");
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
-                    sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(ui.FixBreaks(sFileDesc)));
-                    sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(ui.FixBreaks(sJSON)));
-					sb.Append("}");
+					GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sFileDesc, ref sStormFileJSON);
 					
-					return sb.ToString();
+					//now we have the storm file json... parse it, spin it, and turn the parameters section into our parameter_xml format
+					if (!string.IsNullOrEmpty(sStormFileJSON)) {
+						try {
+							JObject jo = JObject.Parse(sStormFileJSON);
+							
+							//using the ["foo"] selector on a JObject will return a JToken, which has lots of information about that exact token.
+							foreach (var o in jo)
+							{
+								if (o.Key == "Parameters")
+								{
+									JObject oParams = (JObject)o.Value;
+									foreach (var oParam in oParams)
+									{
+										string sParamName = oParam.Key;
+										Console.WriteLine(sParamName + "::");
+										JObject oAttribs = (JObject)oParam.Value;
+										foreach (var oAtt in oAttribs)
+										{
+											Console.WriteLine(oAtt.Key + " = " + oAtt.Value);
+										}
+
+									}
+								}
+								//Console.Write (category.Key);
+							}
+//							JsonSerializer serializer = new JsonSerializer();
+//							JsonReader reader = new JsonTextReader(new StringReader(sStormFileJSON));
+//							var o = (JObject)serializer.Deserialize(reader);
+//							
+//							string xxx = o["Parameters"][0].Name();
+//							Console.WriteLine(xxx);
+							
+							//							JsonReader reader = new JsonTextReader(new StringReader(sStormFileJSON));
+//
+//							while (reader.Read())
+//							{
+//								//read until we hit the parameters section
+//								while (Convert.ToString(reader.Value) != "Parameters")
+//								{
+//									reader.Read();
+//								}
+//
+//								//Parameters has a hardcoded list of possible attributes
+//								while (reader.Read())
+//								{
+//									
+//									string sParamName = Convert.ToString(reader.Value);
+//									Console.WriteLine("PARAM: {0}", sParamName);
+//									
+////									switch (Convert.ToString(reader.Value))
+////									{
+////									case "Description":
+////										reader.Read(); // get next snip
+//
+//										do
+//										{
+//											// As long as we're still in the attribute list...
+//											if (reader.TokenType == JsonToken.PropertyName)
+//											{
+//												var fieldName = Convert.ToString(reader.Value);
+//												reader.Read();
+//												Console.WriteLine("Name: {0}  Value: {1}", fieldName, reader.Value);
+//											}
+//											
+//											reader.Read();
+//											
+//										} while (Convert.ToString(reader.Value) != "Description" && reader.TokenType != JsonToken.EndObject);
+//										break;
+//										
+//									//}
+//								}
+//							}
+
+						} catch (Exception ex) {
+							throw new Exception("The Storm File is invalid. " + ex.Message);
+						}
+					} else {
+						sFileDesc = "Storm File is empty or URL returned nothing.";
+					}
+
+					
+					
+					return "";;
 				}
                 else
                 {
