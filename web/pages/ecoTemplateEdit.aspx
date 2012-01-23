@@ -5,6 +5,8 @@
     <link type="text/css" href="../style/taskView.css" rel="stylesheet" />
     <link type="text/css" href="../style/ecoTemplateEdit.css" rel="stylesheet" />
     <script type="text/javascript" src="../script/toolbox.js"></script>
+    <script type="text/javascript" src="../script/storm.js"></script>
+    <script type="text/javascript" src="../script/stormRunDialog.js"></script>
     <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateEdit.js"></script>
 </asp:Content>
@@ -13,7 +15,7 @@
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
                 <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">Details</span><span 
-					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab">Storm</span><span 
+					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab storm">Storm</span><span 
 					id="tab_tasks" linkto="div_tasks" class="ui-state-default ui-corner-top toolbox_tab">Tasks</span><span 
 					id="tab_ecosystems" linkto="div_ecosystems" class="ui-state-default ui-corner-top toolbox_tab">Ecosystems</span>
             </div>
@@ -45,7 +47,6 @@
                     <div id="storm_file_desc">Getting Storm File ...</div>
 					<hr />
 					<center>
-						<span id="view_storm_file_btn">View Storm File</span>
 						<span id="run_storm_btn">Run Storm</span>
 					</center>
                 </div>
@@ -169,9 +170,5 @@
             </tbody>
         </table>
     </div>
-    <div id="stormfile_dialog" title="Storm File" class="hidden">
-        <textarea id="storm_file_text" rows="20" class="code w100pct"></textarea>
-        <input type="hidden" id="big_box_link" />
-    </div>
-
+    <div id="storm_run_dialog" title="Run Storm" class="hidden"></div>
 </asp:Content>

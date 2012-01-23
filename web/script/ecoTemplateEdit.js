@@ -64,13 +64,15 @@ $(document).ready(function () {
 
 
     //Storm buttons
-    $("#view_storm_file_btn").button({ icons: { primary: "ui-icon-pencil"} });
-    $("#view_storm_file_btn").click(function () {
-        alert("NYI"); //ShowStormFile();
-    });
     $("#run_storm_btn").button({ icons: { primary: "ui-icon-play"} });
     $("#run_storm_btn").click(function () {
-        alert("NYI"); //RunStorm();
+    	//check if the function to display the dialog exists
+    	//otherwise show a message
+        if (typeof ShowRunStormDialog == 'function') {
+            ShowRunStormDialog(g_id);
+        } else {
+	        alert("Cloud Sidekick Storm must be installed.");
+    	}
     });
 
 	//Storm File view box
