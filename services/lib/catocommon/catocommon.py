@@ -43,31 +43,51 @@ def read_config():
 		
 	return key_vals
 
-class CatoService:
+class CatoProcess():
         def __init__(self, process_name):
 		self.host_domain = os.getlogin() +'@'+ os.uname()[1]
 		self.host = os.uname()[1]
 		self.platform = os.uname()[0]
 		self.user = os.getlogin()
 		self.my_pid = os.getpid()
-		self.delay = 3
-		self.loop = 10
-		self.mode = "on"
-		self.master = 1
 		self.process_name = process_name
 		self.initialize_logfile()
 
 	def initialize_logfile(self):
 		home = "."
-		self.logfile_name = os.path.join(home, "logfiles", self.process_name.lower()+".log")
+		self.logfile_name = os.path.join(home, "logfiles", 
+			self.process_name.lower()+".log")
 
 	def output(self,*args):
 		output_string = time.strftime("%Y-%m-%d %H:%M:%S ") + "".join(str(s) for s in args) + "\n"
-		print output_string 
+		#print output_string 
 		fp = open(self.logfile_name, 'a')
 		fp.write(output_string)
 		fp.close
 
+	def startup(self):
+		self.output("####################################### Starting up ", 
+			self.process_name, 
+			" #######################################")
+		config = read_config()
+		self.db = catodb.Db()
+		conn = self.db.connect_db(server=config["server"], port=config["port"], 
+			user=config["user"], 
+			password=config["password"], database=config["database"])
+
+
+	def end(self):
+		self.db.close()
+
+
+class CatoService(CatoProcess):
+
+        def __init__(self, process_name):
+		CatoProcess.__init__(self, process_name)
+		self.delay = 3
+		self.loop = 10
+		self.mode = "on"
+		self.master = 1
 
 	def check_registration(self):
 
@@ -103,21 +123,11 @@ class CatoService:
 	def update_heartbeat(self):
 		sql = "update application_registry set heartbeat = now() where id = %s"
 		self.db.exec_db(sql,(self.instance_id))
-	
+
 	def startup(self):
-		self.output("####################################### Starting up ", self.process_name, 
-				" #######################################")
-		config = read_config()
-		self.db = catodb.Db()
-		conn = self.db.connect_db(server=config["server"], port=config["port"], user=config["user"], 
-						password=config["password"], database=config["database"])
+		CatoProcess.startup(self)
 		self.check_registration()
 		self.update_heartbeat()
-
-
-	def end(self):
-		self.db.close()
-
-
+	
 
 
