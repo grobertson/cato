@@ -65,6 +65,7 @@ $(document).ready(function () {
 
     //Storm buttons
     $("#run_storm_btn").button({ icons: { primary: "ui-icon-play"} });
+    $("#run_storm_btn").hide();
     $("#run_storm_btn").click(function () {
     	//check if the function to display the dialog exists
     	//otherwise show a message
@@ -319,7 +320,8 @@ function GetStorm() {
 		            $("#storm_file_desc").html(unpackJSON(storm.Description));
 		            $("#storm_file_text").html(unpackJSON(storm.Text));
 		            
-		            //parameters secttion too?  Future enhancement.
+		            //turn on the run button
+	                $("#run_storm_btn").show();
 				} else {
 		            showAlert(response.d);
 		        }

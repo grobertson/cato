@@ -3946,11 +3946,9 @@ namespace ACWebMethods
 		[WebMethod(EnableSession = true)]
         public string wmGetEcotemplateStormParameterXML(string sEcoTemplateID)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
 
-            string sSQL = "";
-            string sErr = "";
+			StringBuilder sb = new StringBuilder();
 
             try
             {
@@ -3965,6 +3963,8 @@ namespace ACWebMethods
 					//now we have the storm file json... parse it, spin it, and turn the parameters section into our parameter_xml format
 					if (!string.IsNullOrEmpty(sStormFileJSON)) {
 						try {
+							sb.Append("<parameters>");
+							
 							JObject jo = JObject.Parse(sStormFileJSON);
 							
 							//using the ["foo"] selector on a JObject will return a JToken, which has lots of information about that exact token.
@@ -3976,64 +3976,96 @@ namespace ACWebMethods
 									foreach (var oParam in oParams)
 									{
 										string sParamName = oParam.Key;
-										Console.WriteLine(sParamName + "::");
+										string sParamDesc = "";
+										string sPresentAs = "value";
+										string sConstraintPattern = "";
+										string sConstraintMsg = "";										
+										string sMinLength = "";
+										string sMaxLength = "";
+										string sMinValue = "";
+										string sMaxValue = "";
+										string sDefaultValue = "";
+										string sValueType = "";
+										bool bEncrypt = false;
+										JArray jaAllowedValues = null;
+										
 										JObject oAttribs = (JObject)oParam.Value;
 										foreach (var oAtt in oAttribs)
 										{
+											//http://docs.amazonwebservices.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
 											Console.WriteLine(oAtt.Key + " = " + oAtt.Value);
+											switch (oAtt.Key) {
+											case "Description":
+												sParamDesc = oAtt.Value.ToString();
+												break;
+											case "Type":
+												sValueType = oAtt.Value.ToString();
+												break;
+											case "Default":
+												sDefaultValue = oAtt.Value.ToString();
+												break;
+											case "AllowedValues":
+												//if there's an allowedvalues section, it's a dropdown.
+												sPresentAs = "dropdown";
+												//we might have to use the JArray here.
+												jaAllowedValues = (JArray)oAtt.Value;
+												break;
+											case "MinLength":
+												sMinLength = oAtt.Value.ToString();
+												break;
+											case "MaxLength":
+												sMaxLength = oAtt.Value.ToString();
+												break;
+											case "MinValue":
+												sMinValue = oAtt.Value.ToString();
+												break;
+											case "MaxValue":
+												sMaxValue = oAtt.Value.ToString();
+												break;
+											case "NoEcho":
+												bEncrypt = true;
+												break;
+											case "AllowedPattern":
+												sConstraintPattern = oAtt.Value.ToString();
+												break;
+											case "ConstraintDescription":
+												sConstraintMsg = oAtt.Value.ToString();
+												break;
+											default:
+												break;
+											}
+											
 										}
+										
+										sb.Append("<parameter id=\"p_" + ui.NewGUID() + 
+										          "\" required=\"true\" prompt=\"true\" encrypt=\"" + bEncrypt.ToString() + 
+										          "\" value_type=\"" + sValueType  + 
+										          "\" minvalue=\"" + sMinValue + "\" maxvalue=\"" + sMaxValue + 
+										          "\" minlength=\"" + sMinLength + "\" maxlength=\"" + sMaxLength + 
+										          "\" constraint=\"" + sConstraintPattern + "\" constraint_msg=\"" + sConstraintMsg + "\">");
 
+										sb.Append("<name>" + sParamName + "</name>");
+										sb.Append("<desc>" + sParamDesc + "</desc>");
+										
+										sb.Append("<values present_as=\"" + sPresentAs + "\">");
+										
+										if (sPresentAs == "dropdown" && jaAllowedValues != null) {
+											foreach (var oOpt in jaAllowedValues.Values()) 
+											{
+												sb.Append("<value id=\"pv_" + ui.NewGUID() + "\">" + oOpt.ToString() + "</value>");
+											}
+										} else {
+											sb.Append("<value id=\"pv_" + ui.NewGUID() + "\">" + sDefaultValue + "</value>");
+										}
+										
+										sb.Append("</values>");
+
+										sb.Append("</parameter>");
 									}
 								}
-								//Console.Write (category.Key);
 							}
-//							JsonSerializer serializer = new JsonSerializer();
-//							JsonReader reader = new JsonTextReader(new StringReader(sStormFileJSON));
-//							var o = (JObject)serializer.Deserialize(reader);
-//							
-//							string xxx = o["Parameters"][0].Name();
-//							Console.WriteLine(xxx);
 							
-							//							JsonReader reader = new JsonTextReader(new StringReader(sStormFileJSON));
-//
-//							while (reader.Read())
-//							{
-//								//read until we hit the parameters section
-//								while (Convert.ToString(reader.Value) != "Parameters")
-//								{
-//									reader.Read();
-//								}
-//
-//								//Parameters has a hardcoded list of possible attributes
-//								while (reader.Read())
-//								{
-//									
-//									string sParamName = Convert.ToString(reader.Value);
-//									Console.WriteLine("PARAM: {0}", sParamName);
-//									
-////									switch (Convert.ToString(reader.Value))
-////									{
-////									case "Description":
-////										reader.Read(); // get next snip
-//
-//										do
-//										{
-//											// As long as we're still in the attribute list...
-//											if (reader.TokenType == JsonToken.PropertyName)
-//											{
-//												var fieldName = Convert.ToString(reader.Value);
-//												reader.Read();
-//												Console.WriteLine("Name: {0}  Value: {1}", fieldName, reader.Value);
-//											}
-//											
-//											reader.Read();
-//											
-//										} while (Convert.ToString(reader.Value) != "Description" && reader.TokenType != JsonToken.EndObject);
-//										break;
-//										
-//									//}
-//								}
-//							}
+							sb.Append("</parameters>");
 
 						} catch (Exception ex) {
 							throw new Exception("The Storm File is invalid. " + ex.Message);
@@ -4041,10 +4073,8 @@ namespace ACWebMethods
 					} else {
 						sFileDesc = "Storm File is empty or URL returned nothing.";
 					}
-
 					
-					
-					return "";;
+					return sb.ToString();
 				}
                 else
                 {
@@ -4057,6 +4087,80 @@ namespace ACWebMethods
             }
 
         }
+
+        [WebMethod(EnableSession = true)]
+        public string wmCreateEcosystemByStorm(string sName, string sDescription, string sEcotemplateID, string sParameterXML, string sCloudID)
+        {
+            dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
+            string sSQL = null;
+            string sErr = null;
+
+            try
+            {
+                sSQL = "select ecosystem_name from ecosystem where ecosystem_name = '" + sName + "'";
+                string sExists = "";
+                if (!dc.sqlGetSingleString(ref sExists, sSQL, ref sErr))
+                {
+                    throw new Exception(sErr);
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(sExists))
+                    {
+                        return "Ecosystem exists - choose another name.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+
+            try
+            {
+                string sNewID = ui.NewGUID();
+                string sCloudAccountID = ui.GetSelectedCloudAccountID();
+
+                //validate
+				if (string.IsNullOrEmpty(sCloudAccountID))
+                    return "Unable to create - No Cloud Account selected.";
+                if (string.IsNullOrEmpty(sEcotemplateID))
+                    return "Unable to create - An Ecosystem Template is required..";
+                if (string.IsNullOrEmpty(sCloudID))
+                    return "Unable to create - A Cloud is required..";
+				
+				//unpack the parameters
+				sParameterXML = ui.unpackJSON(sParameterXML);
+				
+				//go
+                sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," +
+					" storm_file, storm_parameter_xml, storm_cloud_id)" +
+                    " select '" + sNewID + "'," +
+                    " '" + sName + "'," +
+                    (string.IsNullOrEmpty(sDescription) ? " null" : " '" + sDescription + "'") + "," +
+                    " '" + sCloudAccountID + "'," +
+                    " ecotemplate_id," +
+                    " storm_file," +
+                    " '" + sParameterXML + "'," +
+                    " '" + sCloudID + "'" +
+                    " from ecotemplate where ecotemplate_id='" + sEcotemplateID + "'";
+
+                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+                    throw new Exception(sErr);
+
+                ui.WriteObjectAddLog(acObjectTypes.Ecosystem, sNewID, sName, "Ecosystem created by Storm.");
+
+                return sNewID;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
 		#endregion
 	}
 

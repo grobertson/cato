@@ -84,14 +84,21 @@ function DrawParameterEditForm(parameter_xml) {
             //how do we display the values? (not part of the array but an attribute of the "values" node)
             var present_as = $(p).find("values").attr("present_as");
 			var encrypt = null;
+            var constraint = $(p).attr("constraint");
+            var constraint_msg = $(p).attr("constraint_msg");
+            var minvalue = $(p).attr("minvalue");
+            var maxvalue = $(p).attr("maxvalue");
+            var minlength = $(p).attr("minlength");
+            var maxlength = $(p).attr("maxlength");
 			
             var encryptattr = "";
-            if ($(p).attr("encrypt"))
+            if ($(p).attr("encrypt")) {
             	if ($(p).attr("encrypt") == "true") {
             		encryptattr = "encrypt=\"true\"";
 					encrypt = true;
 				}
-
+			}
+			
             //well, we basically show it unless prompt is false
             if (prompt != "false") {
                 //show the required one slightly different
@@ -101,11 +108,12 @@ function DrawParameterEditForm(parameter_xml) {
                 output += "<div class=\"task_launch_parameter_name\">" + parameter_name + "</div>";
 
                 //don't show tooltip icons for empty descriptions
-                if (parameter_desc > "")
+                if (parameter_desc > "") {
                     output += "<div class=\"task_launch_parameter_icons\">" +
                     "<span class=\"floatright ui-icon ui-icon-info parameter_help_btn\" title=\"" + parameter_desc + "\"></span>" +
                     "</div>";
-
+				}
+				
                 //values
                 //if "present_as" is missing or invalid, default to a single "value"
                 if (present_as == "dropdown") {
@@ -156,7 +164,7 @@ function DrawParameterEditForm(parameter_xml) {
                         if (vidx > 0)
                             return false;
 
-                        var attr = "";
+                        var attribs = "";
                         
                         output += "<div class=\"task_launch_parameter_value\">";
 
@@ -169,7 +177,7 @@ function DrawParameterEditForm(parameter_xml) {
 	                    if (encrypt) {
 	                    	//what's the oev?
 				            if ($(v).attr("oev") != null)
-			            		attr = "oev=\"" + $(v).attr("oev") + "\"";
+			            		attribs = "oev=\"" + $(v).attr("oev") + "\"";
 
 	                    	
             				//TODO: PARAMS: hidden field/masking crap
@@ -189,8 +197,18 @@ function DrawParameterEditForm(parameter_xml) {
 	                    	*/
                     	}
 	                    
+	                    //the parameter has some extra field level validations such as lengths, type and a regex constraint
+	                    //they are enforced in the client, but we have to pass the attributes along here.
+                    	attribs += (minlength ?  ' minlength="' + minlength + '"' : '');
+                    	attribs += (maxlength ? ' maxlength="' + maxlength + '"' : '');
+                    	attribs += (minvalue ? ' minvalue="' + minvalue + '"' : '');
+                    	attribs += (maxvalue ? ' maxvalue="' + maxvalue + '"' : '');
+                    	attribs += (constraint ? ' constraint="' + constraint + '"' : '');
+                    	attribs += (constraint_msg ? ' constraint_msg="' + constraint_msg + '"' : '');
+
+	                    
                     	//the actual textarea
-						output += "<textarea id=\"v_" + uniq++ + "\" class=\"task_launch_parameter_value_input\" rows=\"1\" " + attr + ">" + $(v).text() + "</textarea>";
+						output += "<textarea id=\"v_" + uniq++ + "\" class=\"task_launch_parameter_value_input\" rows=\"1\" " + attribs + ">" + $(v).text() + "</textarea>";
 
                         output += "</div>";
                     });
