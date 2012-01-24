@@ -53,9 +53,40 @@ $(document).ready(function() {
         //then
         return;
     });
-
 });
 
+
+function checkFieldConstraints($ctl) {
+	var msg = "";
+	
+	//test the regex pattern
+	if ($ctl.attr("constraint")) {
+		var val = $ctl.val();
+		var rx = $ctl.attr("constraint");
+		var patt = new RegExp(rx);
+		
+		if (!val.match(patt)) {
+			msg += "<li>" + $ctl.attr("constraint_msg") + "</li>";
+		}
+	}
+
+	//minlength check
+	if ($ctl.attr("minlength")) {
+    	var val = $ctl.val();
+    	var ml = $ctl.attr("minlength");
+    	if (val.length < ml) {
+    		msg += "<li>Value must be at least " + ml + " characters long.</li>";
+		}
+	}
+    
+    if (msg.length > 0) {
+    	$ctl.parent().append("<ul class=\"constraint_msg ui-state-highlight\">" + msg + "</ul>");
+    } else {
+    	$ctl.parent().find(".constraint_msg").remove();
+	}
+	
+	return msg;
+}
 //some validations are not on a keypress basis, rather should happen on the blur event.
 //these funcs are called based on field type from the onStepFieldChange function.
 
