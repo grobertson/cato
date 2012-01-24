@@ -178,6 +178,7 @@ CREATE TABLE `ecosystem` (
   `parameter_xml` text,
   `storm_file` text,
   `storm_parameter_xml` text,
+  `storm_cloud_id` VARCHAR(36) NULL,
   PRIMARY KEY (`ecosystem_id`),
   UNIQUE KEY `name_cloud_account` (`account_id`,`ecosystem_name`),
   KEY `fk_cloud_account` (`account_id`),
