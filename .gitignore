@@ -31,6 +31,6 @@ web/obj/*
 
 services/python/*
 
-web/script/storm.js
+*.pyc
 
-web/script/stormRunDialog.js
+*.so
