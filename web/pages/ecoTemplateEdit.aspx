@@ -116,7 +116,12 @@
 	        </div>
 		</div>
         <div id="div_storm_detail" class="detail_panel hidden">
-			<pre><div id="storm_file_text"></div></pre>
+			<div class="ui-widget-content ui-corner-all">
+				<div class="ui-state-default step_header">
+					<div class="step_header_title"><span class="action_name_lbl">Storm File</span></div>
+				</div>
+				<pre><div id="storm_file_text"></div></pre>
+			</div>
 		</div>
 	</div>
     <div class="hidden">
