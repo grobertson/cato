@@ -51,9 +51,6 @@ namespace Web.pages
 				}
 
                 BindList();
-				
-				//if Storm is enabled, show some additional stuff
-				pnlStormDialog.Visible = ui.IsTrue(ui.GetApplicationSetting("modules/storm/enabled"));
             }
         }
         private void BindList()

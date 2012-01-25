@@ -108,13 +108,12 @@
 						<input type="text" id="txtTemplateDesc" class="w400px" />
                      </td>
                  </tr>
-				<asp:Panel id="pnlStormDialog" runat="server">
-                <tr>
+                <tr class="storm">
                     <td colspan="2">
                         <hr />
                     </td>
                 </tr>
-                <tr>
+                <tr class="storm">
                     <td style="vertical-align: center;">
                         <img src="../images/icons/storm_32.png" />
                     </td>
@@ -122,7 +121,7 @@
                         Storm
                     </td>
                 </tr>
-                <tr>
+                <tr class="storm">
                     <td>
                         Storm File Source
                     </td>
@@ -130,24 +129,23 @@
                         <select id="ddlStormFileSource"><option>URL</option><option>Text</option></select>
                     </td>
                 </tr>
-                <tr>
+                <tr class="storm">
                     <td colspan="2">
                         <textarea class="w500px" id="txtStormFile"></textarea>
                     </td>
                 </tr>
-                <tr>
+                <tr class="storm">
                     <td colspan="2">
                         <hr />
                     </td>
                 </tr>
-                <tr>
+                <tr class="storm">
                     <td>
                     </td>
                     <td style="vertical-align:middle;">
                         <input type="checkbox" /> Run Storm Now?
                     </td>
                 </tr>
-				</asp:Panel>
             </tbody>
         </table>
     </div>

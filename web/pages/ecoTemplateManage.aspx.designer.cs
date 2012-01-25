@@ -36,7 +36,5 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.PlaceHolder phPager;
 		
 		protected System.Web.UI.WebControls.Button btnGetPage;
-		
-		protected System.Web.UI.WebControls.Panel pnlStormDialog;
 	}
 }
