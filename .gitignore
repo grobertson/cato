@@ -34,3 +34,7 @@ services/python/*
 *.pyc
 
 *.so
+
+web/script/storm.js
+
+web/script/stormRunDialog.js
