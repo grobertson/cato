@@ -79,11 +79,12 @@ function checkFieldConstraints($ctl) {
 		}
 	}
     
+	//whack old messages
+	$ctl.parent().find(".constraint_msg").remove();
+
     if (msg.length > 0) {
     	$ctl.parent().append("<ul class=\"constraint_msg ui-state-highlight\">" + msg + "</ul>");
-    } else {
-    	$ctl.parent().find(".constraint_msg").remove();
-	}
+    }
 	
 	return msg;
 }
