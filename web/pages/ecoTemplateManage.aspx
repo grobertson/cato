@@ -4,6 +4,7 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateManage.js"></script>
+    <script type="text/javascript" src="../script/storm.js"></script>
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div style="display: none;">
