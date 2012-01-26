@@ -1204,6 +1204,11 @@ namespace ACWebMethods
                 if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
 
+                sSQL = "delete from ecosystem_log where ecosystem_id in (" + sDeleteArray.ToString() + ")";
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+
                 sSQL = "delete from ecosystem where ecosystem_id in (" + sDeleteArray.ToString() + ")";
                 oTrans.Command.CommandText = sSQL;
                 if (!oTrans.ExecUpdate(ref sErr))
@@ -4161,7 +4166,55 @@ namespace ACWebMethods
             }
         }
 
+		[WebMethod(EnableSession = true)]
+        public string wmGetEcosystemStatusAndLog(string sEcosystemID)
+        {
+			dataAccess dc = new dataAccess();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			string sErr = "";
+			
+			string sSQL = "select storm_status from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
+			string sStormStatus = "";
+			if (!dc.sqlGetSingleString(ref sStormStatus, sSQL, ref sErr))
+				throw new Exception(sErr);
+
+			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, update_dt" +
+				" from ecosystem_log" +
+					" where ecosystem_id = '" + sEcosystemID + "'" +
+					" order by update_dt desc";
+			
+			DataTable dt = new DataTable();
+			if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				throw new Exception(sErr);
+			
+			sb.Append("{ \"storm_status\" : \"" + (string.IsNullOrEmpty(sStormStatus) ? "" : sStormStatus) + "\",");
+			sb.Append(" \"ecosystem_log\" : [");
+			
+			if (dt.Rows.Count > 0)
+			{
+				foreach (DataRow dr in dt.Rows)
+				{
+					sb.AppendFormat("[ \"{0}\", \"{1}\", \"{2}\", \"{3}\", \"{4}\", \"{5}\", \"{6}\", \"{7}\" ]", 
+		                dr[0].ToString(), 
+		                dr[1].ToString(), 
+		                dr[2].ToString(), 
+		                dr[3].ToString(), 
+		                dr[4].ToString(), 
+		                dr[5].ToString().Replace ("\\","\\\\").Replace ("\"","\"\""), 
+		                dr[6].ToString().Replace ("\\","\\\\").Replace ("\"","\"\""), 
+		                dr[7].ToString());
+					
+					if (dr != dt.Rows[dt.Rows.Count - 1])
+						sb.Append(",");
+				}
+			}
+			
+			sb.Append("] }");
+
+			return sb.ToString();
+        }
 		#endregion
 	}
-
 }

@@ -128,6 +128,8 @@ function tabWasClicked(tab) {
     //do some case specific ajax calls
     if (tab == "objects") {
         getEcosystemObjectList();
+    } else if (tab == "storm") {
+        getEcosystemLog();
     } else if (tab == "details") {
         GetRegistry(g_eco_id);
         //temporarily hidden until we enable parameters on ecosystems
@@ -238,6 +240,43 @@ function pageLoad() {
 
 }
 
+function getEcosystemLog() {
+    $.ajax({
+        type: "POST",
+        url: "uiMethods.asmx/wmGetEcosystemStatusAndLog",
+        data: '{"sEcosystemID":"' + g_eco_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            var log = jQuery.parseJSON(msg.d);
+            
+            $("#storm_status").text(log.storm_status);
+			
+			var html = "";
+			$.each(log.ecosystem_log, function(rowidx) {
+        	    html += "<tr>";
+				
+				$.each(log.ecosystem_log[rowidx], function(colidx) {
+					//skip the first two columns, the ascending id and the ecosystem_id.
+					if (colidx < 2)
+						return true;
+        	    	
+        	    	html += "<td>" + log.ecosystem_log[rowidx][colidx] + "</td>";
+				});
+				
+        	    html += "</tr>";
+	        });
+
+            $("#ecosystem_log tbody").empty();
+            $("#ecosystem_log").append(html);
+            initJtable();
+        },
+        error: function (response) {
+            hidePleaseWait();
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function getEcosystemObjectList() {
     showPleaseWait();

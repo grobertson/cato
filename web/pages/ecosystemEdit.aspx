@@ -48,7 +48,7 @@
 					</center>
                 </div>
             </div>
-            <div id="div_storm" class="toolbox_panel hidden">
+            <div id="div_storm" class="storm toolbox_panel hidden">
                 <div style="padding: 0 0 0 5px;">
                     <img src="../images/icons/storm_32.png" /><span class="detail_label">Created by Storm</span>
                     <hr />
@@ -129,6 +129,19 @@
                     There are no pending Actions on this Ecosystem.
                 </div>
             </div>
+        </div>
+        <div id="div_storm_detail" class="detail_panel hidden">
+			<h4>Ecosystem Log</h4>
+            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="99%">
+				<thead>
+					<th>Type</th>
+					<th>ID</th>
+					<th>Logical ID</th>
+					<th>Status</th>
+					<th>Log</th>
+					<th>Last Update</th>
+				</thead>
+            </table>
         </div>
     </div>
     <div class="te_container_footer">
