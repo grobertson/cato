@@ -268,6 +268,19 @@ CREATE TABLE `import_task_step` (
   `output_column_delimiter` int(11) NOT NULL DEFAULT '0',
   `variable_xml` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `ecosystem_log` (
+  `ecosystem_log_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ecosystem_id` varchar(36) NOT NULL,
+  `ecosystem_object_type` varchar(32) NOT NULL,
+  `logical_id` varchar(256) NULL,
+  `ecosystem_object_id` varchar(64) NOT NULL,
+  `status` varchar(32) NOT NULL,
+  `log` text NULL,
+  `update_dt` datetime DEFAULT NULL,
+  PRIMARY KEY (`ecosystem_log_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `ldap_domain` (
   `ldap_domain` varchar(255) NOT NULL DEFAULT '',
   `address` varchar(255) NOT NULL DEFAULT '',

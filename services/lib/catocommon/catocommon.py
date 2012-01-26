@@ -1,4 +1,5 @@
 import os.path
+import sys
 from catocryptpy import catocryptpy
 import pymysql
 import time
@@ -6,8 +7,10 @@ from catodb import catodb
 
 def read_config():
 
-	home = "."
-	filename = os.path.join(home, "conf", "cato.conf")		
+	base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
+	conf_path = os.path.join(base_path, "conf")
+
+	filename = os.path.join(conf_path, "cato.conf")		
 	if not os.path.isfile(filename):
 		msg = "The configuration file "+ filename +" does not exist."
 		raise Exception(msg)
@@ -55,8 +58,9 @@ class CatoProcess():
 
 	def initialize_logfile(self):
 		home = "."
-		self.logfile_name = os.path.join(home, "logfiles", 
-			self.process_name.lower()+".log")
+		base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
+		log_path = os.path.join(base_path, "services", "logfiles")
+		self.logfile_name = os.path.join(log_path,  self.process_name.lower()+".log")
 
 	def output(self,*args):
 		output_string = time.strftime("%Y-%m-%d %H:%M:%S ") + "".join(str(s) for s in args) + "\n"

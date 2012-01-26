@@ -44,10 +44,13 @@ class Db(object):
 		except Exception, e:
 			raise Exception(e)
 
-		return result	
+		if result:
+			return result
+		else:
+			return False
 
 
-	def select_row(self, sql):
+	def select_row(self, sql, params=()):
 		"""Gets a single row for a provided query.  If there are multiple rows, the first is returned."""
 		if sql == "":
 			print "select_row: SQL cannot be empty."
@@ -55,15 +58,18 @@ class Db(object):
 		
 		try:
 			c = self.conn.cursor()
-			c.execute(sql)
+			c.execute(sql, params)
 			result = c.fetchone()
 			c.close()
 		except Exception, e:
 			raise Exception(e)
 
-		return result
+		if result:
+			return result
+		else:
+			return False
 
-	def select_col(self, sql):
+	def select_col(self, sql, params=()):
 		"""Gets a single value from the database.  If the query returns more than one column, the first is used."""
 		if sql == "":
 			print "select_column: SQL cannot be empty."
@@ -71,7 +77,7 @@ class Db(object):
 		
 		try:
 			c = self.conn.cursor()
-			c.execute(sql)
+			c.execute(sql, params)
 			result = c.fetchone()
 			c.close()
 		except Exception, e:
