@@ -132,9 +132,17 @@
         </div>
         <div id="div_storm_detail" class="detail_panel hidden">
 			<h4>Ecosystem Log</h4><span id="reload_storm_log_btn"></span>
-            <table id="ecosystem_log"></table>
-			<div id="ecosystem_log_pager"></div>
-		</div>
+            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="99%">
+				<thead>
+					<th>Type</th>
+					<th>ID</th>
+					<th>Logical ID</th>
+					<th>Status</th>
+					<th>Log</th>
+					<th>Last Update</th>
+				</thead>
+            </table>
+        </div>
     </div>
     <div class="te_container_footer">
         <!--The footer has to be here so some element can contain the 'clear:both;' style.-->
