@@ -28,6 +28,7 @@
     <link type="text/css" href="../style/ui.tabs.css" rel="stylesheet" />
     <link type="text/css" href="../style/superfish/superfish.css" rel="stylesheet" />
     <link type="text/css" href="../style/tipTip.css" rel="stylesheet" />
+    <link type="text/css" href="../script/jquery/jquery.jqGrid-4.3.1/css/ui.jqgrid.css" rel="stylesheet" />
     <!--jQuery -->
     <script type="text/javascript" src="../script/jquery/jquery-1.6.1.js"></script>
     <script type="text/javascript" src="../script/jquery/jquery-ui-1.8.12.js"></script>
@@ -42,6 +43,8 @@
     <script type="text/javascript" src="../script/jquery/jquery.tipTip.js"></script>
     <script type="text/javascript" src="../script/jquery/jquery.timepicker.js"></script>    
 	<script type="text/javascript" src="../script/jquery/jquery.base64.js"></script>
+	<script type="text/javascript" src="../script/jquery/jquery.jqGrid-4.3.1/js/i18n/grid.locale-en.js"></script>
+	<script type="text/javascript" src="../script/jquery/jquery.jqGrid-4.3.1/js/jquery.jqGrid.min.js"></script>
     <!-- JavaScript -->
     <script type="text/javascript" src="../script/masterpage.js"></script>
     <script type="text/javascript" src="../script/MainScript.js"></script>

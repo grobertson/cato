@@ -42,6 +42,11 @@ $(document).ready(function () {
         location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + g_ecotemplate_id;
     });
 
+    $("#reload_storm_log_btn").button({ icons: { primary: "ui-icon-refresh"} });
+    $("#reload_storm_log_btn").click(function () {
+		getEcosystemLog();
+    });
+
     //enabling the 'change' event for the Details tab
     $("#div_details :input[te_group='detail_fields']").change(function () { doDetailFieldUpdate(this); });
 
@@ -96,7 +101,30 @@ $(document).ready(function () {
         }, 250); //end timeout
     });
 
-    //let's turn the "buttons" to behave like buttons
+	//define the jqGrid for the event log
+	$("#ecosystem_log").jqGrid({ 
+		datatype: "json", 
+		colNames:
+			['Type', 'Object ID', 'Logical ID', 'Status','Log','Last Update'], 
+		colModel:[
+			{name:'ecosystem_object_type',index:'ecosystem_object_type'}, 
+			{name:'ecosystem_object_id',index:'ecosystem_object_id'}, 
+			{name:'logical_id',index:'logical_id'}, 
+			{name:'status',index:'status'}, 
+			{name:'log',index:'log', width:280}, 
+			{name:'update_dt',index:'update_dt', width:80, align:"right"}
+			],
+		loadonce: true,
+		sortable: true,
+		rowNum:25, 
+		rowList:[25,50,100], 
+		pager: '#ecosystem_log_pager', 
+		viewrecords: true, 
+		caption:"JSON Example",
+		width: "95%"
+	});
+
+	//let's turn the "buttons" to behave like buttons
     //persist the "active" state on a category only! (actions pop back out)
     //    $("#div_actions_detail .action_category").live("mousedown", function (event) {
     //        $("#toolbox .action").removeClass("ui-state-active");
@@ -252,25 +280,39 @@ function getEcosystemLog() {
             
             $("#storm_status").text(log.storm_status);
 			
-			var html = "";
+			//jqGrid takes a very specific json format
+			var jqGridData = '{' + 
+				'"total": "xxx",' +
+				'"page": "yyy",' +
+				'"records": "zzz",' +
+				'"rows" : [';
+
+			//for each row
 			$.each(log.ecosystem_log, function(rowidx) {
-        	    html += "<tr>";
+                jqGridData += '{"id" :"' + rowidx + '", "cell" :['
 				
-				$.each(log.ecosystem_log[rowidx], function(colidx) {
-					//skip the first two columns, the ascending id and the ecosystem_id.
-					if (colidx < 2)
-						return true;
-        	    	
-        	    	html += "<td>" + log.ecosystem_log[rowidx][colidx] + "</td>";
-				});
+				//for each column
+				for (i=2;i<=7;i++) { //5 hardcoded columns, 2-7
+        	    	jqGridData += '"' + log.ecosystem_log[rowidx][i] + '"';
+	        	    
+	        	    //if it's not the last column add a comma
+	        	    if (i < 7)
+	        	    	jqGridData += ',';
+				}
 				
-        	    html += "</tr>";
+        	    jqGridData += ']}';
+        	    
+        	    //if it's not the last row add a comma
+        	    if (rowidx < (log.ecosystem_log.length - 1))
+        	    	jqGridData += ',';
 	        });
 
-            $("#ecosystem_log tbody").empty();
-            $("#ecosystem_log").append(html);
-            initJtable();
-        },
+			jqGridData += '] }';
+			
+			//alert(jqGridData);
+			var jsonobj = $.parseJSON(jqGridData);
+			$("#ecosystem_log")[0].addJSONData(jsonobj); 
+		},
         error: function (response) {
             hidePleaseWait();
             showAlert(response.responseText);
