@@ -198,6 +198,17 @@ CREATE TABLE `ecosystem_object` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ecosystem_object_tag` (
+  `ecosystem_id` varchar(36) NOT NULL,
+  `ecosystem_object_id` varchar(64) NOT NULL,
+  `key` varchar(128) NOT NULL,
+  `value` varchar(256) NOT NULL,
+  PRIMARY KEY (`ecosystem_id`,`ecosystem_object_id`,`key`,`value`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ecotemplate` (
   `ecotemplate_id` varchar(36) NOT NULL,
   `ecotemplate_name` varchar(64) DEFAULT NULL,
