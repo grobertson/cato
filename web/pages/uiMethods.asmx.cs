@@ -4183,7 +4183,7 @@ namespace ACWebMethods
 			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, update_dt" +
 				" from ecosystem_log" +
 					" where ecosystem_id = '" + sEcosystemID + "'" +
-					" order by update_dt desc";
+					" order by ecosystem_log_id desc";
 			
 			DataTable dt = new DataTable();
 			if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))

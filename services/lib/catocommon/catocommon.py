@@ -78,6 +78,7 @@ class CatoProcess():
 		conn = self.db.connect_db(server=config["server"], port=config["port"], 
 			user=config["user"], 
 			password=config["password"], database=config["database"])
+		self.config = config
 
 
 	def end(self):
