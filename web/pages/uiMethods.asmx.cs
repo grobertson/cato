@@ -858,11 +858,10 @@ namespace ACWebMethods
             string sHTML = "";
 			if (xd.XPathSelectElement("registry") != null)
             {
-                sHTML += "<div class=\"ui-widget-content ui-corner-bottom registry\">";
-                sHTML += "  <div class=\"ui-state-default registry_section_header\" xpath=\"registry\">"; //header
-                sHTML += "      <div class=\"registry_section_header_title\">Registry</div>";
+                sHTML += "<div class=\"ui-widget-content ui-corner-all registry\">";
+                sHTML += "<div class=\"ui-widget-header\" xpath=\"registry\">"; //header
 
-                sHTML += "<div class=\"registry_section_header_icons\">"; //step header icons
+				sHTML += "<div class=\"floatright\">"; //step header icons
 
                 sHTML += "<span id=\"registry_refresh_btn\" class=\"pointer\">" +
                     "<img style=\"width:10px; height:10px;\" src=\"../images/icons/reload_16.png\"" +
@@ -874,12 +873,15 @@ namespace ACWebMethods
                     " alt=\"\" title=\"Add another...\" /></span>";
 
                 sHTML += "</div>";  //end step header icons
-                sHTML += "  </div>"; //end header
-
+                sHTML += "<span>Registry</span>";
+                sHTML += "</div>"; //end header
+				
+				sHTML += "<div style=\"padding: 5px;\">";
                 foreach (XElement xe in xd.XPathSelectElement("registry").Nodes())
                 {
                     sHTML += DrawRegistryNode(xe, "registry/" + xe.Name.ToString());
                 }
+                sHTML += "</div>";
 
                 sHTML += "</div>";
             }

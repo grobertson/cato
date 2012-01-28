@@ -19,7 +19,6 @@
         <div id="toolbox">
             <div id="toolbox_tabs" class="toolbox_tabs_1row">
                 <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top toolbox_tab">Details</span><span 
-					id="tab_storm" linkto="div_storm" class="ui-state-default ui-corner-top toolbox_tab storm">Storm</span><span 
 					id="tab_objects" linkto="div_objects" class="ui-state-default ui-corner-top toolbox_tab">Objects</span><span
                     id="tab_actions" linkto="div_actions" class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active toolbox_tab">Actions</span>
             </div>
@@ -40,7 +39,12 @@
                     <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="10" runat="server" te_group="detail_fields"
                         column="ecosystem_desc" CssClass="task_details code">
                     </asp:TextBox>
-                    <br />
+                    <div class="storm">
+	                    <img src="../images/icons/storm_32.png" /><span class="detail_label">Created by Storm</span>
+	                    <hr />
+	                    <span class="detail_label">Storm Status:</span>
+						<div id="storm_status"></div>
+					</div>
                     <br />
                     <br />
 					<center>
@@ -48,16 +52,8 @@
 					</center>
                 </div>
             </div>
-            <div id="div_storm" class="storm toolbox_panel hidden">
-                <div style="padding: 0 0 0 5px;">
-                    <img src="../images/icons/storm_32.png" /><span class="detail_label">Created by Storm</span>
-                    <hr />
-                    <span class="detail_label">Status:</span>
-					<div id="storm_status"></div>
-                </div>
-            </div>
             <div id="div_objects" class="toolbox_panel hidden">
-                <!-- I imagine the "actions" for a specific object would go here.-->
+                <!-- I imagine the actions for a specific object would go here. -->
             </div>
             <div id="div_actions" class="toolbox_panel">
                 <span class="detail_label">Select a Category:</span>
@@ -112,36 +108,50 @@
             <div id="registry_content">
             </div>
             <hr />
-            <div id="div_schedules" class="ui-widget-content ui-corner-bottom">
-                <div class="ui-state-default h18px">
-                    <span class="">Scheduling</span>
-                </div>
-                <div id="ecosystem_schedules">
-                    There are no Actions scheduled to run on this Ecosystem.
-                </div>
+	        <div class="ui-widget-content ui-corner-all">
+	            <div class="ui-widget-header">
+	                <span>Scheduling</span>
+				</div>
+				<div style="padding: 5px;">	
+	                <div id="ecosystem_schedules">
+	                    There are no Actions scheduled to run on this Ecosystem.
+	                </div>
+				</div>
             </div>
             <hr />
-            <div id="div_plans" class="ui-widget-content ui-corner-bottom">
-                <div class="ui-state-default h18px">
-                    <span class="">Upcoming Actions</span>
-                </div>
-                <div id="ecosystem_plans">
-                    There are no pending Actions on this Ecosystem.
-                </div>
-            </div>
-        </div>
-        <div id="div_storm_detail" class="detail_panel hidden">
-			<h4>Ecosystem Log</h4><span id="reload_storm_log_btn"></span>
-            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="99%">
-				<thead>
-					<th>Type</th>
-					<th>ID</th>
-					<th>Logical ID</th>
-					<th>Status</th>
-					<th>Log</th>
-					<th>Last Update</th>
-				</thead>
-            </table>
+	        <div class="ui-widget-content ui-corner-all">
+	            <div class="ui-widget-header">
+	                <span>Upcoming Actions</span>
+				</div>
+				<div style="padding: 5px;">	
+	                <div id="ecosystem_plans">
+	                    There are no pending Actions on this Ecosystem.
+	                </div>
+				</div>
+			</div>
+            <hr />
+	        <div class="ui-widget-content ui-corner-all">
+	            <div class="ui-widget-header">
+                    <div class="floatleft">
+                    </div>
+                    <div class="floatright">
+                        <span id="reload_storm_log_btn"></span>
+                    </div>
+                        <span>Ecosystem Log</span>
+				</div>
+				<div style="padding: 5px;">	
+		            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
+						<thead>
+							<th>Type</th>
+							<th>ID</th>
+							<th>Logical ID</th>
+							<th>Status</th>
+							<th>Log</th>
+							<th>Last Update</th>
+						</thead>
+		            </table>
+		        </div>
+	        </div>
         </div>
     </div>
     <div class="te_container_footer">

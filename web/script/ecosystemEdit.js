@@ -42,7 +42,7 @@ $(document).ready(function () {
         location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + g_ecotemplate_id;
     });
 
-    $("#reload_storm_log_btn").button({ icons: { primary: "ui-icon-refresh"} });
+    $("#reload_storm_log_btn").button({ icons: { primary: "ui-icon-refresh"}, text: false }).css({ height:12, width:12});
     $("#reload_storm_log_btn").click(function () {
 		getEcosystemLog();
     });
@@ -116,6 +116,9 @@ $(document).ready(function () {
     getActionCategories();
     getActions();
 
+	if (STORM)
+    	getEcosystemLog();
+
 });
 
 function CloudAccountWasChanged() {
@@ -133,8 +136,6 @@ function tabWasClicked(tab) {
     //do some case specific ajax calls
     if (tab == "objects") {
         getEcosystemObjectList();
-    } else if (tab == "storm") {
-        getEcosystemLog();
     } else if (tab == "details") {
         GetRegistry(g_eco_id);
         //temporarily hidden until we enable parameters on ecosystems
