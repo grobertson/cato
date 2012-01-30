@@ -137,7 +137,7 @@ proc read_config {} {
 	lappend ::auto_path $::HOME/services/lib
 	package require base64
 	package require blowfish
-	package require catocrypt
+	package require catocrypttcl
         set file "[file join $::HOME conf cato.conf]"
         if {![file exists $file]} {
                 return -code error -level 1 "Error: $file could not be opened for reading"

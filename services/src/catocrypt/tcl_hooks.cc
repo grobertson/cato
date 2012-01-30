@@ -96,7 +96,7 @@ tcl_decryptPassword(ClientData clientData, Tcl_Interp *interp, int objc,
 	}
         Tcl_CreateCommand(interp, "encrypt_string", (Tcl_CmdProc *) tcl_encryptPassword, NULL, NULL);
 	Tcl_CreateCommand(interp, "decrypt_string", (Tcl_CmdProc *) tcl_decryptPassword, NULL, NULL);
-	Tcl_PkgProvide(interp, "catocrypt", "1.0");
+	Tcl_PkgProvide(interp, "catocrypttcl", "1.0");
 
 		return TCL_OK;
         return TCL_OK;
