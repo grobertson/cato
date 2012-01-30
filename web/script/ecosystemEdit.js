@@ -116,7 +116,7 @@ $(document).ready(function () {
     getActionCategories();
     getActions();
 
-	if (STORM)
+	if (typeof(STORM) != "undefined")
     	getEcosystemLog();
 
 });
