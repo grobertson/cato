@@ -115,32 +115,34 @@
                     </td>
                 </tr>
                 <tr class="storm">
-                    <td style="vertical-align: center;">
+                    <td>
                         <img src="../images/icons/storm_32.png" />
                     </td>
-                    <td>
-                        Storm
+                    <td style="vertical-align: middle;">
+                        <input id="use_storm_btn" type="checkbox" />Provision with Storm?
                     </td>
                 </tr>
-                <tr class="storm">
+                <tr class="stormfields hidden">
                     <td>
-                        Storm File Source
+                        File Source
                     </td>
                     <td>
-                        <select id="ddlStormFileSource"><option>URL</option><option>Text</option></select>
+                        <select id="ddlStormFileSource"><option>URL</option><option>Text</option><option>File</option></select>
                     </td>
                 </tr>
-                <tr class="storm">
+                <!--<tr class="stormfields hidden">
                     <td colspan="2">
+					<input id="storm_file_picker" type="file" />
                         <textarea class="w500px" id="txtStormFile"></textarea>
+						<div id="json_parse_msg"></div>
                     </td>
-                </tr>
-                <tr class="storm">
+                </tr>-->
+                <tr class="stormfields hidden">
                     <td colspan="2">
                         <hr />
                     </td>
                 </tr>
-                <tr class="storm">
+                <tr class="stormfields hidden">
                     <td>
                     </td>
                     <td style="vertical-align:middle;">

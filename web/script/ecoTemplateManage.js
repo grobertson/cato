@@ -25,7 +25,7 @@ $(document).ready(function () {
     $("#edit_dialog").dialog({
         autoOpen: false,
         modal: true,
-        width: 500,
+        width: 550,
         buttons: {
             "Create": function () {
                 Save();
@@ -59,14 +59,52 @@ $(document).ready(function () {
         }
     });
 
-        //what happens when you click a row?
+	//what happens when you click a row?
     $("[tag='selectable']").live("click", function () {
         showPleaseWait();
         location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + $(this).parent().attr("ecotemplate_id");
     });
+
+	//use storm?
+    $("#use_storm_btn").click(function () {
+		$(".stormfields").toggle();
+    });
+    
+    //this onchange event will test the json text entry 
+    //and display a little warning if it couldn't be parsed.
+    $("#txtStormFile").change(function () {
+			validateStormFileJSON();
+    });
+    
+    //changing the Source dropdown refires the validation
+    $("#ddlStormFileSource").change(function () {
+			validateStormFileJSON();
+    });
+
 });
 function pageLoad() {
     ManagePageLoad();
+}
+
+function validateStormFileJSON() {
+	if ($("#ddlStormFileSource").val() != "Text") {
+		$("#json_parse_msg").empty().removeClass("ui-state-highlight");			
+		return;
+	}
+	
+	try
+	{
+		json = $.parseJSON($("#txtStormFile").val());
+		$("#json_parse_msg").empty();
+		$("#json_parse_msg").text("Valid Storm File").removeClass("ui-state-highlight");
+	}
+	catch(err)
+	{
+		var msg = 'The provided Storm File text does not seem to be valid.';
+			
+		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
+		$("#json_parse_msg").append(' <span class="pointer" onclick="alert(\'' + err.message + '\');">more details</span>');;
+	}
 }
 
 function ShowItemAdd() {

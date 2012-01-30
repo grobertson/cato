@@ -61,9 +61,7 @@ $(document).ready(function () {
     });
 
 	//Storm
-    if (typeof Storm == 'function') {
-        Storm();
-    } else {
+    if (!typeof Storm == 'function') {
 		$(".storm").hide();
 	}
 
