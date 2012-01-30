@@ -38,3 +38,5 @@ services/python/*
 web/script/storm.js
 
 web/script/stormRunDialog.js
+
+*.o
