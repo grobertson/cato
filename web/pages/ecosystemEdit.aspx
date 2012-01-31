@@ -72,7 +72,7 @@
             <div class="ui-state-default te_header">
                 <div class="step_section_title">
                     <span class="step_title" id="breadcrumbs"><span class="breadcrumb" id="top"><span
-                        class="ui-icon ui-icon-refresh floatleft"></span>Ecosystem Objects</span></span>
+                        class="ui-icon ui-icon-arrowreturnthick-1-w floatleft"></span>Ecosystem Objects</span></span>
                 </div>
                 <div class="step_section_icons">
                 </div>
