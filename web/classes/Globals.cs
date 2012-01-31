@@ -362,6 +362,24 @@ namespace Globals
 			return false;
 		}
 
+		//saves this template to the database
+		public bool DBUpdate(ref string sErr)
+		{
+            dataAccess dc = new dataAccess();
+			
+			string sSQL = "update ecotemplate" + 
+				" set ecotemplate_name = " + (string.IsNullOrEmpty(this.Name) ? " null" : " '" + this.Name + "'") + "," +
+				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
+				" where ecotemplate_id = '" + this.ID + "'";
+			
+			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				throw new Exception(sErr);
+
+			return true;
+		}
+
 		//saves this template as a new template in the db
 		public bool DBCreateNew(ref string sErr)
 		{

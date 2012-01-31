@@ -29,7 +29,6 @@
                     <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="5" runat="server" CssClass="code" te_group="detail_fields" column="ecotemplate_desc"></asp:TextBox>
                     <br />
                     <br />
-                    <br />
                     <hr />
 					<center>
 						<span id="show_log_link">View Change Log</span>
@@ -47,7 +46,7 @@
                     <div id="storm_file_desc">Getting Storm File ...</div>
 					<hr />
 					<center>
-						<span id="run_storm_btn">Run Storm</span>
+						<span id="edit_storm_btn">Edit Storm</span><span id="run_storm_btn">Run Storm</span>
 					</center>
                 </div>
             </div>
@@ -176,4 +175,10 @@
         </table>
     </div>
     <div id="storm_run_dialog" title="Run Storm" class="hidden"></div>
+    <div id="storm_edit_dialog" title="Edit Storm" class="hidden">
+		<select id="storm_edit_dialog_type"><option>URL</option><option>Text</option><option>File</option></select>
+		<br />
+		<textarea id="storm_edit_dialog_text" class="code w100pct" rows="27"></textarea>
+		<div id="json_parse_msg"></div>
+	</div>
 </asp:Content>

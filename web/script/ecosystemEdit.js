@@ -323,7 +323,7 @@ function getEcosystemObject(drilldowntype, label) {
 
             //breadcrumb
             $(".breadcrumb").not("#top").last().remove();
-            $("#breadcrumbs").append("<span class=\"breadcrumb\" id=\"" + drilldowntype + "\"> - " + label + "</span>");
+            $("#breadcrumbs").append("<span class=\"breadcrumb\" id=\"" + drilldowntype + "\"> - " + label.replace(/ - /, "") + "<span class=\"ui-icon ui-icon-refresh floatright\"></span></span>");
 
             hidePleaseWait();
         },

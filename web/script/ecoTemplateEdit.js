@@ -65,18 +65,53 @@ $(document).ready(function () {
 
     //Storm buttons
     $("#run_storm_btn").button({ icons: { primary: "ui-icon-play"} });
-    $("#run_storm_btn").hide();
     $("#run_storm_btn").click(function () {
     	//check if the function to display the dialog exists
     	//otherwise show a message
-        if (typeof ShowRunStormDialog == 'function') {
+        if (typeof(ShowRunStormDialog) != 'undefined') {
             ShowRunStormDialog(g_id);
         } else {
-	        alert("Cloud Sidekick Storm must be installed.");
+		    $("#run_storm_btn").hide();
     	}
     });
 
-	//Storm File view box
+	//Storm File edit button and dialog
+    $("#edit_storm_btn").button({ icons: { primary: "ui-icon-pencil"} });
+    $("#edit_storm_btn").click(function () {
+    	//check if the function to display the dialog exists
+    	//otherwise show a message
+        if (typeof(ShowEditStormDialog) != 'undefined') {
+            ShowEditStormDialog();
+        } else {
+		    $("#edit_storm_btn").hide();
+    	}
+    });
+    $("#storm_edit_dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 800,
+        height: 600,
+        buttons: {
+            "OK": function () {
+                SaveStormFile();
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+
+    //this onchange event will test the json text entry 
+    //and display a little warning if it couldn't be parsed.
+    $("#storm_edit_dialog_text").change(function () {
+		validateStormFileJSON();
+    });
+    
+    //changing the Source dropdown refires the validation
+    $("#storm_edit_dialog_type").change(function () {
+		validateStormFileJSON();
+    });
+
 
     //turn on the "add" button in the dropzone
     $("#action_add_btn").button({ icons: { primary: "ui-icon-plus"} });
@@ -316,12 +351,21 @@ function GetStorm() {
 			{
 				var storm = jQuery.parseJSON(response.d);
 				if (storm) {
+					var desc = unpackJSON(storm.Description);
+					var txt = unpackJSON(storm.Text);
+
+		            //it's visible on the page
 		            $("#storm_file_source").html(storm.FileType);
-		            $("#storm_file_desc").html(unpackJSON(storm.Description));
-		            $("#storm_file_text").html(unpackJSON(storm.Text));
+		            $("#storm_file_desc").html(formatTextToHTML(desc));
+		            $("#storm_file_text").html(formatTextToHTML(txt));
 		            
-		            //turn on the run button
+		            //and we can go ahead and put it on the edit dialog
+					$("#storm_edit_dialog_type").val(storm.FileType);
+					$("#storm_edit_dialog_text").val(txt);
+	
+		            //turn on the buttons
 	                $("#run_storm_btn").show();
+	                $("#edit_storm_btn").show();
 				} else {
 		            showAlert(response.d);
 		        }
@@ -335,6 +379,53 @@ function GetStorm() {
             showAlert(response.responseText);
         }
     });
+}
+
+function ShowEditStormDialog() {
+    $("#storm_edit_dialog").dialog('open');
+}
+
+function SaveStormFile() {
+	var sfs = packJSON($("#storm_edit_dialog_type").val());
+	var sf = packJSON($("#storm_edit_dialog_text").val());
+	
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "uiMethods.asmx/wmUpdateEcotemplateStorm",
+        data: '{"sEcoTemplateID":"' + g_id + '", "sStormFileSource":"' + sfs + '", "sStormFile":"' + sf + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (retval) {
+            GetStorm();
+         	$("#storm_edit_dialog").dialog('close');
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+
+}
+
+function validateStormFileJSON() {
+	if ($("#storm_edit_dialog_type").val() != "Text") {
+		$("#json_parse_msg").empty().removeClass("ui-state-highlight");			
+		return;
+	}
+	
+	try
+	{
+		json = $.parseJSON($("#storm_edit_dialog_text").val());
+		$("#json_parse_msg").empty();
+		$("#json_parse_msg").text("Valid Storm File").removeClass("ui-state-highlight");
+	}
+	catch(err)
+	{
+		var msg = 'The provided Storm File text does not seem to be valid.';
+			
+		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
+		$("#json_parse_msg").append(' <span class="pointer" onclick="alert(\'' + err.message + '\');">more details</span>');;
+	}
 }
 
 function CloudAccountWasChanged() {

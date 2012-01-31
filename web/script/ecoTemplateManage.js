@@ -73,12 +73,12 @@ $(document).ready(function () {
     //this onchange event will test the json text entry 
     //and display a little warning if it couldn't be parsed.
     $("#txtStormFile").change(function () {
-			validateStormFileJSON();
+		validateStormFileJSON();
     });
     
     //changing the Source dropdown refires the validation
     $("#ddlStormFileSource").change(function () {
-			validateStormFileJSON();
+		validateStormFileJSON();
     });
 
 });

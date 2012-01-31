@@ -3926,8 +3926,8 @@ namespace ACWebMethods
 					//where the parameters and description will be parsed out and displayed.
 					//this is really no different than where we send entire parameter_xml document to the client
 					
-					sFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
-					string sStormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
+					sFileType = (string.IsNullOrEmpty(dr["storm_file_type"].ToString()) ? "" : dr["storm_file_type"].ToString());
+					string sStormFile = (string.IsNullOrEmpty(dr["storm_file"].ToString()) ? "" : dr["storm_file"].ToString());
 					
 					if (!string.IsNullOrEmpty(sStormFile)) {
 						if (sFileType == "URL") {
@@ -3953,7 +3953,7 @@ namespace ACWebMethods
 								JObject jo = JObject.Parse(sStormFileJSON);
 								sFileDesc = jo["Description"].ToString ();
 							} catch (Exception ex) {
-								throw new Exception("The Storm File is invalid. " + ex.Message);
+								sFileDesc = "Storm File is not valid.";
 							}
 						} else {
 							sFileDesc = "Storm File is empty or URL returned nothing.";
@@ -3975,6 +3975,25 @@ namespace ACWebMethods
 			
 			return true;
 		}
+        [WebMethod(EnableSession = true)]
+        public string wmUpdateEcotemplateStorm(string sEcoTemplateID, string sStormFileSource, string sStormFile)
+        {
+            acUI.acUI ui = new acUI.acUI();
+            string sErr = "";
+
+			Ecotemplate et = new Ecotemplate(sEcoTemplateID);
+			if (et != null) {
+				string sSrc = ui.unpackJSON(sStormFileSource);
+				et.StormFileType = (sSrc == "URL" ? "URL" : "Text");
+				et.StormFile = ui.unpackJSON(sStormFile);
+				if(et.DBUpdate(ref sErr))
+					return "";
+				else
+					return sErr;
+			}
+			else
+				return sErr;
+        }
 		[WebMethod(EnableSession = true)]
         public string wmGetEcotemplateStorm(string sEcoTemplateID)
         {
@@ -3990,8 +4009,8 @@ namespace ACWebMethods
 			
 			sb.Append("{");
             sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(ui.FixBreaks(sFileDesc)));
-            sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(ui.FixBreaks(sStormFileJSON)));
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(sFileDesc));
+            sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(sStormFileJSON));
 			sb.Append("}");
 			
 			return sb.ToString();

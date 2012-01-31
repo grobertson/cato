@@ -128,11 +128,11 @@ function initJtable(stripe, hover) {
 function formatHTMLToText(s) {
     var replaceWith = '';
     //firefox (moz) uses carriage returns in text areas, IE uses newlines AND carriage returns.  
-    if (ie) { replaceWith = '\r' } else { replaceWith = '\n' }
+    if (typeof(screenTop) != "undefined") { replaceFrom = '\r' } else { replaceFrom = '\n' }  // why?  Only IE defines screenTop, and only IE needs \r.
     s = s.replaceAll('<br />', replaceWith);
     s = s.replaceAll('<br>', replaceWith);
     s = s.replaceAll('<BR>', replaceWith);
-    s = s.replaceAll('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', '\t');
+    s = s.replaceAll('&nbsp;&nbsp;&nbsp;&nbsp;', '\t');
 
     return s;
 }
@@ -140,9 +140,9 @@ function formatHTMLToText(s) {
 function formatTextToHTML(s) {
     var replaceFrom;
     //firefox (moz) uses carriage returns in text areas, IE uses newlines AND carriage returns.  
-    if (ie) { replaceFrom = '\r' } else { replaceFrom = '\n' }
+    if (typeof(screenTop) != "undefined") { replaceFrom = '\r' } else { replaceFrom = '\n' }  // why?  Only IE defines screenTop, and only IE needs \r.
     s = s.replaceAll(replaceFrom, '<br />');
-    s = s.replaceAll('\t', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+    s = s.replaceAll('\t', '&nbsp;&nbsp;&nbsp;&nbsp;');
 
     return s;
 }
