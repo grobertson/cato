@@ -279,11 +279,11 @@ namespace Globals
 		}
 		
 		//aname and desc
-		public Ecotemplate(string sName, string sDesription)
+		public Ecotemplate(string sName, string sDescription)
 		{
 			this.ID = ui.NewGUID();
 			this.Name = sName;
-			this.Description = sDesription;
+			this.Description = sDescription;
 		}
 		
 		//the default constructor, given an ID loads it up.
@@ -295,7 +295,7 @@ namespace Globals
             dataAccess dc = new dataAccess();
 			
 			string sErr = "";
-            string sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc" +
+            string sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file" +
                 " from ecotemplate" +
                 " where ecotemplate_id = '" + sEcotemplateID + "'";
 
@@ -304,9 +304,11 @@ namespace Globals
             {
                 if (dr != null)
                 {
-					ID = dr["ecotemplate_id"].ToString();;
-					Name = dr["ecotemplate_name"].ToString();
-					Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
+					this.ID = dr["ecotemplate_id"].ToString();;
+					this.Name = dr["ecotemplate_name"].ToString();
+					this.Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
+					this.StormFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
+					this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
 					
 					//get a table of actions and loop the rows
 					sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
@@ -344,9 +346,19 @@ namespace Globals
 			//2) batch copy all the steps from the old template to the new
 			
 			//1) 
-			Ecotemplate et = new Ecotemplate(sNewName, this.Description);
+			Ecotemplate et = new Ecotemplate();
 			if (et != null)
 			{
+				//populate it
+				et.Name = sNewName;
+				et.Description = this.Description;
+				et.StormFileType = this.StormFileType;
+				et.StormFile = this.StormFile;
+				et.DBCreateNew(ref sErr);
+				
+				if (!string.IsNullOrEmpty(sErr))
+					return false;
+				
 				//2
 				string sSQL = "insert into ecotemplate_action" + 
 					" select uuid() as action_id, '" + et.ID + "', action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
