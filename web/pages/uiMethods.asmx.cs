@@ -1336,7 +1336,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmDeleteEcosystemObject(string sEcosystemID, string sObjectType, string sObjectID)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sSQL = null;
             string sErr = "";
@@ -3952,7 +3951,7 @@ namespace ACWebMethods
 							try {
 								JObject jo = JObject.Parse(sStormFileJSON);
 								sFileDesc = jo["Description"].ToString ();
-							} catch (Exception ex) {
+							} catch (Exception) {
 								sFileDesc = "Storm File is not valid.";
 							}
 						} else {
@@ -4237,6 +4236,7 @@ namespace ACWebMethods
         public string wmGetEcosystemStatusAndLog(string sEcosystemID)
         {
 			dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
 			
 			StringBuilder sb = new StringBuilder();
 			
@@ -4269,8 +4269,8 @@ namespace ACWebMethods
 		                dr[2].ToString(), 
 		                dr[3].ToString(), 
 		                dr[4].ToString(), 
-		                dr[5].ToString().Replace ("\\","\\\\").Replace ("\"","\"\""), 
-		                dr[6].ToString().Replace ("\\","\\\\").Replace ("\"","\"\""), 
+		                ui.packJSON(dr[5].ToString()), 
+		                ui.packJSON(ui.FixBreaks(dr[6].ToString())), 
 		                dr[7].ToString());
 					
 					if (dr != dt.Rows[dt.Rows.Count - 1])

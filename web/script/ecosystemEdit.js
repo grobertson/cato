@@ -267,7 +267,13 @@ function getEcosystemLog() {
 					if (colidx < 2)
 						return true;
         	    	
-        	    	html += "<td>" + log.ecosystem_log[rowidx][colidx] + "</td>";
+        	    	var val = log.ecosystem_log[rowidx][colidx];
+        	    	
+        	    	//only columns 5 & 6 are json packed
+        	    	if (colidx == 5 || colidx == 6)
+        	    		val = unpackJSON(val);
+        	    		
+        	    	html += "<td>" + val + "</td>";
 				});
 				
         	    html += "</tr>";
