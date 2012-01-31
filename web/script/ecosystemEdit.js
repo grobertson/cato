@@ -234,7 +234,7 @@ function pageLoad() {
     $(".breadcrumb").live("click", function () {
         //get the type and set it on the page.
         var drilldowntype = $(this).attr("id");
-        var label = $(this).html();
+        var label = $(this).text();
 
         $("#selected_object_type").val(drilldowntype);
 
