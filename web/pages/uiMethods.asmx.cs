@@ -1450,6 +1450,15 @@ namespace ACWebMethods
 
 				//So, we'll first get a distinct list of all clouds represented in this set
 				//then for each cloud we'll get the objects.
+				
+				//Why two queries on the same table?  Because we need the Cloud ID BEFORE we get in to the loop below.
+				//the AWS call to get the properties for the objects is a single API call that returns all the properties
+				//for ALL the objects, then we'll marry them up.
+				
+				//For our custom tagging (For Eucalyptus which currently does not support tagging)
+				// we'll also check our internal tagging mechanism - the ecosystem_object_tags table.
+				// and similarly we'll get them all at once and just draw the ones we need.
+
                 string sSQL = "select distinct cloud_id" +
                     " from ecosystem_object" +
                     " where ecosystem_id ='" + sEcosystemID + "'" +
@@ -1457,6 +1466,16 @@ namespace ACWebMethods
 
                 DataTable dtClouds = new DataTable();
                 if (!dc.sqlGetDataTable(ref dtClouds, sSQL, ref sErr))
+                    return sErr;
+
+
+                sSQL = "select ecosystem_object_id, key_name, value " +
+                    " from ecosystem_object_tag" +
+                    " where ecosystem_id ='" + sEcosystemID + "'" +
+                    " order by key_name";
+
+                DataTable dtTags = new DataTable();
+                if (!dc.sqlGetDataTable(ref dtTags, sSQL, ref sErr))
                     return sErr;
 
 
@@ -1521,7 +1540,7 @@ namespace ACWebMethods
 			                        if (dtAPIResults != null)
 			                        {
 			                            if (dtAPIResults.Rows.Count > 0)
-			                                sHTML += DrawAllEcosystemObjectProperties(dtAPIResults, sObjectID);
+			                                sHTML += DrawAllEcosystemObjectProperties(dtAPIResults, dtTags, sObjectID);
 			                        }
 			
 			
@@ -1548,21 +1567,21 @@ namespace ACWebMethods
             }
         }
 		//two private functions to support the wmGetEcosystemObjectByType
-        private string DrawAllEcosystemObjectProperties(DataTable dt, string sObjectID)
+        private string DrawAllEcosystemObjectProperties(DataTable dtProps, DataTable dtTags, string sObjectID)
         {
             string sHTML = "";
 
             //what is the name of the first column?
             //all over the place with AWS we hardcode and assume the first column is the 'ID'.
             //BUT WE SHOULD spin the columns looking for the one with the Extended Propoerty that says it's the id
-            string sIDColumnName = dt.Columns[0].ColumnName;
+            string sIDColumnName = dtProps.Columns[0].ColumnName;
 
             DataRow[] drFound;
-            drFound = dt.Select(sIDColumnName + " = '" + sObjectID + "'");
+            drFound = dtProps.Select(sIDColumnName + " = '" + sObjectID + "'");
 
             if (drFound.Count() > 0)
             {
-                foreach (DataColumn dcAPIResultsColumn in dt.Columns)
+                foreach (DataColumn dcAPIResultsColumn in dtProps.Columns)
                 {
                     //there should be only one row - that's why I'm using the explicit index of 0
 
@@ -1570,9 +1589,23 @@ namespace ACWebMethods
 
                     sHTML += DrawEcosystemObjectProperty(drFound[0], dcAPIResultsColumn.ColumnName);
                 }
+				
+				//now lets draw the custom tags
+				// ! the same kind of set as above, this one is multiple simple key/value pairs for an object_id
+				DataRow[] drTags;
+				drTags = dtTags.Select("ecosystem_object_id = '" + sObjectID + "'");
+				if (drFound.Count() > 0)
+				{
+					foreach (DataRow drTag in drTags)
+					{
+						sHTML += "<div class=\"ecosystem_item_property\">" + drTag["key_name"].ToString() + 
+							": <span class=\"ecosystem_item_property_value\">" + drTag["value"].ToString() + "</span></div>";
+					}
+				}
             }
             else { sHTML += "No data found for " + sObjectID; }
-            return sHTML;
+            
+			return sHTML;
         }
         private string DrawEcosystemObjectProperty(DataRow dr, string sPropertyName)
         {
