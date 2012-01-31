@@ -1346,14 +1346,27 @@ namespace ACWebMethods
 
             try
             {
+                dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
                 sSQL = "delete from ecosystem_object" +
                     " where ecosystem_id ='" + sEcosystemID + "'" +
                     " and ecosystem_object_id ='" + sObjectID + "'" +
                     " and ecosystem_object_type ='" + sObjectType + "'";
 
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
-            }
+
+				sSQL = "delete from ecosystem_object_tag" +
+                    " where ecosystem_id ='" + sEcosystemID + "'" +
+                    " and ecosystem_object_id ='" + sObjectID + "'";
+
+                oTrans.Command.CommandText = sSQL;
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+				
+				oTrans.Commit();
+			}
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
