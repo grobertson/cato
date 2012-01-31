@@ -130,13 +130,13 @@
                         <select id="ddlStormFileSource"><option>URL</option><option>Text</option><option>File</option></select>
                     </td>
                 </tr>
-                <!--<tr class="stormfields hidden">
+                <tr class="stormfields hidden">
                     <td colspan="2">
-					<input id="storm_file_picker" type="file" />
+					<!--<input id="storm_file_picker" type="file" />-->
                         <textarea class="w500px" id="txtStormFile"></textarea>
 						<div id="json_parse_msg"></div>
                     </td>
-                </tr>-->
+                </tr>
                 <tr class="stormfields hidden">
                     <td colspan="2">
                         <hr />
