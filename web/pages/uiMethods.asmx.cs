@@ -3952,7 +3952,7 @@ namespace ACWebMethods
 								JObject jo = JObject.Parse(sStormFileJSON);
 								sFileDesc = jo["Description"].ToString ();
 							} catch (Exception) {
-								sFileDesc = "Storm File is not valid.";
+								sFileDesc = "Description could not be identified. Storm File is not valid.";
 							}
 						} else {
 							sFileDesc = "Storm File is empty or URL returned nothing.";
