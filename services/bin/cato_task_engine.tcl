@@ -216,7 +216,7 @@ proc aws_Generic {product operation path command} {
 	} else {
 		lappend region_endpoint ""
 	}
-	#output "::tclcloud::connection new $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
+        #output "tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
         tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
         set cmd "tclcloud::call $product \"$aws_region\" $operation"
 output $cmd
@@ -388,11 +388,12 @@ proc gather_aws_system_info {instance_id user_id region} {
                         #        error_out "A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
                         #}
                 }
-		lappend region_endpoint $region $endpoint
+		lappend region_endpoint $region $endpoint http
         } else {
                 set region_endpoint ""
         }
 
+        #output "tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
         tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
 
         set cmd "tclcloud::call ec2 \"$region\" DescribeInstances "
@@ -1482,6 +1483,16 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 						}
 					}
 				}
+				-re "# $" {
+					#output "Found the dollar prompt" 3
+					set system_flag "UNIX"
+					set do_password 0
+				}
+				-re "% $" {
+					#output "Found the dollar prompt" 3
+					set system_flag "UNIX"
+					set do_password 0
+				}
 				-re "\\\$ $" {
 					#output "Found the dollar prompt" 3
 					set system_flag "UNIX"
@@ -1558,6 +1569,16 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			error_out $error_msg 1021
 		
 		}
+		-re "# $" {
+			#output "Found the dollar prompt" 3
+			set system_flag "UNIX"
+			set do_password 0
+                }
+		-re "% $" {
+			#output "Found the dollar prompt" 3
+			set system_flag "UNIX"
+			set do_password 0
+                }
 		-re "\\\$ $" {
 			#output "Found the dollar prompt" 3
 			set system_flag "UNIX"
@@ -1802,6 +1823,9 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			#	#output "Found the prompt" 3
 			#	set system_flag "UNIX"
 			#}
+			"# $" {
+				set system_flag "UNIX"
+			}
 			"> $" {
 				set system_flag "UNIX"
 			}
