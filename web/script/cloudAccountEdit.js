@@ -76,9 +76,6 @@ $(document).ready(function () {
         $("#keypair_name").val("");
         $("#keypair_passphrase").val("");
 
-        //provide a template for the private key
-        $("#keypair_private_key").val("-----BEGIN RSA PRIVATE KEY-----\n-----END RSA PRIVATE KEY-----");
-
         $("#keypair_dialog").dialog('open');
     });
 
@@ -118,12 +115,11 @@ $(document).ready(function () {
 
         //show stars for the private key and passphrase if they were populated
         //the server sent back a flag denoting that
-        var pk = "-----BEGIN RSA PRIVATE KEY-----\n";
+        var pk = "";
 
         if ($(this).parents(".keypair").attr("has_pk") == "true")
             pk += "**********\n";
 
-        pk += "-----END RSA PRIVATE KEY-----";
         $("#keypair_private_key").val(pk);
 
 

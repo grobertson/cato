@@ -219,25 +219,8 @@ namespace Web.pages
             sPK = ui.unpackJSON(sPK);
 
             bool bUpdatePK = false;
-            if (sPK != "-----BEGIN RSA PRIVATE KEY-----\n**********\n-----END RSA PRIVATE KEY-----")
-            {
-
-                //we want to make sure it's not just the placeholder, but DOES have the wrapper.
-                //and 61 is the lenght of the wrapper with no content... effectively empty
-                if (sPK.StartsWith("-----BEGIN RSA PRIVATE KEY-----\n") && sPK.EndsWith("\n-----END RSA PRIVATE KEY-----"))
-                {
-                    //now, is there truly something in it?
-                    string sContent = sPK.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", "").Replace("\n", "");
-                    if (sContent.Length > 0)
-                        bUpdatePK = true;
-                    else
-                        return "Private Key contained within:<br />-----BEGIN RSA PRIVATE KEY-----<br />and<br />-----END RSA PRIVATE KEY-----<br />cannot be blank.";
-                }
-                else
-                {
-                    return "Private Key must be contained within:<br />-----BEGIN RSA PRIVATE KEY-----<br />and<br />-----END RSA PRIVATE KEY-----";
-                }
-            }
+			if (sPK.Length > 0)
+				bUpdatePK = true;
 
             bool bUpdatePP = false;
             if (sPP != "!2E4S6789O")
