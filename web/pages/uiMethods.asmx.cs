@@ -1515,7 +1515,7 @@ namespace ACWebMethods
 							//we only need to hit the API once... this result will contain all the objects
 		                    //and our DrawProperties will filter the DataTable on the ID.
 		                    DataTable dtAPIResults = acAWS.GetCloudObjectsAsDataTable(sCloudID, sType, ref sErr);
-		
+							
 		                    foreach (DataRow drObject in dtObjects.Rows)
 		                    {
 		                        //look up the cloud and get the name
@@ -1570,6 +1570,10 @@ namespace ACWebMethods
 
 					}
 				}
+				
+				//at this point, sErr will have any issues that occured doing the AWS API call.  display it.
+				if (!string.IsNullOrEmpty(sErr))
+					sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try again.<!--" + sErr + "--></span>";
 
                 return sHTML;
             }
