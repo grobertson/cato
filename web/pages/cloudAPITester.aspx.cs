@@ -181,7 +181,7 @@ namespace Web.pages
                 //can it be parsed?
 
                 sXML = ui.RemoveNamespacesFromXML(sXML);
-                XElement xDoc = XElement.Parse(sXML);
+                XDocument xDoc = XDocument.Parse(sXML);
                 if (xDoc == null)
                     sHTML += "<span class=\"ui-widget-content ui-state-error\">Cloud Response XML document is invalid.</span>.";
                 else
