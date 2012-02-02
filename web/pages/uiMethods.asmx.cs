@@ -63,6 +63,14 @@ namespace ACWebMethods
             return Server.MachineName.ToString();
         }
 
+		[WebMethod(EnableSession = true)]
+        public string wmGetFile(string sFileName)
+        {
+            acUI.acUI ui = new acUI.acUI();
+			string s = System.IO.File.ReadAllText(sFileName);
+            return ui.packJSON(s);
+        }
+
         [WebMethod(EnableSession = true)]
         public string wmSendEmail(string sTo, string sFrom, string sSubject, string sBody)
         {
@@ -3905,7 +3913,7 @@ namespace ACWebMethods
 		#endregion
 
 		#region "Storm"
-		public bool GetEcotemplateStormJSON(string sEcoTemplateID, ref string sFileType, ref string sFileDesc, ref string sStormFileJSON) 
+		public bool GetEcotemplateStormJSON(string sEcoTemplateID, ref string sFileType, ref string sURL, ref string sFileDesc, ref string sStormFileJSON) 
 		{
             dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
@@ -3937,14 +3945,14 @@ namespace ACWebMethods
 							//if it's a URL we try to get it and parse it.
 							//if we can't, we just send back a nice message.
 							
-							//for display purposes, if it's a URL the "type" becomes the actual URL
-							sFileType = sStormFile;
+							//for display purposes, we'll be sending back the URL as well as the results
+							sURL = sStormFile;
 							
 							//using our no fail routine here, error handling later if needed
 							try {
-								sStormFileJSON = ui.HTTPGetNoFail(sStormFile);
+								sStormFileJSON = ui.HTTPGetNoFail(sURL);
 							} catch (Exception ex) {
-								throw new Exception("Error getting Storm from URL [" + sStormFile + "]. " + ex.Message);
+								throw new Exception("Error getting Storm from URL [" + sURL + "]. " + ex.Message);
 							}
 						} else {
 							//if it's not a URL we assume it's actual JSON text.
@@ -3998,20 +4006,27 @@ namespace ACWebMethods
 				return sErr;
         }
 		[WebMethod(EnableSession = true)]
-        public string wmGetEcotemplateStorm(string sEcoTemplateID)
+        public string wmGetEcotemplateStorm(string sEcoTemplateID, bool bFormatForHTML)
         {
             acUI.acUI ui = new acUI.acUI();
 
 			string sFileType = "";
+			string sURL = "";
 			string sFileDesc = "";
 			string sStormFileJSON = "";
 			
-			GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sFileDesc, ref sStormFileJSON);
-
+			GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
+			
+			if (bFormatForHTML) {
+				sFileDesc = ui.FixBreaks(sFileDesc);
+				sStormFileJSON = ui.FixBreaks(sStormFileJSON);
+			}
+			
 			StringBuilder sb = new StringBuilder();
 			
 			sb.Append("{");
             sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "URL", ui.packJSON(sURL));
             sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(sFileDesc));
             sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(sStormFileJSON));
 			sb.Append("}");
@@ -4032,8 +4047,9 @@ namespace ACWebMethods
 					string sFileType = "";
 					string sFileDesc = "";
 					string sStormFileJSON = "";
+					string sURL = "";
 					
-					GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sFileDesc, ref sStormFileJSON);
+					GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
 					
 					//now we have the storm file json... parse it, spin it, and turn the parameters section into our parameter_xml format
 					if (!string.IsNullOrEmpty(sStormFileJSON)) {

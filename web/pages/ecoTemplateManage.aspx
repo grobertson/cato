@@ -127,14 +127,24 @@
                         File Source
                     </td>
                     <td>
-                        <select id="ddlStormFileSource"><option>URL</option><option>Text</option><option>File</option></select>
+                        <select id="ddlStormFileSource">
+							<option value="URL">URL</option>
+							<option value="Text">Text</option>
+							<option value="File">File</option></select>
+                    </td>
+                </tr>
+                <tr class="stormfileimport hidden">
+                    <td style="vertical-align: middle;">
+                        Import File
+                    </td>
+	                <td>
+                        <iframe src="fileUpload.aspx?ref_id=new_template" style="width: 100%; height: 28px;"></iframe>
                     </td>
                 </tr>
                 <tr class="stormfields hidden">
                     <td colspan="2">
-					<!--<input id="storm_file_picker" type="file" />-->
                         <textarea class="w500px" id="txtStormFile"></textarea>
-						<div id="json_parse_msg"></div>
+						<div id="json_parse_msg" style="padding-left: 4px;"></div>
                     </td>
                 </tr>
                 <tr class="stormfields hidden">
