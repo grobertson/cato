@@ -250,7 +250,6 @@ proc aws_Generic {product operation path command} {
 	} else {
 		lappend region_endpoint ""
 	}
-        #output "tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
         tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
         set cmd "tclcloud::call $product \"$aws_region\" $operation"
 output $cmd
@@ -427,7 +426,6 @@ proc gather_aws_system_info {instance_id user_id region} {
                 set region_endpoint ""
         }
 
-        #output "tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint"
         tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $region_endpoint
 
         set cmd "tclcloud::call ec2 \"$region\" DescribeInstances "
@@ -1007,6 +1005,8 @@ proc gather_system_info {asset_id} {
 	set ::system_arr($asset_id,priv_password) $p_password
 	set ::system_arr($asset_id,domain) [lindex $row 7]
 	set ::system_arr($asset_id,conn_string) [lindex $row 9]
+	set ::system_arr($asset_id,private_key) ""
+        set ::system_arr($asset_id,private_key_name) ""
 
 	#output "out of gather_system_info" 4
 
@@ -1337,7 +1337,6 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 
 		} else {
 			#output "spawning ssh..."
-#output "before"
 			#spawn bin/ssh -l $userid $address
 			if {"$private_key" > ""} {
 				package require uuid
@@ -1347,11 +1346,10 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				puts $fp $private_key
 				close $fp
 				file attributes $::TMP/$key_file -permissions 0600
-				spawn /usr/bin/ssh -i $::TMP/$key_file $userid@$address
+				spawn /usr/bin/ssh -t -i $::TMP/$key_file $userid@$address
 			} else {
 				spawn /usr/bin/ssh $userid@$address
 			}
-#output "after"
 		}
 	} else {		;# We're already on some other machine
 		if {[string compare $telnet_ssh "telnet"] == 0} {
@@ -1518,12 +1516,10 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					}
 				}
 				-re "# $" {
-					#output "Found the dollar prompt" 3
 					set system_flag "UNIX"
 					set do_password 0
 				}
 				-re "% $" {
-					#output "Found the dollar prompt" 3
 					set system_flag "UNIX"
 					set do_password 0
 				}
@@ -1604,12 +1600,10 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 		
 		}
 		-re "# $" {
-			#output "Found the dollar prompt" 3
 			set system_flag "UNIX"
 			set do_password 0
                 }
 		-re "% $" {
-			#output "Found the dollar prompt" 3
 			set system_flag "UNIX"
 			set do_password 0
                 }
@@ -1857,13 +1851,13 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			#	#output "Found the prompt" 3
 			#	set system_flag "UNIX"
 			#}
-			"# $" {
+			-re "# $" {
 				set system_flag "UNIX"
 			}
-			"> $" {
+			-re "> $" {
 				set system_flag "UNIX"
 			}
-			"% $" {
+			-re "% $" {
 				set system_flag "UNIX"
 			}
 			### end of fix
@@ -2486,6 +2480,12 @@ proc replace_variables {the_string} {
 						package require uuid
 						set subst_var [::uuid::uuid generate]
 						regsub -all -- "-" $subst_var "" subst_var
+					}
+					"_PUBLIC_IP" {
+						set subst_var [get_meta public-ipv4]
+					}
+					"_PRIVATE_IP" {
+						set subst_var [get_meta local-ipv4]
 					}
 					"_UUID" {
 						package require uuid
