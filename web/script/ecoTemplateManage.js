@@ -78,6 +78,12 @@ $(document).ready(function () {
     
     //changing the Source dropdown refires the validation
     $("#ddlStormFileSource").change(function () {
+    	//if it's File, show that section otherwise hide it.
+    	if ($(this).val() == "File")
+    		$(".stormfileimport").show();
+    	else
+	    	$(".stormfileimport").hide();
+	    	
 		validateStormFileJSON();
     });
 
@@ -86,9 +92,35 @@ function pageLoad() {
     ManagePageLoad();
 }
 
+function fileWasSaved(filename) {
+	//get the file text from the server and populate the text field.
+	//alert(filename);
+    $.ajax({
+        type: "POST",
+        url: "uiMethods.asmx/wmGetFile",
+        data: '{"sFileName":"' + filename + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            if (msg.d.length > 0) {
+                var txt = unpackJSON(msg.d);
+                $("#txtStormFile").val(txt);
+                $(".stormfileimport").hide();
+                $("#ddlStormFileSource").val("Text");
+                validateStormFileJSON();
+            } else {
+                showInfo(msg.d);
+            }
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
 function validateStormFileJSON() {
 	if ($("#ddlStormFileSource").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-highlight");			
+		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");			
 		return;
 	}
 	
@@ -96,7 +128,7 @@ function validateStormFileJSON() {
 	{
 		json = $.parseJSON($("#txtStormFile").val());
 		$("#json_parse_msg").empty();
-		$("#json_parse_msg").text("Valid Storm File").removeClass("ui-state-highlight");
+		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
 	}
 	catch(err)
 	{

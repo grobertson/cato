@@ -6,6 +6,7 @@
     <link type="text/css" href="../style/ecoTemplateEdit.css" rel="stylesheet" />
     <script type="text/javascript" src="../script/toolbox.js"></script>
     <script type="text/javascript" src="../script/storm.js"></script>
+    <script type="text/javascript" src="../script/stormEcotemplateEdit.js"></script>
     <script type="text/javascript" src="../script/stormRunDialog.js"></script>
     <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateEdit.js"></script>
@@ -39,8 +40,8 @@
                 <div style="padding: 0 0 0 5px;">
                     <img src="../images/icons/storm_32.png" /><span class="detail_label">Storm File</span>
                     <hr />
-                    <span class="detail_label">Source:</span>
-					<div id="storm_file_source"></div>
+                    <span class="detail_label">Source: </span><span id="storm_file_source"></span>
+					<div id="storm_file_url"></div>
 					<br />
                     <span class="detail_label">Description:</span>
                     <div id="storm_file_desc">Getting Storm File ...</div>
@@ -177,6 +178,7 @@
     <div id="storm_run_dialog" title="Run Storm" class="hidden"></div>
     <div id="storm_edit_dialog" title="Edit Storm" class="hidden">
 		<select id="storm_edit_dialog_type"><option>URL</option><option>Text</option><option>File</option></select>
+		<span id="url_to_text_btn" class="hidden">Convert to Text</span>
 		<br />
 		<textarea id="storm_edit_dialog_text" class="code w100pct" rows="27"></textarea>
 		<div id="json_parse_msg"></div>

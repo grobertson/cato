@@ -134,7 +134,7 @@ namespace ACWebMethods
                 //brute force... parse this text and remove anything that looks like [ xmlns="<crud>"] and it's contents.
                 sXML = ui.RemoveNamespacesFromXML(sXML);
 
-                XElement xDoc = XElement.Parse(sXML);
+                XDocument xDoc = XDocument.Parse(sXML);
                 if (xDoc == null) { sErr = "API Response XML document is invalid."; return null; }
 
 
