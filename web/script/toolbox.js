@@ -39,8 +39,8 @@ $(document).ready(function () {
     //was there a directive to show a specific tab?  click it!
     var tab = getQuerystringVariable("tab");
     if (tab != "") {
-        if ($("#div_" + tab).length != 0) {
-            $("#div_" + tab).click();
+        if ($("#tab_" + tab).length != 0) {
+            $("#tab_" + tab).click();
         }
     }
 

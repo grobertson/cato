@@ -1336,7 +1336,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmDeleteEcosystemObject(string sEcosystemID, string sObjectType, string sObjectID)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sSQL = null;
             string sErr = "";
@@ -1516,7 +1515,7 @@ namespace ACWebMethods
 							//we only need to hit the API once... this result will contain all the objects
 		                    //and our DrawProperties will filter the DataTable on the ID.
 		                    DataTable dtAPIResults = acAWS.GetCloudObjectsAsDataTable(sCloudID, sType, ref sErr);
-		
+							
 		                    foreach (DataRow drObject in dtObjects.Rows)
 		                    {
 		                        //look up the cloud and get the name
@@ -1571,6 +1570,10 @@ namespace ACWebMethods
 
 					}
 				}
+				
+				//at this point, sErr will have any issues that occured doing the AWS API call.  display it.
+				if (!string.IsNullOrEmpty(sErr))
+					sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try again.<!--" + sErr + "--></span>";
 
                 return sHTML;
             }
@@ -3952,8 +3955,8 @@ namespace ACWebMethods
 							try {
 								JObject jo = JObject.Parse(sStormFileJSON);
 								sFileDesc = jo["Description"].ToString ();
-							} catch (Exception ex) {
-								sFileDesc = "Storm File is not valid.";
+							} catch (Exception) {
+								sFileDesc = "Description could not be identified. Storm File is not valid.";
 							}
 						} else {
 							sFileDesc = "Storm File is empty or URL returned nothing.";
@@ -4237,6 +4240,7 @@ namespace ACWebMethods
         public string wmGetEcosystemStatusAndLog(string sEcosystemID)
         {
 			dataAccess dc = new dataAccess();
+            acUI.acUI ui = new acUI.acUI();
 			
 			StringBuilder sb = new StringBuilder();
 			
@@ -4269,8 +4273,8 @@ namespace ACWebMethods
 		                dr[2].ToString(), 
 		                dr[3].ToString(), 
 		                dr[4].ToString(), 
-		                dr[5].ToString().Replace ("\\","\\\\").Replace ("\"","\"\""), 
-		                dr[6].ToString().Replace ("\\","\\\\").Replace ("\"","\"\""), 
+		                ui.packJSON(dr[5].ToString()), 
+		                ui.packJSON(ui.FixBreaks(dr[6].ToString())), 
 		                dr[7].ToString());
 					
 					if (dr != dt.Rows[dt.Rows.Count - 1])

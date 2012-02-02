@@ -411,7 +411,19 @@ namespace ACWebMethods
 				//if the same key from the group filter is defined as sAdditionalArguments it overrides the table!
 			}
 	
-	
+			//!!! OK, PAY ATTENTION HERE
+			//there's a possibility of a timestamp signature collision when making API calls very quickly back to back.
+			//AWS/Eucalyptus recommends trapping for the HTTP 403 error, waiting 1 second, and trying again.
+			
+			//Since our HTTP function is shared in many places even by non-cloud code, we don't wanna muddy it up with 
+			//a case specific handler.
+			
+			//One second isn't terribly long.  So, we're just sleeping a second here before every api call, just to ensure
+			// enough space between.
+			
+			System.Threading.Thread.Sleep(1000);
+
+			
 			//AWS auth parameters
 			string sAccessKeyID = ca.LoginID;
 			string sSecretAccessKeyID = ca.LoginPassword;
