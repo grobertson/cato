@@ -171,6 +171,35 @@ proc gather_account_info {account_id} {
 		set ::CLOUD_IDS($::CLOUD_TYPE,[lindex $row 0]) [lindex $row 2]
 	}
 }
+proc get_eco_tags {var_name params} {
+	set proc_name get_eco_tag
+
+	set sql "select ecosystem_object_id from ecosystem_object_tag where ecosystem_id = '$::ECOSYSTEM_ID'"
+	set msg "DescribeTags $params"
+	foreach {a b c d} $params {
+		#if {[string match "Filter.*.Name" $a]} {
+		#	set sql "$sql and key_name = '$d'"
+		#} elseif {[string match "Filter.*.Value" $a]} {
+		#	set sql "$sql and value = '$d'"
+		#}
+		if {"key" == "$b"} {
+			set sql "$sql and key_name = '$d'"
+		} elseif {"value" == "$b"} {
+			set sql "$sql and value = '$d'"
+		}
+	}
+	$::db_query $::CONN $sql
+        set  objects [$::db_query $::CONN $sql -list]
+	set ii 0
+        foreach object $objects {
+		incr ii
+		set_variable $var_name,$ii $object
+		set msg "$msg\n$object"
+	}
+	insert_audit $::STEP_ID  "" "$msg" ""
+	return
+
+}
 proc aws_Generic {product operation path command} {
 	set proc_name aws_Generic
         get_xml_root $command
@@ -194,6 +223,11 @@ proc aws_Generic {product operation path command} {
 		error_out "Cloud account id or password is required" 9999
 	}
 	if {"$::CLOUD_TYPE" == "Eucalyptus"} {
+		if {"$operation" == "DescribeTags"} {
+			get_eco_tags $var_name $params
+			return
+
+		}
 		if {"$aws_region" > ""} {
 			if {[array names ::CLOUD_ENDPOINTS "Eucalyptus,$aws_region"] == ""} {
 				error_out "Cloud region $aws_region does not exist. Either create a Eucalyptus Cloud definition or enter an existing cloud name in the region field" 9999
