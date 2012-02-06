@@ -357,6 +357,8 @@ namespace Globals
 		public string AccountID;
 		public string EcotemplateID;
 		public string EcotemplateName; //no referenced objects just yet, just the name and ID until we need more.
+		public string ParameterXML;
+		public string CloudID;
 		
 		//an empty constructor
 		public Ecosystem()
@@ -365,11 +367,13 @@ namespace Globals
 		}
 		
 		//aname and desc
-		public Ecosystem(string sName, string sDescription)
+		public Ecosystem(string sName, string sDescription, string sEcotemplateID, string sAccountID)
 		{
 			this.ID = ui.NewGUID();
 			this.Name = sName;
 			this.Description = sDescription;
+			this.EcotemplateID = sEcotemplateID;
+			this.AccountID = sAccountID;
 		}
 		
 		//the default constructor, given an ID loads it up.
@@ -408,98 +412,75 @@ namespace Globals
 			
 		}
 		
-//		//makes a copy of this template in the database
-//		public bool DBCopy(string sNewName, ref string sErr)
-//		{
-//            dataAccess dc = new dataAccess();
-//			
-//			//1) create a new template in the db
-//			//2) batch copy all the steps from the old template to the new
-//			
-//			//1) 
-//			Ecotemplate et = new Ecotemplate();
-//			if (et != null)
-//			{
-//				//populate it
-//				et.Name = sNewName;
-//				et.Description = this.Description;
-//				et.StormFileType = this.StormFileType;
-//				et.StormFile = this.StormFile;
-//				et.DBCreateNew(ref sErr);
-//				
-//				if (!string.IsNullOrEmpty(sErr))
-//					return false;
-//				
-//				//2
-//				string sSQL = "insert into ecotemplate_action" + 
-//					" select uuid() as action_id, '" + et.ID + "', action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
-//					" from ecotemplate_action" +
-//					" where ecotemplate_id = '" + this.ID + "'";
-//				
-//				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-//					throw new Exception(sErr);
-//			
-//				return true;
-//			}
-//			
-//			return false;
-//		}
-//
-//		//saves this template to the database
-//		public bool DBUpdate(ref string sErr)
-//		{
-//            dataAccess dc = new dataAccess();
-//			
-//			string sSQL = "update ecotemplate" + 
-//				" set ecotemplate_name = " + (string.IsNullOrEmpty(this.Name) ? " null" : " '" + this.Name + "'") + "," +
-//				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
-//				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-//				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
-//				" where ecotemplate_id = '" + this.ID + "'";
-//			
-//			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-//				throw new Exception(sErr);
-//
-//			return true;
-//		}
-//
-//		//saves this template as a new template in the db
-//		public bool DBCreateNew(ref string sErr)
-//		{
-//            dataAccess dc = new dataAccess();
-//			string sSQL = "";
-//			
-//			try
-//			{
-//				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
-//					" values ('" + this.ID + "'," +
-//						" '" + this.Name + "'," +
-//						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
-//						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-//						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
-//						")";
-//				
-//				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-//				{
-//					if (sErr == "key_violation")
-//					{
-//						sErr = "An Ecotemplate with that name already exists.  Please select another name.";
-//						return false;
-//					}
-//					else 
-//						throw new Exception(sErr);
-//				}
-//				
-//				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
-//				
-//				//yay!
-//				return true;
-//			}
-//			catch (Exception ex)
-//			{
-//				throw new Exception(ex.Message);
-//			}		
-//		}
+		//saves this Ecosystem to the database
+		public bool DBUpdate(ref string sErr)
+		{
+            dataAccess dc = new dataAccess();
+			
+			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.EcotemplateID) || string.IsNullOrEmpty(this.AccountID)) 
+			{
+				sErr = "Name, EcotemplateID and Account ID are required Ecosystem properties.";
+				return false;
+			}
+			
+			string sSQL = "update ecosystem set" + 
+				" ecosystem_name = '" + this.Name + "'," +
+				" ecotemplate_id = '" + this.EcotemplateID + "'," +
+				" account_id = '" + this.AccountID + "'," +
+				" ecosystem_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
+				" where ecosystem_id = '" + this.ID + "'";
+			
+			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				throw new Exception(sErr);
+
+			return true;
+		}
+
+		//saves this Ecosystem as a new one in the db
+		public bool DBCreateNew(ref string sErr)
+		{
+            dataAccess dc = new dataAccess();
+			string sSQL = "";
+			
+			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+			{
+				sErr = "ID and Name are required Ecosystem properties.";
+				return false;
+			}
+			
+			try
+			{
+				sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecotemplate_id, account_id, ecosystem_desc, storm_file)" +
+					" values ('" + this.ID + "'," +
+						" '" + this.Name + "'," +
+						" '" + this.EcotemplateID + "'," +
+						" '" + this.AccountID + "'," +
+						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
+						")";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				{
+					if (sErr == "key_violation")
+					{
+						sErr = "An Ecosystem with that name already exists.  Please select another name.";
+						return false;
+					}
+					else 
+						throw new Exception(sErr);
+				}
+				
+				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecosystem created.");
+				
+				//yay!
+				return true;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}		
+		}
 	}
 	#endregion
 	
@@ -675,8 +656,14 @@ namespace Globals
 		{
             dataAccess dc = new dataAccess();
 			
+			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+			{
+				sErr = "ID and Name are required Ecotemplate properties.";
+				return false;
+			}
+			
 			string sSQL = "update ecotemplate" + 
-				" set ecotemplate_name = " + (string.IsNullOrEmpty(this.Name) ? " null" : " '" + this.Name + "'") + "," +
+				" set ecotemplate_name = '" + this.Name + "'," +
 				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
 				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
 				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
@@ -693,6 +680,12 @@ namespace Globals
 		{
             dataAccess dc = new dataAccess();
 			string sSQL = "";
+			
+			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+			{
+				sErr = "ID and Name are required Ecotemplate properties.";
+				return false;
+			}
 			
 			try
 			{

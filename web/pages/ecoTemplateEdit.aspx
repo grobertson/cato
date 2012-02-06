@@ -23,11 +23,11 @@
             <div id="div_details" class="toolbox_panel">
                 <div style="padding: 0 0 0 5px;">
                     <span class="detail_label">Name:</span>
-                    <asp:TextBox ID="txtEcoTemplateName" runat="server" CssClass="task_details code" te_group="detail_fields" column="ecotemplate_name"></asp:TextBox>
+                    <asp:TextBox ID="txtEcoTemplateName" runat="server" CssClass="task_details code" te_group="detail_fields" column="Name"></asp:TextBox>
                     <br />
                     <span class="detail_label">Description:</span>
                     <br />
-                    <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="5" runat="server" CssClass="code" te_group="detail_fields" column="ecotemplate_desc"></asp:TextBox>
+                    <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="5" runat="server" CssClass="code" te_group="detail_fields" column="Description"></asp:TextBox>
                     <br />
                     <br />
                     <hr />

@@ -520,7 +520,7 @@ function doDetailFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // Change the name in the header
-                    if (column == "ecotemplate_name") { $("#ctl00_phDetail_lblEcoTemplateHeader").html(unpackJSON(value)); };
+                    if (column == "Name") { $("#ctl00_phDetail_lblEcoTemplateHeader").html(unpackJSON(value)); };
                 }
             },
             error: function (response) {
@@ -593,11 +593,14 @@ function NewEcosystem() {
         return false;
     }
 
-    $.ajax({
+	var name = packJSON($("#new_ecosystem_name").val());
+	var desc = packJSON($("#new_ecosystem_desc").val());
+
+	$.ajax({
         async: false,
         type: "POST",
         url: "uiMethods.asmx/wmCreateEcosystem",
-        data: '{"sName":"' + $("#new_ecosystem_name").val() + '","sDescription":"' + $("#new_ecosystem_desc").val() + '","sEcotemplateID":"' + g_id + '"}',
+        data: '{"sName":"' + name + '","sDescription":"' + desc + '","sEcotemplateID":"' + g_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {

@@ -32,12 +32,12 @@
                     <br />
                     <span class="detail_label">Name:</span><br />
                     <asp:TextBox ID="txtEcosystemName" TextMode="MultiLine" Rows="5" runat="server" CssClass="task_details code"
-                        te_group="detail_fields" column="ecosystem_name">
+                        te_group="detail_fields" column="Name">
                     </asp:TextBox>
                     <br />
                     <span class="detail_label">Description:</span><br />
                     <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="10" runat="server" te_group="detail_fields"
-                        column="ecosystem_desc" CssClass="task_details code">
+                        column="Description" CssClass="task_details code">
                     </asp:TextBox>
                     <div class="storm">
 	                    <img src="../images/icons/storm_32.png" /><span class="detail_label">Created by Storm</span>

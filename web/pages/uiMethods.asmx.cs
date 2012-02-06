@@ -26,6 +26,7 @@ using System.IO;
 using Globals;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace ACWebMethods
 {
@@ -1113,8 +1114,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmUpdateEcosystemDetail(string sEcosystemID, string sColumn, string sValue)
         {
-            dataAccess dc = new dataAccess();
-            
             acUI.acUI ui = new acUI.acUI();
 
             try
@@ -1123,61 +1122,48 @@ namespace ACWebMethods
 
                 if (ui.IsGUID(sEcosystemID) && ui.IsGUID(sUserID))
                 {
-                    string sErr = "";
-                    string sSQL = "";
-
-                    //we encoded this in javascript before the ajax call.
-                    //the safest way to unencode it is to use the same javascript lib.
-                    //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                    sValue = ui.unpackJSON(sValue);
-
-                    // check for existing name
-                    if (sColumn == "ecosystem_name")
-                    {
-                        sSQL = "select ecosystem_id from ecosystem where " +
-                                " ecosystem_name = '" + sValue.Replace("'", "''") + "'" +
-                                " and ecosystem_id <> '" + sEcosystemID + "'";
-
-                        string sValueExists = "";
-                        if (!dc.sqlGetSingleString(ref sValueExists, sSQL, ref sErr))
-                            throw new Exception("Unable to check for existing names [" + sEcosystemID + "]." + sErr);
-
-                        if (!string.IsNullOrEmpty(sValueExists))
-                            return sValue + " exists, please choose another value.";
-                    }
-
-                    string sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
-
-                    //some columns on this table allow nulls... in their case an empty sValue is a null
-                    if (sColumn == "ecosystem_desc")
-                    {
-                        if (sValue.Replace(" ", "").Length == 0)
-                            sSetClause = sColumn + " = null";
-                        else
-                            sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
-                    }
-
-                    sSQL = "update ecosystem set " + sSetClause + " where ecosystem_id = '" + sEcosystemID + "'";
-                    //}
-
-
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                        throw new Exception("Unable to update Ecosystem [" + sEcosystemID + "]." + sErr);
-
-                    ui.WriteObjectChangeLog(Globals.acObjectTypes.Ecosystem, sEcosystemID, sColumn, sValue);
-                }
-                else
-                {
-                    throw new Exception("Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "].");
-                }
-
+					Ecosystem et = new Ecosystem(sEcosystemID);
+					
+					if (et != null)
+					{
+	                    string sErr = "";
+	
+	                    //we encoded this in javascript before the ajax call.
+	                    //the safest way to unencode it is to use the same javascript lib.
+	                    //(sometimes the javascript and .net libs don't translate exactly, google it.)
+	                    sValue = ui.unpackJSON(sValue);
+	
+	                    // check for existing name
+	                    if (sColumn == "Name")
+	                    {
+	                        if (et.Name == sValue)
+	                            return sValue + " exists, please choose another name.";
+	                    }
+	
+						//we have to use Reflection to find the class field by name
+						bool bSuccess = false;
+						FieldInfo f = typeof(Ecosystem).GetField(sColumn);
+						if (f != null) {
+							f.SetValue(et, sValue);
+							bSuccess = et.DBUpdate(ref sErr);
+						}
+						
+						if (bSuccess)
+							ui.WriteObjectChangeLog(Globals.acObjectTypes.Ecosystem, sEcosystemID, sColumn, sValue);
+						else 
+							throw new Exception("Error updating Ecosystem. " + sErr);
+					}
+	                else
+	                {
+	                    throw new Exception("Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "].");
+	                }
+				}
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-            return "";
-        }
+            return "";        }
 
         [WebMethod(EnableSession = true)]
         public string wmDeleteEcosystems(string sDeleteArray)
@@ -1241,63 +1227,25 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmCreateEcosystem(string sName, string sDescription, string sEcotemplateID)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
-            string sSQL = null;
-            string sErr = null;
+            string sErr = "";
 
-            try
-            {
-                sSQL = "select ecosystem_name from ecosystem where ecosystem_name = '" + sName + "'";
-                string sExists = "";
-                if (!dc.sqlGetSingleString(ref sExists, sSQL, ref sErr))
-                {
-                    throw new Exception(sErr);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(sExists))
-                    {
-                        return "Ecosystem exists - choose another name.";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            string sCloudAccountID = ui.GetSelectedCloudAccountID();
 
+            if (string.IsNullOrEmpty(sCloudAccountID))
+                return "Unable to create - No Cloud Account selected.";
+            if (string.IsNullOrEmpty(sEcotemplateID))
+                return "Unable to create - An Ecosystem Template is required..";
 
-            try
-            {
-                string sNewID = ui.NewGUID();
-                string sCloudAccountID = ui.GetSelectedCloudAccountID();
-
-                if (string.IsNullOrEmpty(sCloudAccountID))
-                    return "Unable to create - No Cloud Account selected.";
-                if (string.IsNullOrEmpty(sEcotemplateID))
-                    return "Unable to create - An Ecosystem Template is required..";
-
-                sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id)" +
-                    " values ('" + sNewID + "'," +
-                    " '" + sName + "'," +
-                    (string.IsNullOrEmpty(sDescription) ? " null" : " '" + sDescription + "'") + "," +
-                    " '" + sCloudAccountID + "'," +
-                    " '" + sEcotemplateID + "'" +
-                    ")";
-
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                    throw new Exception(sErr);
-
-                ui.WriteObjectAddLog(acObjectTypes.Ecosystem, sNewID, sName, "Ecosystem created.");
-
-                return sNewID;
-            }
-            catch (Exception ex)
-            {
-
-                throw new Exception(ex.Message);
-            }
+			Ecosystem e = new Ecosystem(ui.unpackJSON(sName), ui.unpackJSON(sDescription), sEcotemplateID, sCloudAccountID);
+			if (e != null) {
+				if(e.DBCreateNew(ref sErr))
+					return e.ID;
+				else
+					return sErr;
+			}
+			else
+				return sErr;
         }
 
 
@@ -1659,8 +1607,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmUpdateEcoTemplateDetail(string sEcoTemplateID, string sColumn, string sValue)
         {
-            dataAccess dc = new dataAccess();
-            
             acUI.acUI ui = new acUI.acUI();
 
             try
@@ -1669,54 +1615,42 @@ namespace ACWebMethods
 
                 if (ui.IsGUID(sEcoTemplateID) && ui.IsGUID(sUserID))
                 {
-                    string sErr = "";
-                    string sSQL = "";
-
-                    //we encoded this in javascript before the ajax call.
-                    //the safest way to unencode it is to use the same javascript lib.
-                    //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                    sValue = ui.unpackJSON(sValue);
-
-                    // check for existing name
-                    if (sColumn == "ecotemplate_name")
-                    {
-                        sSQL = "select ecotemplate_id from ecotemplate where " +
-                                " ecotemplate_name = '" + sValue.Replace("'", "''") + "'" +
-                                " and ecotemplate_id <> '" + sEcoTemplateID + "'";
-
-                        string sValueExists = "";
-                        if (!dc.sqlGetSingleString(ref sValueExists, sSQL, ref sErr))
-                            throw new Exception("Unable to check for existing names [" + sEcoTemplateID + "]." + sErr);
-
-                        if (!string.IsNullOrEmpty(sValueExists))
-                            return sValue + " exists, please choose another value.";
-                    }
-
-                    string sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
-
-                    //some columns on this table allow nulls... in their case an empty sValue is a null
-                    if (sColumn == "ecotemplate_desc")
-                    {
-                        if (sValue.Replace(" ", "").Length == 0)
-                            sSetClause = sColumn + " = null";
-                        else
-                            sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
-                    }
-
-                    sSQL = "update ecotemplate set " + sSetClause + " where ecotemplate_id = '" + sEcoTemplateID + "'";
-                    //}
-
-
-                    if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                        throw new Exception("Unable to update Eco Template [" + sEcoTemplateID + "]." + sErr);
-
-                    ui.WriteObjectChangeLog(Globals.acObjectTypes.EcoTemplate, sEcoTemplateID, sColumn, sValue);
-                }
-                else
-                {
-                    throw new Exception("Unable to update Eco Template. Missing or invalid id [" + sEcoTemplateID + "].");
-                }
-
+					Ecotemplate et = new Ecotemplate(sEcoTemplateID);
+					
+					if (et != null)
+					{
+	                    string sErr = "";
+	
+	                    //we encoded this in javascript before the ajax call.
+	                    //the safest way to unencode it is to use the same javascript lib.
+	                    //(sometimes the javascript and .net libs don't translate exactly, google it.)
+	                    sValue = ui.unpackJSON(sValue);
+	
+	                    // check for existing name
+	                    if (sColumn == "Name")
+	                    {
+	                        if (et.Name == sValue)
+	                            return sValue + " exists, please choose another name.";
+	                    }
+	
+						//we have to use Reflection to find the class field by name
+						bool bSuccess = false;
+						FieldInfo f = typeof(Ecotemplate).GetField(sColumn);
+						if (f != null) {
+							f.SetValue(et, sValue);
+							bSuccess = et.DBUpdate(ref sErr);
+						}
+						
+						if (bSuccess)
+							ui.WriteObjectChangeLog(Globals.acObjectTypes.EcoTemplate, sEcoTemplateID, sColumn, sValue);
+						else 
+							throw new Exception("Error updating Ecotemplate. " + sErr);
+					}
+	                else
+	                {
+	                    throw new Exception("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].");
+	                }
+				}
             }
             catch (Exception ex)
             {
@@ -4202,74 +4136,29 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmCreateEcosystemByStorm(string sName, string sDescription, string sEcotemplateID, string sParameterXML, string sCloudID)
         {
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
-            string sSQL = null;
-            string sErr = null;
+            string sErr = "";
 
-            try
-            {
-                sSQL = "select ecosystem_name from ecosystem where ecosystem_name = '" + sName + "'";
-                string sExists = "";
-                if (!dc.sqlGetSingleString(ref sExists, sSQL, ref sErr))
-                {
-                    throw new Exception(sErr);
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(sExists))
-                    {
-                        return "Ecosystem exists - choose another name.";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            string sCloudAccountID = ui.GetSelectedCloudAccountID();
 
+            if (string.IsNullOrEmpty(sCloudAccountID))
+                return "Unable to create - No Cloud Account selected.";
+            if (string.IsNullOrEmpty(sEcotemplateID))
+                return "Unable to create - An Ecosystem Template is required..";
+            if (string.IsNullOrEmpty(sCloudID))
+                return "Unable to create - An Cloud is required..";
 
-            try
-            {
-                string sNewID = ui.NewGUID();
-                string sCloudAccountID = ui.GetSelectedCloudAccountID();
-
-                //validate
-				if (string.IsNullOrEmpty(sCloudAccountID))
-                    return "Unable to create - No Cloud Account selected.";
-                if (string.IsNullOrEmpty(sEcotemplateID))
-                    return "Unable to create - An Ecosystem Template is required..";
-                if (string.IsNullOrEmpty(sCloudID))
-                    return "Unable to create - A Cloud is required..";
-				
-				//unpack the parameters
-				sParameterXML = ui.unpackJSON(sParameterXML);
-				
-				//go
-                sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," +
-					" storm_file, storm_parameter_xml, storm_cloud_id)" +
-                    " select '" + sNewID + "'," +
-                    " '" + sName + "'," +
-                    (string.IsNullOrEmpty(sDescription) ? " null" : " '" + sDescription + "'") + "," +
-                    " '" + sCloudAccountID + "'," +
-                    " ecotemplate_id," +
-                    " storm_file," +
-                    " '" + sParameterXML + "'," +
-                    " '" + sCloudID + "'" +
-                    " from ecotemplate where ecotemplate_id='" + sEcotemplateID + "'";
-
-                if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                    throw new Exception(sErr);
-
-                ui.WriteObjectAddLog(acObjectTypes.Ecosystem, sNewID, sName, "Ecosystem created by Storm.");
-
-                return sNewID;
-            }
-            catch (Exception ex)
-            {
-
-                throw new Exception(ex.Message);
-            }
+			Ecosystem e = new Ecosystem(ui.unpackJSON(sName), ui.unpackJSON(sDescription), sEcotemplateID, sCloudAccountID);
+			if (e != null) {
+				e.ParameterXML = ui.unpackJSON(sParameterXML);
+				e.CloudID = sCloudID;
+				if(e.DBCreateNew(ref sErr))
+					return e.ID;
+				else
+					return sErr;
+			}
+			else
+				return sErr;
         }
 
 		[WebMethod(EnableSession = true)]

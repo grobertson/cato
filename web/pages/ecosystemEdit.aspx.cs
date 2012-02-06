@@ -34,13 +34,11 @@ namespace Web.pages
 {
     public partial class ecosystemEdit : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
 
         string sEcosystemID;
-        string sEcoTemplateID;
 
-        protected void Page_Load(object sender, EventArgs e)
+		protected void Page_Load(object sender, EventArgs e)
         {
             string sErr = "";
 
@@ -66,7 +64,6 @@ namespace Web.pages
 			
 				if (e != null)
                 {
-                    sEcoTemplateID = e.EcotemplateID;
                     hidEcoTemplateID.Value = e.EcotemplateID;
                     lblEcotemplateName.Text = e.EcotemplateName;
 

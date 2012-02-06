@@ -135,11 +135,15 @@ function Save() {
         return false;
     }
 
-    $.ajax({
+	var name = packJSON($("#new_ecosystem_name").val());
+	var desc = packJSON($("#new_ecosystem_desc").val());
+	var etid = $("#ctl00_phDetail_ddlEcotemplates").val();
+
+	$.ajax({
         async: false,
         type: "POST",
         url: "uiMethods.asmx/wmCreateEcosystem",
-        data: '{"sName":"' + $("#new_ecosystem_name").val() + '","sDescription":"' + $("#new_ecosystem_desc").val() + '","sEcotemplateID":"' + $("#ctl00_phDetail_ddlEcotemplates").val() + '"}',
+        data: '{"sName":"' + name + '","sDescription":"' + desc + '","sEcotemplateID":"' + etid + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
