@@ -26,23 +26,30 @@ $(document).ready(function () {
         autoOpen: false,
         modal: true,
         width: 550,
-        buttons: {
-            "Create": function () {
-                Save();
-            },
-            Cancel: function () {
-                $("[id*='lblNewMessage']").html("");
-                $("#hidCurrentEditID").val("");
-
-                $("#hidSelectedArray").val("");
-                $("#lblItemsSelected").html("0");
-
-                // nice, clear all checkboxes selected in a single line!
-                $(':input', (".jtable")).attr('checked', false);
-
-                $(this).dialog('close');
+        buttons: [
+        	{
+            	id: "edit_dialog_create_btn",
+            	text: "Create",
+            	click: function() {
+                	Save();
+            	}
+        	},
+            {
+            	text: "Cancel",
+            	click: function () {
+	                $("[id*='lblNewMessage']").html("");
+	                $("#hidCurrentEditID").val("");
+	
+	                $("#hidSelectedArray").val("");
+	                $("#lblItemsSelected").html("0");
+	
+	                // nice, clear all checkboxes selected in a single line!
+	                $(':input', (".jtable")).attr('checked', false);
+	
+	                $(this).dialog('close');
+            	}
             }
-        }
+        ]
     });
 
     $("#copy_dialog").dialog({
@@ -120,7 +127,8 @@ function fileWasSaved(filename) {
 
 function validateStormFileJSON() {
 	if ($("#ddlStormFileSource").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");			
+		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");	
+		$("#edit_dialog_create_btn").button("enable");		
 		return;
 	}
 	
@@ -129,14 +137,18 @@ function validateStormFileJSON() {
 		json = $.parseJSON($("#txtStormFile").val());
 		$("#json_parse_msg").empty();
 		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
+		$("#edit_dialog_create_btn").button("enable");
 	}
 	catch(err)
 	{
+		var errmsg = err.message.replace(/'/g,"\\'");
 		var msg = 'The provided Storm File text does not seem to be valid.';
 			
 		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
+		$("#edit_dialog_create_btn").button("disable");
+		
 		if (errmsg.length > 0)
-			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');;
+			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
 	}
 }
 
@@ -221,7 +233,11 @@ function Save() {
         success: function (msg) {
             if (msg.d.length == 36) {
             	showPleaseWait();
-                location.href = "ecoTemplateEdit.aspx?ecotemplate_id=" + msg.d;
+            	
+            	//pass a flag if the "run now" box was checked.
+            	var runqs = ($("#chkStormRunNow")[0].checked ? "&run=true" : "");
+            	
+                location.href = "ecoTemplateEdit.aspx?ecotemplate_id=" + msg.d + runqs;
             } else {
             	showInfo(msg.d, "", true);
             }

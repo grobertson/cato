@@ -119,7 +119,7 @@
                         <img src="../images/icons/storm_32.png" />
                     </td>
                     <td style="vertical-align: middle;">
-                        <input id="use_storm_btn" type="checkbox" />Provision with Storm?
+                        <input id="use_storm_btn" type="checkbox" /><label for="use_storm_btn">Provision with Storm?</label>
                     </td>
                 </tr>
                 <tr class="stormfields hidden">
@@ -156,7 +156,7 @@
                     <td>
                     </td>
                     <td style="vertical-align:middle;">
-                        <input type="checkbox" /> Run Storm Now?
+                        <input type="checkbox" id="chkStormRunNow" /><label for="chkStormRunNow">Run Storm Now?</label>
                     </td>
                 </tr>
             </tbody>

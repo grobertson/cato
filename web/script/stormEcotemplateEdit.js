@@ -53,14 +53,21 @@ $(document).ready(function () {
         modal: true,
         width: 800,
         height: 600,
-        buttons: {
-            "OK": function () {
-                SaveStormFile();
-            },
-            Cancel: function () {
-                $(this).dialog('close');
-            }
-        }
+        buttons: [
+        	{
+        		id: "storm_edit_dialog_ok_btn",
+				text: "OK",
+				click: function () {
+                	SaveStormFile();
+            	}
+        	},
+            {
+            	text: "Cancel",
+            	click: function () {
+                	$(this).dialog('close');
+            	}
+        	}
+        ]
     });
 
     //this onchange event will test the json text entry 
@@ -174,6 +181,7 @@ function SaveStormFile() {
 function validateStormFileJSON() {
 	if ($("#storm_edit_dialog_type").val() != "Text") {
 		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");			
+		$("#storm_edit_dialog_ok_btn").button("enable");		
 		return;
 	}
 	
@@ -182,6 +190,7 @@ function validateStormFileJSON() {
 		json = $.parseJSON($("#storm_edit_dialog_text").val());
 		$("#json_parse_msg").empty();
 		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
+		$("#storm_edit_dialog_ok_btn").button("enable");		
 	}
 	catch(err)
 	{
@@ -189,7 +198,9 @@ function validateStormFileJSON() {
 		var msg = 'The provided Storm File text does not seem to be valid.';
 			
 		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
+		$("#storm_edit_dialog_ok_btn").button("disable");		
+
 		if (errmsg.length > 0)
-			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');;
+			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
 	}
 }
