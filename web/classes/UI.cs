@@ -821,6 +821,60 @@ namespace acUI
 
         #endregion
         #region "Misc Functions"
+        public string PercentEncodeRfc3986(string s)
+        {
+            s = HttpUtility.UrlEncode(s, System.Text.Encoding.UTF8);
+            s = s.Replace("'", "%27").Replace("(", "%28").Replace(")", "%29").Replace("*", "%2A").Replace("!", "%21").Replace("%7e", "~").Replace("+", "%20");
+            StringBuilder sb = new StringBuilder(s);
+            for (int i = 0; i < sb.Length; i++)
+            {
+                if (sb[i] == '%')
+                {
+                    if (Char.IsLetter(sb[i + 1]) || Char.IsLetter(sb[i + 2]))
+                    {
+                        sb[i + 1] = Char.ToUpper(sb[i + 1]); sb[i + 2] = Char.ToUpper(sb[i + 2]);
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+        public string GetSortedParamsAsString(SortedDictionary<String, String> paras, bool isCanonical)
+        {
+            String sParams = "";
+            String sKey = null;
+            String sValue = null;
+            String separator = "";
+            foreach (KeyValuePair<string, String> entry in paras)
+            {
+                sKey = PercentEncodeRfc3986(entry.Key);
+                sValue = PercentEncodeRfc3986(entry.Value);
+                //if (isCanonical)
+                //{
+                //    sKey = PercentEncodeRfc3986(sKey);
+                //    sValue = PercentEncodeRfc3986(sValue);
+                //}
+                sParams += separator + sKey + "=" + sValue;
+                separator = "&";
+            }
+
+            return sParams;
+        }
+        public string GetSHA1(string sKey, string sStringToSign)
+        {
+            System.Security.Cryptography.HMACSHA1 MySigner =
+                new System.Security.Cryptography.HMACSHA1(System.Text.Encoding.UTF8.GetBytes(sKey));
+            string SignatureValue =
+                Convert.ToBase64String(MySigner.ComputeHash(System.Text.Encoding.UTF8.GetBytes(sStringToSign)));
+            return SignatureValue;
+        }
+        public string GetSHA256(string sKey, string sStringToSign)
+        {
+            System.Security.Cryptography.HMACSHA256 MySigner =
+                new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(sKey));
+            string SignatureValue =
+                Convert.ToBase64String(MySigner.ComputeHash(System.Text.Encoding.UTF8.GetBytes(sStringToSign)));
+            return SignatureValue;
+        }
 
 		//these four functions are primarily used to encode/decode data being sent via JSON to the server
 		//or back to the client.
