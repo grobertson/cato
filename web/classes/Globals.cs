@@ -196,7 +196,7 @@ namespace Globals
         Other = 900,
         ConfigChange = 901
     }
-#endregion    
+	#endregion    
 
 	//this CurrentUser class will be used when we are ready to stop using Session
     public class CurrentUser
@@ -209,7 +209,89 @@ namespace Globals
         }
 	}
 	
-	#region "Ecostemplates"
+	#region "Database Settings"
+	public class DatabaseSettings
+    {
+
+        private static int iConnectionTimeout = 90;
+        public static int ConnectionTimeout
+        {
+            get { return iConnectionTimeout; }
+            set { iConnectionTimeout = value; }
+        }
+
+        private static string sAppInstance = "";
+        public static string AppInstance
+        {
+            get { return sAppInstance; }
+            set { sAppInstance = value; }
+        }
+
+        private static string sDatabaseName = "";
+        public static string DatabaseName
+        {
+            get { return sDatabaseName; }
+            set { sDatabaseName = value; }
+        }
+
+        private static string sServerAddress = "";
+        public static string DatabaseAddress
+        {
+            get { return sServerAddress; }
+            set { sServerAddress = value; }
+        }
+
+        private static string sServerPort = "";
+        public static string DatabasePort
+        {
+            get { return sServerPort; }
+            set { sServerPort = value; }
+        }
+
+        private static string sServerUserName = "";
+        public static string DatabaseUID
+        {
+            get { return sServerUserName; }
+            set { sServerUserName = value; }
+        }
+
+        private static string sServerUserPassword = "";
+        public static string DatabaseUserPassword
+        {
+            get { return sServerUserPassword; }
+            set { sServerUserPassword = value; }
+        }
+
+        private static string sEnvironmentKey = "";
+        public static string EnvironmentKey
+        {
+            get { return sEnvironmentKey; }
+            set { sEnvironmentKey = value; }
+        }
+
+        private static string sServerUseSSL = "";
+        public static string UseSSL
+        {
+            get { return sServerUseSSL; }
+            set { sServerUseSSL = value; }
+        }
+
+    }
+	#endregion    
+
+	#region "Global Settings"
+	public class GlobalSettings
+    {
+        private static string sStormApiURL = "";
+        public static string StormApiURL
+        {
+            get { return sStormApiURL; }
+            set { sStormApiURL = value; }
+        }
+    }
+	#endregion    
+
+	#region "Ecotemplates"
 	//Ecotemplates contains a DataTable
 	//more efficient to read from the DB as a DataTable than to loop and create a dictionary.
 	//if you want a dictionary, that's an instance method.
@@ -508,78 +590,8 @@ namespace Globals
 		}
 
 	}
-#endregion
+	#endregion
 	
-	#region "Database Settings"
-	public class DatabaseSettings
-    {
-
-        private static int iConnectionTimeout = 90;
-        public static int ConnectionTimeout
-        {
-            get { return iConnectionTimeout; }
-            set { iConnectionTimeout = value; }
-        }
-
-        private static string sAppInstance = "";
-        public static string AppInstance
-        {
-            get { return sAppInstance; }
-            set { sAppInstance = value; }
-        }
-
-        private static string sDatabaseName = "";
-        public static string DatabaseName
-        {
-            get { return sDatabaseName; }
-            set { sDatabaseName = value; }
-        }
-
-        private static string sServerAddress = "";
-        public static string DatabaseAddress
-        {
-            get { return sServerAddress; }
-            set { sServerAddress = value; }
-        }
-
-        private static string sServerPort = "";
-        public static string DatabasePort
-        {
-            get { return sServerPort; }
-            set { sServerPort = value; }
-        }
-
-        private static string sServerUserName = "";
-        public static string DatabaseUID
-        {
-            get { return sServerUserName; }
-            set { sServerUserName = value; }
-        }
-
-        private static string sServerUserPassword = "";
-        public static string DatabaseUserPassword
-        {
-            get { return sServerUserPassword; }
-            set { sServerUserPassword = value; }
-        }
-
-        private static string sEnvironmentKey = "";
-        public static string EnvironmentKey
-        {
-            get { return sEnvironmentKey; }
-            set { sEnvironmentKey = value; }
-        }
-
-        private static string sServerUseSSL = "";
-        public static string UseSSL
-        {
-            get { return sServerUseSSL; }
-            set { sServerUseSSL = value; }
-        }
-
-    }
-	#endregion    
-
 	#region "Cloud"
 	/*
 	 * The Cloud Providers class contains all the definition of a Cloud Provider, including

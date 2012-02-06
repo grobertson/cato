@@ -61,9 +61,10 @@ public class dataAccess
         }
 		return true;
 	}
-    public bool InitDatabaseSettings(string sPath, ref string sErr)
+    public bool ReadConfigurationFile(string sPath, ref string sErr)
     {
-
+		//Function reads the cato.conf file and populates the appropriate global classes
+		
         string sFileContents = "";
 
         /*
@@ -134,13 +135,16 @@ public class dataAccess
                             DatabaseSettings.EnvironmentKey = sVal;
                             iImportant++;
                             break;
-                        case "databaseUseSSL":
+                        case "databaseusessl":
                             DatabaseSettings.UseSSL = sVal;
                             break;
-                        case "dbConnectionTimeout":
+                        case "dbconnectiontimeout":
                             int result;
                             if (int.TryParse(sVal, out result))
                                 DatabaseSettings.ConnectionTimeout = result;
+                            break;
+                        case "stormapiurl":
+                            GlobalSettings.StormApiURL = sVal;
                             break;
                     }
                 }

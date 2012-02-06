@@ -57,7 +57,7 @@ namespace Web
             {
                 // This may be the first load, or we may have lost the connection string
                 // try to load, and show any error here.
-                if (!dc.InitDatabaseSettings(Server.MapPath("conf/cato.conf"), ref sErr))
+                if (!dc.ReadConfigurationFile(Server.MapPath("conf/cato.conf"), ref sErr))
                 {
                		lblErrorMessage.Text = sErr.Replace("\\r\\n", "");
 					return;
