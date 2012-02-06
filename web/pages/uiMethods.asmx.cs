@@ -3916,14 +3916,14 @@ namespace ACWebMethods
 		#endregion
 
 		#region "Storm"
-		public bool GetEcotemplateStormJSON(string sEcoTemplateID, ref string sFileType, ref string sURL, ref string sFileDesc, ref string sStormFileJSON) 
+		public bool GetEcotemplateStormJSON(string sEcoTemplateID, ref bool bIsValid, ref string sErr, ref string sFileType, ref string sURL, ref string sFileDesc, ref string sStormFileJSON) 
 		{
             dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
-
+			
+			bIsValid = false;
+			
             string sSQL = "";
-            string sErr = "";
-
 			try
             {
                 if (!string.IsNullOrEmpty(sEcoTemplateID))
@@ -3955,7 +3955,7 @@ namespace ACWebMethods
 							try {
 								sStormFileJSON = ui.HTTPGetNoFail(sURL);
 							} catch (Exception ex) {
-								throw new Exception("Error getting Storm from URL [" + sURL + "]. " + ex.Message);
+								sErr = "Error getting Storm from URL [" + sURL + "]. " + ex.Message;
 							}
 						} else {
 							//if it's not a URL we assume it's actual JSON text.
@@ -3965,9 +3965,19 @@ namespace ACWebMethods
 						if (!string.IsNullOrEmpty(sStormFileJSON)) {
 							try {
 								JObject jo = JObject.Parse(sStormFileJSON);
-								sFileDesc = jo["Description"].ToString ();
-							} catch (Exception) {
-								sFileDesc = "Description could not be identified. Storm File is not valid.";
+								
+								if (jo["Description"] != null)
+									sFileDesc = jo["Description"].ToString();
+
+								//VALIDATION
+								//we can test for certain values, and return false unless they exist.
+								if (jo["Mappings"] != null && jo["Resources"] != null)
+									bIsValid = true;
+								else
+									sErr += "Document must contain a Mappings and a Resources section.";
+								
+							} catch (Exception ex) {
+								sErr = ex.Message;
 							}
 						} else {
 							sFileDesc = "Storm File is empty or URL returned nothing.";
@@ -3975,7 +3985,6 @@ namespace ACWebMethods
 					} else {
 						sFileDesc = "No Storm File or URL defined.";
 					}
-					
 				}
                 else
                 {
@@ -4019,8 +4028,10 @@ namespace ACWebMethods
 			string sURL = "";
 			string sFileDesc = "";
 			string sStormFileJSON = "";
+			bool bIsValid = false;
+			string sErr = "";
 			
-			GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
+			GetEcotemplateStormJSON(sEcoTemplateID, ref bIsValid, ref sErr, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
 			
 			if (bFormatForHTML) {
 				sFileDesc = ui.FixBreaks(sFileDesc);
@@ -4030,6 +4041,8 @@ namespace ACWebMethods
 			StringBuilder sb = new StringBuilder();
 			
 			sb.Append("{");
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "IsValid", bIsValid.ToString());
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "Error", sErr);
             sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
             sb.AppendFormat("\"{0}\" : \"{1}\",", "URL", ui.packJSON(sURL));
             sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(sFileDesc));
@@ -4054,8 +4067,10 @@ namespace ACWebMethods
 					string sFileDesc = "";
 					string sStormFileJSON = "";
 					string sURL = "";
+					bool bIsValid = false;
+					string sErr = "";
 					
-					GetEcotemplateStormJSON(sEcoTemplateID, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
+					GetEcotemplateStormJSON(sEcoTemplateID, ref bIsValid, ref sErr, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
 					
 					//now we have the storm file json... parse it, spin it, and turn the parameters section into our parameter_xml format
 					if (!string.IsNullOrEmpty(sStormFileJSON)) {
@@ -4163,15 +4178,14 @@ namespace ACWebMethods
 							}
 							
 							sb.Append("</parameters>");
-
+							
+							return sb.ToString();
 						} catch (Exception ex) {
 							throw new Exception("The Storm File is invalid. " + ex.Message);
 						}
 					} else {
-						sFileDesc = "Storm File is empty or URL returned nothing.";
+						return "";
 					}
-					
-					return sb.ToString();
 				}
                 else
                 {

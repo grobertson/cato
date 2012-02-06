@@ -128,7 +128,7 @@ function fileWasSaved(filename) {
 function validateStormFileJSON() {
 	if ($("#ddlStormFileSource").val() != "Text") {
 		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");	
-		$("#edit_dialog_create_btn").button("enable");		
+		$("#edit_dialog_create_btn").show();		
 		return;
 	}
 	
@@ -137,15 +137,15 @@ function validateStormFileJSON() {
 		json = $.parseJSON($("#txtStormFile").val());
 		$("#json_parse_msg").empty();
 		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
-		$("#edit_dialog_create_btn").button("enable");
+		$("#edit_dialog_create_btn").show();
 	}
 	catch(err)
 	{
 		var errmsg = err.message.replace(/'/g,"\\'");
-		var msg = 'The provided Storm File text does not seem to be valid.';
+		var msg = 'The provided Storm File syntax does not seem to be valid.';
 			
 		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
-		$("#edit_dialog_create_btn").button("disable");
+		$("#edit_dialog_create_btn").hide();
 		
 		if (errmsg.length > 0)
 			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');

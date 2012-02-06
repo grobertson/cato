@@ -6,10 +6,10 @@
     <link type="text/css" href="../style/ecoTemplateEdit.css" rel="stylesheet" />
     <script type="text/javascript" src="../script/toolbox.js"></script>
     <script type="text/javascript" src="../script/storm.js"></script>
-    <script type="text/javascript" src="../script/stormEcotemplateEdit.js"></script>
     <script type="text/javascript" src="../script/stormRunDialog.js"></script>
     <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateEdit.js"></script>
+    <script type="text/javascript" src="../script/stormEcotemplateEdit.js"></script>
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div id="left_panel_te">
@@ -120,6 +120,7 @@
 				<div class="ui-state-default step_header">
 					<div class="step_header_title"><span class="action_name_lbl">Storm File</span></div>
 				</div>
+				<div id="storm_file_error" class="ui-state-highlight hidden"></div>
 				<pre><div id="storm_file_text"></div></pre>
 			</div>
 		</div>

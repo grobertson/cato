@@ -80,20 +80,35 @@ $(document).ready(function () {
     $("#storm_edit_dialog_type").change(function () {
 		validateStormFileJSON();
     });
+
+	//if there was a "run=true" querystring, we'll pop the run dialog.
+	//this file MUST be included on the page after ecoTemplateEdit.js, because that's where g_id is defined.
+	var run = getQuerystringVariable("run");
+    if (run == "true") {
+        ShowRunStormDialog(g_id);
+    }
 });
 
 function ShowStorm() {
 	//gets the details of Storm and sets it up on the page    
     var storm = GetStorm(true);
     if (storm != null) {
+        $("#storm_file_error").html(storm.Error);
         $("#storm_file_source").html(storm.FileType);
         $("#storm_file_url").html(unpackJSON(storm.URL));
         $("#storm_file_desc").html(unpackJSON(storm.Description));
         $("#storm_file_text").html(unpackJSON(storm.Text));
     
         //turn on the buttons
-        $("#run_storm_btn").show();
         $("#edit_storm_btn").show();
+
+        if (storm.IsValid == "True") {
+        	$("#run_storm_btn").show();
+        	$("#storm_file_error").hide();
+        } else {
+        	$("#run_storm_btn").hide();
+        	$("#storm_file_error").show();
+		}
 	}
 }
 
@@ -181,7 +196,7 @@ function SaveStormFile() {
 function validateStormFileJSON() {
 	if ($("#storm_edit_dialog_type").val() != "Text") {
 		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");			
-		$("#storm_edit_dialog_ok_btn").button("enable");		
+		$("#storm_edit_dialog_ok_btn").show();		
 		return;
 	}
 	
@@ -190,15 +205,15 @@ function validateStormFileJSON() {
 		json = $.parseJSON($("#storm_edit_dialog_text").val());
 		$("#json_parse_msg").empty();
 		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
-		$("#storm_edit_dialog_ok_btn").button("enable");		
+		$("#storm_edit_dialog_ok_btn").show();		
 	}
 	catch(err)
 	{
 		var errmsg = err.message.replace(/'/g,"\\'");
-		var msg = 'The provided Storm File text does not seem to be valid.';
+		var msg = 'The provided Storm File syntax does not seem to be valid.';
 			
 		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
-		$("#storm_edit_dialog_ok_btn").button("disable");		
+		$("#storm_edit_dialog_ok_btn").hide();		
 
 		if (errmsg.length > 0)
 			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
