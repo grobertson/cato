@@ -750,4 +750,5 @@ We used a table to avoid the annoyance of div float left and right.
     background-color: #A3FFA3;
     border: 1px solid #3D993D;
     color: #0A1A0A;
+    padding-left: 4px;
 }

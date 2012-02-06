@@ -135,7 +135,8 @@ function validateStormFileJSON() {
 		var msg = 'The provided Storm File text does not seem to be valid.';
 			
 		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
-		$("#json_parse_msg").append(' <span class="pointer" onclick="alert(\'' + err.message + '\');">more details</span>');;
+		if (errmsg.length > 0)
+			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');;
 	}
 }
 

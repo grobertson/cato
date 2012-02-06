@@ -5,3 +5,12 @@
 	margin: 4px 0px 4px 0px;
 	padding: 4px;
 }
+
+.ecosystem_name {
+	padding: 2px;
+}
+
+.ecosystem_name img {
+	height: 16px;
+	width: 16px;
+}
