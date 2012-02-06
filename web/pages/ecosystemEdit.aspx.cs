@@ -62,35 +62,22 @@ namespace Web.pages
         {
             try
             {
-                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file," +
-                    " e.account_id, e.ecotemplate_id, et.ecotemplate_name" +
-                    " from ecosystem e" +
-                    " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
-                    " where e.ecosystem_id = '" + sEcosystemID + "'" +
-                    " and e.account_id = '" + ui.GetSelectedCloudAccountID() + "'";
-
-                DataRow dr = null;
-                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) return false;
-
-                if (dr != null)
+				Ecosystem e = new Ecosystem(sEcosystemID);
+			
+				if (e != null)
                 {
-                    sEcoTemplateID = dr["ecotemplate_id"].ToString();
-                    hidEcoTemplateID.Value = sEcoTemplateID;
-                    lblEcotemplateName.Text = dr["ecotemplate_name"].ToString();
+                    sEcoTemplateID = e.EcotemplateID;
+                    hidEcoTemplateID.Value = e.EcotemplateID;
+                    lblEcotemplateName.Text = e.EcotemplateName;
 
-                    txtEcosystemName.Text = dr["ecosystem_name"].ToString();
-                    ViewState["txtEcosystemName"] = dr["ecosystem_name"].ToString();
-                    txtDescription.Text = dr["ecosystem_desc"].ToString();
-                    ViewState["txtDescription"] = dr["ecosystem_desc"].ToString();
+                    txtEcosystemName.Text = e.Name;
+                    txtDescription.Text = e.Description;
 
                     //the header
-                    lblEcosystemNameHeader.Text = dr["ecosystem_name"].ToString();
+                    lblEcosystemNameHeader.Text = e.Name;
 
 					//storm file
-					txtStormFile.Text = dr["storm_file"].ToString();
-
-					//schedule, only if we are the default.
-                    //if (!GetSchedule(ref sErr)) return false;
+					txtStormFile.Text = e.StormFile;
 
                     return true;
                 }

@@ -66,7 +66,7 @@ namespace Web.pages
 			}
 			else
 			{
-				ui.RaiseError(Page, "Unable to get Ecotempaltes.", false, sErr);
+				ui.RaiseError(Page, "Unable to get Ecotemplates.", false, sErr);
 			}
 		}
         private void GetRows()

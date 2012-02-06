@@ -291,6 +291,218 @@ namespace Globals
     }
 	#endregion    
 
+	#region "Ecosystems"
+	//Ecosystems contains a DataTable
+	//more efficient to read from the DB as a DataTable than to loop and create a dictionary.
+	//if you want a dictionary, that's an instance method.
+	public class Ecosystems
+	{
+		public DataTable DataTable = new DataTable();
+		
+		public Ecosystems(string sFilter, string sAccountID, ref string sErr)
+		{
+			//buids a list of ecosystems from the db, with the optional filter
+			dataAccess dc = new dataAccess();
+            string sWhereString = "";
+
+            if (!string.IsNullOrEmpty(sFilter))
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (a.ecosystem_name like '%" + aSearchTerms[i] +
+                           "%' or a.ecosystem_desc like '%" + aSearchTerms[i] + "%' or et.ecotemplate_name like '%" + aSearchTerms[i] + "%' ) ";
+                    }
+                } 
+            }
+
+            string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name" +
+				" from ecosystem e" +
+				" join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
+				" where e.account_id = '" + sAccountID + "'" +
+				sWhereString +
+				" order by e.ecosystem_name";
+
+            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+                return;
+		}
+		public Dictionary<string, Ecosystem> AsDictionary()
+		{
+			//spin "this" and turn it into a dictionary
+			Dictionary<string, Ecosystem> dict = new Dictionary<string, Ecosystem>();
+			
+			foreach (DataRow dr in this.DataTable.Rows)
+			{
+				Ecosystem e = new Ecosystem();
+				e.ID = dr["ecosystem_id"].ToString();
+				
+				dict.Add(e.ID, e);				
+			}
+			
+			return dict;
+		}
+	}
+	public class Ecosystem 
+	{
+		acUI.acUI ui = new acUI.acUI();
+		
+		public string ID;
+		public string Name;
+		public string Description;
+		public string StormFile;
+		public string AccountID;
+		public string EcotemplateID;
+		public string EcotemplateName; //no referenced objects just yet, just the name and ID until we need more.
+		
+		//an empty constructor
+		public Ecosystem()
+		{
+			this.ID = ui.NewGUID();
+		}
+		
+		//aname and desc
+		public Ecosystem(string sName, string sDescription)
+		{
+			this.ID = ui.NewGUID();
+			this.Name = sName;
+			this.Description = sDescription;
+		}
+		
+		//the default constructor, given an ID loads it up.
+		public Ecosystem(string sEcosystemID)
+		{
+			if (string.IsNullOrEmpty(sEcosystemID))
+				throw new Exception("Error building Ecosystem object: ID is required.");	
+			
+            dataAccess dc = new dataAccess();
+			
+			string sErr = "";
+                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file," +
+                    " e.account_id, e.ecotemplate_id, et.ecotemplate_name" +
+                    " from ecosystem e" +
+                    " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
+                    " where e.ecosystem_id = '" + sEcosystemID + "'";
+
+            DataRow dr = null;
+            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+            {
+                if (dr != null)
+                {
+					this.ID = dr["ecosystem_id"].ToString();;
+					this.Name = dr["ecosystem_name"].ToString();
+					this.AccountID = dr["account_id"].ToString();
+					this.EcotemplateID = dr["ecotemplate_id"].ToString();
+					this.EcotemplateName = dr["ecotemplate_name"].ToString();
+					this.Description = (object.ReferenceEquals(dr["ecosystem_desc"], DBNull.Value) ? "" : dr["ecosystem_desc"].ToString());
+					this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
+				}
+			}
+			else 
+			{
+				throw new Exception("Error building Ecosystem object: " + sErr);	
+			}
+			
+		}
+		
+//		//makes a copy of this template in the database
+//		public bool DBCopy(string sNewName, ref string sErr)
+//		{
+//            dataAccess dc = new dataAccess();
+//			
+//			//1) create a new template in the db
+//			//2) batch copy all the steps from the old template to the new
+//			
+//			//1) 
+//			Ecotemplate et = new Ecotemplate();
+//			if (et != null)
+//			{
+//				//populate it
+//				et.Name = sNewName;
+//				et.Description = this.Description;
+//				et.StormFileType = this.StormFileType;
+//				et.StormFile = this.StormFile;
+//				et.DBCreateNew(ref sErr);
+//				
+//				if (!string.IsNullOrEmpty(sErr))
+//					return false;
+//				
+//				//2
+//				string sSQL = "insert into ecotemplate_action" + 
+//					" select uuid() as action_id, '" + et.ID + "', action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
+//					" from ecotemplate_action" +
+//					" where ecotemplate_id = '" + this.ID + "'";
+//				
+//				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+//					throw new Exception(sErr);
+//			
+//				return true;
+//			}
+//			
+//			return false;
+//		}
+//
+//		//saves this template to the database
+//		public bool DBUpdate(ref string sErr)
+//		{
+//            dataAccess dc = new dataAccess();
+//			
+//			string sSQL = "update ecotemplate" + 
+//				" set ecotemplate_name = " + (string.IsNullOrEmpty(this.Name) ? " null" : " '" + this.Name + "'") + "," +
+//				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+//				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+//				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
+//				" where ecotemplate_id = '" + this.ID + "'";
+//			
+//			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+//				throw new Exception(sErr);
+//
+//			return true;
+//		}
+//
+//		//saves this template as a new template in the db
+//		public bool DBCreateNew(ref string sErr)
+//		{
+//            dataAccess dc = new dataAccess();
+//			string sSQL = "";
+//			
+//			try
+//			{
+//				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
+//					" values ('" + this.ID + "'," +
+//						" '" + this.Name + "'," +
+//						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+//						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+//						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
+//						")";
+//				
+//				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+//				{
+//					if (sErr == "key_violation")
+//					{
+//						sErr = "An Ecotemplate with that name already exists.  Please select another name.";
+//						return false;
+//					}
+//					else 
+//						throw new Exception(sErr);
+//				}
+//				
+//				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
+//				
+//				//yay!
+//				return true;
+//			}
+//			catch (Exception ex)
+//			{
+//				throw new Exception(ex.Message);
+//			}		
+//		}
+	}
+	#endregion
+	
 	#region "Ecotemplates"
 	//Ecotemplates contains a DataTable
 	//more efficient to read from the DB as a DataTable than to loop and create a dictionary.
@@ -332,15 +544,17 @@ namespace Globals
 		public Dictionary<string, Ecotemplate> AsDictionary()
 		{
 			//spin "this" and turn it into a dictionary
-			Dictionary<string, Ecotemplate> et = new Dictionary<string, Ecotemplate>();
+			Dictionary<string, Ecotemplate> dict = new Dictionary<string, Ecotemplate>();
 			
+			//this will be slow as it does a select for each one.
+			//also, not currently being used
 			foreach (DataRow dr in this.DataTable.Rows)
 			{
-				
+				Ecotemplate et = new Ecotemplate(dr["ecotemplate_id"].ToString());
+				dict.Add(et.ID, et);
 			}
 			
-			
-			return et;
+			return dict;
 		}
 	}
 	public class Ecotemplate 

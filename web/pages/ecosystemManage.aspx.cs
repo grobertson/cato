@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using System.Web.Services;
 using System.Data;
 using System.Text;
+using Globals;
 
 namespace Web.pages
 {
@@ -69,46 +70,27 @@ namespace Web.pages
         }
         private void BindList()
         {
-
-            string sWhereString = "";
-
-            if (txtSearch.Text.Length > 0)
-            {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = txtSearch.Text.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-
-                    //if the value is a guid, it's an existing task.
-                    //otherwise it's a new task.
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (a.ecosystem_name like '%" + aSearchTerms[i] +
-                           "%' or a.ecosystem_desc like '%" + aSearchTerms[i] + "%' or et.ecotemplate_name like '%" + aSearchTerms[i] + "%' ) ";
-                    }
-                } 
-            }
-
-
-            sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name" +
-                   " from ecosystem e" +
-                   " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
-                    " where e.account_id = '" + ui.GetSelectedCloudAccountID() + "'" +
-                   sWhereString +
-                   " order by e.ecosystem_name";
-
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                ui.RaiseError(Page, sErr, true, "");
-            }
-
-            ui.SetSessionObject("EcosystemList", dt, "SelectorListTables");
-
-            //now, actually get the data from the session table and display it
-            GetRows();
+			string sErr = "";
+			string sAccountID = ui.GetSelectedCloudAccountID();
+			
+			if (!string.IsNullOrEmpty(sAccountID)) {
+				Ecosystems e = new Ecosystems(txtSearch.Text, sAccountID, ref sErr);
+				
+				if (e != null && string.IsNullOrEmpty(sErr))
+				{
+					ui.SetSessionObject("EcosystemList", e.DataTable, "SelectorListTables");
+					//now, actually get the data from the session table and display it
+					GetRows();
+				}
+				else
+				{
+					ui.RaiseError(Page, "Unable to get Ecosystems.", false, sErr);
+				}
+			}
+			else
+			{
+				ui.RaiseError(Page, "No Cloud Accounts are defined.", false, sErr);
+			}
         }
         private void GetRows()
         {

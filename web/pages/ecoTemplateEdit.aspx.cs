@@ -49,7 +49,7 @@ namespace Web.pages
 
                 if (!GetDetails(ref sErr))
                 {
-                    ui.RaiseError(Page, "Unable to continue.  Eco Template not found for ID [" + sEcoTemplateID + "].<br />" + sErr, true, "");
+                    ui.RaiseError(Page, "Unable to continue.  Ecotemplate not found for ID [" + sEcoTemplateID + "].<br />" + sErr, true, "");
                     return;
                 }
 
@@ -63,7 +63,6 @@ namespace Web.pages
             }
         }
 
-        #region "Tabs"
         private bool GetDetails(ref string sErr)
         {
             try
@@ -91,6 +90,5 @@ namespace Web.pages
                 return false;
             }
         }
-        #endregion
     }
 }
