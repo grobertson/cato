@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.Services;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -2059,7 +2060,9 @@ namespace ACWebMethods
                             sHTML += "<li class=\"ui-widget-content ui-corner-all\"" +
                                 " ecosystem_id=\"" + sEcosystemID + "\"" +
                                 "\">";
-                            sHTML += "<div class=\"step_header_title ecosystem_name pointer\">" + sEcosystemName + "</div>";
+                            sHTML += "<div class=\"step_header_title ecosystem_name pointer\">";
+							sHTML += "<img src=\"../images/icons/ecosystems_24.png\" alt=\"\" /> " + sEcosystemName;
+							sHTML += "</div>";
 
                             sHTML += "<div class=\"step_header_icons\">";
 
@@ -3986,7 +3989,8 @@ namespace ACWebMethods
 			
 			return true;
 		}
-        [WebMethod(EnableSession = true)]
+
+		[WebMethod(EnableSession = true)]
         public string wmUpdateEcotemplateStorm(string sEcoTemplateID, string sStormFileSource, string sStormFile)
         {
             acUI.acUI ui = new acUI.acUI();
@@ -4005,6 +4009,7 @@ namespace ACWebMethods
 			else
 				return sErr;
         }
+
 		[WebMethod(EnableSession = true)]
         public string wmGetEcotemplateStorm(string sEcoTemplateID, bool bFormatForHTML)
         {
@@ -4033,6 +4038,7 @@ namespace ACWebMethods
 			
 			return sb.ToString();
         }
+
 		[WebMethod(EnableSession = true)]
         public string wmGetEcotemplateStormParameterXML(string sEcoTemplateID)
         {
@@ -4302,6 +4308,75 @@ namespace ACWebMethods
 
 			return sb.ToString();
         }
+		
+		[WebMethod(EnableSession = true)]
+        public string wmCallStormAPI(string sMethod, string sArgs)
+        {
+			//This will construct and send an HTTP request to the Storm API,
+			//then return the results unmolested back to the caller.
+			
+			//sArgs is an json object of args for the named method -- we use the Newtonsoft JSON to parse it.
+			//after unencoding it.
+            acUI.acUI ui = new acUI.acUI();
+			dataAccess dc = new dataAccess();
+			
+			string sErr = "";
+			string sQS = "";
+			
+			string sJSONArgs = ui.unpackJSON(sArgs);
+			if (!string.IsNullOrEmpty(sJSONArgs)) {
+				try {
+					JObject jo = JObject.Parse(sJSONArgs);
+					
+					foreach (var o in jo)
+					{
+						sQS += "&" + o.Key.ToString() + "=" + HttpUtility.UrlEncode(o.Value.ToString(), System.Text.Encoding.UTF8);
+					}
+				} catch (Exception ex) {
+					throw new Exception("Error with CallStormAPI arguments." + ex.Message);	
+				}
+			}
+			
+			
+			//now, we construct the call to the Storm API in a specific way:
+			//1: the "key" is the user_id
+			//2: a "timestamp" which is now in UTC formatted as "%Y-%m-%dT%H:%M:%S"
+			//3: a "signature" which is a specific part of the request SHA256/base64 encoded
+			
+			//1:
+			string sKey = ui.GetSessionUserID();
+			string sPW = "";
+			if (!dc.sqlGetSingleString(ref sPW, "select user_password from users where user_id = '" + sKey + "'", ref sErr))
+				return sErr;
+			
+			sPW = dc.DeCrypt(sPW);
+			
+			//2:
+			string sTS = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", System.Globalization.DateTimeFormatInfo.InvariantInfo);
+			sTS = sTS.Replace(":","%3A");
+			
+			//3:
+			//we use the same functions we do for building the aws signature
+			string sStringToSign = string.Format("{0}?key={1}&timestamp={2}", sMethod, sKey, sTS);
+			
+			string sSignature = ui.GetSHA256(sPW, sStringToSign);
+			sSignature = "&signature=" + ui.PercentEncodeRfc3986(sSignature);
+			
+			if (string.IsNullOrEmpty(GlobalSettings.StormApiURL))
+				throw new Exception("Unable to call Storm API.  API URL not defined in cato.conf.");
+			
+			string sURL = string.Format("{0}/{1}{2}{3}", GlobalSettings.StormApiURL, sStringToSign, sSignature, sQS);
+					
+			string sXML = "";
+			try {
+				sXML = ui.HTTPGet(sURL, 15000, ref sErr);
+			} catch (Exception ex) {
+				throw new Exception("Error calling Storm service." + ex.Message);
+			}
+			
+			return ui.packJSON(sXML);
+		}
+
 		#endregion
 	}
 }
