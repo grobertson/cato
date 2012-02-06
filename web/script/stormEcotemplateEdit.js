@@ -139,6 +139,8 @@ function ShowEditStormDialog() {
 
 			//hide the url_to_text button
 			$("#url_to_text_btn").hide();
+			
+			validateStormFileJSON();
 		}
 		
 	    $("#storm_edit_dialog").dialog('open');
@@ -171,7 +173,7 @@ function SaveStormFile() {
 
 function validateStormFileJSON() {
 	if ($("#storm_edit_dialog_type").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-highlight");			
+		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");			
 		return;
 	}
 	
@@ -179,13 +181,15 @@ function validateStormFileJSON() {
 	{
 		json = $.parseJSON($("#storm_edit_dialog_text").val());
 		$("#json_parse_msg").empty();
-		$("#json_parse_msg").text("Valid Storm File").removeClass("ui-state-highlight");
+		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
 	}
 	catch(err)
 	{
+		var errmsg = err.message.replace(/'/g,"\\'");
 		var msg = 'The provided Storm File text does not seem to be valid.';
 			
 		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
-		$("#json_parse_msg").append(' <span class="pointer" onclick="alert(\'' + err.message + '\');">more details</span>');;
+		if (errmsg.length > 0)
+			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');;
 	}
 }
