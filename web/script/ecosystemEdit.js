@@ -46,6 +46,21 @@ $(document).ready(function () {
     $("#reload_storm_log_btn").click(function () {
 		getEcosystemLog();
     });
+    $("#show_stormfile_btn").button({ icons: { primary: "ui-icon-document"} });
+    $("#show_stormfile_btn").click(function () {
+		$("#storm_view_dialog").dialog("open");
+    });
+    $("#storm_view_dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 800,
+        height: 600,
+        buttons: {
+            Ok: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
 
     //enabling the 'change' event for the Details tab
     $("#div_details :input[te_group='detail_fields']").change(function () { doDetailFieldUpdate(this); });

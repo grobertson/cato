@@ -62,7 +62,7 @@ namespace Web.pages
         {
             try
             {
-                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc," +
+                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file," +
                     " e.account_id, e.ecotemplate_id, et.ecotemplate_name" +
                     " from ecosystem e" +
                     " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
@@ -86,7 +86,10 @@ namespace Web.pages
                     //the header
                     lblEcosystemNameHeader.Text = dr["ecosystem_name"].ToString();
 
-                    //schedule, only if we are the default.
+					//storm file
+					txtStormFile.Text = dr["storm_file"].ToString();
+
+					//schedule, only if we are the default.
                     //if (!GetSchedule(ref sErr)) return false;
 
                     return true;

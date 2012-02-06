@@ -44,9 +44,12 @@
 	                    <hr />
 	                    <span class="detail_label">Storm Status:</span>
 						<div id="storm_status"></div>
+						<center>
+							<span id="show_stormfile_btn">View Storm File</span>						
+						</center>
 					</div>
                     <br />
-                    <br />
+                    <hr />
 					<center>
 						<span id="show_log_link">View Change Log</span>						
 					</center>
@@ -177,6 +180,11 @@
     </div>
     <div id="reg_add_dialog" class="hidden">
     </div>
-    <!-- End Registry dialogs.-->
     <input type="hidden" id="reg_type" value="ecosystem" />
+    <!-- End Registry dialogs.-->
+    <!-- Storm dialogs.-->	
+    <div id="storm_view_dialog" title="View Storm" class="hidden">
+		<asp:TextBox ID="txtStormFile" TextMode="MultiLine" Rows="27" runat="server" CssClass="w100pct code"></asp:TextBox>
+	</div>
+    <!-- End Storm dialogs.-->	
 </asp:Content>

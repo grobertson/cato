@@ -32,5 +32,7 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.HiddenField hidEcoTemplateID;
 		
 		protected System.Web.UI.WebControls.HiddenField hidParamDelete;
+		
+		protected System.Web.UI.WebControls.TextBox txtStormFile;
 	}
 }
