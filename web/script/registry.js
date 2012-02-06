@@ -1,7 +1,7 @@
 ﻿//registry editing appears on the many pages.  Shared code.
 $(document).ready(function () {
     //building the dialog inner content here so it's the same on all pages.
-    var ed = 'Encrypt? <input type="checkbox" id="reg_edit_dialog_encrypt">' +
+    var ed = '<label for="reg_edit_dialog_encrypt">Encrypt?</label> <input type="checkbox" id="reg_edit_dialog_encrypt">' +
         '<hr />' +
         '<textarea id="reg_edit_dialog_value" rows="10" cols="80"></textarea>';
     $("#reg_edit_dialog").html(ed);
