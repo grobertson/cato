@@ -929,6 +929,8 @@ namespace Globals
 									(xProperty.Attribute("has_icon").Value == "1" ? true : false));
 								cotp.ShortList = (xProperty.Attribute("short_list") == null ? false : 
 									(xProperty.Attribute("short_list").Value == "1" ? true : false));
+								cotp.ValueIsXML = (xProperty.Attribute("value_is_xml") == null ? false : 
+									(xProperty.Attribute("value_is_xml").Value == "1" ? true : false));
 								
 								cot.Properties.Add(cotp);
 							}
@@ -1161,6 +1163,7 @@ namespace Globals
         public bool HasIcon { get; set; }
         public bool IsID { get; set; }
         public bool ShortList { get; set; }
+        public bool ValueIsXML { get; set; }
 
 		//constructor
 		public CloudObjectTypeProperty(CloudObjectType parent)

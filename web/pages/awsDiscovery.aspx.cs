@@ -24,6 +24,7 @@ using Globals;
 using System.Collections;
 using System.Data;
 using System.Web.Services;
+using System.Xml.Linq;
 
 namespace Web.pages
 {
@@ -104,7 +105,9 @@ namespace Web.pages
 		                string sObjectID = ""; //Possibly a composite of several properties.
 						foreach (DataColumn col in dt.Columns)
 		                {
-							if (col.ExtendedProperties["IsID"] != null) 
+							bool bIsID = (col.ExtendedProperties["IsID"] != null ?
+							              (col.ExtendedProperties["IsID"].ToString() == "True" ? true : false) : false);
+							if (bIsID) 
 								sObjectID += dr[col.ColumnName].ToString();
 						}
 						
@@ -200,10 +203,8 @@ namespace Web.pages
 
         private static string DrawTableForType(string sObjectType, DataTable dt)
         {
-            string sHTML = "";
-
-            //the first DataColumn is the "id"
-            // string sIDColumnName = sDataColumns[0];
+			acUI.acUI ui = new acUI.acUI();
+			string sHTML = "";
 
             //buld the table
             sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
@@ -229,7 +230,9 @@ namespace Web.pages
                 string sObjectID = ""; //Possibly a composite of several properties.
 				foreach (DataColumn dc in dr.Table.Columns)
                 {
-					if (dc.ExtendedProperties["IsID"] != null) 
+					bool bIsID = (dc.ExtendedProperties["IsID"] != null ?
+					              (dc.ExtendedProperties["IsID"].ToString() == "True" ? true : false) : false);
+					if (bIsID) 
 						sObjectID += dr[dc.ColumnName].ToString();
 				}
 				
@@ -249,7 +252,7 @@ namespace Web.pages
 					sHTML += "</td>";
 
                 
-					//loop data columns
+				//loop data columns
                 foreach (DataColumn dc in dr.Table.Columns)
                 {
                     string sValue = dr[dc.ColumnName].ToString();  //yeah, the row item index by the column name... awesome
@@ -257,10 +260,32 @@ namespace Web.pages
                     sHTML += "<td>";
 
                     //should we try to show an icon?
-                    if (dc.ExtendedProperties["HasIcon"] != null)
+					bool bHasIcon = (dc.ExtendedProperties["HasIcon"] != null ?
+					                 (dc.ExtendedProperties["HasIcon"].ToString() == "True" ? true : false) : false);
+                    if (bHasIcon)
                         sHTML += "<img class=\"custom_icon\" src=\"../images/custom/" + dc.ColumnName.Replace(" ", "").ToLower() + "_" + sValue.Replace(" ", "").ToLower() + ".png\" alt=\"\" />";
-
-                    sHTML += sValue;
+					
+					//if this is the "Tags" column, it might contain some xml... break 'em down
+					if (dc.ColumnName == "Tags" && !string.IsNullOrEmpty(sValue)) {
+						try {
+							XElement xDoc = XElement.Parse(sValue);
+							if (xDoc != null) {
+								string sTags = "";
+								foreach (XElement xeTag in xDoc.Elements("item"))
+								{
+									sTags += xeTag.Element("key").Value + " : " + xeTag.Element("value").Value + "<br />";
+								}
+								sHTML += sTags;
+							}
+						} catch (Exception ex) {
+							//couldn't parse it.  hmmm....
+							//I guess just stick the value in there, but make it safe
+							sHTML += ui.SafeHTML(sValue);
+						}
+					} else {
+						sHTML += sValue;
+					}
+					
                     sHTML += "</td>";
                 }
 

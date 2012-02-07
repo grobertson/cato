@@ -109,6 +109,7 @@ div.action_inner
 	float: left;
 	width: 350px;
 	height: 180px;
+	overflow: auto;
 }
 .ecosystem_item_header
 {

@@ -141,6 +141,10 @@ namespace ACWebMethods
                 //what columns go in the DataTable?
                 if (cot.Properties.Count > 0)
                 {
+					//this is for the hardcoded properties in the cloud_providers.xml file.
+					//if we want to show ALL object tags from the xml tagSet,
+					//perhaps that whole xml snip should go in a column on this datatable.
+					
                     foreach (CloudObjectTypeProperty prop in cot.Properties)
                     {
                         //the column on the data table *becomes* the property.
@@ -151,15 +155,17 @@ namespace ACWebMethods
 
                         //This is important!  Places in the GUI expect the first column to be the ID column.
                         //hoping to stop doing that in favor of this property.
-                        if (prop.IsID) dc.ExtendedProperties.Add("IsID", true);
+                        dc.ExtendedProperties.Add("IsID", prop.IsID.ToString());
                         //will we try to draw an icon?
-                        if (prop.HasIcon) dc.ExtendedProperties.Add("HasIcon", true);
-
-						//what was the xpath for this property?
-                        dc.ExtendedProperties.Add("XPath", prop.XPath);
+                        dc.ExtendedProperties.Add("HasIcon", prop.HasIcon.ToString());
                         //a "short list" property is one that will always show up... it's a shortcut in some places.
-                        dc.ExtendedProperties.Add("ShortList", prop.ShortList);
-                        //it might have a custom caption
+                        dc.ExtendedProperties.Add("ShortList", prop.ShortList.ToString());
+						//what was the xpath for this property?
+                        dc.ExtendedProperties.Add("XPath", prop.XPath.ToString());
+						//do we grab the "value" for this property, or the xml?
+                        dc.ExtendedProperties.Add("ValueIsXML", prop.ValueIsXML.ToString());
+                        
+						//it might have a custom caption
                         if (!string.IsNullOrEmpty(prop.Label)) dc.Caption = prop.Label;
 
                         //add the column
@@ -176,7 +182,7 @@ namespace ACWebMethods
                     }
                     return null;
                 }
-
+				
                 //ok, columns are added.  Parse the XML and add rows.
                 foreach (XElement xeRecord in xDoc.XPathSelectElements(cot.XMLRecordXPath))
                 {
@@ -186,9 +192,20 @@ namespace ACWebMethods
                     //ensures all the info we need got added
                     foreach (DataColumn dc in dt.Columns)
                     {
+						//if it's a tagset column put the tagset xml in it
+						// for all other columns, they get a lookup
                         XElement xeProp = xeRecord.XPathSelectElement(dc.ExtendedProperties["XPath"].ToString());
-                        if (xeProp != null) drNewRow[dc.ColumnName] = xeProp.Value;
-                    }
+                        if (xeProp != null) {
+							//does this column have the extended property "ValueIsXML"?
+							bool bAsXML = (dc.ExtendedProperties["ValueIsXML"] != null ? 
+							               (dc.ExtendedProperties["ValueIsXML"].ToString() == "True" ? true : false): false);
+							
+							if (bAsXML)
+								drNewRow[dc.ColumnName] = xeProp.ToString(SaveOptions.DisableFormatting);
+							else
+								drNewRow[dc.ColumnName] = xeProp.Value;
+						}
+					}
 
                     //build the row
                     dt.Rows.Add(drNewRow);

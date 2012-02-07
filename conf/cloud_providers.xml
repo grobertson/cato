@@ -11,17 +11,18 @@
 				<cloud id="54d17fl3-fhs8-9xj4-dj6h-2j678vh572h5" name="sa-east-1" api_url="sa-east-1.amazonaws.com" api_protocol="HTTPS"></cloud>
 			</clouds>
 			<products>
-				<product name="ec2" label="EC2" api_version="2010-05-15" api_url_prefix="ec2">
+				<product name="ec2" label="EC2" api_version="2011-12-01" api_url_prefix="ec2">
 					<object_types>
-						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
+						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="//addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
 							<property name="Domain" label="" xpath="domain" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
+						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="//imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
 							<property name="ImageId" label="" xpath="imageId" id_field="1" short_list="1" sort_order="1" />
 							<property name="ImageType" label="" xpath="imageType" short_list="1" sort_order="3" />
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
+							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
 						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="//instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
@@ -32,10 +33,9 @@
 							<property name="Instance Type" label="" xpath="instanceType" short_list="1" sort_order="7" />
 							<property name="Internal Address" label="" xpath="privateIpAddress" short_list="1" sort_order="6" />
 							<property name="Launch Time" label="" xpath="launchTime" short_list="1" sort_order="8" />
-							<property name="Name" label="" xpath="tagSet/item[key='Name']/value" short_list="1" sort_order="3" />
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="1" />
-							<property name="Role" label="" xpath="tagSet/item[key='com.cloudsidekick.role']/value" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="instanceState/name" has_icon="1" short_list="1" sort_order="2" />
+							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
 						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="//keySet/item">
 							<property name="KeyName" label="" xpath="keyName" id_field="1" short_list="1" sort_order="1" />
@@ -45,12 +45,13 @@
 							<property name="GroupName" label="" xpath="groupName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
+						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="//snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Description" label="" xpath="description" short_list="1" sort_order="5" />
 							<property name="Status" label="" xpath="status" has_icon="1" short_list="1" sort_order="2" />
 							<property name="VolumeId" label="" xpath="volumeId" short_list="1" sort_order="3" />
 							<property name="VolumeSize" label="" xpath="volumeSize" short_list="1" sort_order="4" />
+							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
 						<type id="aws_ec2_spotinstance" label="EC2 Spot Instances" api_call="DescribeSpotInstanceRequests" xml_record_xpath="//spotInstanceRequestSet/item">
 							<property name="ImageID" label="" xpath="launchSpecification/imageId" id_field="1" short_list="1" sort_order="2" />
@@ -58,13 +59,13 @@
 							<property name="RequestID" label="" xpath="spotInstanceRequestId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="state" has_icon="1" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="volumeSet/item">
+						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="//volumeSet/item">
 							<property name="VolumeId" label="" xpath="volumeId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Device" label="" xpath="attachmentSet/item/device" short_list="1" sort_order="6" />
-							<property name="Name" label="" xpath="tagSet/item[key='Name']/value" sort_order="3" />
 							<property name="Size" label="" xpath="size" short_list="1" sort_order="5" />
 							<property name="Status" label="" xpath="status" has_icon="1" short_list="1" sort_order="2" />
 							<property name="Zone" label="" xpath="availabilityZone" short_list="1" sort_order="4" />
+							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
 					</object_types>
 				</product>
@@ -122,13 +123,13 @@
 						</type>
 					</object_types>
 				</product>
-				<!--<product name="s3" label="S3" api_url_prefix="s3" api_version="2006-03-01">
+				<product name="s3" label="S3" api_url_prefix="s3" api_version="2006-03-01">
 					<object_types>
 						<type id="aws_s3_buckets" label="S3 Buckets" api_call="" xml_record_xpath="//ListAllMyBucketsResult">
 							<property name="BucketName" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
 						</type>
 					</object_types>
-				</product>-->
+				</product>
 			</products>
 		</provider>
 		<provider name="Eucalyptus" test_product="eucalyptus" test_object="aws_ec2_security_group" user_defined_clouds="true">
