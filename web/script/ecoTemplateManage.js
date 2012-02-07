@@ -83,6 +83,9 @@ $(document).ready(function () {
 		validateStormFileJSON();
     });
     
+    //tabs in the editor
+    $("#txtStormFile").tabby();
+    
     //changing the Source dropdown refires the validation
     $("#ddlStormFileSource").change(function () {
     	//if it's File, show that section otherwise hide it.
@@ -148,7 +151,7 @@ function validateStormFileJSON() {
 		$("#edit_dialog_create_btn").hide();
 		
 		if (errmsg.length > 0)
-			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
+			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).replaceWith(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
 	}
 }
 
