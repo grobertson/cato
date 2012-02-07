@@ -22,12 +22,17 @@ namespace Web.pages
 
         protected void btnImport_Click(object sender, EventArgs e)
         {
+			string sUserID = ui.GetSessionUserID();
             string sPath = Server.MapPath("~/temp/");
+			
+			//first, clean up any previous uploads from this user.
+			string[] sFiles = Directory.GetFiles(sPath, sUserID + "-*.tmp");
+			foreach (string sFileToDel in sFiles)
+				File.Delete(sFileToDel);
 
             //get the file from the browser
             if ((fupFile.PostedFile != null) && (fupFile.PostedFile.ContentLength > 0))
             {
-				string sUserID = ui.GetSessionUserID();
 				string sRefID = ui.GetQuerystringValue("ref_id", typeof(string)).ToString();			
 				string sFileName = sUserID + "-" + sRefID + ".tmp"; //System.IO.Path.GetFileName(fupFile.PostedFile.FileName);
                 string sFullPath = sPath + sFileName;
