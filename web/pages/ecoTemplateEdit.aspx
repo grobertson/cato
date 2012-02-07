@@ -180,6 +180,9 @@
     <div id="storm_edit_dialog" title="Edit Storm" class="hidden">
 		<select id="storm_edit_dialog_type"><option>URL</option><option>Text</option><option>File</option></select>
 		<span id="url_to_text_btn" class="hidden">Convert to Text</span>
+        <div class="stormfileimport hidden">
+            <iframe src="fileUpload.aspx?ref_id=new_template" style="width: 100%; height: 28px;"></iframe>
+		</div>
 		<br />
 		<textarea id="storm_edit_dialog_text" class="code w100pct" rows="27"></textarea>
 		<div id="json_parse_msg"></div>

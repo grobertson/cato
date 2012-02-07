@@ -50,6 +50,7 @@ $(document).ready(function () {
     });
     $("#storm_edit_dialog").dialog({
         autoOpen: false,
+        closeOnEscape: false,
         modal: true,
         width: 800,
         height: 600,
@@ -64,7 +65,9 @@ $(document).ready(function () {
             {
             	text: "Cancel",
             	click: function () {
-                	$(this).dialog('close');
+                	if (confirm("You have unsaved changes. Are you sure?")) {
+                		$(this).dialog('close');
+            		}
             	}
         	}
         ]
@@ -76,8 +79,17 @@ $(document).ready(function () {
 		validateStormFileJSON();
     });
     
+    //tabs in the editor
+    $("#storm_edit_dialog_text").tabby();
+    
     //changing the Source dropdown refires the validation
     $("#storm_edit_dialog_type").change(function () {
+    	//if it's File, show that section otherwise hide it.
+    	if ($(this).val() == "File")
+    		$(".stormfileimport").show();
+    	else
+	    	$(".stormfileimport").hide();
+	    	
 		validateStormFileJSON();
     });
 
@@ -88,6 +100,32 @@ $(document).ready(function () {
         ShowRunStormDialog(g_id);
     }
 });
+
+function fileWasSaved(filename) {
+	//get the file text from the server and populate the text field.
+	//alert(filename);
+    $.ajax({
+        type: "POST",
+        url: "uiMethods.asmx/wmGetFile",
+        data: '{"sFileName":"' + filename + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            if (msg.d.length > 0) {
+                var txt = unpackJSON(msg.d);
+                $("#storm_edit_dialog_text").val(txt);
+                $(".stormfileimport").hide();
+                $("#storm_edit_dialog_type").val("Text");
+                validateStormFileJSON();
+            } else {
+                showInfo(msg.d);
+            }
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function ShowStorm() {
 	//gets the details of Storm and sets it up on the page    
@@ -216,6 +254,6 @@ function validateStormFileJSON() {
 		$("#storm_edit_dialog_ok_btn").hide();		
 
 		if (errmsg.length > 0)
-			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).append(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
+			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).replaceWith(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
 	}
 }
