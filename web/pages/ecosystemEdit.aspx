@@ -184,7 +184,7 @@
     <!-- End Registry dialogs.-->
     <!-- Storm dialogs.-->	
     <div id="storm_view_dialog" title="View Storm" class="hidden">
-		<asp:TextBox ID="txtStormFile" TextMode="MultiLine" Rows="27" runat="server" CssClass="w100pct code"></asp:TextBox>
+		<asp:TextBox ID="txtStormFile" TextMode="MultiLine" Rows="27" runat="server" CssClass="w100pct code" ReadOnly="True"></asp:TextBox>
 	</div>
     <!-- End Storm dialogs.-->	
 </asp:Content>
