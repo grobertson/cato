@@ -14,7 +14,13 @@
 //
 
 //This is all the functions to support the ecosystemEdit page.
+
+var g_eco_id;
+var g_ecotemplate_id;
+
 $(document).ready(function () {
+	"use strict";
+
     //used a lot
     g_eco_id = $("#ctl00_phDetail_hidEcosystemID").val();
     g_ecotemplate_id = $("#ctl00_phDetail_hidEcoTemplateID").val();
@@ -49,6 +55,12 @@ $(document).ready(function () {
     $("#show_stormfile_btn").button({ icons: { primary: "ui-icon-document"} });
     $("#show_stormfile_btn").click(function () {
 		$("#storm_view_dialog").dialog("open");
+    });
+    $("#show_stopstorm_btn").button({ icons: { primary: "ui-icon-stop"} });
+    $("#show_stopstorm_btn").click(function () {
+        if (typeof(ShowStopStormDialog) != 'undefined') {
+            ShowStopStormDialog(g_eco_id);
+        }
     });
     $("#storm_view_dialog").dialog({
         autoOpen: false,
@@ -140,6 +152,8 @@ function CloudAccountWasChanged() {
     location.href = "ecosystemManage.aspx";
 }
 function tabWasClicked(tab) {
+	"use strict";
+
     //we'll be hiding and showing right side content when tabs are selected.
     //"detail" divisions have a div name like the tab, with a "_detail" suffix
 
@@ -163,6 +177,8 @@ function tabWasClicked(tab) {
 }
 
 function flowButtons($selector) {
+	"use strict";
+
     //take them out of the table, put them back into their holding div, and remove rows from the table
     $("#action_flow .action").each(function () {  //for each one in the table flow
         $(this).appendTo($("#category_actions")); //move it back to the holding div
@@ -209,6 +225,8 @@ function flowButtons($selector) {
 
 //seems to work so far.
 function pageLoad() {
+	"use strict";
+
     $(".ecosystem_type").live("click", function () {
         //get the type and set it on the page.
         var drilldowntype = $(this).attr("id");
@@ -262,6 +280,8 @@ function pageLoad() {
 }
 
 function getEcosystemLog() {
+	"use strict";
+
     $.ajax({
         type: "POST",
         url: "uiMethods.asmx/wmGetEcosystemStatusAndLog",
@@ -306,6 +326,8 @@ function getEcosystemLog() {
 }
 
 function getEcosystemObjectList() {
+	"use strict";
+
     showPleaseWait();
 
     $.ajax({
@@ -331,6 +353,8 @@ function getEcosystemObjectList() {
 }
 
 function getEcosystemObject(drilldowntype, label) {
+	"use strict";
+
     showPleaseWait();
 
     $.ajax({
@@ -357,6 +381,8 @@ function getEcosystemObject(drilldowntype, label) {
 }
 
 function doDetailFieldUpdate(ctl) {
+	"use strict";
+
     var column = $(ctl).attr("column");
     var value = $(ctl).val();
 
@@ -407,6 +433,8 @@ function doDetailFieldUpdate(ctl) {
 }
 
 function getActionCategories() {
+	"use strict";
+
     $.ajax({
         type: "POST",
         url: "uiMethods.asmx/wmGetEcotemplateActionCategories",
@@ -422,6 +450,8 @@ function getActionCategories() {
     });
 }
 function getActions() {
+	"use strict";
+
     $.ajax({
         type: "POST",
         url: "uiMethods.asmx/wmGetEcotemplateActionButtons",
@@ -448,6 +478,8 @@ function getActions() {
     });
 }
 function GetEcosystemSchedules() {
+	"use strict";
+
     $.ajax({
         async: true,
         type: "POST",

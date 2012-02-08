@@ -8,6 +8,7 @@
     <script type="text/javascript" src="../script/taskedit/taskEditParams.js"></script>
     <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/taskLaunchDialog.js"></script>
+    <script type="text/javascript" src="../script/stormStopDialog.js"></script>
     <script type="text/javascript" src="../script/registry.js"></script>
     <link type="text/css" href="../style/taskEdit.css" rel="stylesheet" />
     <link type="text/css" href="../style/taskView.css" rel="stylesheet" />
@@ -45,7 +46,8 @@
 	                    <span class="detail_label">Storm Status:</span>
 						<div id="storm_status"></div>
 						<center>
-							<span id="show_stormfile_btn">View Storm File</span>						
+							<span id="show_stormfile_btn">View Storm File</span><span id="show_stopstorm_btn">Stop Storm</span>
+		
 						</center>
 					</div>
                     <br />
@@ -186,5 +188,6 @@
     <div id="storm_view_dialog" title="View Storm" class="hidden">
 		<asp:TextBox ID="txtStormFile" TextMode="MultiLine" Rows="27" runat="server" CssClass="w100pct code" ReadOnly="True"></asp:TextBox>
 	</div>
+	<div id="storm_stop_dialog" title="Stop Storm" class="hidden"></div>
     <!-- End Storm dialogs.-->	
 </asp:Content>
