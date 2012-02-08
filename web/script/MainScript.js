@@ -17,35 +17,40 @@
 //file will have global impact, so please be careful.
 
 //GLOBALS
-isiPad = navigator.userAgent.match(/iPad/i) != null;
+"use strict";
 
 //used in many places where we send strings as json data, replaces the two critical json chars " and \
 //THESE CALL a jQuery plugin
 function packJSON(instr) {
+	"use strict";
 	//if it's empty or undefined, return ""
-	if (instr == "" || instr === undefined)
+	if (instr === "" || instr === undefined) {
 		return "";
-	
+	}
 	//terrible ugly here, but this is a temporary fix to keep bad data from getting pasted in
 	//if there's a char > 255, remove it.
 	// for ticket #28 ... this should html encode it and decode it on the server.
-   	cleanstr = ""
-   	for(i=0; i<instr.length; i++) {
-   		if(instr.charCodeAt(i) <= 255)
-   			cleanstr += instr[i]
+	var cleanstr = "";
+	for (var i = 0; i < instr.length; i++) {
+		if (instr.charCodeAt(i) <= 255) {
+			cleanstr += instr[i];
+		}
 	}
 
 	//NOTE! base64 encoding still has a couple of reserved characters so we explicitly replace them AFTER
 	var outstr = $.base64.encode(cleanstr);
-    return outstr.replace(/\//g, "%2F").replace(/\+/g, "%2B").replace(/=/g, "%3D");
+	return outstr.replace(/\//g, "%2F").replace(/\+/g, "%2B");
 }
+
 function unpackJSON(instr) {
+	"use strict";
 	//if it's nothing, return nothing
-	if (outstr == "")
-		return outstr;
-		
+	if (instr === "") {
+		return instr;
+	}
+
 	//NOTE! base64 decoding still has a couple of reserved characters so we explicitly replace them BEFORE
-    var outstr = instr.replace(/%2F/g, "/").replace(/%2B/g, "+").replace(/%3D/g, "=");
+	var outstr = instr.replace(/%2F/g, "/").replace(/%2B/g, "+");
 	return $.base64.decode(outstr);
 }
 
@@ -53,16 +58,19 @@ function unpackJSON(instr) {
 
 //this is a debugging function.
 function printClickEvents(ctl) {
-    var e = ctl.data("events").click;
-    jQuery.each(e, function (key, handlerObj) {
-        console.log(handlerObj.handler) // prints "function() { console.log('clicked!') }"
-    });
+	"use strict";
+	var e = ctl.data("events").click;
+	jQuery.each(e, function (key, handlerObj) {
+		console.log(handlerObj.handler); // prints "function() { console.log('clicked!') }"
+	});
 }
+
 function printKeypressEvents(ctl) {
-    var e = ctl.data("events").keypress;
-    jQuery.each(e, function (key, handlerObj) {
-        console.log(handlerObj.handler) // prints "function() { console.log('clicked!') }"
-    });
+	"use strict";
+	var e = ctl.data("events").keypress;
+	jQuery.each(e, function (key, handlerObj) {
+		console.log(handlerObj.handler); // prints "function() { console.log('clicked!') }"
+	});
 }
 
 //this function shows the "please wait" blockui effect.
@@ -155,11 +163,12 @@ function jumpToAnchor(anchor) {
 
     var new_position = $('#' + anchor).offset();
 
-    if ($("#content_te").length > 0)
+    if ($("#content_te").length > 0) {
         $("#content_te").scrollTo($('#' + anchor));
-    else
+    } else {
         $.scrollTo($('#' + anchor));
-
+	}
+	
     return false;
 }
 
@@ -396,204 +405,55 @@ function whatKey(e) {
     if (!e.charCode && e.keyCode)
         return String.fromCharCode(e.keyCode);
 }
-//SOME FUNCTIONS DEALING with the size of a page
-function getPageWidth() {
-    if (window.innerWidth) {
-        return window.innerWidth;
-    }
-    if (document.body.clientWidth) {
-        return document.body.clientWidth;
-    }
-}
-
-function getPageHeight() {
-    if (window.innerHeight) {
-        return window.innerHeight;
-    }
-    if (document.body.clientHeight) {
-        return document.body.clientHeight;
-    }
-}
-
-//and this one is wicked... given an input value (the width or height of an element)
-//these will return the value to give the top or left in order to center it on the page.
-//even if the page is scrolled!
-function getPageCenteredTop(elem) {
-    var st
-    if (document.body.scrollTop) {
-        st = document.body.scrollTop;
-    }
-    if (window.pageYOffset) {
-        st = window.pageYOffset;
-    }
-
-    //in case the height is null (Firefox does this if you haven't scrolled yet.)
-    if (!st) { st = 0 }
-
-    var eh = getElementHeight(elem)
-    var h = getPageHeight();
-
-    return ((h - eh) / 2) + st;
-}
-
-function getPageCenteredLeft(elem) {
-    var ew = getElementWidth(elem)
-    var w = getPageWidth();
-    return (w - ew) / 2;
-}
-
-function getElementHeight(elem) {
-    if (elem.style.pixelHeight) xPos = elem.style.pixelHeight;
-    if (elem.offsetHeight) xPos = elem.offsetHeight;
-
-    return xPos;
-}
-
-function getElementWidth(elem) {
-    if (elem.style.pixelHeight) xPos = elem.style.pixelWidth;
-    if (elem.offsetHeight) xPos = elem.offsetWidth;
-
-    return xPos;
-}
 
 //SIZE OF SCREEN FUNCTIONS
 function getScreenCenteredTop(eh) {
-    var h = screen.height;
-
-    return (h - eh) / 2;
+	var h = screen.height;
+	return (h - eh) / 2;
 }
 
 function getScreenCenteredLeft(ew) {
-    var w = screen.width;
-    return (w - ew) / 2;
+	var w = screen.width;
+	return (w - ew) / 2;
 }
-
-
-//ELEMENT POSITION
-function getLeft(obj) {
-    var curleft = 0;
-    if (obj.offsetParent) {
-        while (1) {
-            curleft += obj.offsetLeft;
-            if (!obj.offsetParent) {
-                break;
-            }
-            obj = obj.offsetParent;
-        }
-    } else if (obj.x) {
-        curleft += obj.x;
-    }
-    return curleft;
-}
-
-function getTop(obj) {
-    var curtop = 0;
-    if (obj.offsetParent) {
-        while (1) {
-            curtop += obj.offsetTop;
-            if (!obj.offsetParent) {
-                break;
-            }
-            obj = obj.offsetParent;
-        }
-    } else if (obj.y) {
-        curtop += obj.y;
-    }
-    return curtop;
-}
-
-
-//A couple more functions for resizing iframes.
-function getDocHeight(doc) {
-    var docHt = 0, sh, oh;
-    if (doc.height) docHt = doc.height;
-    else if (doc.body) {
-        if (doc.body.scrollHeight) docHt = sh = doc.body.scrollHeight;
-        if (doc.body.offsetHeight) docHt = oh = doc.body.offsetHeight;
-        if (sh && oh) docHt = Math.max(sh, oh);
-    }
-    return docHt;
-}
-function setIframeHeight(iframeName) {
-    var iframeWin = window.frames[iframeName];
-    var iframeEl = document.getElementById ? document.getElementById(iframeName) : document.all ? document.all[iframeName] : null;
-    if (iframeEl && iframeWin) {
-        iframeEl.style.height = "auto"; // helps resize (for some) if new doc shorter than previous  
-        var docHt = getDocHeight(iframeWin.document);
-        // need to add to height to be sure it will all show
-        if (docHt) iframeEl.style.height = docHt + "px";
-    }
-}
-
-
 
 //------------------------------------------------------------
 //These are the window open functions.  They will update a window if one exists with 
 //the same name.
-
 //openMaxWindow - opens a maximized window.
 //openDialogWindow - opens a small dialog window, centered on the screen.
 //openWindow - Allows full control of window options.
-
 //TODO...
 //Add functions with a _New suffix use a random number 
 //to ensure that the window name is unique.  This will create a new window every time.
 
-
 function openMaxWindow(aURL, aWinName) {
-    var wOpen;
-    var sOptions;
+	var wOpen;
+	var sOptions;
 
-    sOptions = 'status=no,menubar=no,scrollbars=yes,resizable=yes,toolbar=no';
-    sOptions = sOptions + ',width=' + screen.width + ',height=' + screen.height + ',top=0,left=0';
+	sOptions = 'status=no,menubar=no,scrollbars=yes,resizable=yes,toolbar=no';
+	sOptions = sOptions + ',width=' + screen.width + ',height=' + screen.height + ',top=0,left=0';
 
-    wOpen = window.open(aURL, aWinName, sOptions);
-    wOpen.focus();
+	wOpen = window.open(aURL, aWinName, sOptions);
+	wOpen.focus();
 }
 
 function openDialogWindow(aURL, aWinName, w, h, scroll) {
-    var wOpen;
-    var sOptions;
+	var wOpen;
+	var sOptions;
 
-    var sc = (scroll == 'yes' || scroll == 'true') ? sc = 'yes' : sc = 'no'
-    var t = getScreenCenteredTop(h);
-    var l = getScreenCenteredLeft(w);
+	var sc = (scroll === 'yes' || scroll === 'true') ? sc = 'yes' : sc = 'no';
+	var t = getScreenCenteredTop(h);
+	var l = getScreenCenteredLeft(w);
 
-    sOptions = 'location=no,titlebar=no,status=no,menubar=no,resizable=yes,toolbar=no,scrollbars=' + sc;
-    sOptions = sOptions + ',width=' + w + ',height=' + h + ',left=' + l + ',top=' + t;
+	sOptions = 'location=no,titlebar=no,status=no,menubar=no,resizable=yes,toolbar=no,scrollbars=' + sc;
+	sOptions = sOptions + ',width=' + w + ',height=' + h + ',left=' + l + ',top=' + t;
 
-    wOpen = window.open(aURL, aWinName, sOptions);
-    wOpen.focus();
+	wOpen = window.open(aURL, aWinName, sOptions);
+	wOpen.focus();
 }
 
 function openWindow(URLtoOpen, windowName, windowFeatures) {
-    wOpen = window.open(URLtoOpen, windowName, windowFeatures);
-    wOpen.focus();
-}
-
-/*the following is a test of asp/php integration
-since we use master pages, we need ASP for the main page.
-so, we'll try getting the php page via ajax and sticking it in a div on the blank asp wrapper page
-
-this is the javascript call to get the php content
-*/
-function grabPHP(php_url, target) {
-    if (typeof target == "undefined")
-        target = "php_content";
-
-    $.ajax({
-        async: false,
-        type: "POST",
-        cache: false,
-        url: php_url,
-        data: '',
-        contentType: "text/html;",
-        dataType: "html",
-        success: function (retval) {
-            $("#" + target).html(retval);
-        },
-        error: function (response) {
-            $("#" + target).html('ERROR:\n\n ' + response.responseText);
-        }
-    });
+	var wOpen = window.open(URLtoOpen, windowName, windowFeatures);
+	wOpen.focus();
 }

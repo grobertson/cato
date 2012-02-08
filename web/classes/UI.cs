@@ -882,12 +882,12 @@ namespace acUI
         {
 			//NOTE! base64 encoding still has a couple of reserved characters so we explicitly replace them AFTER
     		string sOut = base64Encode(sIn);
-			return sOut.Replace("/", "%2F").Replace("+", "%2B").Replace("=", "%3D");
+			return sOut.Replace("/", "%2F").Replace("+", "%2B");
         }
         public string unpackJSON(string sIn)
         {
 			//NOTE! base64 decoding still has a couple of reserved characters so we explicitly replace them BEFORE
-    		string sOut = sIn.Replace("%2F", "/").Replace("%2B", "+").Replace("%3D", "=");
+    		string sOut = sIn.Replace("%2F", "/").Replace("%2B", "+");
 			return base64Decode(sOut);
         }
 		public string base64Encode(string data)
