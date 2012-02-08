@@ -40,3 +40,5 @@ web/script/storm.js
 web/script/stormRunDialog.js
 
 *.o
+
+web/script/stormStopDialog.js

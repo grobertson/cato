@@ -3950,10 +3950,10 @@ namespace ACWebMethods
 								sErr = ex.Message;
 							}
 						} else {
-							sFileDesc = "Storm File is empty or URL returned nothing.";
+							sErr = "Storm File is empty or URL returned nothing.";
 						}
 					} else {
-						sFileDesc = "No Storm File or URL defined.";
+						sErr = "No Storm File or URL defined.";
 					}
 				}
                 else
