@@ -43,8 +43,8 @@
     <div id="content">
         <asp:UpdatePanel ID="udpList" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
-                <span id="lblItemsSelected">0</span> Items Selected <span id="clear_selected_btn">
-                </span><span id="item_create_btn">Create</span><span id="item_copy_btn">Copy</span><span id="item_delete_btn">Delete</span>
+                <span id="lblItemsSelected">0</span> Items Selected <span id="clear_selected_btn"></span><span 
+					id="item_create_btn">Create</span><span id="item_copy_btn">Copy</span><span id="item_delete_btn">Delete</span>
                 <asp:TextBox ID="txtSearch" runat="server" class="search_text" />
                 <span id="item_search_btn">Search</span>
                 <asp:ImageButton ID="btnSearch" class="hidden" OnClick="btnSearch_Click" runat="server" />
