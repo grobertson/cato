@@ -359,6 +359,7 @@ function install(el, opts) {
 
 	if (full) {
 		pageBlock = lyr3[0];
+		center(lyr3[0], opts.centerX, opts.centerY);
 		pageBlockEls = $(':input:enabled:visible',pageBlock);
 		if (opts.focusInput)
 			setTimeout(focus, 20);
