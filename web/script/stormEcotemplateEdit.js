@@ -26,14 +26,15 @@ $(document).ready(function () {
     	}
     });
 
-    $("#run_storm_btn").button({ icons: { primary: "ui-icon-play"} });
+    $("#run_storm_btn").button({ icons: { primary: "ui-icon-play"}, disabled: true });
     $("#run_storm_btn").click(function () {
+    	if ($(this).hasClass("ui-state-disabled")) { return false; }
     	//check if the function to display the dialog exists
     	//otherwise show a message
         if (typeof(ShowRunStormDialog) != 'undefined') {
             ShowRunStormDialog(g_id);
         } else {
-		    $("#run_storm_btn").hide();
+		    $("#run_storm_btn").button("disable");
     	}
     });
 
@@ -141,10 +142,10 @@ function ShowStorm() {
         $("#edit_storm_btn").show();
 
         if (storm.IsValid == "True") {
-        	$("#run_storm_btn").show();
+        	$("#run_storm_btn").button("enable");
         	$("#storm_file_error").hide();
         } else {
-        	$("#run_storm_btn").hide();
+        	$("#run_storm_btn").button("disable");
         	$("#storm_file_error").show();
 		}
 	}
