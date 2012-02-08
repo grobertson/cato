@@ -224,8 +224,7 @@ function AreYouSure() {
 
 function restrictEntryToSafeHTML(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (c == '<' || c == '>')
         return false;
@@ -235,8 +234,7 @@ function restrictEntryToSafeHTML(e, field) {
 
 function restrictEntryToIdentifier(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[a-zA-Z0-9_\-]/.test(c)) {
         return true;
@@ -247,8 +245,7 @@ function restrictEntryToIdentifier(e, field) {
 
 function restrictEntryToIdentifierUpper(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[A-Z0-9_\-]/.test(c)) {
         return true;
@@ -263,8 +260,7 @@ function restrictEntryToIdentifierUpper(e, field) {
 
 function restrictEntryToUsername(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[\\a-zA-Z0-9_.@\-]/.test(c)) {
         return true;
@@ -276,8 +272,7 @@ function restrictEntryToUsername(e, field) {
 
 function restrictEntryToEmail(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[a-zA-Z0-9_.@,\-]/.test(c)) {
         return true;
@@ -288,8 +283,7 @@ function restrictEntryToEmail(e, field) {
 }
 function restrictEntryToHostname(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[a-zA-Z0-9_.\-]/.test(c)) {
         return true;
@@ -300,8 +294,7 @@ function restrictEntryToHostname(e, field) {
 }
 function restrictEntryToNumber(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[0-9.\-]/.test(c)) {
         //if user pressed '.', and a '. exists in the string, cancel
@@ -319,8 +312,7 @@ function restrictEntryToNumber(e, field) {
 
 function restrictEntryToInteger(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[0-9\-]/.test(c)) {
         //if there is anything in the field and user pressed '-', cancel.
@@ -334,8 +326,7 @@ function restrictEntryToInteger(e, field) {
 
 function restrictEntryToPositiveNumber(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[0-9.]/.test(c)) {
         //if user pressed '.', and a '. exists in the string, cancel
@@ -349,8 +340,7 @@ function restrictEntryToPositiveNumber(e, field) {
 
 function restrictEntryToPositiveInteger(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[0-9]/.test(c)) {
         return true;
@@ -360,8 +350,7 @@ function restrictEntryToPositiveInteger(e, field) {
 
 function restrictEntryToTag(e, field) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (/[a-zA-Z0-9_.\-@#& ]/.test(c)) {
         return true;
@@ -373,8 +362,7 @@ function restrictEntryToTag(e, field) {
 
 function restrictEntryCustom(e, field, regex) {
     var c = whatKey(e);
-    if (c.indexOf('~') != -1)
-        return true;
+    if (!c) { return true; }
 
     if (regex.test(c)) {
         return true;
@@ -392,16 +380,14 @@ function whatKey(e) {
     //OF COURSE, stymied again by Microsoft...
     //charCode is not recognized by IE... 
     //but it is a way in FF to tell character keys from action keys
-    if (typeof (e.charCode) != "undefined") {
-        //if the charCode isn't a 0, it is a real character key
-        if (e.charCode != 0 && e.keyCode == 0)
-            return String.fromCharCode(e.charCode);
-        else // but if it is 0, it's an action key, so return something special and testable
-            return "~" + e.keyCode;
-    }
-
-    if (!e.charCode && e.keyCode)
-        return String.fromCharCode(e.keyCode);
+    
+	if (e.which == null) {
+		return String.fromCharCode(e.keyCode); // IE
+	} else if (e.which!=0 && e.charCode!=0) {
+		return String.fromCharCode(e.which);   // the rest
+	} else {
+		return null; // special key
+	}
 }
 
 //SIZE OF SCREEN FUNCTIONS
