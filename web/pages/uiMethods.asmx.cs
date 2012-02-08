@@ -1627,7 +1627,9 @@ namespace ACWebMethods
             //we are simply assuming to have an image file for every propery that might have an icon.
             //the images will be named "property_value.png" 
             //NOTE: collapsed for spaces of course... just to be safe
-            if (dr.Table.Columns[sPropertyName].ExtendedProperties["HasIcon"] != null)
+			bool bHasIcon = (dr.Table.Columns[sPropertyName].ExtendedProperties["HasIcon"] != null ?
+			                 (dr.Table.Columns[sPropertyName].ExtendedProperties["HasIcon"].ToString() == "True" ? true : false) : false);
+            if (bHasIcon)
             {
                 if (sValue != "")
                     sIcon = "<img class=\"custom_icon\" src=\"../images/custom/" + sPropertyName.Replace(" ", "") + "_" + sValue.Replace(" ", "") + ".png\" alt=\"\" />";
