@@ -4004,8 +4004,8 @@ namespace ACWebMethods
 			GetEcotemplateStormJSON(sEcoTemplateID, ref bIsValid, ref sErr, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
 			
 			if (bFormatForHTML) {
-				sFileDesc = ui.FixBreaks(sFileDesc);
-				sStormFileJSON = ui.FixBreaks(sStormFileJSON);
+				sFileDesc = ui.FixBreaks(ui.SafeHTML(sFileDesc));
+				sStormFileJSON = ui.FixBreaks(ui.SafeHTML(sStormFileJSON));
 			}
 			
 			StringBuilder sb = new StringBuilder();
