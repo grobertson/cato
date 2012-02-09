@@ -451,14 +451,17 @@ namespace Globals
 			
 			try
 			{
-				sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecotemplate_id, account_id, ecosystem_desc, storm_file)" +
-					" values ('" + this.ID + "'," +
-						" '" + this.Name + "'," +
-						" '" + this.EcotemplateID + "'," +
-						" '" + this.AccountID + "'," +
-						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
-						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
-						")";
+                sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," +
+					" storm_file, storm_parameter_xml, storm_cloud_id)" +
+                    " select '" + this.ID + "'," +
+                    " '" + this.Name + "'," +
+                    (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+                    " '" + AccountID + "'," +
+                    " ecotemplate_id," +
+                    " storm_file," +
+                    (string.IsNullOrEmpty(this.ParameterXML) ? " null" : " '" + this.ParameterXML.Replace("'","''").Replace("\\","\\\\") + "'") + "," +
+                    (string.IsNullOrEmpty(this.CloudID) ? " null" : " '" + this.CloudID + "'") +
+                    " from ecotemplate where ecotemplate_id = '" + this.EcotemplateID + "'";
 				
 				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
 				{
