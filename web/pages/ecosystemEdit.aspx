@@ -32,9 +32,7 @@
                     </span>
                     <br />
                     <span class="detail_label">Name:</span><br />
-                    <asp:TextBox ID="txtEcosystemName" TextMode="MultiLine" Rows="5" runat="server" CssClass="task_details code"
-                        te_group="detail_fields" column="Name">
-                    </asp:TextBox>
+                    <asp:TextBox ID="txtEcosystemName" runat="server" CssClass="task_details code" te_group="detail_fields" column="Name" validate_as="identifier"></asp:TextBox>
                     <br />
                     <span class="detail_label">Description:</span><br />
                     <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="10" runat="server" te_group="detail_fields"
