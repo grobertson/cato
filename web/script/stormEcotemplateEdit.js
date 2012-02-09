@@ -18,7 +18,7 @@ $(document).ready(function () {
     //Storm buttons
     $("#url_to_text_btn").button({ icons: { primary: "ui-icon-shuffle"} });
     $("#url_to_text_btn").click(function () {
-		var storm = GetStorm(false);
+		var storm = GetStorm();
 	    if (storm != null) {
 			$("#storm_edit_dialog_type").val("Text");
 			$("#storm_edit_dialog_text").val(unpackJSON(storm.Text));
@@ -54,7 +54,7 @@ $(document).ready(function () {
         closeOnEscape: false,
         modal: true,
         width: 800,
-        height: 600,
+        height: 650,
         buttons: [
         	{
         		id: "storm_edit_dialog_ok_btn",
@@ -100,6 +100,9 @@ $(document).ready(function () {
     if (run == "true") {
         ShowRunStormDialog(g_id);
     }
+    
+    //init the jsonlint textarea - wires up a "validate" button and other niceties.
+    jsl.interactions.init($("#validate"), $("#storm_edit_dialog_text"), $("#json_parse_msg"), true, false)
 });
 
 function fileWasSaved(filename) {
@@ -117,6 +120,7 @@ function fileWasSaved(filename) {
                 $("#storm_edit_dialog_text").val(txt);
                 $(".stormfileimport").hide();
                 $("#storm_edit_dialog_type").val("Text");
+
                 validateStormFileJSON();
             } else {
                 showInfo(msg.d);
@@ -130,14 +134,19 @@ function fileWasSaved(filename) {
 
 function ShowStorm() {
 	//gets the details of Storm and sets it up on the page    
-    var storm = GetStorm(true);
+    var storm = GetStorm();
     if (storm != null) {
-        $("#storm_file_error").html(storm.Error);
+        //$("#storm_file_error").html(storm.Error);
         $("#storm_file_source").html(storm.FileType);
         $("#storm_file_url").html(unpackJSON(storm.URL));
-        $("#storm_file_desc").html(unpackJSON(storm.Description));
-        $("#storm_file_text").html(unpackJSON(storm.Text));
+        $("#storm_file_desc").html(unpackJSON(storm.HTMLDescription));
+        $("#storm_file_text").html(unpackJSON(storm.HTMLText));
     
+    	//can't validate the text in a div, so stick it in a textarea then test that
+    	$("#tmp_stormfile_div").remove();
+    	$("#storm_file_text").after("<textarea id='tmp_stormfile_div'>" + unpackJSON(storm.Text) + "</textarea>");
+	    jsl.interactions.validate($("#tmp_stormfile_div"), $("#storm_file_error"), true, false)
+
         //turn on the buttons
         $("#edit_storm_btn").show();
 
@@ -151,7 +160,7 @@ function ShowStorm() {
 	}
 }
 
-function GetStorm(format_for_html) {
+function GetStorm() {
     //gets the storm details for an Ecosystem, but several different functions consume the results
     var storm = null;
     
@@ -159,7 +168,7 @@ function GetStorm(format_for_html) {
         async: false,
         type: "POST",
         url: "uiMethods.asmx/wmGetEcotemplateStorm",
-        data: '{"sEcoTemplateID":"' + g_id + '","bFormatForHTML":"' + format_for_html + '"}',
+        data: '{"sEcoTemplateID":"' + g_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
@@ -185,7 +194,7 @@ function GetStorm(format_for_html) {
 
 function ShowEditStormDialog() {
 	//get the details of the Storm and populate the edit dialog.
-	var storm = GetStorm(false);
+	var storm = GetStorm();
     if (storm != null) {
 		$("#storm_edit_dialog_type").val(storm.FileType);
 		
@@ -200,11 +209,14 @@ function ShowEditStormDialog() {
 
 			//hide the url_to_text button
 			$("#url_to_text_btn").hide();
-			
-			validateStormFileJSON();
 		}
 		
 	    $("#storm_edit_dialog").dialog('open');
+		
+		//CANNOT validate the json unless the textarea is visible.
+		//this mustn't happen on a closed or otherwise hidden dialog
+		//because "setSelectionRange" fails on a hidden element.
+		validateStormFileJSON();
 	} else {
 		showAlert("Unable to edit Storm.  Could not get Storm File.");
 	}
@@ -234,27 +246,14 @@ function SaveStormFile() {
 
 function validateStormFileJSON() {
 	if ($("#storm_edit_dialog_type").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");			
-		//$("#storm_edit_dialog_ok_btn").show();		
+		$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
+		$("#storm_edit_dialog_text").empty().removeClass("redBorder").removeClass("greenBorder");
+		$("#validate").hide();	
 		return;
+	} else {
+		$("#validate").show();
 	}
 	
-	try
-	{
-		json = $.parseJSON($("#storm_edit_dialog_text").val());
-		$("#json_parse_msg").empty();
-		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
-		//$("#storm_edit_dialog_ok_btn").show();		
-	}
-	catch(err)
-	{
-		var errmsg = err.message.replace(/'/g,"\\'");
-		var msg = 'The provided Storm File syntax does not seem to be valid.';
-			
-		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
-		//$("#storm_edit_dialog_ok_btn").hide();		
-
-		if (errmsg.length > 0)
-			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).replaceWith(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
-	}
+	//the validate function cal be called with or without having done init.
+    jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), true, false)
 }

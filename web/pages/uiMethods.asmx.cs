@@ -3992,7 +3992,7 @@ namespace ACWebMethods
         }
 
 		[WebMethod(EnableSession = true)]
-        public string wmGetEcotemplateStorm(string sEcoTemplateID, bool bFormatForHTML)
+        public string wmGetEcotemplateStorm(string sEcoTemplateID)
         {
             acUI.acUI ui = new acUI.acUI();
 
@@ -4005,11 +4005,6 @@ namespace ACWebMethods
 			
 			GetEcotemplateStormJSON(sEcoTemplateID, ref bIsValid, ref sErr, ref sFileType, ref sURL, ref sFileDesc, ref sStormFileJSON);
 			
-			if (bFormatForHTML) {
-				sFileDesc = ui.FixBreaks(ui.SafeHTML(sFileDesc));
-				sStormFileJSON = ui.FixBreaks(ui.SafeHTML(sStormFileJSON));
-			}
-			
 			StringBuilder sb = new StringBuilder();
 			
 			sb.Append("{");
@@ -4018,7 +4013,9 @@ namespace ACWebMethods
             sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
             sb.AppendFormat("\"{0}\" : \"{1}\",", "URL", ui.packJSON(sURL));
             sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(sFileDesc));
-            sb.AppendFormat("\"{0}\" : \"{1}\"", "Text", ui.packJSON(sStormFileJSON));
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "Text", ui.packJSON(sStormFileJSON));
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "HTMLDescription", ui.packJSON(ui.FixBreaks(ui.SafeHTML(sFileDesc))));
+            sb.AppendFormat("\"{0}\" : \"{1}\"", "HTMLText", ui.packJSON(ui.FixBreaks(ui.SafeHTML(sStormFileJSON))));
 			sb.Append("}");
 			
 			return sb.ToString();

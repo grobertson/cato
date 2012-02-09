@@ -10,6 +10,13 @@
     <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateEdit.js"></script>
     <script type="text/javascript" src="../script/stormEcotemplateEdit.js"></script>
+	<!--for lined text area and jsonlint-->
+	<script type="text/javascript" src="../script/jsonlint/c/js/json2.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.parser.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.format.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.interactions.js"></script>
+    <link type="text/css" href="../script/jsonlint/c/css/screen.css" rel="stylesheet" />
+	<!--end lined text area and jsonlint-->
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div id="left_panel_te">
@@ -120,7 +127,7 @@
 				<div class="ui-state-default step_header">
 					<div class="step_header_title"><span class="action_name_lbl">Storm File</span></div>
 				</div>
-				<div id="storm_file_error" class="ui-state-highlight hidden"></div>
+				<pre id="storm_file_error" class="ui-state-highlight hidden"></pre>
 				<pre><div id="storm_file_text"></div></pre>
 			</div>
 		</div>
@@ -183,8 +190,8 @@
         <div class="stormfileimport hidden">
             <iframe src="fileUpload.aspx?ref_id=new_template" style="width: 100%; height: 28px;"></iframe>
 		</div>
-		<br />
-		<textarea id="storm_edit_dialog_text" class="code w100pct" rows="27"></textarea>
-		<div id="json_parse_msg"></div>
+		<textarea id="storm_edit_dialog_text" class="code w100pct" rows="25"></textarea>
+		<span id="validate">Validate</span>
+		<pre id="json_parse_msg"></pre>
 	</div>
 </asp:Content>
