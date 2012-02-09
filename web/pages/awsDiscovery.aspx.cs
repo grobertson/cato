@@ -277,7 +277,7 @@ namespace Web.pages
 								}
 								sHTML += sTags;
 							}
-						} catch (Exception ex) {
+						} catch (Exception) {
 							//couldn't parse it.  hmmm....
 							//I guess just stick the value in there, but make it safe
 							sHTML += ui.SafeHTML(sValue);
