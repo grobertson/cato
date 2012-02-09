@@ -342,6 +342,11 @@
     <Compile Include="pages\fileUpload.aspx.designer.cs">
       <DependentUpon>fileUpload.aspx</DependentUpon>
     </Compile>
+    <None Include="script\jquery\jquery.ui.ufd-0.6\.DS_Store" />
+    <None Include="script\jquery\jquery.ui.ufd-0.6\GPL-LICENSE.txt" />
+    <None Include="script\jquery\jquery.ui.ufd-0.6\MIT-LICENSE.txt" />
+    <None Include="script\jquery\jquery.ui.ufd-0.6\README.txt" />
+    <None Include="script\jsonlint\LICENSE" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -521,5 +526,20 @@
     <Content Include="pages\api.ashx" />
     <Content Include="pages\fileUpload.aspx" />
     <Content Include="script\stormEcotemplateEdit.js" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\custom\custom.css" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\plain\icon.gif" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\plain\plain.css" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\sexy\icon.gif" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\sexy\sexy.css" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\sexy\text-bg.gif" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\uiCss\uiCss.css" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\css\ufd-base.css" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\jquery.ui.ufd.js" />
+    <Content Include="script\jquery\jquery.ui.ufd-0.6\jquery.ui.ufd.min.js" />
+    <Content Include="script\jsonlint\c\css\screen.css" />
+    <Content Include="script\jsonlint\c\js\jsl.format.js" />
+    <Content Include="script\jsonlint\c\js\jsl.interactions.js" />
+    <Content Include="script\jsonlint\c\js\jsl.parser.js" />
+    <Content Include="script\jsonlint\c\js\json2.js" />
   </ItemGroup>
 </Project>
