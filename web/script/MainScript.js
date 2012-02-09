@@ -75,7 +75,7 @@ function printKeypressEvents(ctl) {
 
 //this function shows the "please wait" blockui effect.
 function showPleaseWait(msg) {
-    var msg = ((msg == "" || msg === undefined) ? "Please Wait ..." : msg);
+    var msg = ((msg == "" || msg === undefined) ? "<img title='Loading...' 'alt='' src='../images/loading.gif'> Please Wait ..." : msg);
     $.blockUI({
         message: msg,
         css: {
@@ -144,13 +144,7 @@ function formatHTMLToText(s) {
 }
 
 function formatTextToHTML(s) {
-    var replaceFrom;
-    //firefox (moz) uses carriage returns in text areas, IE uses newlines AND carriage returns.  
-    if (typeof(screenTop) != "undefined") { replaceFrom = '\r' } else { replaceFrom = '\n' }  // why?  Only IE defines screenTop, and only IE needs \r.
-    s = s.replaceAll(replaceFrom, '<br />');
-    s = s.replaceAll('\t', '&nbsp;&nbsp;&nbsp;&nbsp;');
-
-    return s;
+    return s.replaceAll('\n', '<br />').replaceAll(' ', '&nbsp;').replaceAll('\t', '&nbsp;&nbsp;&nbsp;&nbsp;');
 }
 
 //will scroll a page to the ID specified
