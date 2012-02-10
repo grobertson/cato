@@ -47,9 +47,9 @@ $.fn.caret = function (begin, end) {
  *
 **/
 jsl.interactions = (function () {
-	var json_in = "",
-		json_out = "",
-		validation_msg = "";
+	json_in = "",
+	json_out = "",
+	validation_msg = "";
 
     /******* UTILITY METHODS *******/
 
@@ -195,6 +195,9 @@ jsl.interactions = (function () {
 
 	//returned variables must be functions if they are intended to return values from within this scope.
     return {
+		'json_in': function (val) {
+			json_in = val;
+		},
 		'json_out': function () {
 			return json_out;
 		},

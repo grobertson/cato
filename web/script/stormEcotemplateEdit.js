@@ -150,26 +150,20 @@ function ShowStorm() {
         $("#storm_file_desc").html(unpackJSON(storm.HTMLDescription));
         $("#storm_file_text").html(unpackJSON(storm.HTMLText));
     
-    	jsl.interactions.json_in = unpackJSON(storm.Text);
+    	jsl.interactions.json_in(unpackJSON(storm.Text));
 	    var success = jsl.interactions.validate_string();
         if (success) {
 			$("#storm_file_error").empty();
 			$("#storm_file_error").hide();
+        	$("#run_storm_btn").button("enable");
 		} else {
 			$("#storm_file_error").text(jsl.interactions.validation_msg());
 			$("#storm_file_error").show();
+        	$("#run_storm_btn").button("disable");
 		}
 
         //turn on the buttons
         $("#edit_storm_btn").show();
-
-        if (storm.IsValid == "True") {
-        	$("#run_storm_btn").button("enable");
-        	$("#storm_file_error").hide();
-        } else {
-        	$("#run_storm_btn").button("disable");
-        	$("#storm_file_error").show();
-		}
 	}
 }
 
