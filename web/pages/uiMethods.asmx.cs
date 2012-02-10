@@ -4150,7 +4150,10 @@ namespace ACWebMethods
 							
 							return sb.ToString();
 						} catch (Exception ex) {
-							throw new Exception("The Storm File is invalid. " + ex.Message);
+							//no... this parser isn't as accurate as the client one.
+							//don't throw an exception, just dont' return parameters.
+							//throw new Exception("The Storm File is invalid. " + ex.Message);
+							return "";
 						}
 					} else {
 						return "";
