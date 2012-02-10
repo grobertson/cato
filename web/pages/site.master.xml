@@ -46,7 +46,7 @@
 			</item>
 		</menu>
 		<menu roles="developer user" label="Ecosystems" icon="../images/icons/ecosystems_24.png">
-			<item roles="developer" label="Manage EcoTemplates" icon="../images/icons/ecotemplates_24.png" onclick="showPleaseWait();" href="../pages/ecoTemplateManage.aspx">
+			<item roles="developer" label="Manage Ecotemplates" icon="../images/icons/ecotemplates_24.png" onclick="showPleaseWait();" href="../pages/ecoTemplateManage.aspx">
 			</item>
 			<item roles="developer user" label="Manage Ecosystems" icon="../images/icons/ecosystems_24.png" onclick="showPleaseWait();" href="../pages/ecosystemManage.aspx">
 			</item>

@@ -31,7 +31,7 @@
 		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
-					<h2>Manage EcoTemplates</h2>
+					<h2>Manage Ecotemplates</h2>
                     <p>
                         The Manage Ecosystem Templates screen allows
                         administrators to modify, add and delete Templates for Ecosystems.</p>
@@ -91,7 +91,7 @@
             </ContentTemplate>
         </asp:UpdatePanel>
     </div>
-    <div id="edit_dialog" class="hidden" title="New Eco Template">
+    <div id="edit_dialog" class="hidden" title="New Ecosystem Template">
         <table width="100%">
             <tbody>
                 <tr>
@@ -171,14 +171,14 @@
             </tbody>
         </table>
     </div>
-    <div id="delete_dialog" class="hidden" title="Delete Eco Templates">
+    <div id="delete_dialog" class="hidden" title="Delete Ecosystem Templates">
         Are you sure you want to delete these Eco Templates?
     </div>
-    <div id="copy_dialog" class="hidden" title="Copy Eco Template">
+    <div id="copy_dialog" class="hidden" title="Copy Ecosystem Template">
         <table id="tblCopy" width="100%">
             <tr>
                 <td>
-                    New Eco Template Name
+                    New Template Name
                 </td>
                 <td>
                     <input type="text" id="txtCopyEcotemplateName" class="w400px" />
