@@ -142,10 +142,15 @@ function ShowStorm() {
         $("#storm_file_desc").html(unpackJSON(storm.HTMLDescription));
         $("#storm_file_text").html(unpackJSON(storm.HTMLText));
     
-    	//can't validate the text in a div, so stick it in a textarea then test that
-    	$("#tmp_stormfile_div").remove();
-    	$("#storm_file_text").after("<textarea id='tmp_stormfile_div'>" + unpackJSON(storm.Text) + "</textarea>");
-	    jsl.interactions.validate($("#tmp_stormfile_div"), $("#storm_file_error"), true, false)
+    	jsl.interactions.json_in = unpackJSON(storm.Text);
+	    var success = jsl.interactions.validate_string();
+        if (success) {
+			$("#storm_file_error").empty();
+			$("#storm_file_error").hide();
+		} else {
+			$("#storm_file_error").text(jsl.interactions.validation_msg());
+			$("#storm_file_error").show();
+		}
 
         //turn on the buttons
         $("#edit_storm_btn").show();
@@ -255,5 +260,6 @@ function validateStormFileJSON() {
 	}
 	
 	//the validate function cal be called with or without having done init.
-    jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), true, false)
+	reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+    jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), reformat, false);
 }

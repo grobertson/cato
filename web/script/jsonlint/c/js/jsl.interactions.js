@@ -47,10 +47,9 @@ $.fn.caret = function (begin, end) {
  *
 **/
 jsl.interactions = (function () {
-    //var reformat;
-    //var compress;
-	//var reformatParam;
-
+	var json_in = "",
+		json_out = "",
+		validation_msg = "";
 
     /******* UTILITY METHODS *******/
 
@@ -83,23 +82,7 @@ jsl.interactions = (function () {
         return charCount;
     }
 
-    /**
-     * Get a URL parameter from the current windows URL.
-     * Courtesy Paul Oppenheim: http://stackoverflow.com/questions/1403888/get-url-parameter-with-jquery
-     * @param name the parameter to retrieve
-     * @return string the url parameter's value, if any
-    **/
-    //function getURLParameter(name) {
-    //    param = (new RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || ['', null])[1];
-    //    if (param) {
-    //        return decodeURIComponent(param);
-    //    } else {
-    //        return null;
-    //    }
-    //}
-
     /******* INTERACTION METHODS *******/
-
     /**
      * Validate the JSON we've been given, displaying an error or success message.
      * @return void
@@ -108,74 +91,105 @@ jsl.interactions = (function () {
         var lineNum,
             lineMatches,
             lineStart,
-            lineEnd,
-            jsonVal,
-            result;
+            lineEnd;
             
-        jsonVal = $json_input.val();
+        reformat = (reformat === undefined || reformat == null ? true : reformat);    
+        compress = (compress === compress || compress == null ? false : compress);   
+        json_in = $json_input.val();
 
         try {
-            result = jsl.parser.parse(jsonVal);
-
-            if (result) {
-                happy($json_input, $results_div, 'Valid JSON');
-
-                if (reformat) {
-                    $json_input.val(JSON.stringify(JSON.parse(jsonVal), null, "    "));
-                }
-
-                if (compress) {
-                    $json_input.val(JSON.stringify(JSON.parse(jsonVal), null, ""));
+			var success = validate_string(reformat, compress);
+            
+            if (success) {
+                happy($json_input, $results_div);
+				//the underlying function may have reformatted or compressed, update the field.
+                if (reformat || compress) {
+                    $json_input.val(json_out);
                 }
             } else {
-                alert("An unknown error occurred.");
+	            /** 
+	             * If we failed to validate, run our manual formatter and then re-validate so that we
+	             * can get a better line number. On a successful validate, we don't want to run our
+	             * manual formatter because the automatic one is faster and probably more reliable.
+	            **/
+	            try {
+	                if (reformat) {
+	                    json_out = jsl.format.formatJson(json_in);
+	                    $json_input.val(json_out);
+	                    var result = jsl.parser.parse($json_input.val());
+	                }
+	            } catch(e) {
+	                parseException = e;
+	            }
+	
+	            lineMatches = parseException.message.match(/line ([0-9]*)/);
+	            if (lineMatches && typeof lineMatches === "object" && lineMatches.length > 1) {
+	                lineNum = parseInt(lineMatches[1], 10);
+	
+	                if (lineNum === 1) {
+	                    lineStart = 0;
+	                } else {
+	                    lineStart = getNthPos(json_out, "\n", lineNum - 1);
+	                }
+	
+	                lineEnd = json_out.indexOf("\n", lineStart);
+	                if (lineEnd < 0) {
+	                    lineEnd = this.json_out.length;
+	                }
+	
+	                $json_input.focus().caret(lineStart, lineEnd);
+	            }
+	            
+	            validation_msg = parseException.message;
+	            sad($json_input, $results_div);
             }
-        } catch (parseException) {
-
-            /** 
-             * If we failed to validate, run our manual formatter and then re-validate so that we
-             * can get a better line number. On a successful validate, we don't want to run our
-             * manual formatter because the automatic one is faster and probably more reliable.
-            **/
-            try {
-                if (reformat) {
-                    jsonVal = jsl.format.formatJson($json_input.val());
-                    $('#json_input').val(jsonVal);
-                    result = jsl.parser.parse($json_input.val());
-                }
-            } catch(e) {
-                parseException = e;
-            }
-
-            lineMatches = parseException.message.match(/line ([0-9]*)/);
-            if (lineMatches && typeof lineMatches === "object" && lineMatches.length > 1) {
-                lineNum = parseInt(lineMatches[1], 10);
-
-                if (lineNum === 1) {
-                    lineStart = 0;
-                } else {
-                    lineStart = getNthPos(jsonVal, "\n", lineNum - 1);
-                }
-
-                lineEnd = jsonVal.indexOf("\n", lineStart);
-                if (lineEnd < 0) {
-                    lineEnd = jsonVal.length;
-                }
-
-                $json_input.focus().caret(lineStart, lineEnd);
-            }
-            
-            sad($json_input, $results_div, parseException.message);
+        } catch (ex) {
+            alert(ex.message);
         }
     }
 
-	function happy($json_input, $results_div, msg) {
-        $results_div.text(msg);
+    function validate_string(reformat, compress) {
+        var lineNum,
+            lineMatches,
+            lineStart,
+            lineEnd,
+            result;
+            
+        reformat = (reformat === undefined || reformat == null ? true : reformat);    
+        compress = (compress === compress || compress == null ? false : compress);   
+            
+        try {
+            result = jsl.parser.parse(json_in);
+
+            if (result) {
+            	validation_msg = "Valid JSON";
+            	json_out = json_in;
+                if (reformat) {
+                    json_out = JSON.stringify(JSON.parse(json_out), null, "    ");
+                }
+
+                if (compress) {
+                   json_out = JSON.stringify(JSON.parse(json_out), null, "");
+                }
+                
+                return true;
+            } else {
+                validation_msg = "An unknown error occurred.";
+                return false;
+            }
+        } catch (parseException) {            
+            validation_msg = parseException.message;
+            return false;
+        }
+    }
+
+	function happy($json_input, $results_div) {
+        $results_div.text(validation_msg);
         $results_div.removeClass('ui-state-error').addClass('ui-state-happy');
         $json_input.removeClass('redBorder').addClass('greenBorder');
 	}
-	function sad($json_input, $results_div, msg) {
-        $results_div.text(msg);
+	function sad($json_input, $results_div) {
+        $results_div.text(validation_msg);
         $results_div.removeClass('ui-state-happy').addClass('ui-state-error');
         $json_input.removeClass('greenBorder').addClass('redBorder');
 	}
@@ -184,7 +198,7 @@ jsl.interactions = (function () {
      *
      * @return void
     **/
-    function init($btn, $json_input, $results_div, reformat, compress) {
+    function init($btn, $json_input, $results_div) {
     	$btn.button({ icons: { primary: "ui-icon-check"} });
         $btn.click(function () {
             validate($json_input, $results_div, reformat, compress);
@@ -196,8 +210,16 @@ jsl.interactions = (function () {
         });
     }
 
+	//returned variables must be functions if they are intended to return values from within this scope.
     return {
+		'json_out': function () {
+			return json_out;
+		},
+		'validation_msg': function () {
+			return validation_msg;
+		},
         'init': init,
+        'validate_string': validate_string,
         'validate': validate
     };
 }());
