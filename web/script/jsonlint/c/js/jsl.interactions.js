@@ -119,10 +119,10 @@ jsl.interactions = (function () {
 	                    var result = jsl.parser.parse($json_input.val());
 	                }
 	            } catch(e) {
-	                parseException = e;
+	                validation_msg = e.message;
 	            }
 	
-	            lineMatches = parseException.message.match(/line ([0-9]*)/);
+	            lineMatches = validation_msg.match(/line ([0-9]*)/);
 	            if (lineMatches && typeof lineMatches === "object" && lineMatches.length > 1) {
 	                lineNum = parseInt(lineMatches[1], 10);
 	
@@ -140,7 +140,6 @@ jsl.interactions = (function () {
 	                $json_input.focus().caret(lineStart, lineEnd);
 	            }
 	            
-	            validation_msg = parseException.message;
 	            sad($json_input, $results_div);
             }
         } catch (ex) {
@@ -193,22 +192,6 @@ jsl.interactions = (function () {
         $results_div.removeClass('ui-state-happy').addClass('ui-state-error');
         $json_input.removeClass('greenBorder').addClass('redBorder');
 	}
-    /**
-     * Initialize
-     *
-     * @return void
-    **/
-    function init($btn, $json_input, $results_div) {
-    	$btn.button({ icons: { primary: "ui-icon-check"} });
-        $btn.click(function () {
-            validate($json_input, $results_div, reformat, compress);
-            return false;
-        });
-		
-       $json_input.keyup(function () {
-            $(this).removeClass('greenBorder').removeClass('redBorder');
-        });
-    }
 
 	//returned variables must be functions if they are intended to return values from within this scope.
     return {
@@ -218,7 +201,6 @@ jsl.interactions = (function () {
 		'validation_msg': function () {
 			return validation_msg;
 		},
-        'init': init,
         'validate_string': validate_string,
         'validate': validate
     };

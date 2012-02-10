@@ -5,6 +5,12 @@
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateManage.js"></script>
     <script type="text/javascript" src="../script/storm.js"></script>
+	<!--for jsonlint-->
+	<script type="text/javascript" src="../script/jsonlint/c/js/json2.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.parser.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.format.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.interactions.js"></script>
+	<!--end jsonlint-->
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div style="display: none;">
@@ -128,9 +134,10 @@
                     </td>
                     <td>
                         <select id="ddlStormFileSource">
+							<option value="Text" selected="selected">Text</option>
 							<option value="URL">URL</option>
-							<option value="Text">Text</option>
-							<option value="File">File</option></select>
+							<option value="File">File</option>
+						</select>
                     </td>
                 </tr>
                 <tr class="stormfileimport hidden">
@@ -143,8 +150,10 @@
                 </tr>
                 <tr class="stormfields hidden">
                     <td colspan="2">
-                        <textarea class="w500px" id="txtStormFile"></textarea>
-						<div id="json_parse_msg" style="padding-left: 4px;"></div>
+                        <textarea class="w600px" id="txtStormFile" rows="10"></textarea>
+						<br />
+						<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
+						<pre id="json_parse_msg"></pre>
                     </td>
                 </tr>
                 <tr class="stormfields hidden">
