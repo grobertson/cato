@@ -1777,7 +1777,7 @@ namespace ACWebMethods
 					oTrans.Commit();
 
                     // if we made it here, so save the logs
-                    ui.WriteObjectDeleteLog(acObjectTypes.EcoTemplate, "", "", "Eco Templates(s) Deleted [" + sDeleteArray.ToString() + "]");
+                    ui.WriteObjectDeleteLog(acObjectTypes.EcoTemplate, "", "", "Ecosystem Templates(s) Deleted [" + sDeleteArray.ToString() + "]");
                 }
                 else
                     sErr = "Unable to delete Ecosystem Template - " + iResults.ToString() + " Ecosystems reference it.";
@@ -1840,7 +1840,7 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    throw new Exception("Unable to get Action Categories - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Action Categories - Missing Ecotemplate ID");
                 }
 
                 return sHTML;
@@ -1979,7 +1979,7 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    throw new Exception("Unable to get Actions - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Actions - Missing Ecotemplate ID");
                 }
 
                 return sHTML;
@@ -1991,7 +1991,7 @@ namespace ACWebMethods
 
         }
 
-        /*This gets the Ecotemplates list on the EcoTemplate Edit page.*/
+        /*This gets the Ecotemplates list on the Ecotemplate Edit page.*/
         [WebMethod(EnableSession = true)]
         public string wmGetEcotemplateEcosystems(string sEcoTemplateID)
         {
@@ -2052,7 +2052,7 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    throw new Exception("Unable to get Ecosystems - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Ecosystems - Missing Ecotemplate ID");
                 }
 
                 return sHTML;
@@ -2287,7 +2287,7 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    throw new Exception("Unable to get Actions - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Actions - Missing Ecotemplate ID");
                 }
 
                 return sHTML;
@@ -2333,7 +2333,7 @@ namespace ACWebMethods
                 }
                 else
                 {
-                    throw new Exception("Unable to get Actions - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Actions - Missing Ecotemplate ID");
                 }
 
                 return sHTML;
@@ -2397,13 +2397,13 @@ namespace ACWebMethods
 
 
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-                        throw new Exception("Unable to update Eco Template Action [" + sActionID + "]." + sErr);
+                        throw new Exception("Unable to update Ecotemplate Action [" + sActionID + "]." + sErr);
 
                     ui.WriteObjectChangeLog(Globals.acObjectTypes.EcoTemplate, sEcoTemplateID, sActionID, "Action updated: [" + sSetClause + "]");
                 }
                 else
                 {
-                    throw new Exception("Unable to update Eco Template Action. Missing or invalid EcoTemplate/Action ID.");
+                    throw new Exception("Unable to update Ecotemplate Action. Missing or invalid Ecotemplate/Action ID.");
                 }
 
             }
@@ -2424,7 +2424,7 @@ namespace ACWebMethods
             string sErr = "";
 
             if (string.IsNullOrEmpty(sEcoTemplateID) || string.IsNullOrEmpty(sActionName) || string.IsNullOrEmpty(sOTID))
-                throw new Exception("Missing or invalid EcoTemplate ID, Action Name or Task.");
+                throw new Exception("Missing or invalid Ecotemplate ID, Action Name or Task.");
 
             string sSQL = "insert into ecotemplate_action " +
                  " (action_id, action_name, ecotemplate_id, original_task_id)" +
@@ -2485,7 +2485,7 @@ namespace ACWebMethods
             }
 
             // if we made it here, so save the logs
-            ui.WriteObjectDeleteLog(acObjectTypes.EcoTemplate, "", "", "Action [" + sActionID + "] removed from EcoTemplate.");
+            ui.WriteObjectDeleteLog(acObjectTypes.EcoTemplate, "", "", "Action [" + sActionID + "] removed from Ecotemplate.");
 
             return sErr;
         }
@@ -3960,7 +3960,7 @@ namespace ACWebMethods
 				}
                 else
                 {
-                    throw new Exception("Unable to get Storm Details - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Storm Details - Missing Ecotemplate ID");
                 }
             }
             catch (Exception ex)
@@ -4161,7 +4161,7 @@ namespace ACWebMethods
 				}
                 else
                 {
-                    throw new Exception("Unable to get Storm Details - Missing EcoTemplate ID");
+                    throw new Exception("Unable to get Storm Details - Missing Ecotemplate ID");
                 }
             }
             catch (Exception ex)
@@ -4174,6 +4174,7 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmCreateEcosystemByStorm(string sName, string sDescription, string sEcotemplateID, string sParameterXML, string sCloudID)
         {
+			dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sErr = "";
 
@@ -4190,13 +4191,37 @@ namespace ACWebMethods
 			if (e != null) {
 				e.ParameterXML = ui.unpackJSON(sParameterXML);
 				e.CloudID = sCloudID;
-				if(e.DBCreateNew(ref sErr))
+				if(e.DBCreateNew(ref sErr)) {
+					//since Storm created this, stick the parameters in the ecosystem_log table.
+					XDocument xDoc = XDocument.Parse(e.ParameterXML);
+	                if (xDoc != null) {
+						StringBuilder sb = new StringBuilder();
+		                foreach (XElement xParameter in xDoc.XPathSelectElements("//parameter"))
+			            {
+							sb.Append(xParameter.Element("name").Value + " : " + xParameter.Element("values").Value + Environment.NewLine);
+						}
+						
+						//put it in the log table.
+						string sSQL = "insert into ecosystem_log (ecosystem_id, ecosystem_object_type, ecosystem_object_id, status, log, update_dt)" +
+							" values (" +
+							" '" + e.ID + "'," + 
+							" ''," + 
+							" ''," + 
+							" 'PARAMETERS'," + 
+							" '" + sb.ToString() + "'," + 
+							" now()" + 
+							")";
+						//no trap here... if it fails we don't get a log entry... too bad.
+						dc.sqlExecuteUpdate(sSQL, ref sErr);
+					}
+										
 					return e.ID;
+				}
 				else
 					return sErr;
 			}
 			else
-				return sErr;
+				return "";
         }
 
 		[WebMethod(EnableSession = true)]
@@ -4214,7 +4239,7 @@ namespace ACWebMethods
 			if (!dc.sqlGetSingleString(ref sStormStatus, sSQL, ref sErr))
 				throw new Exception(sErr);
 
-			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, update_dt" +
+			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, convert(update_dt, CHAR(20))" +
 				" from ecosystem_log" +
 					" where ecosystem_id = '" + sEcosystemID + "'" +
 					" order by ecosystem_log_id desc";
