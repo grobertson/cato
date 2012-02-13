@@ -3655,12 +3655,12 @@ namespace ACWebMethods
                 sb.AppendFormat("\"{0}\" : \"{1}\",", "sDays", sDa);
                 sb.AppendFormat("\"{0}\" : \"{1}\",", "sHours", sHo);
                 sb.AppendFormat("\"{0}\" : \"{1}\",", "sMinutes", sMi);
-                sb.AppendFormat("\"{0}\" : \"{1}\",", "sDaysOrWeeks", sDW);
+                sb.AppendFormat("\"{0}\" : \"{1}\"", "sDaysOrWeeks", sDW);
                 sb.Append("}");
             }
             else
             {
-                throw new Exception("Unable to find details for Recurring Action Plan. " + sErr);
+                throw new Exception("Unable to find details for Recurring Action Plan. " + sErr + " ScheduleID [" + sScheduleID + "]");
             }
 
             return sb.ToString();
