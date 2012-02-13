@@ -962,7 +962,7 @@ namespace acUI
 				}
 				else
 				{
-					sErr = response.StatusCode.ToString();
+					sErr = "<code>" + response.StatusCode.ToString() + "</code>";
 					return "";
 				}
 				
@@ -971,17 +971,18 @@ namespace acUI
 				using (WebResponse response = ex.Response) {
 					if (response != null) {
 						HttpWebResponse httpResponse = (HttpWebResponse)response;
-						sErr = "HTTP Status Code: " + httpResponse.StatusCode.ToString();
+						sErr = "HTTP Status Code:<br /><code>" + httpResponse.StatusCode.ToString();
 						using (Stream data = response.GetResponseStream()) {
 							string text = new StreamReader (data).ReadToEnd();
 							sErr += text;
 						}
+						sErr += "</code>";
 					} else
-						sErr = ex.Message;
+						sErr = "<code>" + ex.Message + "</code>";
 				}
 				return "";
 			} catch (Exception ex) {
-				sErr = ex.Message;
+				sErr = "<code>" + ex.Message + "</code>";
 				return "";
 			}
 		}

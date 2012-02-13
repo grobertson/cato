@@ -4149,7 +4149,7 @@ namespace ACWebMethods
 							sb.Append("</parameters>");
 							
 							return sb.ToString();
-						} catch (Exception ex) {
+						} catch (Exception) {
 							//no... this parser isn't as accurate as the client one.
 							//don't throw an exception, just dont' return parameters.
 							//throw new Exception("The Storm File is invalid. " + ex.Message);
