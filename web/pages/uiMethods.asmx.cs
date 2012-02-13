@@ -3729,25 +3729,26 @@ namespace ACWebMethods
 
             //days
             sTmp = "";
-            a = sDa.Split(',');
-            foreach (string s in a)
-            {
-                //days are +1
-                if (!string.IsNullOrEmpty(s)) sTmp += (Convert.ToInt32(s) + 1).ToString() + ",";
-            }
             if (sDW == "0")
             {
                 if (sDa == "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,")
                     sTmp = "Every Day";
 
-                sTooltip += "Days: (" + sTmp.TrimEnd(',') + ")<br />" + Environment.NewLine;
+	            a = sDa.Split(',');
+	            foreach (string s in a)
+	            {
+	                //individual days are +1
+	                if (!string.IsNullOrEmpty(s)) sTmp += (Convert.ToInt32(s) + 1).ToString() + ",";
+	            }
+
+				sTooltip += "Days: (" + sTmp.TrimEnd(',') + ")<br />" + Environment.NewLine;
             }
             else
             {
                 if (sDa == "0,1,2,3,4,5,6,")
                     sTmp = "Every Weekday";
                 else
-                    sTmp = sTmp.Replace("0", "Sun").Replace("1", "Mon").Replace("2", "Tue").Replace("3", "Wed").Replace("4", "Thu").Replace("5", "Fri").Replace("6", "Sat");
+                    sTmp = sDa.Replace("0", "Sun").Replace("1", "Mon").Replace("2", "Tue").Replace("3", "Wed").Replace("4", "Thu").Replace("5", "Fri").Replace("6", "Sat");
 
                 sTooltip += "Weekdays: (" + sTmp.TrimEnd(',') + ")<br />" + Environment.NewLine;
             }
