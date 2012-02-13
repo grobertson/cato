@@ -61,7 +61,7 @@ namespace Web.pages
                 }
 				
 				//an empty tab at the bottom makes it look better
-				ltTabs.Text += "<li class=\"group_header\"></li>";
+				ltTabs.Text += "<li class=\"group_header\">&nbsp;</li>";
             }
         }
 
