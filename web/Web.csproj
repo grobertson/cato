@@ -536,7 +536,6 @@
     <Content Include="script\jquery\jquery.ui.ufd-0.6\css\ufd-base.css" />
     <Content Include="script\jquery\jquery.ui.ufd-0.6\jquery.ui.ufd.js" />
     <Content Include="script\jquery\jquery.ui.ufd-0.6\jquery.ui.ufd.min.js" />
-    <Content Include="script\jsonlint\c\css\screen.css" />
     <Content Include="script\jsonlint\c\js\jsl.format.js" />
     <Content Include="script\jsonlint\c\js\jsl.interactions.js" />
     <Content Include="script\jsonlint\c\js\jsl.parser.js" />

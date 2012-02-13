@@ -101,8 +101,16 @@ $(document).ready(function () {
         ShowRunStormDialog(g_id);
     }
     
-    //init the jsonlint textarea - wires up a "validate" button and other niceties.
-    jsl.interactions.init($("#validate"), $("#storm_edit_dialog_text"), $("#json_parse_msg"), true, false)
+	//wire up the json "validate" button and other niceties.
+	$("#validate").button({ icons: { primary: "ui-icon-check"} });
+	$("#validate").click(function () {
+		var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+	    jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), reformat, false);
+	    return false;
+	});
+	$("#storm_edit_dialog_text").keyup(function () {
+	    $(this).removeClass('greenBorder').removeClass('redBorder');
+	});
 });
 
 function fileWasSaved(filename) {
@@ -142,26 +150,20 @@ function ShowStorm() {
         $("#storm_file_desc").html(unpackJSON(storm.HTMLDescription));
         $("#storm_file_text").html(unpackJSON(storm.HTMLText));
     
-    	jsl.interactions.json_in = unpackJSON(storm.Text);
+    	jsl.interactions.json_in(unpackJSON(storm.Text));
 	    var success = jsl.interactions.validate_string();
         if (success) {
 			$("#storm_file_error").empty();
 			$("#storm_file_error").hide();
+        	$("#run_storm_btn").button("enable");
 		} else {
 			$("#storm_file_error").text(jsl.interactions.validation_msg());
 			$("#storm_file_error").show();
+        	$("#run_storm_btn").button("disable");
 		}
 
         //turn on the buttons
         $("#edit_storm_btn").show();
-
-        if (storm.IsValid == "True") {
-        	$("#run_storm_btn").button("enable");
-        	$("#storm_file_error").hide();
-        } else {
-        	$("#run_storm_btn").button("disable");
-        	$("#storm_file_error").show();
-		}
 	}
 }
 
@@ -259,7 +261,7 @@ function validateStormFileJSON() {
 		$("#validate").show();
 	}
 	
-	//the validate function cal be called with or without having done init.
-	reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+	//call the validate function
+	var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
     jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), reformat, false);
 }

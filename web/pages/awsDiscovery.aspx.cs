@@ -61,7 +61,8 @@ namespace Web.pages
 	                        oCOT.Label + "</li>";
 	                }
                 }
-            }
+				ltTabs.Text += "<li class=\"group_header\">&nbsp;</li>";
+			}
 
         }
 

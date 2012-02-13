@@ -10,13 +10,12 @@
     <script type="text/javascript" src="../script/parametersOnDialog.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateEdit.js"></script>
     <script type="text/javascript" src="../script/stormEcotemplateEdit.js"></script>
-	<!--for lined text area and jsonlint-->
+	<!--for jsonlint-->
 	<script type="text/javascript" src="../script/jsonlint/c/js/json2.js"></script>
     <script type="text/javascript" src="../script/jsonlint/c/js/jsl.parser.js"></script>
     <script type="text/javascript" src="../script/jsonlint/c/js/jsl.format.js"></script>
     <script type="text/javascript" src="../script/jsonlint/c/js/jsl.interactions.js"></script>
-    <link type="text/css" href="../script/jsonlint/c/css/screen.css" rel="stylesheet" />
-	<!--end lined text area and jsonlint-->
+	<!--end jsonlint-->
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div id="left_panel_te">

@@ -465,7 +465,7 @@ function ShowPlanEditDialog(ctl) {
                 loadRecurringPlan(schedule_id);
 
         } else { //it's a schedule
-            var schedule_id = $(ctl).parents(".action_schedule").attr("id").replace(/as_/, "");
+            schedule_id = $(ctl).parents(".action_schedule").attr("id").replace(/as_/, "");
 
             //get the params from the SCHEDULE, not the PLAN
             presentScheduleParams(schedule_id, "Schedule");

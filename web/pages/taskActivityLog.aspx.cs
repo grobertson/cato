@@ -118,9 +118,9 @@ namespace Web.pages
 
             if (txtStopDate.Text.Length > 0)
             {
-                sSearchString += " and (submitted_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y'" +
-                " or started_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y'" +
-                " or completed_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y') ";
+                sSearchString += " and (submitted_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y')" +
+                " or started_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y')" +
+                " or completed_dt <= str_to_date('" + txtStopDate.Text + "', '%m/%d/%Y')) ";
             }
 
 

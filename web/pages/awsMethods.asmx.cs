@@ -267,78 +267,6 @@ namespace ACWebMethods
         }
 		private string GetURL(CloudAccount ca, Cloud c, CloudObjectType cot, Dictionary<string, string> AdditionalArguments, ref string sErr)
 		{
-			////test output
-			//string sOut = "STRING:<br />" + sStringToSign + "<br /><br />";
-			//sOut += "QueryString:<br />" + sQueryString + "<br /><br />";
-			//sOut += "SIGNED:<br />" + sSignature + "<br /><br />";
-			//sOut += "URL:<br /><a href='" + sURL + "' target='_blank'>" + sURL + "</a><br /><br />";
-	
-			////sOut += "DECRYPTED:" + Convert.FromBase64String(sSignature) + "<br />";
-	
-			//char[] values = sStringToSign.ToCharArray();
-			//string sHex = "";
-			//foreach (char letter in values)
-			//{
-			//    // Get the integral value of the character.
-			//    int value = Convert.ToInt32(letter);
-			//    // Convert the decimal value to a hexadecimal value in string form.
-			//    sHex += String.Format("{0:X}", value);
-			//}
-			//sOut += "HEX STRING TO SIGN:" + sHex + "<br />";
-	
-			
-			
-			//we have to use the provided cloud and object type to construct an endpoint
-			//if either of these values is missing, we will attempt to use the other one standalone.
-			string sHostName = "";
-		
-			Product prod = cot.ParentProduct;
-		
-			//if both are there, concatenate them
-			if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
-				sHostName = prod.APIUrlPrefix + "." + c.APIUrl;
-			else if (string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
-				sHostName = c.APIUrl;
-			else if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && string.IsNullOrEmpty(c.APIUrl))
-				sHostName = prod.APIUrlPrefix;
-		
-			if (string.IsNullOrEmpty(sHostName)) {
-				sErr = "Unable to reconcile an endpoint from the Cloud [" + c.Name + "] or Cloud Object [" + cot.ID + "] definitions." + sErr;
-				return null;
-			}
-		
-		
-			//HOST URI
-			//what's the URI... (if any)
-			string sResourceURI = "";
-			if (!string.IsNullOrEmpty(prod.APIUri))
-				sResourceURI = prod.APIUri;
-	
-		
-	
-			//PARAMETERS
-			//first, this is an explicit list of parameters in a dictionary. 
-			//in the real world, we'll probably pull these params from a table
-			//or have to parse a querystring
-			ParamComparer pc = new ParamComparer();
-			SortedDictionary<string, string> sortedRequestParams = new SortedDictionary<string, string>(pc);
-	
-			//call specific parameters (this is AWS specific!!!)
-			sortedRequestParams.Add("Action", cot.APICall);
-	
-			//do we need to apply a group filter?  If it's defined on the table then YES!
-			if (!string.IsNullOrEmpty(cot.APIRequestGroupFilter)) {
-				string[] sTmp = cot.APIRequestGroupFilter.Split('=');
-				sortedRequestParams.Add(sTmp[0], sTmp[1]);
-			}
-	
-			//ADDITIONAL ARGUMENTS
-			if (AdditionalArguments != null) {
-				//we have custom arguments... use them
-				//for each... add to sortedRequestParams
-				//if the same key from the group filter is defined as sAdditionalArguments it overrides the table!
-			}
-	
 			//!!! OK, PAY ATTENTION HERE
 			//there's a possibility of a timestamp signature collision when making API calls very quickly back to back.
 			//AWS/Eucalyptus recommends trapping for the HTTP 403 error, waiting 1 second, and trying again.
@@ -350,62 +278,138 @@ namespace ACWebMethods
 			// enough space between.
 			
 			System.Threading.Thread.Sleep(1000);
+			
+			
+			//we have to use the provided cloud and object type to construct an endpoint
+			//if either of these values is missing, we will attempt to use the other one standalone.
+			string sHostName = "";
+		
+			Product prod = cot.ParentProduct;
+		
+			//if both are there, concatenate them
+			if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
+				sHostName = prod.APIUrlPrefix + c.APIUrl;
+			else if (string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
+				sHostName = c.APIUrl;
+			else if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && string.IsNullOrEmpty(c.APIUrl))
+				sHostName = prod.APIUrlPrefix;
+		
 
+			if (string.IsNullOrEmpty(sHostName)) {
+				sErr = "Unable to reconcile an endpoint from the Cloud [" + c.Name + "] or Cloud Object [" + cot.ID + "] definitions." + sErr;
+				return null;
+			}
+			
+			//HOST URI
+			//what's the URI... (if any)
+			string sResourceURI = "";
+			if (!string.IsNullOrEmpty(prod.APIUri))
+				sResourceURI = prod.APIUri;
+			
 			
 			//AWS auth parameters
 			string sAccessKeyID = ca.LoginID;
 			string sSecretAccessKeyID = ca.LoginPassword;
 			
-			string sDate = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
-	
+			
+			//this object helps sort the parameters into canonicalized order
+			ParamComparer pc = new ParamComparer();
+			SortedDictionary<string, string> sortedRequestParams = new SortedDictionary<string, string>(pc);
+		
 			sortedRequestParams.Add("AWSAccessKeyId", sAccessKeyID);
-			sortedRequestParams.Add("Version", prod.APIVersion);
-	
-			//some products use the older Expires method
-			if (prod.Name == "s3")
-				sortedRequestParams.Add("Expires", "2020202020"); // a point waaaay in the distant future.
-			else
+			
+			string sSignature = "";
+			string sQueryString = "";
+			
+			if (prod.Name == "s3" || prod.Name == "walrus") {
+				//HARDCODE ALERT
+				//Currently (2-10-2010) AWS has goofy endpoints for the s3 services, using a "s3-" instead of "ec2.", etc.
+				//MOREOVER, unlike all the other products, you cannot explicitly ask for the us-east-1 region.
+				//so, we do a little interception here.
+				sHostName = sHostName.Replace("s3-us-east-1","s3");
+				//all other regions should work as defined.
+				
+				//s3 seems to need the epoch time "expires" value
+				string sEpoch = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds + 300).ToString();
+				sortedRequestParams.Add("Expires", sEpoch);
+
+				//per http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
+				string sStringToSign = "GET\n" +
+					"\n" + //Content-MD5
+					"\n" + //Content-Type
+					sEpoch + "\n" + //Expires
+					(string.IsNullOrEmpty(sResourceURI) ? "/" : sResourceURI); //CanonicalizedResource
+
+				Console.Write("STS:\n" + sStringToSign + ":STS\n");
+
+				
+				sQueryString = ui.GetSortedParamsAsString(sortedRequestParams, true);
+
+				//and sign it
+				sSignature = ui.GetSHA1(sSecretAccessKeyID, sStringToSign);
+				Console.Write("SIG:" + sSignature + ":SIG\n");
+				//finally, urlencode the signature
+				sSignature = ui.PercentEncodeRfc3986(sSignature);
+				Console.Write("SIG:" + sSignature + ":SIG\n");
+				
+			}
+			else {
+				//other AWS/Euca calls use the current Timestamp
+				string sDate = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
 				sortedRequestParams.Add("Timestamp", sDate);
+			
 		
-			sortedRequestParams.Add("SignatureMethod", "HmacSHA256");
-			sortedRequestParams.Add("SignatureVersion", "2");
+				sortedRequestParams.Add("Action", cot.APICall);
+
+				//do we need to apply a group filter?  If it's defined on the table then YES!
+				if (!string.IsNullOrEmpty(cot.APIRequestGroupFilter)) {
+					string[] sTmp = cot.APIRequestGroupFilter.Split('=');
+					sortedRequestParams.Add(sTmp[0], sTmp[1]);
+				}
 		
+				//ADDITIONAL ARGUMENTS
+				if (AdditionalArguments != null) {
+					//we have custom arguments... use them
+					//for each... add to sortedRequestParams
+					//if the same key from the group filter is defined as sAdditionalArguments it overrides the table!
+				}
 		
-	
-			//now we have all the parameters in a list, build a sorted, encoded querystring string
-			//After the parameters are sorted in natural byte order and URL encoded, the next step is to concatenate them into a single text string.  
-			//The following method uses the PercentEncodeRfc3986 method to create the parameter string.
-			string sQueryString = ui.GetSortedParamsAsString(sortedRequestParams, true);
-	
+				sortedRequestParams.Add("Version", prod.APIVersion);
 		
-			//use the URL/URI plus the querystring to build the full request to be signed
-			string sStringToSign = awsComposeStringToSign("GET", sHostName, sResourceURI, sQueryString);
-	
-			//and sign it
-			//string sSignature = GetAWS3_SHA1AuthorizationValue(sSecretAccessKeyID, sStringToSign);
-			string sSignature = ui.GetSHA256(sSecretAccessKeyID, sStringToSign);
-	
-			//finally, urlencode the signature
-			sSignature = ui.PercentEncodeRfc3986(sSignature);
-	
-	
+				sortedRequestParams.Add("SignatureMethod", "HmacSHA256");
+				sortedRequestParams.Add("SignatureVersion", "2");
+			
+				//now we have all the parameters in a list, build a sorted, encoded querystring string
+				//After the parameters are sorted in natural byte order and URL encoded, the next step is to concatenate them into a single text string.  
+				//The following method uses the PercentEncodeRfc3986 method to create the parameter string.
+				sQueryString = ui.GetSortedParamsAsString(sortedRequestParams, true);
+		
+			
+				//use the URL/URI plus the querystring to build the full request to be signed
+				//per http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/using-query-api.html
+				string sStringToSign = "GET\n" +
+					sHostName + "\n" + //ValueOfHostHeaderInLowercase
+					(string.IsNullOrEmpty(sResourceURI) ? "/" : sResourceURI) + "\n" + //HTTPRequestURI
+					sQueryString;  //CanonicalizedQueryString  (don't worry about encoding... was already encoded.)
+
+				Console.Write("STS:" + sStringToSign + ":STS\n");
+
+				//and sign it
+				//string sSignature = GetAWS3_SHA1AuthorizationValue(sSecretAccessKeyID, sStringToSign);
+				sSignature = ui.GetSHA256(sSecretAccessKeyID, sStringToSign);
+				Console.Write("SIG:" + sSignature + ":SIG\n");
+				//finally, urlencode the signature
+				sSignature = ui.PercentEncodeRfc3986(sSignature);
+				Console.Write("SIG:" + sSignature + ":SIG\n");
+			}
+		
+			
 			string sHostURL = c.APIProtocol.ToLower() + "://" + sHostName + sResourceURI;
-		
+						
+			Console.Write("URL:" + sHostURL + "?" + sQueryString + "&Signature=" + sSignature + ":URL\n");
+
 			return sHostURL + "?" + sQueryString + "&Signature=" + sSignature;
 		}
-
-        //The following method creates the final string to sign. 
-        public string awsComposeStringToSign(string sHTTPVerb, string sHost, string sResourceURI, string sQueryString)
-        {
-            String stringToSign = null;
-
-            stringToSign = sHTTPVerb + "\n";
-            stringToSign += sHost + "\n";
-            stringToSign += (string.IsNullOrEmpty(sResourceURI) ? "/" : sResourceURI) + "\n";
-            stringToSign += sQueryString;  //don't worry about encoding... was already encoded.
-
-            return stringToSign;
-        }
 
         #endregion
     }

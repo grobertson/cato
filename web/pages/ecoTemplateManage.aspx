@@ -5,6 +5,12 @@
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateManage.js"></script>
     <script type="text/javascript" src="../script/storm.js"></script>
+	<!--for jsonlint-->
+	<script type="text/javascript" src="../script/jsonlint/c/js/json2.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.parser.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.format.js"></script>
+    <script type="text/javascript" src="../script/jsonlint/c/js/jsl.interactions.js"></script>
+	<!--end jsonlint-->
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div style="display: none;">
@@ -25,7 +31,7 @@
 		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
-					<h2>Manage EcoTemplates</h2>
+					<h2>Manage Ecotemplates</h2>
                     <p>
                         The Manage Ecosystem Templates screen allows
                         administrators to modify, add and delete Templates for Ecosystems.</p>
@@ -85,7 +91,7 @@
             </ContentTemplate>
         </asp:UpdatePanel>
     </div>
-    <div id="edit_dialog" class="hidden" title="New Eco Template">
+    <div id="edit_dialog" class="hidden" title="New Ecosystem Template">
         <table width="100%">
             <tbody>
                 <tr>
@@ -128,9 +134,10 @@
                     </td>
                     <td>
                         <select id="ddlStormFileSource">
+							<option value="Text" selected="selected">Text</option>
 							<option value="URL">URL</option>
-							<option value="Text">Text</option>
-							<option value="File">File</option></select>
+							<option value="File">File</option>
+						</select>
                     </td>
                 </tr>
                 <tr class="stormfileimport hidden">
@@ -143,8 +150,10 @@
                 </tr>
                 <tr class="stormfields hidden">
                     <td colspan="2">
-                        <textarea class="w500px" id="txtStormFile"></textarea>
-						<div id="json_parse_msg" style="padding-left: 4px;"></div>
+                        <textarea class="w600px" id="txtStormFile" rows="10"></textarea>
+						<br />
+						<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
+						<pre id="json_parse_msg"></pre>
                     </td>
                 </tr>
                 <tr class="stormfields hidden">
@@ -162,14 +171,14 @@
             </tbody>
         </table>
     </div>
-    <div id="delete_dialog" class="hidden" title="Delete Eco Templates">
+    <div id="delete_dialog" class="hidden" title="Delete Ecosystem Templates">
         Are you sure you want to delete these Eco Templates?
     </div>
-    <div id="copy_dialog" class="hidden" title="Copy Eco Template">
+    <div id="copy_dialog" class="hidden" title="Copy Ecosystem Template">
         <table id="tblCopy" width="100%">
             <tr>
                 <td>
-                    New Eco Template Name
+                    New Template Name
                 </td>
                 <td>
                     <input type="text" id="txtCopyEcotemplateName" class="w400px" />

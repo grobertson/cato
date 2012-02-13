@@ -80,8 +80,6 @@ function showPleaseWait(msg) {
         message: msg,
         css: {
             'background-repeat': 'no-repeat',
-            'width': '200px',
-            'height': '20px',
             'padding-top': '6px',
             'border-radius': '10px'
         },

@@ -83,9 +83,9 @@ $.blockUI.defaults = {
 	css: {
 		padding:	0,
 		margin:		0,
-		width:		'30%',
+		width:		'20%',
 		top:		'40%',
-		left:		'35%',
+		left:		'40%',
 		textAlign:	'center',
 		color:		'#000',
 		border:		'3px solid #aaa',
@@ -359,7 +359,6 @@ function install(el, opts) {
 
 	if (full) {
 		pageBlock = lyr3[0];
-		center(lyr3[0], opts.centerX, opts.centerY);
 		pageBlockEls = $(':input:enabled:visible',pageBlock);
 		if (opts.focusInput)
 			setTimeout(focus, 20);

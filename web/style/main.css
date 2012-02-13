@@ -752,3 +752,11 @@ We used a table to avoid the annoyance of div float left and right.
     color: #0A1A0A;
     padding-left: 4px;
 }
+
+.greenBorder {
+	border: 1px solid green !important;
+}
+
+.redBorder {
+	border: 1px solid red !important;
+}

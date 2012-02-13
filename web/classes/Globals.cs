@@ -1150,7 +1150,7 @@ namespace Globals
 
 		public bool IsValidForCalls()
         {
-            if (string.IsNullOrEmpty(this.APICall) || string.IsNullOrEmpty(this.XMLRecordXPath) || string.IsNullOrEmpty(this.ID))
+            if (string.IsNullOrEmpty(this.XMLRecordXPath) || string.IsNullOrEmpty(this.ID))
                 return false;
 
             return true;

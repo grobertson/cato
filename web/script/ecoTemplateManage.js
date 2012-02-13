@@ -21,11 +21,11 @@ $(document).ready(function () {
     $("#delete_dialog").hide();
 
     //define dialogs
-    $('#edit_dialog').dialog('option', 'title', 'New Eco Template');
+    $('#edit_dialog').dialog('option', 'title', 'New Ecotemplate');
     $("#edit_dialog").dialog({
         autoOpen: false,
         modal: true,
-        width: 550,
+        width: 650,
         buttons: [
         	{
             	id: "edit_dialog_create_btn",
@@ -75,6 +75,7 @@ $(document).ready(function () {
 	//use storm?
     $("#use_storm_btn").click(function () {
 		$(".stormfields").toggle();
+		$("#edit_dialog").dialog('option','position','center');
     });
     
     //this onchange event will test the json text entry 
@@ -97,7 +98,18 @@ $(document).ready(function () {
 		validateStormFileJSON();
     });
 
+	//wire up the json "validate" button and other niceties.
+	$("#validate").button({ icons: { primary: "ui-icon-check"} });
+	$("#validate").click(function () {
+		var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+	    jsl.interactions.validate($("#txtStormFile"), $("#json_parse_msg"), reformat, false);
+	    return false;
+	});
+	$("#storm_edit_dialog_text").keyup(function () {
+	    $(this).removeClass('greenBorder').removeClass('redBorder');
+	});
 });
+
 function pageLoad() {
     ManagePageLoad();
 }
@@ -130,29 +142,17 @@ function fileWasSaved(filename) {
 
 function validateStormFileJSON() {
 	if ($("#ddlStormFileSource").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-highlight").removeClass("ui-state-happy");	
-		//$("#edit_dialog_create_btn").show();		
+		$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
+		$("#txtStormFile").empty().removeClass("redBorder").removeClass("greenBorder");
+		$("#validate").hide();	
 		return;
+	} else {
+		$("#validate").show();
 	}
 	
-	try
-	{
-		json = $.parseJSON($("#txtStormFile").val());
-		$("#json_parse_msg").empty();
-		$("#json_parse_msg").text("Valid Storm File").addClass("ui-state-happy").removeClass("ui-state-highlight");
-		//$("#edit_dialog_create_btn").show();
-	}
-	catch(err)
-	{
-		var errmsg = err.message.replace(/'/g,"\\'");
-		var msg = 'The provided Storm File syntax does not seem to be valid.';
-			
-		$("#json_parse_msg").text(msg).addClass("ui-state-highlight");
-		//$("#edit_dialog_create_btn").hide();
-		
-		if (errmsg.length > 0)
-			$("#json_parse_msg").append(' <span class="pointer" onclick="$(this).replaceWith(\'<div>' + errmsg + '</div>\');">Click here for details.</span>');
-	}
+	//call the validate function
+	var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+    jsl.interactions.validate($("#txtStormFile"), $("#json_parse_msg"), reformat, false);
 }
 
 function ShowItemAdd() {
@@ -160,7 +160,10 @@ function ShowItemAdd() {
 
     // clear all of the previous values
     clearEditDialog();
-
+    
+    //but we want the Format box to be checked
+    $('#chk_reformat').attr('checked','checked')
+	$(".stormfields").hide();
     $("#edit_dialog").dialog('open');
     $("#txtTemplateName").focus();
 }
