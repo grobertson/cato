@@ -33,25 +33,118 @@ proc check_schedules {} {
 		run_schedule_instance $row
 	}
 }
+
 proc split_clean {it} {
-	set proc_name split_clean
-	set the_list ""
-	foreach x [split $it ,] {
-		if {"$x" > ""} {
-			lappend the_list $x
-		}
-	}
-	return $the_list
+        set proc_name split_clean
+        set the_list ""
+        foreach x [split $it ,] {
+                if {$x ne ""} {
+                        set the_list [concat $the_list $x]
+                }
+        }
+        return $the_list
 }
+
+proc stp_z {it} {
+	set proc_name stp_z
+	if {$it eq "00"} {
+		return 0
+	} else {
+		return [string trimleft $it 0]
+	}
+}
+
+proc get_month_dates {days_of_month months start_dt} {
+
+        set dates ""
+
+        set start [clock scan [clock format $start_dt -format {%Y-%m-%d}]]
+        set now_day [clock format $start -format "%d"]
+        set month_day $start
+        set date_ctr 1
+        for {set day 0} {$day < 365} {incr day} {
+                set this_month [expr [stp_z [clock format $month_day -format "%m"]] - 1]
+                set this_day [expr [stp_z [clock format $month_day -format "%d"]] - 1]
+                if {[lsearch $months $this_month] > -1 && [lsearch $days_of_month $this_day] > -1} {
+                        lappend dates $month_day
+                        if {$date_ctr == $::MAX_DAYS} {
+                                break
+                        }
+                        incr date_ctr
+                }
+                set month_day [clock add $month_day 1 day]
+        }
+        return $dates
+}
+
+proc get_weekday_dates {days_of_week months start_dt} {
+        set dates ""
+        foreach day $days_of_week {
+                set dates [concat $dates [get_dates_for_weekday $day 52 $months $start_dt]]
+        }
+        return [lsort $dates]
+}
+
+proc get_dates_for_weekday {weekday num_weeks months start_dt} {
+        set dates ""
+        set start [clock scan [clock format $start_dt -format {%Y-%m-%d}]]
+        set now_day [clock format $start -format "%u"]
+        if {$now_day == 7} {
+                set now_day 0
+        }
+	if {$weekday > $now_day} {
+		set days [expr $weekday - $now_day]
+	} elseif {$now_day > $weekday} {
+		set days [expr 6 - $weekday]
+	} else {
+		set days 0
+	}
+
+        set weekday [clock add $start $days day]
+
+        for {set week 0} {$week < $num_weeks} {incr week} {
+                #set now_date [clock format $now -format "%Y-%m-%d"]
+
+                set this_month [expr [stp_z [clock format $weekday -format "%m"]] -1]
+                if {[lsearch $months $this_month]} {
+                        lappend dates $weekday
+                }
+                set weekday [clock add $weekday 1 week]
+        }
+        return $dates
+}
+
+proc get_times {dates hours minutes start_dt num_to_find} {
+        set date_times ""
+        #set hours [split_clean $hours]
+        #set minutes [split_clean $minutes]
+        set found_times 0
+        foreach date $dates {
+                foreach h $hours {
+                        foreach min $minutes {
+                                set date_time [expr ($h*3600 + $min*60) + $date]
+                                if {$date_time < $start_dt} {
+                                        continue
+                                }
+                                lappend date_times $date_time
+                                incr found_times
+                                if {$found_times == $num_to_find} {
+                                        return $date_times
+                                }
+                        }
+                }
+        }
+        return $date_times
+}
+
+
 proc expand_this_schedule {sched_row} {
 	set proc_name expand_this_schedule
 	set id [lindex $sched_row 0]
 	set now [lindex $sched_row 1]
-	#set start_dt [lindex $sched_row 2]
-	#set stop_dt [lindex $sched_row 3]
-	set months [split_clean [lindex $sched_row 2]]
+	set months [lindex $sched_row 2]
 	set days_or_weeks [lindex $sched_row 3]
-	set days [split_clean [lindex $sched_row 4]]
+	set days [lindex $sched_row 4]
 	set hours [split_clean [lindex $sched_row 5]]
 	set minutes [split_clean [lindex $sched_row 6]]
 	set start_dt [lindex $sched_row 7]
@@ -62,104 +155,26 @@ proc expand_this_schedule {sched_row} {
 	set debug_level [lindex $sched_row 12]
 	set start_instances [lindex $sched_row 13]
 	set account_id [lindex $sched_row 14]
-	#output "sched row is $sched_row"
-
-        #set top_run_dt [::mysql::fetch $::CONN]
-	#if {($top_run_dt >= $stop_dt && $stop_dt != 0)} {
-	#	output "Lifecycle for schedule $id is complete. Retiring."
-	#	set sql "update schedule set status = 'Retired' where schedule_id = '$id'"
-	#	::mysql::exec $::CONN $sql
-	#	return
-	#}
-	#if {$recurring == 0} {
-	#	output "Lifecycle for schedule $id is complete. Retiring."
-	#	set sql "update schedule set status = 'Retired' where schedule_id = '$id'"
-	#	::mysql::exec $::CONN $sql
-	#}
-	#if {$start_dt < $top_run_dt} {
-	#	set start_dt $top_run_dt
-	#}
-	#output "start date is $start_dt and real now is [clock seconds]"
-	#output "start_dt = $start_dt, now is $now"
 	if {$start_dt == 0 || $start_dt == ""} {
 		set start_dt $now
 	} else {
 		set start_dt [expr $start_dt + 1]
 	}
-	#output "now year is [clock format $now -format "%Y"]"	
-	set start_year [clock format $start_dt -format "%Y"]
-	set start_mon [clock format $start_dt -format "%m"]
-	set start_day [clock format $start_dt -format "%d"]
-	set start_hr [clock format $start_dt -format "%H"]
-	set start_min [clock format $start_dt -format "%M"]
-	#output "start_dt = $start_dt, now is $now"
-	#output "$start_year, $start_mon, $start_day, $start_hr, $start_min"
+	set days [split_clean [string map $::DAY_MAP $days]]
+	set months [split_clean $months]
 
-	#if {$stop_dt == 0} {
-	#	set stop_dt [expr $now + ($::MAX_DAYS * 24 * 60 * 60)]
-	#}
-	#output "max days is $::MAX_DAYS, stop dt is [clock format $stop_dt -format "%Y-%m-%d %H:%M:%S"], instances to start is $start_instances"
 	set the_dates ""
-	set enough 0
-	for {set y $start_year} {$y <= [expr $start_year + 1]} {incr y} {
-		foreach m [lsort -integer $months] {
-			incr m
-			set test [clock scan "$y-$m-01 00:00" -format {%Y-%m-%d %H:%M}]
-			set test_start [clock scan "$start_year-$start_mon-01 00:00" -format {%Y-%m-%d %H:%M}]
-			#output "comparing $test < $test_start"
-			if {$test < $test_start} {
-				continue
-			}
-			foreach d [lsort -integer $days] {
-				incr d
-				set test [clock scan "$y-$m-$d 00:00" -format {%Y-%m-%d %H:%M}]
-				set test_start [clock scan "$start_year-$start_mon-$start_day 00:00" -format {%Y-%m-%d %H:%M}]
-				if {$test < $test_start} {
-					continue
-				}
-				foreach h [lsort -integer $hours] {
-			
-					set test [clock scan "$y-$m-$d $h:00" -format {%Y-%m-%d %H:%M}]
-					set test_start [clock scan "$start_year-$start_mon-$start_day $start_hr:00" -format {%Y-%m-%d %H:%M}]
-					if {$test < $test_start} {
-						continue
-					}
-					foreach min [lsort -integer $minutes] {
-						set test [clock scan "$y-$m-$d $h:$min" -format {%Y-%m-%d %H:%M}]
-						set test_start [clock scan "$start_year-$start_mon-$start_day $start_hr:$start_min" -format {%Y-%m-%d %H:%M}]
-						#output "comparing $test < $test_start"
-						if {$test < $test_start} {
-							continue
-						}
-						set the_time [clock scan "$y-$m-$d $h:$min" -format {%Y-%m-%d %H:%M}]
-						if {$the_time >= $start_dt} {
-							#output $the_time
-							lappend the_dates $the_time
-						}
-						if {[llength $the_dates] >= $start_instances} {
-							set enough 1
-							break
-						}
-					}
-					if {$enough == 1} {
-						break
-					}
-				}
-				if {$enough == 1} {
-					break
-				}
-			}
-			if {$enough == 1} {
-				break
-			}
-		}
-		if {$enough == 1} {
-			break
-		}
+	if {$days_or_weeks == 1} {
+		set dates [get_weekday_dates $days $months $start_dt]
+	} else {
+		set dates [get_month_dates $days $months $start_dt]
 	}
-	set the_dates [lsort -unique $the_dates]
-	#output "There are [llength $the_dates] dates"
-	foreach date $the_dates {
+	if {[llength $dates] > 0} {
+		set dates [get_times $dates $hours $minutes $start_dt $start_instances]
+	}
+
+	set dates [lsort -unique $dates]
+	foreach date $dates {
 		set date [clock format $date -format "%Y-%m-%d %H:%M:%S"]
 		set sql "insert into action_plan (task_id,run_on_dt,action_id,ecosystem_id,parameter_xml,debug_level,source,schedule_id, account_id)
 			values ('$task_id', '$date', '$action_id', '$ecosystem_id', '$parameter_xml', '$debug_level', 'schedule', '$id', '$account_id')"
@@ -285,6 +300,8 @@ proc get_settings {} {
 }
 proc initialize_process {} {
 	clear_scheduled_action_plans
+	set ::DAY_MAP {00, 0, 01, 1, 02, 2, 03, 3, 04, 4, 05, 5, 06, 6, 07, 7, 08, 8, 09, 9,}
+
 }
 proc main_process {} {
 
