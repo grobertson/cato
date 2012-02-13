@@ -316,20 +316,12 @@ namespace ACWebMethods
 			ParamComparer pc = new ParamComparer();
 			SortedDictionary<string, string> sortedRequestParams = new SortedDictionary<string, string>(pc);
 		
-
-			//if we ever wanna switch to Timestamp
-			//string sDate = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
-			//sortedRequestParams.Add("Timestamp", sDate);
-			//for now using Expires
-			string sEpoch = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds + 300).ToString();
-			sortedRequestParams.Add("Expires", sEpoch);
-			
 			sortedRequestParams.Add("AWSAccessKeyId", sAccessKeyID);
 			
 			string sSignature = "";
 			string sQueryString = "";
 			
-			if (prod.Name == "s3") {
+			if (prod.Name == "s3" || prod.Name == "walrus") {
 				//HARDCODE ALERT
 				//Currently (2-10-2010) AWS has goofy endpoints for the s3 services, using a "s3-" instead of "ec2.", etc.
 				//MOREOVER, unlike all the other products, you cannot explicitly ask for the us-east-1 region.
@@ -337,6 +329,10 @@ namespace ACWebMethods
 				sHostName = sHostName.Replace("s3-us-east-1","s3");
 				//all other regions should work as defined.
 				
+				//s3 seems to need the epoch time "expires" value
+				string sEpoch = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds + 300).ToString();
+				sortedRequestParams.Add("Expires", sEpoch);
+
 				//per http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
 				string sStringToSign = "GET\n" +
 					"\n" + //Content-MD5
@@ -355,9 +351,13 @@ namespace ACWebMethods
 				//finally, urlencode the signature
 				sSignature = ui.PercentEncodeRfc3986(sSignature);
 				Console.Write("SIG:" + sSignature + ":SIG\n");
-
+				
 			}
 			else {
+				//other AWS/Euca calls use the current Timestamp
+				string sDate = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
+				sortedRequestParams.Add("Timestamp", sDate);
+			
 		
 				sortedRequestParams.Add("Action", cot.APICall);
 
