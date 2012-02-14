@@ -4356,14 +4356,16 @@ namespace FunctionTemplates
 			//build the HTML
 			sHTML += "<ul id=\"edit_variables\" class=\"variables\">";
 			
+			//if the xml is empty, we still need to return the UL so the gui will work.
 			XDocument xDoc = oStep.VariableXDoc;
-			if (xDoc == null)
-				return "Variable XML data for step [" + sStepID + "] is invalid.";
-			
+			if (xDoc == null) {
+				return sHTML += "</ul>" + Environment.NewLine;
+			}
+			//if the document is missing the root node, we still need to return the UL.
 			XElement xVars = xDoc.Element("variables");
-			if (xVars == null)
-				return "Variable XML data for step [" + sStepID + "] does not contain 'variables' root node.";
-			
+			if (xVars == null) {
+				return sHTML += "</ul>" + Environment.NewLine;
+			}			
 			
 			if (xVars.Elements("variable").Count() > 0)
 			{
