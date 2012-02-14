@@ -518,29 +518,21 @@ namespace ACWebMethods
                     //sOPM: 0=none, 1=delimited, 2=parsed
                     string sOPM = "0";
 
-                    switch (sItem)
-                    {
-                        case "sql_exec":
-                            sOPM = "1";
-                            break;
-                        case "dos_cmd":
-                            sOPM = "2";
-                            break;
-                        case "cmd_line":
-                            sOPM = "2";
-                            break;
-                        case "http":
-                            sOPM = "2";
-                            break;
-                        case "parse_text":
-                            sOPM = "2";
-                            break;
-                        case "read_file":
-                            sOPM = "2";
-                            break;
-                    }
+					//read the opm from the xml file.
+					XDocument xd = XDocument.Parse(func.TemplateXML);
+					if (xd != null) {
+						if (xd.XPathSelectElement("//function") != null)
+						{
+							XElement xe = xd.XPathSelectElement("//function");
+							if (xe != null) {
+								{
+									sOPM = (xe.Attribute("parse_method") == null ? "0" : xe.Attribute("parse_method").Value);
+								}
+							}
+						}
+					}
 
-                    sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
+					sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
 						" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
 						" function_name, function_xml)" +
 						" values (" +
