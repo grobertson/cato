@@ -1174,47 +1174,6 @@ proc sqlserver_logon {user_id password address port dbname} {
 
 }
 
-proc connect_windows {address namespace userid password domain} {
-	set proc_name connect_windows
-
-	if {"$domain" > ""} {
-		output "Connection via a Windows Domain account {$domain, $userid, $namespace}." 1
-		set userid $domain\\$userid
-	} else {
-		output "Connection via a Windows Local account {$userid, $namespace}." 1
-		set userid localhost\\$userid
-	}
-	if {"$namespace" == "_MAIN"} {
-		if [catch {twapi::connect_share \\\\$address -user $userid -password $password} error_code] {
-			if {[string match "*User credentials cannot be used for local connections*" $error_code]} {
-				if [catch {twapi::connect_share \\\\$address} error_code] {
-					error_out "Windows connection error to host $address\012$error_code" 1003
-				}
-			}  else {
-				error_out "windows connection error to host $address, user $domain $userid\012$error_code" 1003
-			}
-		}
-		set conn_id _MAIN
-	} else {
-		set olocator [twapi::comobj WbemScripting.SWbemLocator]
-		$olocator Security_ ImpersonationLevel 3
-		if [catch {set owmi [$olocator ConnectServer $address root\\$namespace $userid $password]} error_code] {
-			if {[string match "*User credentials cannot be used for local connections*" $error_code]} {
-				if [catch {set owmi [$olocator ConnectServer $address root\\$namespace]} error_code] {
-					error_out "windows connection error to host $address\012$error_code" 1003
-				}
-			}  else {
-				error_out "windows connection error to host $address, user $domain $userid\012$error_code" 1003
-			}
-		}
-		$olocator -destroy
-		set conn_id $owmi
-	}
-	insert_audit $::STEP_ID "" "Connected to Windows host {$address} with user {$userid}." ""
-	return $conn_id
-}
-
-
 ##################################################
 #	procedure: ftp_logon
 #
@@ -1317,8 +1276,6 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 	set do_password 1	
 	set passphrase_required 0
 	#exp_internal 1
-	#set ::env(TERM) cygwin 
-	#set ::exp::winnt_debug 1
 
 	if {$top == "yes"} {	;# This is the machine we will launch from
 		if {[string compare $telnet_ssh "telnet"] == 0} {
@@ -2151,17 +2108,6 @@ proc release_system {conn_name} {
 			"sqlserver" {
 				#catch {tdbc_disconnect $spawn_id}
 				catch {$spawn_id close}
-			}	
-			"windows" {
-
-				catch {twapi::disconnect_share \\\\$system -updateprofile}
-				foreach name [array names ::connection_arr $conn_name,handle,*] {
-					output "releasing the connection internally named $name"
-					if {"$name" != "$conn_name,handle,_MAIN"} {
-						$::connection_arr($name) -destroy
-						array unset ::connection_arr $name
-					}
-				} 
 			}	
 			default {	
 				set exit_text ""
@@ -3010,43 +2956,6 @@ proc create_dataset_xml {} {
 }
 #####################################################
 
-proc dos_cmd {command} {
-	set proc_name dos_cmd
-
-	get_xml_root $command
-	set the_command [replace_variables_all [$::ROOT selectNodes string(command)]]
-	del_xml_root
-
-	regsub -all "&amp;" $the_command {\&} the_command
-	regsub -all "&gt;" $the_command ">" the_command
-	regsub -all "&lt;" $the_command "<" the_command
-	
-	set cmd1 [lindex $the_command 0]
-	#set cmd2 [lrange $the_command 1 end]
-	set cmd2 [string range $the_command [expr [string length $cmd1] +1] end]
-	set cmd3 [auto_execok $cmd1]
-	if {"$cmd3" == ""} {
-		set cmd3 $cmd1
-	}
-	set exec_cmd "exec $cmd3 $cmd2"
-
-	#set exec_cmd "exec cmd /c $the_command"
-	#set exec_cmd "exec $the_command"
-	output "The dos command is >$exec_cmd<" 1
-
-	catch {eval $exec_cmd} output_buffer
-	if {"$output_buffer" == "child process exited abnormally"} {
-		output "received $output_buffer from the dos command, ignoring" 1
-		set output_buffer [string map {"child process exited abnormally" ""} $output_buffer]
-	}
-
-	output "$output_buffer" 1
-	insert_audit $::STEP_ID  "" "$cmd3 $cmd2\012$output_buffer" ""
-
-	if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
-		process_buffer $output_buffer
-	}
-}
 proc lookup_shared_cred {shared_cred} {
 	set proc_name lookup_shared_cred
 
@@ -3101,233 +3010,6 @@ proc winrm_cmd {command} {
 	}
 }
 
-proc win_cmd {command} {
-	set proc_name win_cmd
-
-	get_xml_root $command
-	set conn_name [replace_variables_all [$::ROOT selectNodes string(conn_name)]]
-	set type [replace_variables_all [$::ROOT selectNodes string(type)]]
-	set sub_type [replace_variables_all [$::ROOT selectNodes string(command)]]
-	set win_command [replace_variables_all [$::ROOT selectNodes string(parameter_0)]]
-	set win_command_1 [replace_variables_all [$::ROOT selectNodes string(parameter_1)]]
-	set win_command_2 [replace_variables_all [$::ROOT selectNodes string(parameter_2)]]
-	del_xml_root
-
-	output "Connection name $conn_name, $type, $win_command" 1
-	if {"$type" == "Security" || "$type" == "Registry"} {
-		set type "$type $sub_type"
-	}
-	if {[string match "Registry*" $type]} {
-		set namespace default
-	} elseif {"$type" == "WMI"} {
-		set namespace [string tolower $win_command_1]
-	} else {
-		set namespace "_MAIN"
-	}
-	if {"[array names ::connection_arr $conn_name,handle]" > ""} {
-		set namespace_list $::connection_arr($conn_name,namespaces)
-		output "namespace list = $namespace_list" 1
-		set system $::connection_arr($conn_name,system)
-		if {[lsearch -nocase $namespace_list $namespace] == -1} {
-			set ::connection_arr($conn_name,handle,$namespace) [connect_system $system windows $namespace]
-			lappend ::connection_arr($conn_name,namespaces) $namespace
-		}
-		if {"$namespace" != "_MAIN"} {
-			set spawn_id $::connection_arr($conn_name,handle,$namespace)
-		}
-	} else {
-		error_out "The windows connection $conn_name has not been established. Check the connection name or the new_connection function" 2007
-	}
-	set output_buffer ""
-	set column_names ""
-	switch -- $type {
-		"WMI" {
-			output "Windows Function WMI namespace = $win_command_1 query = $win_command" 1
-			set output_buffer [get_wmi_query $spawn_id $win_command_1 $win_command $win_command_2]
-			output $output_buffer 1
-			set column_names [lindex $output_buffer 0]			
-			#set mark [expr [llength $first_row] / 2]
-			#set column_names [lreverse [lrange $first_row 0 [expr $mark - 1]]]
-			#set output_buffer "[list [lrange $first_row $mark end]] [lrange $output_buffer 1 end]"
-			#set output_buffer [lrange $output_buffer 1 end]
-			set output_buffer [lindex $output_buffer 1]
-			#output "column names = >$column_names<"
-			#output "buf = >$output_buffer<"
-		}
-		"Registry Get Keys" {
-			output "Windows Function Registry GetKeys $win_command" 1
-			set column_names "{Subkey Name}"
-			set output_buffer [get_reg $spawn_id $win_command "" key]
-		}
-		"Registry Get Key Values" {
-			output "Windows Function Registry GetKeyValues $win_command" 1
-			set column_names "{Valuename} {Value}"
-			set output_buffer [get_reg $spawn_id $win_command "" value]
-		}
-		"Registry Get Values" {
-			output "Windows Function Registry GetValue $win_command $win_command_1" 1
-			set column_names "{Value}"
-			set output_buffer [get_reg $spawn_id $win_command $win_command_1 value]
-		}
-		"Security Get Password Policy" {
-			output "Windows Function Security GetPasswordPolicy" 1
-			set column_names "{Max Age} {Min Age} {Min Len} {Force Logoff} {History Len} {Lockout Duration} {Lockout Threshold} {Lockout Window}"
-			set output_buffer [get_password_policy $::system_arr($system,address)]
-		}
-		"Security Get Audit Policy" {
-			output "Windows Function Security AuditPolicy" 1
-			set column_names "{System Events} {Logon Events} {Object Access} {Privilege Use} {Process Tracking} {Policy Change} {Account Management} {Directory Service Access} {Account Logon Events}"
-			if {[catch {set output_buffer [get_audit_policy $::system_arr($system,address)]} errMsg]} {
-				error_out "Windows Security Policy Error -> $errMsg [twapi::map_windows_error $errMsg]" 2008
-			}
-		}
-		"Security Get Users" {
-			output "Windows Function Security Get Users" 1
-			set column_names "{Username}"
-			set buffer [twapi::get_users -system $::system_arr($system,address)]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-		"Security Get User Properties" {
-			output "Windows Function Security Get User Properties $win_command" 1
-			set column_names "{Username} {FullName} {User ID} {SID} {Comment} {Status} {Accoutn Expires} {Password Expired} {Password Age} {Bad Password Count} {Last Logon} {Last Logoff} {Number of Logons} {Privilege Level} {Home Directory} {Script Path} {Profile}"
-			set buffer [twapi::get_user_account_info $win_command -full_name -comment -home_dir -script_path -profile -password_age -password_expired -status -acct_expires -sid -num_logons -last_logon -last_logoff -user_id -bad_pw_count -name -priv -system $::system_arr($system,address)]
-			foreach {name value} $buffer {
-				set user_props($name) $value
-			}
-			unset buffer
-			set output_buffer "{[list $user_props(-name) $user_props(-full_name) $user_props(-user_id) $user_props(-sid) $user_props(-comment) $user_props(-status) $user_props(-acct_expires) $user_props(-password_expired) $user_props(-password_age) $user_props(-bad_pw_count) $user_props(-last_logon) $user_props(-last_logoff) $user_props(-num_logons) $user_props(-priv) $user_props(-home_dir) $user_props(-script_path) $user_props(-profile)]}"
-		}
-		"Security Get User Rights" {
-			output "Windows Function Security Get User Rights $win_command" 1
-			set column_names "{Right}"
-			set buffer [twapi::get_account_rights $win_command -system $::system_arr($system,address)]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-		"Security Get Local Groups" {
-			output "Windows Function Security Get Local Groups" 1
-			set column_names "{Groupname}"
-			set buffer [twapi::get_local_groups -system $::system_arr($system,address)]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-		"Security Get User Groups" {
-			output "Windows Function Security Get User Groups $win_command" 1
-			set column_names "{Groupname}"
-			set buffer [twapi::get_user_local_groups_recursive $win_command -system $::system_arr($system,address)]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-		"Security Get Group Members" {
-			output "Windows Function Security Get Group Members $win_command" 1
-			set column_names "{Username}"
-			set buffer [twapi::get_local_group_members  $win_command -system $::system_arr($system,address)]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-		"Security Get Group Properties" {
-			output "Windows Function Security Get Group Properties $win_command" 1
-			set column_names "{Groupname} {SID} {Comment}"
-			set buffer [twapi::get_local_group_info  $win_command -name -sid -comment -system $::system_arr($system,address)]
-			foreach {name value} $buffer {
-				set group_props($name) $value
-			}
-			unset buffer
-			set output_buffer "{[list $group_props(-name) $group_props(-sid) $group_props(-comment)]}"
-		}
-		"Security Get Users with Right" {
-			output "Windows Function Security Users with Right $win_command" 1
-			set column_names "{Username}"
-			set buffer [twapi::find_accounts_with_right $win_command -system $::system_arr($system,address) -name]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-		"Security Get Group Rights" {
-			output "Windows Function Security Get Group Rights $win_command" 1
-			set column_names "{Right}"
-			set buffer [twapi::get_account_rights  $win_command -system $::system_arr($system,address)]
-			foreach value $buffer {
-				if {"$output_buffer" > ""} {
-					append output_buffer "\012{{$value}}"
-				} else {
-					append output_buffer "{{$value}}"
-				}
-			}
-			unset buffer
-		}
-	}
-	regsub -all {{\\}} $output_buffer {{}} output_buffer
-	#output ">>>$output_buffer<<<"
-	insert_audit $::STEP_ID "" "$type $win_command $win_command_1\012\012$column_names\012\012$output_buffer" ""
-	#output ">[lindex $::step_arr($::STEP_ID) 8]<"
-	set doing_variables 0
-	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
-		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
-		set root [$xmldoc documentElement]
-		set variable_nodes [$root selectNodes  {/variables/variable}]
-		set doing_variables 1
-		foreach the_node $variable_nodes {
-			set name [string toupper [$the_node selectNodes string(name)]]
-			array unset ::runtime_arr $name,*
-		}
-	}
-	output "Number of rows to process [llength $output_buffer]" 1
-	output "Output buffer is $output_buffer" 2
-	for {set row_num 0} {$row_num < [llength $output_buffer]} {incr row_num} {
-		set row [lindex $output_buffer $row_num]
-		output "Row # $row_num -> $row" 2
-		if {$doing_variables == 1} {
-			foreach the_node $variable_nodes {
-				### 2010-01-19 - PMD - variable names case insensitive
-				set name [string toupper [$the_node selectNodes string(name)]]
-				set column_value ""
-				set position [expr [$the_node selectNodes string(position)] - 1]
-				set ::runtime_arr($name,[expr $row_num + 1]) [lindex $row $position]
-				output "setting $name,[expr $row_num +1] = [lindex $row $position]" 2
-			}
-		}
-	}
-	if {$doing_variables == 1} {
-		$xmldoc delete
-	}
-}
 proc this_sleep {command} {
 	set proc_name this_sleep
 	get_xml_root $command
@@ -3411,14 +3093,7 @@ proc new_connection {connection_system conn_name conn_type {cloud_name ""}} {
 	}	
 	insert_audit $::STEP_ID "" "Connecting to ($asset_name)... " "$connection_system"
 
-	if {"$conn_type" == "windows"} {
-		package require ac_win_api
-		set namespace _MAIN
-		set ::connection_arr($conn_name,handle) [connect_system $connection_system $conn_type $namespace]
-		lappend ::connection_arr($conn_name,namespaces) _MAIN
-	} else {
-		set ::connection_arr($conn_name,handle) [connect_system $connection_system $conn_type ""]
-	}
+	set ::connection_arr($conn_name,handle) [connect_system $connection_system $conn_type ""]
 
 	set ::connection_arr($conn_name,system) $connection_system
 	set ::connection_arr($conn_name,conn_type) $conn_type
@@ -3751,8 +3426,7 @@ proc process_step {step_id task_name} {
 		run_task {}
 		new_connection {}
 		sql_exec {}
-		win_cmd {}
-		dos_cmd {}
+		winrm_cmd {}
 		aws_get_instance {}
 		store_private_key {}
 		get_ecosystem_objects {}
@@ -3844,9 +3518,6 @@ proc process_step {step_id task_name} {
 			if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
 				process_buffer $output_buffer
 			}
-		}
-		"win_cmd" {
-			win_cmd $command
 		}
 		"sql_exec" {
 			sql_exec $command
@@ -4074,7 +3745,7 @@ proc process_step {step_id task_name} {
 			unset subtask_id subtask_version
 
 		}
-		"dos_cmd" {
+		"winrm_cmd" {
 			winrm_cmd $command
 		}
 		"cmd_line" {
@@ -4093,24 +3764,11 @@ proc process_step {step_id task_name} {
 			#regsub -all "&gt;" $command ">" command
 			#regsub -all "&lt;" $command "<" command
 
-			if {"$function_name" == "dos_cmd"} {
-				set conn_name DOS
-				if {[info exists ::connection_arr(DOS,handle)]} {
-					set spawn_id $::connection_arr(DOS,handle)
-				} else {
-					
-					set ::connection_arr(DOS,handle) [connect_dos]
-					set ::connection_arr(DOS,conn_type) DOS
-					set ::connection_arr(DOS,system) ""
-					set spawn_id $::connection_arr(DOS,handle)
-				}
+			if {[info exists ::connection_arr($conn_name,handle)]} {
+				set spawn_id $::connection_arr($conn_name,handle)
+				set system $::connection_arr($conn_name,system))
 			} else {
-				if {[info exists ::connection_arr($conn_name,handle)]} {
-					set spawn_id $::connection_arr($conn_name,handle)
-					set system $::connection_arr($conn_name,system))
-				} else {
-					error_out "The telnet or ssh connection {$conn_name} has not been established. Check the connection name or the new_connection function." 2013
-				}
+				error_out "The telnet or ssh connection {$conn_name} has not been established. Check the connection name or the new_connection function." 2013
 			}
 			output "$conn_name, $cmd_timeout, $command, $positive_response, $negative_response" 4
 
@@ -4300,10 +3958,6 @@ proc connect_system {system conn_type namespace} {
 	output  "Going into system $::system_arr($system,address) userid $::system_arr($system,userid) with conn type of $conn_type" 1
 
 	switch -exact -- $conn_type {
-		windows {
-			#package require agenttcl
-			set spawn_id [connect_windows $::system_arr($system,address) $namespace $::system_arr($system,userid) $::system_arr($system,password) $::system_arr($system,domain)]
-		}
 		telnet {
 			set timeout_flag [telnet_logon $::system_arr($system,address) $::system_arr($system,userid) $::system_arr($system,password) yes telnet 1 ""]
 			if {$timeout_flag > 0} {
@@ -5039,182 +4693,6 @@ proc get_wmi_query {connection namespace sql max_rows} {
 	#set output_buffer $output_buffer\}
 	return [list $column_header $output_buffer]
 }
-proc get_reg {connection path get_name key_or_value} {
-	set proc_name get_reg_key_values
-
-	set oreg [$connection Get StdRegProv]
-
-	set hive_name [lindex [split $path \\] 0] 
-	set sSubKeyName [join [lrange [split $path \\] 1 end] \\]
-	switch -re $hive_name {
-		HKCR|HKEY_CLASSES_ROOT {
-			set hDefKey 2147483648
-		}
-		HKCU|HKEY_CURRENT_USER {
-			set hDefKey 2147483649
-		}
-		HKLM|HKEY_LOCAL_MACHINE {
-			set hDefKey 2147483650
-		}
-		HKU|HKEY_USERS {
-			set hDefKey 2147483651
-		}
-		HKCC|HKEY_CURRENT_CONFIG {
-			set hDefKey 2147483653
-		}
-		default {
-			error_out "Invalid hive name {$hive_name}.\012Valid hive names are HKEY_CLASSES_ROOT (HKCR), HKEY_CURRENT_USER (HKCU), HKEY_LOCAL_MACHINE (HKLM), HKEY_USERS (HKU) or HKEY_CURRENT_CONFIG (HKCC)." 2201
-		}
-	}
-
-
-	### Get list of methods as we will need to retrieve parameter
-	### type information for each method we want to use.
-
-	set omethods [$oreg Methods_]
-
-	### We want a WMI input parameter object specific to
-	### the EnumValues method.  The twapi COM -with option
-	### saves us from having to delete intermediate
-	### objects
-
-	output "after Before Access" 1
-	set oinparam [$omethods -with {{Item "CheckAccess"} {Inparameters}} SpawnInstance_]
-	$oinparam hDefKey $hDefKey
-	$oinparam sSubKeyName $sSubKeyName
-	#$oinparam uRequired 9
-	$oinparam uRequired 131072
-	
-	set ooutparam [$oreg ExecMethod_ "CheckAccess" [$oinparam -interface]]
-	output "after Check Access" 1
-	output  "Check access return code = [$ooutparam bGranted]" 1
-	if {![$ooutparam bGranted]} {
-		if {[$ooutparam bGranted] == 0} {
-			set out_message "Invalid registry path $path"
-			insert_audit $::STEP_ID "" $out_message ""
-		} else {
-			error_out "Registry access error [twapi::map_windows_error [$ooutparam bGranted]]. Return code: [$ooutparam bGranted]." 2202
-		}
-	}
-	$oinparam -destroy
-	$ooutparam -destroy
-
-	if {"$key_or_value" == "value"} {
-		set enum_method EnumValues
-	} else {
-		set enum_method EnumKey
-	}
-
-	set oinparam [$omethods -with {{Item $enum_method} {Inparameters}} SpawnInstance_]
-
-	$oinparam hDefKey $hDefKey
-	$oinparam sSubKeyName $sSubKeyName
-	
-	set ooutparam [$oreg ExecMethod_ $enum_method [$oinparam -interface]]
-
-	set anames [$ooutparam sNames]
-	#set output_buffer "\{"
-	set output_buffer ""
-	set first 1
-	if {"$key_or_value" == "value"} {
-		set atypes [$ooutparam Types]
-	} else { ;# key
-		foreach value_name $anames {
-			if {!$first} {
-				set output_buffer "$output_buffer\012{{$value_name}}"
-			} else {
-				set output_buffer "$output_buffer{{$value_name}}"
-				set first 0
-			}
-		}
-		#set output_buffer "$output_buffer\}"
-		$oinparam -destroy
-		$ooutparam -destroy
-		$omethods -destroy 
-		### we're done since we're just getting the subkey names
-		return $output_buffer
-	}
-	$oinparam -destroy
-	$ooutparam -destroy
-
-	### Destroy what we do not need.
-
-	
-	if {"$get_name" > ""} {
-		set index [lsearch -nocase $anames $get_name]
-		if {$index == -1} {
-			#error_out "The value name $get_name does not exist under the registry path $path\012Valid value names are: $anames" 2203
-			set out_message "The value name $get_name does not exist under the registry path $path\012Valid value names are: $anames"
-			insert_audit $::STEP_ID "" $out_message ""
-			return ""
-		} else {
-			set anames $get_name
-			set atypes [lindex $atypes $index]
-		}
-
-	}
-
-	foreach value_name $anames type $atypes {
-
-		#puts "value name -> $value_name, type -> $type"
-		switch $type {
-			1 { ;# REG_SZ
-				set get_method GetStringValue
-				set out_param_name sValue
-			}
-			2 { ;# REG_EXPAND_SZ
-				set get_method GetExpandedStringValue
-				set out_param_name sValue
-			}
-			3 { ;# REG_BINARY
-				set get_method GetBinaryValue
-				set out_param_name uValue
-			}
-			4 { ;# REG_DWORD
-				set get_method GetDWORDValue
-				set out_param_name uValue
-			}
-			7 { ;# REG_MULTI_SZ
-				set get_method GetMultiStringValue
-				set out_param_name sValue
-			}
-		}
-		set oinparam [$omethods -with {{Item "$get_method"} {Inparameters}} SpawnInstance_]
-
-		### Set up input parameter values.
-
-		$oinparam hDefKey $hDefKey
-		$oinparam sSubKeyName $sSubKeyName
-		$oinparam sValueName $value_name
-
-		### Get the value
-
-		set ooutparam [$oreg ExecMethod_ $get_method [$oinparam -interface]]
-		set value [$ooutparam $out_param_name]
-
-		if {!$first} {
-			if {"$get_name" > ""} {
-				set output_buffer "$output_buffer\012{{$value}}"
-			} else {
-				set output_buffer "$output_buffer\012{{$value_name} {$value}}"
-			}
-		} else {
-			if {"$get_name" > ""} {
-				set output_buffer "$output_buffer{{$value}}"
-			} else {
-				set output_buffer "$output_buffer{{$value_name} {$value}}"
-			}
-			set first 0
-		}
-
-		$oinparam -destroy
-		$ooutparam -destroy
-	}
-	#set output_buffer "$output_buffer\}"
-
-	$omethods -destroy 
-	return $output_buffer
-}
 
 proc close_logfile {} {
 	set proc_name close_logfile
@@ -5224,10 +4702,6 @@ proc initialize_logfile_ce {} {
 	set proc_name initialize_logfile
 	set ::LOG_FILE [open $::LOGFILES/$::TASK_INSTANCE.log w]
 	fconfigure $::LOG_FILE -buffering none -translation {crlf}
-	if {"$::tcl_platform(platform)" == "windows"} {
-		dup $::LOG_FILE stderr
-		dup $::LOG_FILE stdout
-	}
 }
 proc get_var {var} {
 	set proc_name get_var
@@ -5619,19 +5093,11 @@ proc connect_db {} {
         set proc_name connect_db
 
         output "Connecting to $::CONNECT_SERVER $::CONNECT_DB $::CONNECT_PORT, user $::CONNECT_USER" 5
-		if {"$::tcl_platform(platform)" == "windows"} {
-	        if {[catch {set ::CONN [tdbc_connect "$::CONNECT_USER" "$::CONNECT_PASSWORD" "$::CONNECT_SERVER" "$::CONNECT_DB" "odbcsqlserver" "$::CONNECT_PORT" "command_engine.$::MY_PID"]} errMsg]} {
+	if {[catch {set ::CONN [::mysql::connect -user $::CONNECT_USER -password $::CONNECT_PASSWORD -host $::CONNECT_SERVER -db $::CONNECT_DB -port $::CONNECT_PORT -multiresult 1 -multistatement 1]} errMsg]} {
                 output "Could not connect to the database. Error message -> $errMsg"
                 output "Exiting..."
                 exit
-	        }
-		} else {
-    	    if {[catch {set ::CONN [::mysql::connect -user $::CONNECT_USER -password $::CONNECT_PASSWORD -host $::CONNECT_SERVER -db $::CONNECT_DB -port $::CONNECT_PORT -multiresult 1 -multistatement 1]} errMsg]} {
-                output "Could not connect to the database. Error message -> $errMsg"
-                output "Exiting..."
-                exit
-        	}
-		}
+	}
     	output "Connected" 6
 }
 ##################################################
