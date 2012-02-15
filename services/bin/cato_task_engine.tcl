@@ -2033,8 +2033,11 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			}
 		}
 	}
-
-	insert_audit $::STEP_ID "" "$telnet_ssh connection to host=$address, user=$userid established.\n$login_output" ""
+	set msg "$telnet_ssh connection to host=$address, user=$userid established."
+	if {$::DEBUG_LEVEL >= 3} {
+		append msg "\n$login_output"
+	}
+	insert_audit $::STEP_ID "" $msg ""
 	return 0
 }
 
