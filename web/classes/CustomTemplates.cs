@@ -40,6 +40,24 @@ namespace FunctionTemplates
                 default:
                     //we don't have a special hardcoded case, just render it from the XML directly
                     sHTML = DrawStepFromXMLDocument(oStep);
+				
+					//is the variables xml attribute true?
+					XDocument xd = oStep.FunctionXDoc;
+					if (xd != null) {
+						if (xd.XPathSelectElement("//function") != null)
+						{
+							XElement xe = xd.XPathSelectElement("//function");
+							if (xe != null) {
+								{
+									string sPopulatesVars = (xe.Attribute("variables") == null ? "" : xe.Attribute("variables").Value);
+									
+									if (sPopulatesVars == "true")
+										sVariableHTML += DrawVariableSectionForDisplay(oStep, true);
+								}
+							}
+						}
+					}
+				
                     break;
             }
 

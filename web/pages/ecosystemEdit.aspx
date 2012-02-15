@@ -38,17 +38,6 @@
                     <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="10" runat="server" te_group="detail_fields"
                         column="Description" CssClass="task_details code">
                     </asp:TextBox>
-                    <div class="storm">
-	                    <img src="../images/icons/storm_32.png" /><span class="detail_label">Created by Storm</span>
-	                    <hr />
-	                    <span class="detail_label">Storm Status:</span>
-						<div id="storm_status"></div>
-						<center>
-							<span id="show_stormfile_btn">View Storm File</span><span id="show_stopstorm_btn">Stop Storm</span>
-		
-						</center>
-					</div>
-                    <br />
                     <hr />
 					<center>
 						<span id="show_log_link">View Change Log</span>						
@@ -133,29 +122,75 @@
 				</div>
 			</div>
             <hr />
-	        <div class="ui-widget-content ui-corner-all">
-	            <div class="ui-widget-header">
-                    <div class="floatleft">
-                    </div>
-                    <div class="floatright">
-                        <span id="reload_storm_log_btn"></span>
-                    </div>
-                        <span>Ecosystem Log</span>
-				</div>
-				<div style="padding: 5px;">	
-		            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
-						<thead>
-							<th>Type</th>
-							<th>ID</th>
-							<th>Logical ID</th>
-							<th>Status</th>
-							<th>Log</th>
-							<th>Last Update</th>
-						</thead>
-		            </table>
+	        <div id="storm_detail_tabs" class="storm" style="height: 340px;">
+	            <ul>
+	                <li><a href="#storm_status_tab"><span><img src="../images/icons/storm_32.png" style="height: 16px; width: 16px; vertical-align: middle; padding-right: 6px;"/>Storm</span></a></li>
+	                <li><a href="#storm_file_tab"><span>Template</span></a></li>
+	                <li><a href="#storm_events_tab"><span>Events</span></a></li>
+	                <li><a href="#storm_output_tab"><span>Output</span></a></li>
+	                <li><a href="#storm_params_tab"><span>Parameters</span></a></li>
+	            </ul>
+		        <div id="storm_status_tab">
+                    <div class="detail_label">Status: <span id="storm_status"></span><span class="reload_storm_btn"></span></div>
+					<br /><br /><br />
+					<span id="show_stopstorm_btn">Stop Storm</span>
 		        </div>
-	        </div>
-        </div>
+		        <div id="storm_file_tab">
+					<asp:TextBox ID="txtStormFile" TextMode="MultiLine" Rows="18" runat="server" CssClass="w100pct code" ReadOnly="True"></asp:TextBox>
+		        </div>
+		        <div id="storm_events_tab">
+		            <div class="ui-widget-header">
+	                    <div class="floatleft">
+	                    </div>
+	                    <div class="floatright">
+	                        <span class="reload_storm_btn"></span>
+	                    </div>
+	                        <span>Storm Events</span>
+					</div>
+					<div>	
+			            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
+							<thead>
+								<th>Type</th>
+								<th>ID</th>
+								<th>Logical ID</th>
+								<th>Status</th>
+								<th>Log</th>
+								<th>Last Update</th>
+							</thead>
+			            </table>
+			        </div>
+		        </div>
+		        <div id="storm_output_tab">
+		            <div class="ui-widget-header">
+	                    <div class="floatleft">
+	                    </div>
+	                    <div class="floatright">
+	                        <span class="reload_storm_btn"></span>
+	                    </div>
+	                        <span>Storm Output</span>
+					</div>
+					<div>	
+			            <table id="storm_output"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
+							<thead>
+								<th>Name</th>
+								<th>Description</th>
+								<th>Value</th>
+							</thead>
+			            </table>
+			        </div>
+		        </div>
+		        <div id="storm_params_tab">
+					<div>	
+			            <table id="storm_parameters"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
+							<thead>
+								<th>Name</th>
+								<th>Value</th>
+							</thead>
+			            </table>
+			        </div>
+		        </div>
+        	</div>
+		</div>
     </div>
     <div class="te_container_footer">
         <!--The footer has to be here so some element can contain the 'clear:both;' style.-->
@@ -183,9 +218,6 @@
     <input type="hidden" id="reg_type" value="ecosystem" />
     <!-- End Registry dialogs.-->
     <!-- Storm dialogs.-->	
-    <div id="storm_view_dialog" title="View Storm" class="hidden">
-		<asp:TextBox ID="txtStormFile" TextMode="MultiLine" Rows="27" runat="server" CssClass="w100pct code" ReadOnly="True"></asp:TextBox>
-	</div>
 	<div id="storm_stop_dialog" title="Stop Storm" class="hidden"></div>
     <!-- End Storm dialogs.-->	
 </asp:Content>

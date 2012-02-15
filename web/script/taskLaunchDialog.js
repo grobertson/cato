@@ -1039,11 +1039,7 @@ function drawRecurringItem(howmany, idprefix, add) {
         if (("" + label).length == 1)
             label = "0" + label;
 
-        var id = idprefix + "_";
-        if (("" + i).length == 1)
-            id = id + "0" + i;
-        else
-            id = id + i;
+        var id = idprefix + "_" + i;
 
         output += '<li id="' + id + '" class="plan_datepoint"><span class="ui-state-default ui-corner-all">' + label + '</span></li>';
     }

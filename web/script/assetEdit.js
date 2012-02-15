@@ -108,6 +108,7 @@ $(document).ready(function() {
         $("#hidCredentialID").val("");
         $("#CredentialSelectorTabs").hide();
         $("#CredentialDetails").html("");
+        $("#txtCredName").val("");
         $("#txtCredUsername").val("");
         $("#txtCredDomain").val("");
         $("#txtCredPassword").val("");
@@ -291,17 +292,17 @@ function SaveAsset() {
                 // this is a shared credential, name and description are required
                 if (sCredentialDescr == '' || sCredentialName == '') {
                     bSave = false;
-                    strValidationError += 'Name and Description are required on Shared Credentials.\n';
+                    strValidationError += 'Name and Description are required on Shared Credentials.<br />';
                 }
             }
             if (sCredPasword != sCredPasswordConfirm) {
                 bSave = false;
-                strValidationError += 'Credential Passwords do not match.';
+                strValidationError += 'Credential Passwords do not match.<br />';
             }
             // check the privileged password if one is filled in they should match
             if (sPrivilegedPassword != sPrivilegedPasswordConfirm) {
                 bSave = false;
-                strValidationError += 'Credential Passwords do not match.';
+                strValidationError += 'Credential Passwords do not match.<br />';
             }
         //}
 
@@ -398,7 +399,6 @@ function OnUpdateSuccess(result, userContext, methodName) {
                 //leave any search string the user had entered, so just click the search button
                 $("#ctl00_phDetail_btnSearch").click();
             }
-
         } else {
             showAlert(result);
         }

@@ -27,12 +27,12 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Literal ltItems;
 		
+		protected System.Web.UI.WebControls.TextBox txtStormFile;
+		
 		protected System.Web.UI.WebControls.HiddenField hidEcosystemID;
 		
 		protected System.Web.UI.WebControls.HiddenField hidEcoTemplateID;
 		
 		protected System.Web.UI.WebControls.HiddenField hidParamDelete;
-		
-		protected System.Web.UI.WebControls.TextBox txtStormFile;
 	}
 }

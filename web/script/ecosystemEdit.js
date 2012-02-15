@@ -48,29 +48,14 @@ $(document).ready(function () {
         location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + g_ecotemplate_id;
     });
 
-    $("#reload_storm_log_btn").button({ icons: { primary: "ui-icon-refresh"}, text: false }).css({ height:12, width:12});
-    $("#reload_storm_log_btn").click(function () {
+    $(".reload_storm_btn").button({ icons: { primary: "ui-icon-refresh"}, text: false }).css({ height:12, width:12});
+    $(".reload_storm_btn").click(function () {
 		getEcosystemLog();
-    });
-    $("#show_stormfile_btn").button({ icons: { primary: "ui-icon-document"} });
-    $("#show_stormfile_btn").click(function () {
-		$("#storm_view_dialog").dialog("open");
     });
     $("#show_stopstorm_btn").button({ icons: { primary: "ui-icon-stop"} });
     $("#show_stopstorm_btn").click(function () {
         if (typeof(ShowStopStormDialog) != 'undefined') {
             ShowStopStormDialog(g_eco_id);
-        }
-    });
-    $("#storm_view_dialog").dialog({
-        autoOpen: false,
-        modal: true,
-        width: 800,
-        height: 600,
-        buttons: {
-            Ok: function () {
-                $(this).dialog('close');
-            }
         }
     });
 
@@ -143,8 +128,10 @@ $(document).ready(function () {
     getActionCategories();
     getActions();
 
-	if (typeof(STORM) != "undefined")
+	if (typeof(STORM) != "undefined") {
     	getEcosystemLog();
+	    $("#storm_detail_tabs").tabs();
+	}
 
 });
 
@@ -284,7 +271,7 @@ function getEcosystemLog() {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcosystemStatusAndLog",
+        url: "uiMethods.asmx/wmGetEcosystemStormStatus",
         data: '{"sEcosystemID":"' + g_eco_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -292,8 +279,23 @@ function getEcosystemLog() {
             var log = jQuery.parseJSON(msg.d);
             
             $("#storm_status").text(log.storm_status);
+            
+            //if this ecosystem doesn't have a storm_status, it's not a storm ecosystem, so hide the storm tabs
+            if (log.storm_status == '') {
+            	$(".storm").hide();
+        	} else {
+            	$(".storm").show();
+        	}
+
+            //hide the stop button if it's already stopped
+            if (log.storm_status == 'Stopped') {
+            	$("#show_stopstorm_btn").hide();
+        	} else {
+            	$("#show_stopstorm_btn").show();
+        	}
 			
 			var html = "";
+			//write the log table
 			$.each(log.ecosystem_log, function(rowidx) {
         	    html += "<tr>";
 				
@@ -316,6 +318,50 @@ function getEcosystemLog() {
 
             $("#ecosystem_log tbody").empty();
             $("#ecosystem_log").append(html);
+            
+            //write the parameters table
+            html = "";
+			$.each(log.storm_parameters, function(rowidx) {
+        	    html += "<tr>";
+				
+				$.each(log.storm_parameters[rowidx], function(colidx) {
+        	    	var val = log.storm_parameters[rowidx][colidx];
+        	    	
+        	    	//only the second value is json packed
+        	    	if (colidx == 1)
+        	    		val = unpackJSON(val);
+        	    		
+        	    	html += "<td>" + val + "</td>";
+				});
+				
+        	    html += "</tr>";
+	        });
+
+            $("#storm_parameters tbody").empty();
+            $("#storm_parameters").append(html);
+            
+            //write the output table
+            html = "";
+			$.each(log.storm_output, function(rowidx) {
+        	    html += "<tr>";
+				
+				$.each(log.storm_output[rowidx], function(colidx) {
+        	    	var val = log.storm_output[rowidx][colidx];
+        	    	
+        	    	//second and third values are json packed
+        	    	if (colidx == 1 || colidx == 2)
+        	    		val = unpackJSON(val);
+        	    		
+        	    	html += "<td>" + val + "</td>";
+				});
+				
+        	    html += "</tr>";
+	        });
+
+            $("#storm_output tbody").empty();
+            $("#storm_output").append(html);
+            
+            //stripe the tables
             initJtable();
         },
         error: function (response) {

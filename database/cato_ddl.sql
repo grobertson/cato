@@ -292,6 +292,13 @@ CREATE TABLE `ecosystem_log` (
   PRIMARY KEY (`ecosystem_log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE  TABLE `ecosystem_output` (
+  `ecosystem_id` VARCHAR(36) NOT NULL ,
+  `output_key` VARCHAR(32) NOT NULL ,
+  `output_desc` VARCHAR(256) NULL ,
+  `output_value` VARCHAR(1024) NULL )
+ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `ldap_domain` (
   `ldap_domain` varchar(255) NOT NULL DEFAULT '',
   `address` varchar(255) NOT NULL DEFAULT '',

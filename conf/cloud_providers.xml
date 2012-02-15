@@ -181,7 +181,8 @@
 						</type>
 					</object_types>
 				</product>
-				<product name="walrus" label="Walrus" api_url_prefix="" api_version="2006-03-01" api_uri="/">
+				<!-- NOTE: the api_uri for walrus is required, unlike S3.  Walrus uses this as a required path component when calculating the signature.-->
+				<product name="walrus" label="Walrus" api_url_prefix="" api_version="2006-03-01" api_uri="/services/Walrus/">
 					<object_types>
 						<type id="walrus_buckets" label="Walrus Buckets" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
