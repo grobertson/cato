@@ -77,6 +77,8 @@ class CatoProcess():
 		base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 		log_path = os.path.join(base_path, "services", "logfiles")
 		self.logfile_name = os.path.join(log_path,  self.process_name.lower()+".log")
+		sys.stderr = open(self.logfile_name, 'a')
+		sys.stdout = open(self.logfile_name, 'a')
 
 	def output(self,*args):
 		output_string = time.strftime("%Y-%m-%d %H:%M:%S ") + "".join(str(s) for s in args) + "\n"
