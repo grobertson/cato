@@ -347,9 +347,10 @@ namespace ACWebMethods
                     " from task_step where step_id = '" + sStepID + "'";
 
                 DataRow dr = null;
-                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-                    throw new Exception("Unable to get details for step." + sErr);
-
+                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) {
+					oTrans.RollBack();
+					throw new Exception("Unable to get details for step." + sErr);
+				}
                 if (dr != null)
                 {
                     sDeletedStepOrder = dr["step_order"].ToString();

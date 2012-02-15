@@ -285,7 +285,7 @@ public class dataAccess
             }
             catch (MySqlException ex)
             {
-                switch (ex.Number)
+				switch (ex.Number)
                 {
                     case 0:
                         ErrorMessage = FormatError("MySQL: Cannot connect to server.");
@@ -294,8 +294,38 @@ public class dataAccess
                         ErrorMessage = FormatError("MySQL: Invalid username/password.");
                         break;
                     default:
-                        ErrorMessage = FormatError("MySQL: Unable to connect. " + ex.Message);
-                        break;
+						//well, to try to stop the random mysql connection error...
+						//if we get here we'll sleep and try to connect again.
+						System.Threading.Thread.Sleep(2000);
+						
+			            try
+			            {
+							MySqlConnection oConn = new MySqlConnection(sConString);
+			                oConn.Open();
+							Console.WriteLine("MySQL: conn failed, second attempt.");
+							return oConn;
+			            }
+			            catch (MySqlException ex2)
+			            {
+							switch (ex2.Number)
+			                {
+			                    case 0:
+			                        ErrorMessage = FormatError("MySQL: Cannot connect to server.");
+			                        break;
+			                    case 1045:
+			                        ErrorMessage = FormatError("MySQL: Invalid username/password.");
+			                        break;
+			                    default:
+			                        ErrorMessage = FormatError("MySQL: Unable to connect. " + ex.Message);
+			                        break;
+			                }
+			                return null;
+			            }
+			            catch (Exception ex2)
+			            {
+			                ErrorMessage = FormatError("MySQL: Connection Error: " + ex2.Message);
+			                return null;
+			            }
                 }
                 return null;
             }
