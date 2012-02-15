@@ -288,6 +288,12 @@ namespace Globals
             get { return sStormApiURL; }
             set { sStormApiURL = value; }
         }
+        private static string sStormApiPort = "";
+        public static string StormApiPort
+        {
+            get { return sStormApiPort; }
+            set { sStormApiPort = value; }
+        }
     }
 	#endregion    
 

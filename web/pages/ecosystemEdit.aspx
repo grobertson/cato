@@ -122,7 +122,7 @@
 				</div>
 			</div>
             <hr />
-	        <div id="storm_detail_tabs" class="storm" style="height: 340px;">
+	        <div id="storm_detail_tabs" class="storm" style="height: 400px;">
 	            <ul>
 	                <li><a href="#storm_status_tab"><span><img src="../images/icons/storm_32.png" style="height: 16px; width: 16px; vertical-align: middle; padding-right: 6px;"/>Storm</span></a></li>
 	                <li><a href="#storm_file_tab"><span>Template</span></a></li>
@@ -147,7 +147,7 @@
 	                    </div>
 	                        <span>Storm Events</span>
 					</div>
-					<div>	
+					<div style="height: 330px; overflow: auto;">	
 			            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
 							<thead>
 								<th>Type</th>

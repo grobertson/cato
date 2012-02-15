@@ -2945,49 +2945,45 @@ namespace ACWebMethods
         public string wmSaveCloud(string sMode, string sCloudID, string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol)
         {
             string sErr = "";
-
+			Cloud c = null;
             try
             {
 				if (sMode == "add")
                 {
-					Cloud c = Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, ref sErr);
+					c = Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, ref sErr);
 
 					if (!string.IsNullOrEmpty(sErr))
 					    return "{\"error\" : \"" + sErr + "\"}";
 					    
-					if (c == null) {
+					if (c == null)
 						return "{\"error\" : \"Unable to create Cloud.\"}";
-					}
-					else
-					{
-						return c.AsJSON();
-					}
 				}
                 else if (sMode == "edit")
                 {
-					Cloud c = new Cloud(sCloudID);
-					if (c == null) {
+					c = new Cloud(sCloudID);
+					if (c == null)
 						return "{\"error\" : \"Unable to get Cloud using ID [" + sCloudID + "].\"}";
-					}
-					else
+
+					c.Name = sCloudName;
+					c.APIProtocol = sAPIProtocol;
+					c.APIUrl = sAPIUrl;
+					//get a new provider by name
+					c.Provider = Provider.GetFromSession(sProvider);
+					if (!c.DBUpdate(ref sErr))
 					{
-						c.Name = sCloudName;
-						c.APIProtocol = sAPIProtocol;
-						c.APIUrl = sAPIUrl;
-						if (!c.DBUpdate(ref sErr))
-						{
-							throw new Exception(sErr);	
-						}
+						throw new Exception(sErr);	
 					}
 				}
+				
+				if (c != null)
+					return c.AsJSON();
+				else
+					return "{\"error\" : \"Unable to save Cloud using mode [" + sMode + "].\"}";
 			}
             catch (Exception ex)
             {
                 throw new Exception("Error: General Exception: " + ex.Message);
             }
-			
-            // no errors to here, so return an empty object
-            return "{}";
         }
 
         [WebMethod(EnableSession = true)]
@@ -4175,7 +4171,6 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmCreateEcosystemByStorm(string sName, string sDescription, string sEcotemplateID, string sParameterXML, string sCloudID)
         {
-			dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sErr = "";
 
@@ -4367,10 +4362,10 @@ namespace ACWebMethods
 			string sSignature = ui.GetSHA256(sPW, sStringToSign);
 			sSignature = "&signature=" + ui.PercentEncodeRfc3986(sSignature);
 			
-			if (string.IsNullOrEmpty(GlobalSettings.StormApiURL))
-				throw new Exception("Unable to call Storm API.  API URL not defined in cato.conf.");
+			string sHost = (string.IsNullOrEmpty(GlobalSettings.StormApiURL) ? "http://127.0.0.1" : GlobalSettings.StormApiURL);
+			string sPort = (string.IsNullOrEmpty(GlobalSettings.StormApiPort) ? "8080" : GlobalSettings.StormApiPort);
 			
-			string sURL = string.Format("{0}/{1}{2}{3}", GlobalSettings.StormApiURL, sStringToSign, sSignature, sQS);
+			string sURL = string.Format("{0}:{1}/{2}{3}{4}", sHost, sPort, sStringToSign, sSignature, sQS);
 					
 			string sXML = "";
 			try {

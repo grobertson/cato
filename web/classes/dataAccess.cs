@@ -146,6 +146,9 @@ public class dataAccess
                         case "stormapiurl":
                             GlobalSettings.StormApiURL = sVal;
                             break;
+                        case "stormapiport":
+                            GlobalSettings.StormApiPort = sVal;
+                            break;
                     }
                 }
 
