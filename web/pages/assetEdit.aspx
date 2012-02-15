@@ -329,7 +329,7 @@
         <table>
             <tr>
                 <td>
-                    Are You sure you want to delete these assets?
+                    Are you sure you want to delete these Assets?
                 </td>
             </tr>
             <tr>

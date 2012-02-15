@@ -300,11 +300,11 @@ namespace Web.pages
             // update above, since we are already passing in 15 or so fields, lets just get the values at the start and reference them here
             if (sMode == "edit")
             {
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Credential, sCredentialID, sUserName.Replace("'", "''"), sOriginalUserName, sUserName.Replace("'", "''"));
+                ui.WriteObjectChangeLog(Globals.acObjectTypes.Credential, sCredentialID, sCredentialName, sOriginalUserName, sUserName);
             }
             else
             {
-                ui.WriteObjectAddLog(Globals.acObjectTypes.Credential, sCredentialID, sUserName.Replace("'", "''"), "Credential Created");
+                ui.WriteObjectAddLog(Globals.acObjectTypes.Credential, sCredentialID, sCredentialName, "Credential Created");
             }
 
 
