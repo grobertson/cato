@@ -1275,6 +1275,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 	set send_slow {3 .0000001}
 	set do_password 1	
 	set passphrase_required 0
+	set login_output ""
 	#exp_internal 1
 
 	if {$top == "yes"} {	;# This is the machine we will launch from
@@ -1322,6 +1323,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			"sername:" {}
 			 {onnection reset by peer} {
 				set error_msg "System connection refused. Cannot login."
+				append error_msg "\n$expect_out(buffer)"
 				error_out $error_msg 1009
 			}
 			 {onnection refused} {
@@ -1330,11 +1332,13 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
                                         return 1
                                 } else {
 					set error_msg "System connection refused. Cannot login."
+					append error_msg "\n$expect_out(buffer)"
                                         error_out $error_msg 1011
                                 }
 			}
 			 {onnection closed by} {
 				set error_msg "System connection refused. Cannot login."
+				append error_msg "\n$expect_out(buffer)"
 				error_out $error_msg 1009
 			}
                         "Connection timed out" {
@@ -1343,6 +1347,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
                                         return 1
                                 } else {
                                         set error_msg "Telnet Connection to $address timed out"
+					append error_msg "\n$expect_out(buffer)"
                                         error_out $error_msg 1010
                                 }
                         }
@@ -1352,6 +1357,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
                                         return 1
                                 } else {
                                         set error_msg "Cannot find channel error, possible resource problem"
+					append error_msg "\n$expect_out(buffer)"
                                         error_out $error_msg 1011
                                 }
                         }
@@ -1363,10 +1369,12 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Timeout waiting for logon prompt, possible wrong network address or network problem"
+					append error_msg "\n$expect_out(buffer)"
 					error_out $error_msg 1012
 				}
 			}
 		}
+		append login_output $expect_out(buffer)
 		exp_send -s -- "$userid\r"
 	}
 	output "Looking for password prompt..." 1
@@ -1376,6 +1384,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 		}
 		-re "expired|Old password:" {
 			set error_msg "$telnet_ssh password for userid $userid is expired, cannot login."
+			append login_output $expect_out(buffer)
+			append error_msg "\n$login_output"
 			error_out $error_msg 1013
 		}
 		"No route to host" {
@@ -1386,6 +1396,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "$telnet_ssh connection to $address timed out after $attempt_num attempts with the error no route to host, check network or firewall settings"
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1014
 			}
 		}
@@ -1395,6 +1407,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "Telnet or ssh connection to $address timed out"
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1014
 			}
 		}
@@ -1404,6 +1418,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 		"assword: " {}
 		"assword:" {}
                 "yes/no" {
+			append login_output $expect_out(buffer)
 			send "yes\r"
                         expect {
 				"password will expire" {
@@ -1411,6 +1426,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				}
 				-re "expired|Old password:" {
 					set error_msg "$telnet_ssh password for userid $userid is expired, cannot login."
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1015
 				}
 				"assword:" {}
@@ -1419,20 +1436,27 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				}
 				-re "denied|incorrect" {
 					set error_msg "User id $userid or its password is incorrect"
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1016
 
 				}
 				"Name or service not known" {
 					set error_msg "Name or service not known - DNS entry invalid"
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1017
 
 				}
 				-re {onnection reset by peer|onnection refused|onnection closed by} {
 					set error_msg "System connection refused. Cannot login."
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1018
 				}
 				### PMD - bug 182 - 2007-05-03
 				"yes/no" {
+					append login_output $expect_out(buffer)
 					send "yes\r"
 					expect {
 						"password will expire" {
@@ -1440,6 +1464,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 						}
 						-re "expired|Old password:" {
 							set error_msg "$telnet_ssh password for userid $userid is expired, cannot login."
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1015
 						}
 						"assword: " {}
@@ -1449,15 +1475,21 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 						}
 						-re "denied|incorrect" {
 							set error_msg "User id $userid or its password is incorrect"
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1016
 
 						}
 						"Name or service not known" {
 							set error_msg "Name or service not known - DNS entry invalid"
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1017
 						}
 						-re {onnection reset by peer|onnection refused|onnection closed by} {
 							set error_msg "System connection refused. Cannot login."
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1018
 						}
 						timeout {
@@ -1467,6 +1499,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 							} else {
 
 								set error_msg "Timeout waiting for password prompt"
+								append login_output $expect_out(buffer)
+								append error_msg "\n$login_output"
 								error_out $error_msg 1019
 							}
 						}
@@ -1492,6 +1526,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					} else {
 
 						set error_msg "Timeout waiting for password prompt"
+						append login_output $expect_out(buffer)
+						append error_msg "\n$login_output"
 						error_out $error_msg 1019
 					}
 				}
@@ -1499,6 +1535,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
                 }
                 "Name or service not known" {
                         set error_msg "Name or service not known - DNS entry invalid"
+			append login_output $expect_out(buffer)
+			append error_msg "\n$login_output"
                         error_out $error_msg 1017
                 }
 		 {Read from socket failed} {
@@ -1507,11 +1545,15 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "System connection refused. Cannot login."
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1011
 			}
 		}
 		-re "onnection reset by peer" {
 			set error_msg "Connection reset by peer. Cannot login."
+			append login_output $expect_out(buffer)
+			append error_msg "\n$login_output"
 			error_out $error_msg 9999
 		}
 		-re "onnection refused" {
@@ -1520,6 +1562,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "System connection refused. Cannot login."
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1011
 			}
 		}
@@ -1529,6 +1573,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "Connection closed by target. Cannot login."
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 9999
 			}
 		}
@@ -1542,6 +1588,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "ssh Host key verification failed"
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1020
 			}
 		
@@ -1549,10 +1597,14 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 		### PMD - fix for bug 67 - 2006-07-13
 		-re "Authentication failed" {
 			set error_msg "User id $userid or its password is incorrect or access is denied."
+			append login_output $expect_out(buffer)
+			append error_msg "\n$login_output"
 			error_out $error_msg 1021
 		}	
 		-re "denied|incorrect" {
 			set error_msg "User id $userid or its password is incorrect or access is denied."
+			append login_output $expect_out(buffer)
+			append error_msg "\n$login_output"
 			error_out $error_msg 1021
 		
 		}
@@ -1575,10 +1627,13 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "Timeout waiting for password prompt"
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1019
 			}
 		}
 	}
+	append login_output $expect_out(buffer)
 	if {$passphrase_required == 1 && "$password" == ""} {
 		error_out "ssh passphrase is required but no passphrase was supplied. Check the passphrase for ssh private key." 9999
 	}
@@ -1599,6 +1654,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				error_out "ssh passphrase is incorrect. Check the passphrase for the ssh private key." 9999
 			}
 			-gl "TERM = (*) " {
+				append login_output $expect_out(buffer)
 				exp_send -s -- "vt100\r"	
 				expect {
 					"password will expire" {
@@ -1606,10 +1662,14 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					}
 					-re "password has expired|Old password:" {
 						set error_msg "$telnet_ssh password for userid $userid is expired, cannot login."
+						append login_output $expect_out(buffer)
+						append error_msg "\n$login_output"
 						error_out $error_msg 1013
 					}
 					-re "denied|incorrect|Login Failed|This Account is NOT Valid|denied" {
 						set error_msg "User id $userid or its password is incorrect or access is denied"
+						append login_output $expect_out(buffer)
+						append error_msg "\n$login_output"
 						error_out $error_msg 1021
 					
 					}
@@ -1632,6 +1692,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 							return 1
 						} else {
 							set error_msg "Timeout waiting for command line prompt"
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1022
 						}
 					}
@@ -1650,9 +1712,11 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				
 					insert_audit $::STEP_ID "$telnet_ssh password for userid {$userid} expires in less than [expr ((($expseconds - $nowseconds) / 60) / 60) / 24] days." ""
 				}
+				append login_output $expect_out(buffer)
 
 				expect {
 					-gl "TERM = (*) " {
+						append login_output $expect_out(buffer)
 						exp_send -s -- "\r"	
 						expect {
 							-re "\\\$ $" {
@@ -1674,6 +1738,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 									return 1
 								} else {
 									set error_msg "Timeout waiting for command line prompt"
+									append login_output $expect_out(buffer)
+									append error_msg "\n$login_output"
 									error_out $error_msg 1022
 								}
 							}
@@ -1699,6 +1765,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 							return 1
 						} else {
 							set error_msg "Timeout waiting for command line prompt"
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1022
 						}
 					}
@@ -1706,6 +1774,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			}
 			-re "password has expired|Old password:" {
 				set error_msg "$telnet_ssh password for userid $userid is expired, cannot login."
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1015
 			}
 			-re "Connection to (.*) closed." {
@@ -1715,16 +1785,22 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Connection to $address closed."
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1023
 				}
 			
 			}
 			"Authentication failed" {
 				set error_msg "$telnet_ssh user id $userid authentication failed"
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1024
 			}
 			"Permission denied" {
 				set error_msg "$telnet_ssh user id $userid logon permission denied"
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1025
 			}
 			"Received disconnect from" {
@@ -1734,6 +1810,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Received disconnect from $address"
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1026
 				}
 			}
@@ -1744,16 +1822,21 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Cannot open file for output: /tmp"
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1027
 				}
 			}
 			-re "incorrect|Login Failed|This Account is NOT Valid" {
 				set error_msg "User id $userid or its password is incorrect or access is denied."
+				append login_output $expect_out(buffer)
+				append error_msg "\n$login_output"
 				error_out $error_msg 1021
 			
 			}
 			-re "To continue press ENTER|Select desired option:" {
 				### Loading Local initialization file ...
+				append login_output $expect_out(buffer)
 				exp_send -s -- ""
 				expect {
 					-re "telnet> $" {}
@@ -1763,11 +1846,14 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 							return 1
 						} else {
 							set error_msg "Timeout waiting for command line prompt"
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1022
 						}
 					}
 
 				}
+				append login_output $expect_out(buffer)
 				exp_send -s -- "send brk\r"
 				expect {
 					-re "\\\$ $" {
@@ -1784,6 +1870,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 							return 1
 						} else {
 							set error_msg "Timeout waiting for command line prompt."
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1022
 						}
 					}
@@ -1824,6 +1912,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Timeout waiting for command line prompt."
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1022
 				}
 			}
@@ -1835,10 +1925,13 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			return 1
 		} else {
 			set error_msg "Unable to determine unix or dos telnet type."
+			append login_output $expect_out(buffer)
+			append error_msg "\n$login_output"
 			error_out $error_msg 1028
 		}
 	}
 	if {[string compare $system_flag UNIX] == 0} {
+		append login_output $expect_out(buffer)
 		exp_send -s -- "unset PROMPT_COMMAND;export PS1='PROMPT>'\r"
 		expect {
 			-re "PROMPT>(.*)\012PROMPT>$" {
@@ -1849,14 +1942,17 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Time out resetting command line prompt."
-					set error_type "Login Error"
-					error_out $error_msg $error_type
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
+					error_out $error_msg 1022
 				}
 			}
 		}
+		append login_output $expect_out(buffer)
 		exp_send -s -- "stty -onlcr;export PS2='';stty -echo;unalias ls\r"
 		expect {
 			"export: Command not found." {
+				append login_output $expect_out(buffer)
 				exp_send -s -- "set editor=vi;set prompt=PROMPT\\>;set columns=10000\r"
 				expect {
 					-re "PROMPT>$" {
@@ -1867,6 +1963,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 							return 1
 						} else {
 							set error_msg "Time out resetting command line prompt."
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
 							error_out $error_msg 1029
 						}
 
@@ -1875,6 +1973,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			}
 			-re "PROMPT>$" {
 				#exp_send -s -- "set horizontal-scroll-mode off;export COLUMNS=10000;stty cols 10000;export HISTFILE='';stty -echo\r"
+				append login_output $expect_out(buffer)
 				exp_send -s -- "export COLUMNS=10000;stty cols 10000;export HISTFILE=''\r"
 				expect {
 					-re "PROMPT>$" {
@@ -1887,15 +1986,19 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Time out resetting command line prompt."
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1029
 				}
 
 			}
 		}
 	} else { 
+		append login_output $expect_out(buffer)
 		exp_send -s -- "PROMPT=PROMPT\$G\r"
 		expect {
 			"export: Command not found." {
+				append login_output $expect_out(buffer)
                                 exp_send -s -- "set prompt=PROMPT\\>\r"
                                 expect {
                                         -re "PROMPT>$" {
@@ -1906,6 +2009,8 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
                                                         return 1
                                                 } else {
                                                         set error_msg "Time out resetting command line prompt"
+							append login_output $expect_out(buffer)
+							append error_msg "\n$login_output"
                                                         error_out $error_msg 1029
                                                 }
 
@@ -1921,48 +2026,17 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 					return 1
 				} else {
 					set error_msg "Time out resetting command line prompt."
+					append login_output $expect_out(buffer)
+					append error_msg "\n$login_output"
 					error_out $error_msg 1029
 				}
 			}
 		}
 	}
-	insert_audit $::STEP_ID "" "$telnet_ssh connection to host=$address, user=$userid established." ""
+
+	insert_audit $::STEP_ID "" "$telnet_ssh connection to host=$address, user=$userid established.\n$login_output" ""
 	return 0
-		
 }
-
-proc connect_dos {} {
-	set proc_name connect_dos
-
-	# Debug MBM
-	#exp_internal 1
-	
-	set step_id 99999
-	set timeout 5
-	set send_slow {3 .0000001}
-
-
-	set nt_prompt "PROMPT\$G"
-	set nt_prompt_re "PROMPT>"
-
-	spawn cmd 
-        
-	
-	send -s -- "set PROMPT=$nt_prompt\r"
-
-	expect {
-		-re $nt_prompt_re {
-		}
-		timeout {
-		set error_msg "Timed-out resetting DOS prompt. Exiting."
-		error_out $error_msg 1029
-
-		}
-
-	}
-	return $spawn_id
-}
-
 
 proc sftp_logon {conn_id address userid password} {
 	set proc_name sftp_logon
