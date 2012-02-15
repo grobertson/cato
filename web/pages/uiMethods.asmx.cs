@@ -4192,32 +4192,10 @@ namespace ACWebMethods
 			if (e != null) {
 				e.ParameterXML = ui.unpackJSON(sParameterXML);
 				e.CloudID = sCloudID;
-				if(e.DBCreateNew(ref sErr)) {
-					//since Storm created this, stick the parameters in the ecosystem_log table.
-					XDocument xDoc = XDocument.Parse(e.ParameterXML);
-	                if (xDoc != null) {
-						StringBuilder sb = new StringBuilder();
-		                foreach (XElement xParameter in xDoc.XPathSelectElements("//parameter"))
-			            {
-							sb.Append(xParameter.Element("name").Value + " : " + xParameter.Element("values").Value + Environment.NewLine);
-						}
-						
-						//put it in the log table.
-						string sSQL = "insert into ecosystem_log (ecosystem_id, ecosystem_object_type, ecosystem_object_id, status, log, update_dt)" +
-							" values (" +
-							" '" + e.ID + "'," + 
-							" ''," + 
-							" ''," + 
-							" 'PARAMETERS'," + 
-							" '" + sb.ToString() + "'," + 
-							" now()" + 
-							")";
-						//no trap here... if it fails we don't get a log entry... too bad.
-						dc.sqlExecuteUpdate(sSQL, ref sErr);
-					}
-										
+				e.StormStatus = "Pending";
+				
+				if(e.DBCreateNew(ref sErr))				
 					return e.ID;
-				}
 				else
 					return sErr;
 			}
@@ -4226,7 +4204,7 @@ namespace ACWebMethods
         }
 
 		[WebMethod(EnableSession = true)]
-        public string wmGetEcosystemStatusAndLog(string sEcosystemID)
+        public string wmGetEcosystemStormStatus(string sEcosystemID)
         {
 			dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
@@ -4235,42 +4213,102 @@ namespace ACWebMethods
 			
 			string sErr = "";
 			
-			string sSQL = "select storm_status from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
-			string sStormStatus = "";
-			if (!dc.sqlGetSingleString(ref sStormStatus, sSQL, ref sErr))
+			//status and parameters
+			string sSQL = "select storm_status, storm_parameter_xml from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
+			DataRow dr = null;
+			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
 				throw new Exception(sErr);
 
+			string sStormStatus = (string.IsNullOrEmpty(dr["storm_status"].ToString()) ? "" : dr["storm_status"].ToString());
+			string sStormParameterXML = (string.IsNullOrEmpty(dr["storm_parameter_xml"].ToString()) ? "" : dr["storm_parameter_xml"].ToString());
+
+			//log
 			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, convert(update_dt, CHAR(20))" +
 				" from ecosystem_log" +
 					" where ecosystem_id = '" + sEcosystemID + "'" +
 					" order by ecosystem_log_id desc";
 			
-			DataTable dt = new DataTable();
-			if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+			DataTable dtLog = new DataTable();
+			if (!dc.sqlGetDataTable(ref dtLog, sSQL, ref sErr))
 				throw new Exception(sErr);
 			
+			//output
+			sSQL = "select output_key, output_desc, output_value" +
+				" from ecosystem_output" +
+					" where ecosystem_id = '" + sEcosystemID + "'" +
+					" order by output_key";
+			
+			DataTable dtOut = new DataTable();
+			if (!dc.sqlGetDataTable(ref dtOut, sSQL, ref sErr))
+				throw new Exception(sErr);
+			
+			
+			//build the json
 			sb.Append("{ \"storm_status\" : \"" + (string.IsNullOrEmpty(sStormStatus) ? "" : sStormStatus) + "\",");
+			
+			//log
 			sb.Append(" \"ecosystem_log\" : [");
 			
-			if (dt.Rows.Count > 0)
+			if (dtLog.Rows.Count > 0)
 			{
-				foreach (DataRow dr in dt.Rows)
+				foreach (DataRow drLog in dtLog.Rows)
 				{
 					sb.AppendFormat("[ \"{0}\", \"{1}\", \"{2}\", \"{3}\", \"{4}\", \"{5}\", \"{6}\", \"{7}\" ]", 
-		                dr[0].ToString(), 
-		                dr[1].ToString(), 
-		                dr[2].ToString(), 
-		                dr[3].ToString(), 
-		                dr[4].ToString(), 
-		                ui.packJSON(dr[5].ToString()), 
-		                ui.packJSON(ui.FixBreaks(dr[6].ToString())), 
-		                dr[7].ToString());
+		                drLog[0].ToString(), 
+		                drLog[1].ToString(), 
+		                drLog[2].ToString(), 
+		                drLog[3].ToString(), 
+		                drLog[4].ToString(), 
+		                ui.packJSON(drLog[5].ToString()), 
+		                ui.packJSON(ui.FixBreaks(drLog[6].ToString())), 
+		                drLog[7].ToString());
 					
-					if (dr != dt.Rows[dt.Rows.Count - 1])
+					if (drLog != dtLog.Rows[dtLog.Rows.Count - 1])
 						sb.Append(",");
 				}
 			}
 			
+			sb.Append("],");
+			
+			//output
+			sb.Append(" \"storm_output\" : [");
+			
+			if (dtOut.Rows.Count > 0)
+			{
+				foreach (DataRow drOut in dtOut.Rows)
+				{
+					sb.AppendFormat("[ \"{0}\", \"{1}\", \"{2}\" ]", 
+		                drOut[0].ToString(), 
+		                ui.packJSON(drOut[1].ToString()), 
+		                ui.packJSON(drOut[2].ToString()));
+					
+					if (drOut != dtOut.Rows[dtOut.Rows.Count - 1])
+						sb.Append(",");
+				}
+			}
+				
+			sb.Append("],");
+			
+			//parameters
+			sb.Append(" \"storm_parameters\" : [");
+			
+			XDocument xDoc = XDocument.Parse(sStormParameterXML);
+			if (xDoc != null) {
+				IEnumerable<XElement> xParameters = xDoc.XPathSelectElements("//parameter");
+				int i = 1;
+				foreach (XElement xParameter in xParameters)
+				{
+					sb.AppendFormat("[ \"{0}\", \"{1}\" ]", 
+					                xParameter.Element("name").Value, 
+					                ui.packJSON(xParameter.Element("values").Value));
+					
+					if (i < xParameters.Count())
+						sb.Append(",");
+					
+					i++;
+				}
+			}
+				
 			sb.Append("] }");
 
 			return sb.ToString();

@@ -359,6 +359,7 @@ namespace Globals
 		public string EcotemplateName; //no referenced objects just yet, just the name and ID until we need more.
 		public string ParameterXML;
 		public string CloudID;
+		public string StormStatus;
 		
 		//an empty constructor
 		public Ecosystem()
@@ -385,7 +386,7 @@ namespace Globals
             dataAccess dc = new dataAccess();
 			
 			string sErr = "";
-                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file," +
+                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file, e.storm_status," +
                     " e.account_id, e.ecotemplate_id, et.ecotemplate_name" +
                     " from ecosystem e" +
                     " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
@@ -403,6 +404,7 @@ namespace Globals
 					this.EcotemplateName = dr["ecotemplate_name"].ToString();
 					this.Description = (object.ReferenceEquals(dr["ecosystem_desc"], DBNull.Value) ? "" : dr["ecosystem_desc"].ToString());
 					this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
+					this.StormStatus = (object.ReferenceEquals(dr["storm_status"], DBNull.Value) ? "" : dr["storm_status"].ToString());
 				}
 			}
 			else 
@@ -452,13 +454,14 @@ namespace Globals
 			try
 			{
                 sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," +
-					" storm_file, storm_parameter_xml, storm_cloud_id)" +
+					" storm_file, storm_status, storm_parameter_xml, storm_cloud_id)" +
                     " select '" + this.ID + "'," +
                     " '" + this.Name + "'," +
                     (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
                     " '" + AccountID + "'," +
                     " ecotemplate_id," +
                     " storm_file," +
+                    (string.IsNullOrEmpty(this.StormStatus) ? " null" : " '" + this.StormStatus.Replace("'","''") + "'") + "," +
                     (string.IsNullOrEmpty(this.ParameterXML) ? " null" : " '" + this.ParameterXML.Replace("'","''").Replace("\\","\\\\") + "'") + "," +
                     (string.IsNullOrEmpty(this.CloudID) ? " null" : " '" + this.CloudID + "'") +
                     " from ecotemplate where ecotemplate_id = '" + this.EcotemplateID + "'";
