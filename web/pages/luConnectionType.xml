@@ -14,11 +14,6 @@
     <connection_type_desc>ssh</connection_type_desc>
     <credentials_required>1</credentials_required>
   </connectionType>
-  <connectionType id="12">
-    <connection_type>windows</connection_type>
-    <connection_type_desc>windows</connection_type_desc>
-    <credentials_required>1</credentials_required>
-  </connectionType>
   <connectionType id="11">
     <connection_type>telnet</connection_type>
     <connection_type_desc>telnet</connection_type_desc>
