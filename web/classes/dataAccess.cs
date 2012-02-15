@@ -296,6 +296,7 @@ public class dataAccess
                     default:
 						//well, to try to stop the random mysql connection error...
 						//if we get here we'll sleep and try to connect again.
+						Console.WriteLine("MySQL: conn failed, first attempt.");
 						System.Threading.Thread.Sleep(2000);
 						
 			            try
