@@ -125,7 +125,7 @@
 				</product>
 				<product name="s3" label="S3" api_url_prefix="s3-" api_version="2006-03-01" api_uri="/">
 					<object_types>
-						<type id="aws_s3_buckets" label="S3 Buckets" api_call="" xml_record_xpath="//Buckets/Bucket">
+						<type id="aws_s3_bucket" label="S3 Bucket" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
 							<property name="CreationDate" label="" xpath="CreationDate" short_list="1" sort_order="2" />
 						</type>
@@ -184,7 +184,7 @@
 				<!-- NOTE: the api_uri for walrus is required, unlike S3.  Walrus uses this as a required path component when calculating the signature.-->
 				<product name="walrus" label="Walrus" api_url_prefix="" api_version="2006-03-01" api_uri="/services/Walrus/">
 					<object_types>
-						<type id="walrus_buckets" label="Walrus Buckets" api_call="" xml_record_xpath="//Buckets/Bucket">
+						<type id="aws_s3_bucket" label="Walrus Bucket" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
 							<property name="CreationDate" label="" xpath="CreationDate" short_list="1" sort_order="2" />
 						</type>
