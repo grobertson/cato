@@ -4075,7 +4075,7 @@ namespace ACWebMethods
 										foreach (var oAtt in oAttribs)
 										{
 											//http://docs.amazonwebservices.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
-											Console.WriteLine(oAtt.Key + " = " + oAtt.Value);
+											//Console.WriteLine(oAtt.Key + " = " + oAtt.Value);
 											switch (oAtt.Key) {
 											case "Description":
 												sParamDesc = oAtt.Value.ToString();

@@ -340,17 +340,17 @@ namespace ACWebMethods
 					sEpoch + "\n" + //Expires
 					(string.IsNullOrEmpty(sResourceURI) ? "/" : sResourceURI); //CanonicalizedResource
 
-				Console.Write("STS:\n" + sStringToSign + ":STS\n");
+				//Console.Write("STS:\n" + sStringToSign + ":STS\n");
 
 				
 				sQueryString = ui.GetSortedParamsAsString(sortedRequestParams, true);
 
 				//and sign it
 				sSignature = ui.GetSHA1(sSecretAccessKeyID, sStringToSign);
-				Console.Write("SIG:" + sSignature + ":SIG\n");
+				//Console.Write("SIG:" + sSignature + ":SIG\n");
 				//finally, urlencode the signature
 				sSignature = ui.PercentEncodeRfc3986(sSignature);
-				Console.Write("SIG:" + sSignature + ":SIG\n");
+				//Console.Write("SIG:" + sSignature + ":SIG\n");
 				
 			}
 			else {
@@ -392,21 +392,21 @@ namespace ACWebMethods
 					(string.IsNullOrEmpty(sResourceURI) ? "/" : sResourceURI) + "\n" + //HTTPRequestURI
 					sQueryString;  //CanonicalizedQueryString  (don't worry about encoding... was already encoded.)
 
-				Console.Write("STS:" + sStringToSign + ":STS\n");
+				//Console.Write("STS:" + sStringToSign + ":STS\n");
 
 				//and sign it
 				//string sSignature = GetAWS3_SHA1AuthorizationValue(sSecretAccessKeyID, sStringToSign);
 				sSignature = ui.GetSHA256(sSecretAccessKeyID, sStringToSign);
-				Console.Write("SIG:" + sSignature + ":SIG\n");
+				//Console.Write("SIG:" + sSignature + ":SIG\n");
 				//finally, urlencode the signature
 				sSignature = ui.PercentEncodeRfc3986(sSignature);
-				Console.Write("SIG:" + sSignature + ":SIG\n");
+				//Console.Write("SIG:" + sSignature + ":SIG\n");
 			}
 		
 			
 			string sHostURL = c.APIProtocol.ToLower() + "://" + sHostName + sResourceURI;
 						
-			Console.Write("URL:" + sHostURL + "?" + sQueryString + "&Signature=" + sSignature + ":URL\n");
+			//Console.Write("URL:" + sHostURL + "?" + sQueryString + "&Signature=" + sSignature + ":URL\n");
 
 			return sHostURL + "?" + sQueryString + "&Signature=" + sSignature;
 		}
