@@ -80,6 +80,14 @@ proc get_month_dates {days_of_month months start_dt} {
 proc get_weekday_dates {days_of_week months start_dt} {
         set dates ""
         foreach day $days_of_week {
+		output "day is $day"
+		# 0 = Sunday
+		# 1 = Monday
+		# 2 = Tuesday
+		# 3 = Wednesday
+		# 4 = Thursday
+		# 5 = Friday
+		# 6 = Saturday
                 set dates [concat $dates [get_dates_for_weekday $day 52 $months $start_dt]]
         }
         return [lsort $dates]
@@ -90,13 +98,57 @@ proc get_dates_for_weekday {weekday num_weeks months start_dt} {
         set start [clock scan [clock format $start_dt -format {%Y-%m-%d}]]
         set now_day [clock format $start -format "%u"]
         if {$now_day == 7} {
+		# tcl reports Sunday as 7. 
+		# 7 is valid, but we want to use 0 which is also valid
                 set now_day 0
         }
 	if {$weekday > $now_day} {
+
+		# this day is later in the week than right now
+		# we need to schedule for the day this week
+		# we want to jump forward a certain number of date days and start there
+		# do this by subtracting today from the day later in the week
+		# e.g.:
+		# Today is Wednesday = 3
+		# Scheduling for Friday = 5
+		#
+		# 5 - 3 = 2
+		# jump forward 2 days, ... Thursday, to Friday
+
 		set days [expr $weekday - $now_day]
+
 	} elseif {$now_day > $weekday} {
-		set days [expr 6 - $weekday]
+		# this day is earlier in the week than right now
+		# we will want to start scheduling for the day of the week next week
+		# since we don't schedule in the past.
+		# we do this by figuring out by adding a week (7 days) and then subtracting the difference 
+		# between today and the day we're scheduling for
+		# note: we will never hit this if today (now_day) is sunday
+		# e.g.:
+		# Today is Saturday = 6
+		# Scheduling for Sunday = 0
+		#
+		# 7 - (6 - 0) = 1
+		# jump forward 1 days, ... Sunday next week
+		# e.g.:
+		# Today is Wednesday = 3
+		# Scheduling for Tuesday = 2
+		#
+		# 7 - (3 - 2) = 6
+		# jump forward 6 days, ... Thursday, Friday, Saturday, Sunday. Monday, Tuesday next week
+		# e.g.:
+		# Today is Thursday = 4
+		# Scheduling for Monday = 1
+		#
+		# 7 - (4 - 1) = 4
+		# jump forward 4 days, ... Friday, Saturday, Sunday. Monday next week
+
+		set days [expr 7 - ($now_day - $weekday)]
 	} else {
+
+		# this is today
+		# We're good, we don't need to jump forward any days
+
 		set days 0
 	}
 
