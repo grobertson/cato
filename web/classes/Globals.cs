@@ -989,8 +989,11 @@ namespace Globals
 			if (cp == null) {
 				throw new Exception("Error building Provider object: Unable to GetCloudProviders.");	
 			}
-
-			return cp[sProvider];
+			
+			if (cp.ContainsKey(sProvider))
+				return cp[sProvider];
+			else
+				throw new Exception("Provider [" + sProvider + "] does not exist in the cloud_providers.xml file.");
 		}
 		
 		//Provider CONTAINS a named dictionary of Clouds;
