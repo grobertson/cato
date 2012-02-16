@@ -11,11 +11,10 @@
     </style>
     <div id="left_panel">
         <div class="left_tooltip">
-            <span class="page_title">Manage Notifications</span>
             <img src="../images/terminal-192x192.png" alt="" />
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
-                    <img src="../images/tooltip.png" alt="" />
+                    <h2>Notifications</h2>
                     <p>
                         Change the settings for the Messenger process.</p>
                     <p>

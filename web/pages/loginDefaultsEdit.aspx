@@ -7,12 +7,12 @@
         <ContentTemplate>
             <div id="left_panel">
                 <div class="left_tooltip">
-                    <img src="../images/login-defaults-192x192.png" alt="" />
+                    <img src="../images/terminal-192x192.png" alt="" />
                     <div id="left_tooltip_box_outer">
                         <div id="left_tooltip_box_inner">
+							<h2>Security Settings</h2>
                             <p>
-                                <img src="../images/tooltip.png" alt="" />Setting login defaults is an important
-                                part of maintaining proper security.</p>
+                                Strong settings are an important part of maintaining system security.</p>
                             <p>
                                 By altering these settings, you can change the global password policy.</p>
                         </div>

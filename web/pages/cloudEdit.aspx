@@ -21,12 +21,15 @@
 		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
+					<h2>Clouds</h2>
                     <p>
                         The Clouds screen allows administrators
                         to modify, add and delete Clouds.</p>
                     <p>
                         Select a Cloud from the list or select an action to edit or delete the Clouds
                         you've selected.</p>
+					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Clouds?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction on Clouds.</p>
                 </div>
             </div>
         </div>

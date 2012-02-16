@@ -60,7 +60,7 @@
 			</item>
 			<item roles="developer" label="Cloud API Tester" icon="../images/icons/api_tester_24.png" onclick="showPleaseWait();" href="../pages/cloudAPITester.aspx">
 			</item>
-			<item label="Manage System Settings" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
+			<item label="Manage Security Settings" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
 			</item>
 			<item label="Manage Pollers" icon="../images/ldap_24.png" onclick="showPleaseWait();" href="../pages/pollerSettings.aspx">
 			</item>

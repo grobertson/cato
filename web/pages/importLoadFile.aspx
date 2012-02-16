@@ -17,9 +17,8 @@
             <img src="../images/terminal-192x192.png" alt="" />
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
-                        <img src="../images/tooltip.png" alt="" />
-                        <div id="help_text">
-                            Select an Export package to Import. This will be a .csk file format.</div>
+					<h2>Import</h2>
+                        <p>Select an Export package to Import. This will be a .csk file format.</p>
                 </div>
             </div>
         </div>

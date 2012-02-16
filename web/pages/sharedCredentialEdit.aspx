@@ -21,14 +21,17 @@
             <img src="../images/manage-credentials-192x192.png" alt="" />
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
-                    <p>
-                        <img src="../images/tooltip.png" alt="" />The Manage Shared Credentials screen
+                    <h2>Shared Credentials</h2>
+					<p>
+                        The Manage Shared Credentials screen
                         allows administrators to modify, add and delete credentials that will be shared
-                        across multiple Assets.
-                    </p>
+                        by multiple Assets.</p>
                     <p>
-                        Click a Shared Credential row in the list to edit it, or use the buttons to add or delete Credentials.
-                    </p>
+                        Select a Credential from the list to modify it.  Using the checkboxes,
+                        select one or more Credentials to be deleted.</p>
+					<p><i>Credentials in use by Assets cannot be deleted.</i></p>
+ 					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Assets#Credentials?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction to Credentials.</p>
                 </div>
             </div>
         </div>

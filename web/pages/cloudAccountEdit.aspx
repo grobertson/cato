@@ -38,13 +38,14 @@
 		<div class="left_tooltip">
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
+					<h2>Cloud Accounts</h2>
                     <p>
-                        The Cloud Accounts screen allows administrators
+                        The Manage Cloud Accounts screen allows administrators
                         to modify, add and delete Cloud Accounts.</p>
                     <p>
                         Select an Account from the list or select an action to edit or delete the Accounts
                         you've selected.</p>
-					<p>Cloud Accounts can not be deleted if they are associated with any Ecosystems.</p>
+					<p><i>Cloud Accounts can not be deleted if they are associated with any Ecosystems.</i></p>
  					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/CloudAccount?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
 						for a more detailed introduction to Cloud Accounts.</p>
                 </div>

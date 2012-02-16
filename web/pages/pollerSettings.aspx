@@ -13,11 +13,10 @@
         <ContentTemplate>
             <div id="left_panel">
                 <div class="left_tooltip">
-                    <span class="page_title">Poller Settings</span>
                     <img src="../images/terminal-192x192.png" alt="" />
                     <div id="left_tooltip_box_outer">
                         <div id="left_tooltip_box_inner">
-                            <img src="../images/tooltip.png" alt="" />
+                            <h2>Poller Settings</h2>
                             <p>
                                 Change the settings for the Poller process.</p>
                         </div>
