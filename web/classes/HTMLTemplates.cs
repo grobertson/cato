@@ -488,9 +488,6 @@ namespace FunctionTemplates
                 case "cmd_line":
                     sHTML = CmdLine(oStep, ref sOptionHTML, ref sVariableHTML);
                     break;
-                case "dos_cmd":
-                    sHTML = DOSCmd(oStep, ref sOptionHTML, ref sVariableHTML);
-                    break;
                 case "set_variable":
                     sHTML = SetVariable(oStep);
                     break;
@@ -608,10 +605,6 @@ namespace FunctionTemplates
                         sSnip += " (" + xd.XPathSelectElement("//sql").Value + ")";
                     break;
                 case "cmd_line":
-                    if (!string.IsNullOrEmpty(xd.XPathSelectElement("//command").Value))
-                        sSnip = xd.XPathSelectElement("//command").Value;
-                    break;
-                case "dos_cmd":
                     if (!string.IsNullOrEmpty(xd.XPathSelectElement("//command").Value))
                         sSnip = xd.XPathSelectElement("//command").Value;
                     break;
@@ -1823,72 +1816,6 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-        public string DOSCmd(Step oStep, ref string sOptionHTML, ref string sVarHTML)
-        {
-			string sStepID = oStep.ID;
-			string sFunction = oStep.FunctionName;
-			XDocument xd = oStep.FunctionXDoc;
-
-            XElement xCommand = xd.XPathSelectElement("//command");
-            if (xCommand == null) return "Error: XML does not contain command.";
-
-            string sCommand = xCommand.Value;
-            string sHTML = "";
-            string sTextareaID = "";
-
-            // we gotta get the field id first, but don't show the textarea until after
-            string sCommonAttribs = CommonAttribs(sStepID, sFunction, true, "command", ref sTextareaID, "");
-
-            sHTML += "Command: " + Environment.NewLine;
-            //big box button
-            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" +
-                " src=\"../images/icons/edit_16.png\"" +
-                " link_to=\"" + sTextareaID + "\" /><br />" + Environment.NewLine;
-
-            sHTML += "<textarea " + sCommonAttribs;
-            sHTML += " help=\"Enter a command to execute.\">" + sCommand + "</textarea>";
-
-            //variables
-            sVarHTML += DrawVariableSectionForDisplay(oStep, true);
-
-            //for the options panel
-            XElement xTimeout = xd.XPathSelectElement("//timeout");
-            if (xCommand == null) return "Error: XML does not contain timeout.";
-            XElement xPos = xd.XPathSelectElement("//positive_response");
-            if (xPos == null) return "Error: XML does not contain positive_response.";
-            XElement xNeg = xd.XPathSelectElement("//negative_response");
-            if (xNeg == null) return "Error: XML does not contain negative_response.";
-
-            string sTimeout = xTimeout.Value;
-            string sPos = ui.SafeHTML(xPos.Value);
-            string sNeg = ui.SafeHTML(xNeg.Value);
-
-            sOptionHTML += "<table class=\"fn_layout_table\">" + Environment.NewLine;
-
-            sOptionHTML += "<tr>" + Environment.NewLine;
-            sOptionHTML += "<td class=\"fn_label_cell\">Timeout:</td>" + Environment.NewLine;
-            sOptionHTML += "<td><input type=\"text\" " + CommonAttribs(sStepID, sFunction, false, "timeout", "w200px");
-            sOptionHTML += " help=\"Enter a timeout in seconds.\" value=\"" + sTimeout + "\" /></td>";
-            sOptionHTML += "</tr>" + Environment.NewLine;
-
-            sOptionHTML += "<tr>" + Environment.NewLine;
-            sOptionHTML += "<td class=\"fn_label_cell\">Positive Response:</td>" + Environment.NewLine;
-            sOptionHTML += "<td><input type=\"text\" " + CommonAttribs(sStepID, sFunction, false, "positive_response", "w200px");
-            sOptionHTML += " help=\"Enter a value to watch for to determine if the command was successful.\" value=\"" + sPos + "\" /></td>";
-            sOptionHTML += "</tr>" + Environment.NewLine;
-
-            sOptionHTML += "<tr>" + Environment.NewLine;
-            sOptionHTML += "<td class=\"fn_label_cell\">Negative Response:</td>" + Environment.NewLine;
-            sOptionHTML += "<td><input type=\"text\" " + CommonAttribs(sStepID, sFunction, false, "negative_response", "w200px");
-            sOptionHTML += " help=\"Enter a value to watch for to determine if the command failed.\" value=\"" + sNeg + "\" /></td>";
-            sOptionHTML += "</tr>" + Environment.NewLine;
-
-            sOptionHTML += "</table>";
-
-
-
-            return sHTML;
-        }
         public string NewConnection(Step oStep)
         {
 			string sStepID = oStep.ID;
@@ -2759,9 +2686,6 @@ namespace FunctionTemplates
                 case "cmd_line":
                     sHTML = CmdLine_View(oStep, ref sOptionHTML);
                     break;
-                case "dos_cmd":
-                    sHTML = DOSCmd_View(oStep, ref sOptionHTML);
-                    break;
                 case "set_variable":
                     sHTML = SetVariable_View(oStep);
                     break;
@@ -3508,40 +3432,6 @@ namespace FunctionTemplates
 
             sHTML += "Connection:" + Environment.NewLine;
             sHTML += "<span class=\"code\">" + sConnName + "</span><br />" + Environment.NewLine;
-
-            sHTML += "Command:<br />" + Environment.NewLine;
-            sHTML += "<div class=\"codebox\">" + sCommand + "</div>" + Environment.NewLine;
-
-            //variables
-            sHTML += DrawVariableSectionForDisplay(oStep, false);
-
-            //for the options panel
-            XElement xTimeout = xd.XPathSelectElement("//timeout");
-            if (xTimeout == null) return "Error: XML does not contain timeout.";
-            XElement xPos = xd.XPathSelectElement("//positive_response");
-            if (xPos == null) return "Error: XML does not contain positive_response.";
-            XElement xNeg = xd.XPathSelectElement("//negative_response");
-            if (xNeg == null) return "Error: XML does not contain negative_response.";
-
-            string sTimeout = ui.SafeHTML(xTimeout.Value);
-            string sPos = ui.SafeHTML(xPos.Value);
-            string sNeg = ui.SafeHTML(xNeg.Value);
-
-            sOptionHTML += "Timeout: <span class=\"code\">" + sTimeout + "</span><br />";
-            sOptionHTML += "Positive Response: <span class=\"code\">" + sPos + "</span><br />";
-            sOptionHTML += "Negative Response: <span class=\"code\">" + sNeg + "</span>";
-
-            return sHTML;
-        }
-        public string DOSCmd_View(Step oStep, ref string sOptionHTML)
-        {
-			XDocument xd = oStep.FunctionXDoc;
-
-            XElement xCommand = xd.XPathSelectElement("//command");
-            if (xCommand == null) return "Error: XML does not contain command.";
-
-            string sCommand = ui.SafeHTML(xCommand.Value);
-            string sHTML = "";
 
             sHTML += "Command:<br />" + Environment.NewLine;
             sHTML += "<div class=\"codebox\">" + sCommand + "</div>" + Environment.NewLine;

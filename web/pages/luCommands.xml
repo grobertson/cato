@@ -131,14 +131,6 @@
 					<negative_response input_type="text" />
 				</function>
 			</command>
-			<command name="dos_cmd" label="Windows Command" description="A command issued on the command prompt of the running Windows Command Engine." help="&lt;b&gt;Windows Command Line Interface&lt;/b&gt;&lt;br&gt;Used to interact with the Windows OS on which this Command Engine instance is running. Enter the command that should be executed. Prior to the command being executed, variable substitution will occur. After the command is executed, the Command Engine will wait for the command line prompt to appear.&lt;br&gt;&lt;br&gt;Options: The options button has three options overrides. &lt;br&gt;Timeout value in seconds, this is the number of seconds the command engine will wait for the command line prompt to return until it timeouts out the process. &lt;br&gt;Positive Response overrides the set of characters that the Command Engine waits for to determine that the command is finished running. Accepts regular expressions .&lt;br&gt;Negative Response is a set of characters that the Command Engine looks for and will error out if they are seen in the response.&lt;br&gt;&lt;br&gt;Variables can be populated via the Windows Command. Click the icon next to the word Variables to name the variables and configure how they are set." icon="icons/konsole_32.png">
-				<function command_type="dos_cmd" parse_method="2">
-					<command input_type="text" />
-					<timeout input_type="text" />
-					<positive_response input_type="text" />
-					<negative_response input_type="text" />
-				</function>
-			</command>
 			<command name="winrm_cmd" label="Windows Remote Management" description="A command issued via the WinRM tool for interaction with Windows hosts." help="&lt;b&gt;Windows Remote Management Command&lt;/b&gt;&lt;br&gt;Can connect to an instance of the WinRM service running on a Windows host and issue commands. Enter the command that should be executed. Prior to the command being executed, variable substitution will occur. &lt;br&gt;&lt;br&gt;Options:&lt;br&gt;Timeout value in seconds, this is the number of seconds the command engine will wait for the command prompt to return until it timeouts out the process." icon="icons/konsole_32.png">
 				<function command_type="winrm_cmd" parse_method="2" variables="true">
 					<command input_type="textarea" rows="3" label="Command" class="w95pct" style="display: block;" />

@@ -320,8 +320,8 @@ namespace Globals
                 {
                     if (aSearchTerms[i].Length > 0)
                     {
-                        sWhereString = " and (a.ecosystem_name like '%" + aSearchTerms[i] +
-                           "%' or a.ecosystem_desc like '%" + aSearchTerms[i] + "%' or et.ecotemplate_name like '%" + aSearchTerms[i] + "%' ) ";
+                        sWhereString = " and (e.ecosystem_name like '%" + aSearchTerms[i] +
+                           "%' or e.ecosystem_desc like '%" + aSearchTerms[i] + "%' or et.ecotemplate_name like '%" + aSearchTerms[i] + "%' ) ";
                     }
                 } 
             }
@@ -1500,8 +1500,10 @@ namespace Globals
 						if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
 						{
 							System.Threading.Thread.Sleep(300);
-							if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
+							if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr)) {
+								oTrans.RollBack();
 								throw new Exception("Unable to count Cloud Accounts: " + sErr);
+							}
 						}
 					}
 					
@@ -2411,6 +2413,7 @@ namespace Globals
 					//uh oh... this task exists.  unless told to do so, we stop here.
 					if (this.OnConflict == "cancel") {
 						sErr = "Another Task with that ID or Name/Version exists.  Conflict directive set to 'cancel'.";
+						oTrans.RollBack();
 						return false;
 					}
 					else {
