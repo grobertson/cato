@@ -158,10 +158,11 @@ proc gather_account_info {account_id} {
 	$::db_query $::CONN $sql
 	set ii 0
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
-		if {"$::CLOUD_TYPE" eq "Eucalyptus"} {
-			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) [list "[lindex $row 1]/services/Eucalyptus" [lindex $row 3]]
+		if {"$::CLOUD_TYPE" ne "Amazon AWS"} {
+			set uri [get_cloud_uri $::CLOUD_TYPE]
+			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) [list "[lindex $row 1]$uri" [lindex $row 3]]
 			if {$ii == 0} {
-				set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) [list "[lindex $row 1]/services/Eucalyptus" [lindex $row 3]]
+				set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) [list "[lindex $row 1]$uri" [lindex $row 3]]
 				set ::CLOUD_IDS($::CLOUD_TYPE,default) [lindex $row 2]
 				incr ii
 			}
@@ -222,29 +223,31 @@ proc aws_Generic {product operation path command} {
 	if {"$::CLOUD_LOGIN_ID" == "" || "$::CLOUD_LOGIN_PASS" == ""} {
 		error_out "Cloud account id or password is required" 9999
 	}
-	if {"$::CLOUD_TYPE" == "Eucalyptus"} {
+	if {"$::CLOUD_TYPE" ne "Amazon AWS"} {
+		### Remove the following when Eucalyptus supports tagging
 		if {"$operation" == "DescribeTags"} {
 			get_eco_tags $var_name $params
 			return
 
 		}
+
 		if {"$aws_region" > ""} {
-			if {[array names ::CLOUD_ENDPOINTS "Eucalyptus,$aws_region"] == ""} {
-				error_out "Cloud region $aws_region does not exist. Either create a Eucalyptus Cloud definition or enter an existing cloud name in the region field" 9999
+			if {[array names ::CLOUD_ENDPOINTS "$::CLOUD_TYPE,$aws_region"] == ""} {
+				error_out "Cloud region $aws_region does not exist. Either create a $::CLOUD_TYPE Cloud definition or enter an existing cloud name in the region field" 9999
 			}
-			set endpoint [lindex $::CLOUD_ENDPOINTS(Eucalyptus,$aws_region) 0]
-			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS(Eucalyptus,$aws_region) 1]]
+			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 0]
+			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 1]]
 			if {"$endpoint" == ""} {
-				error_out "Eucalyptus error: Region $aws_region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
+				error_out "$::CLOUD_TYPE error: Region $aws_region for $::CLOUD_TYPE cloud not defined. Region name must match a valid cloud name." 9999
 			}
 		} else {
-			if {![info exist ::CLOUD_ENDPOINTS(Eucalyptus,default)]} {
-				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+			if {![info exist ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default)]} {
+				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
 			}
-			set endpoint [lindex $::CLOUD_ENDPOINTS(Eucalyptus,default) 0]
-			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS(Eucalyptus,default) 1]]
+			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 0]
+			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 1]]
 			if {"$endpoint" == ""} {
-				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
 			}
 			set aws_region default
 		}
@@ -400,30 +403,26 @@ proc get_aws_private_key {keyname} {
 proc gather_aws_system_info {instance_id user_id region} {
         set proc_name gather_aws_system_info
         package require tclcloud
-        if {"$::CLOUD_TYPE" == "Eucalyptus"} {
+        if {"$::CLOUD_TYPE" ne "Amazon AWS"} {
                 if {"$region" > ""} {
-                        if {[array names ::CLOUD_ENDPOINTS "Eucalyptus,$region"] == ""} {
-                                error_out "Cloud region $region does not exist. Either create a Eucalyptus Cloud definition or enter an existing cloud name in the region field" 9999
+                        if {[array names ::CLOUD_ENDPOINTS "$::CLOUD_TYPE,$region"] == ""} {
+                                error_out "Cloud region $region does not exist. Either create a $::CLOUD_TYPE Cloud definition or enter an existing cloud name in the region field" 9999
                         }
-                        set endpoint [lindex $::CLOUD_ENDPOINTS(Eucalyptus,$region) 0]
-                        set protocol [string tolower [lindex $::CLOUD_ENDPOINTS(Eucalyptus,$region) 1]]
+                        set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 0]
+                        set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 1]]
                         if {"$endpoint" == ""} {
-                                error_out "Region $region for Eucalyptus cloud not defined. Region name must match a valid cloud name." 9999
+                                error_out "Region $region for $::CLOUD_TYPE cloud not defined. Region name must match a valid cloud name." 9999
                         }
                 } else {
-			if {![info exist ::CLOUD_ENDPOINTS(Eucalyptus,default)]} {
-				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+			if {![info exist ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default)]} {
+				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
 			}
-			set endpoint [lindex $::CLOUD_ENDPOINTS(Eucalyptus,default) 0]
-                        set protocol [string tolower [lindex $::CLOUD_ENDPOINTS(Eucalyptus,default) 1]]
+			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 0]
+                        set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 1]]
 			if {"$endpoint" == ""} {
-				error_out "Eucalyptus error: A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
+				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
 			}
 			set region default
-                        #set endpoint [lindex [array get ::CLOUD_ENDPOINTS Eucalyptus,*] 1]
-                        #if {"$endpoint" == ""} {
-                        #        error_out "A default cloud for Eucalyptus not defined. Create a valid cloud with endpoint url for Eucalyptus." 9999
-                        #}
                 }
 		lappend region_endpoint $region $endpoint $protocol
         } else {

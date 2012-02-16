@@ -223,6 +223,24 @@ proc read_config {} {
         }
         return
 }
+proc get_cloud_uri {provider} {
+
+        set fp [open $::HOME/conf/cloud_providers.xml r]
+        set xml [read $fp]
+        close $fp
+
+        regsub -all "&" $xml "&amp;" $xml
+        set xmldoc [dom parse $xml]
+        set root [$xmldoc documentElement]
+        set query "//provider\[@name='$provider'\]/products/product\[@name='eucalyptus'\]"
+        set node [$root selectNodes $query]
+	set uri [$node getAttribute api_uri]
+	$root delete
+	$xmldoc delete
+	unset xml
+        return $uri
+}
+
 proc get_clouds_provider {provider} {
 
         set fp [open $::HOME/conf/cloud_providers.xml r]
