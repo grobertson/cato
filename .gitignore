@@ -46,3 +46,5 @@ web/script/stormStopDialog.js
 services/logfiles/*
 
 services/conf
+
+services/mystart
