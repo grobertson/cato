@@ -92,10 +92,21 @@ namespace FunctionTemplates
             //but certain ones do.
             string sSnip = "";
             if (!string.IsNullOrEmpty(oStep.Description))
-                sSnip = ui.GetSnip(oStep.Description, 75);
-            else
-                sSnip = ui.GetSnip(GetValueSnip(oStep), 75);
-            sLabel += (sSnip == "" ? "" : "<span style=\"padding-left:15px;font-style:italic;font-weight:normal;\">[" + sSnip + "]</span>");
+			{
+				sSnip = ui.GetSnip(oStep.Description, 75);
+				//special words get in indicator icon, but only one in highest order
+				if (sSnip.Contains("IMPORTANT"))
+					sSnip = "<img src=\"../images/icons/flag_red.png\" />" + sSnip.Replace("IMPORTANT","");
+				else if (sSnip.Contains("TODO"))
+					sSnip = "<img src=\"../images/icons/flag_yellow.png\" />" + sSnip.Replace("TODO","");
+				else if (sSnip.Contains("NOTE") || sSnip.Contains("INFO"))
+					sSnip = "<img src=\"../images/icons/flag_blue.png\" />" + sSnip.Replace("NOTE","").Replace("INFO","");
+			}
+			else
+			{
+				sSnip = ui.GetSnip(GetValueSnip(oStep), 75);
+			}
+			sLabel += (sSnip == "" ? "" : "<span style=\"padding-left:15px;font-style:italic;font-weight:normal;\">[" + sSnip + "]</span>");
 
             string sLockClause = (oStep.Locked ? " onclick=\"return false;\"" : "");
 
