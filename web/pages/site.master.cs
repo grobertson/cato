@@ -41,7 +41,10 @@ namespace Web
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!Page.IsPostBack)
+            if (DatabaseSettings.DbLog)
+				Console.WriteLine(HttpContext.Current.Request.ServerVariables["SCRIPT_NAME"].ToString());
+			
+			if (!Page.IsPostBack)
             {
 				//new menu from xml
 				string sRole = ui.GetSessionUserRole().ToLower();

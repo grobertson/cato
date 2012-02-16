@@ -53,7 +53,7 @@ public class dataAccess
 	 * This is a terrible workaround hack, but we can move on and fix when the cause is finally found.
 	 * 
 	 * */
-        string sSQL = "select 'Database Test Successful'";
+		string sSQL = "select 'Database Test Successful' from login_security_settings";
 		string sTestResult = "";
         if (!sqlGetSingleString(ref sTestResult, sSQL, ref sErr))
         {
@@ -142,6 +142,9 @@ public class dataAccess
                             int result;
                             if (int.TryParse(sVal, out result))
                                 DatabaseSettings.ConnectionTimeout = result;
+                            break;
+                        case "dblog":
+                                DatabaseSettings.DbLog = IsTrue(sVal);
                             break;
                         case "stormapiurl":
                             GlobalSettings.StormApiURL = sVal;
@@ -265,6 +268,8 @@ public class dataAccess
         }
         else
         {
+            if (DatabaseSettings.DbLog)
+				Console.WriteLine(sSQL);
             return true;
         }
     }
@@ -296,14 +301,14 @@ public class dataAccess
                     default:
 						//well, to try to stop the random mysql connection error...
 						//if we get here we'll sleep and try to connect again.
-						Console.WriteLine("MySQL: conn failed, first attempt.");
+						Console.WriteLine("--- MySQL: conn failed, first attempt.");
 						System.Threading.Thread.Sleep(2000);
 						
 			            try
 			            {
 							MySqlConnection oConn = new MySqlConnection(sConString);
 			                oConn.Open();
-							Console.WriteLine("MySQL: conn failed, second attempt.");
+							Console.WriteLine("------ MySQL: conn failed, second attempt.");
 							return oConn;
 			            }
 			            catch (MySqlException ex2)
@@ -369,10 +374,6 @@ public class dataAccess
     }
     public bool sqlGetSingleDouble(ref double d, string sSQL, ref string ErrorMessage)
     {
-
-        if (!ValidSQL(sSQL, ref ErrorMessage))
-            return false;
-
         try
         {
             object o = new object();
@@ -390,10 +391,6 @@ public class dataAccess
     }
     public bool sqlGetSingleInteger(ref int i, string sSQL, ref string ErrorMessage)
     {
-
-        if (!ValidSQL(sSQL, ref ErrorMessage))
-            return false;
-
         try
         {
             object o = new object();
@@ -426,10 +423,6 @@ public class dataAccess
     }
     public bool sqlGetSingleString(ref string s, string sSQL, ref string ErrorMessage)
     {
-
-        if (!ValidSQL(sSQL, ref ErrorMessage))
-            return false;
-
         try
         {
             object o = new object();

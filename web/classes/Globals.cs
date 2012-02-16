@@ -275,7 +275,12 @@ namespace Globals
             get { return sServerUseSSL; }
             set { sServerUseSSL = value; }
         }
-
+        private static bool bDbLog = false;
+        public static bool DbLog
+        {
+            get { return bDbLog; }
+            set { bDbLog = value; }
+        }
     }
 	#endregion    
 
