@@ -47,7 +47,8 @@ mkdir -p $DEPLOY_DIR/conf
 rsync -aq conf/default.cato.conf $DEPLOY_DIR/conf
 rsync -aq conf/setup_conf $DEPLOY_DIR/conf
 rsync -aq conf/cloud_providers.xml $DEPLOY_DIR/conf
-rsync -aq services/lib/catocrypt/* $DEPLOY_DIR/conf/catocrypt
+rsync -aq services/lib/catocryptpy/* $DEPLOY_DIR/conf/catocryptpy
+rsync -aq services/lib/catocrypttcl/* $DEPLOY_DIR/conf/catocrypttcl
 rsync -aq database/* $DEPLOY_DIR/conf/data
 
 if [ "$COMPONENT" = "1" -o "$COMPONENT" = "3" ]
