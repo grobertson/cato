@@ -38,12 +38,15 @@
             <img src="../images/user-192x192.png" alt="" />
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
+                    <h2>Users</h2>
+					<p>
+                        The Manage Users screen allows administrators
+                        to modify permissions or add and delete Users.</p>
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Adminster User screen allows administrators
-                        to modify user permissions or add and delete users.</p>
-                    <p>
-                        Select one or more users from the list to the right, using the checkboxes. Select
-                        an action to modify or delete the users you've selected.</p>
+                        Select one or more Users from the list to the right, using the checkboxes. Select
+                        an action to modify or delete the Users you've selected.</p>
+					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Security?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction to Security.</p>
                 </div>
             </div>
         </div>

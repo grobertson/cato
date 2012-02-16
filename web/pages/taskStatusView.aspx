@@ -9,13 +9,13 @@
          <div id="left_tooltip_box_outer">
             <div id="left_tooltip_box_inner">
                <p>
-                  <img src="../images/tooltip.png" alt="" />The task status display shows up to the minute information on Tasks.
+                  The task status display shows up to the minute information on Tasks.
                </p>
                <p>
                   Rows which highlight on mouse-over will display more detailed data when clicked. 
                </p>
                <p>
-                  To refresh the data select the menu choice again. 
+                  To refresh the data select the menu choice again or <a href="" onclick="location.reload();">click here</a>
                </p>
             </div>
          </div>

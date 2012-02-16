@@ -20,12 +20,15 @@
             <img src="../images/manage-tasks-192x192.png" alt="" />
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
+					<h2>Tasks</h2>
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The Manage Tasks screen allows administrators
+                        The Manage Tasks screen allows administrators
                         to modify, add and delete Tasks.</p>
                     <p>
                         Select one or more Tasks from the list to the right, using the checkboxes. Select
                         an action to modify or delete the Tasks you've selected.</p>
+					<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Tasks?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="../images/icons/info.png" alt="" />Click here</a>
+						for a more detailed introduction to Tasks.</p>
                 </div>
             </div>
         </div>

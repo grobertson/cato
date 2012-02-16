@@ -9,7 +9,7 @@
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
                     <p>
-                        <img src="../images/tooltip.png" alt="" />The system status display shows up to
+                        The system status display shows up to
                         the minute information on system components, services and users.</p>
                     <p>
                         Rows which highlight on mouse-over will display more detailed data when clicked.

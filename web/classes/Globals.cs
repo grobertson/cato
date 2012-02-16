@@ -275,7 +275,12 @@ namespace Globals
             get { return sServerUseSSL; }
             set { sServerUseSSL = value; }
         }
-
+        private static bool bDbLog = false;
+        public static bool DbLog
+        {
+            get { return bDbLog; }
+            set { bDbLog = value; }
+        }
     }
 	#endregion    
 
@@ -989,8 +994,11 @@ namespace Globals
 			if (cp == null) {
 				throw new Exception("Error building Provider object: Unable to GetCloudProviders.");	
 			}
-
-			return cp[sProvider];
+			
+			if (cp.ContainsKey(sProvider))
+				return cp[sProvider];
+			else
+				throw new Exception("Provider [" + sProvider + "] does not exist in the cloud_providers.xml file.");
 		}
 		
 		//Provider CONTAINS a named dictionary of Clouds;

@@ -43,7 +43,7 @@
             <img src="../images/manage-assets-192x192.png" alt="" />
             <div id="left_tooltip_box_outer">
                 <div id="left_tooltip_box_inner">
-					<h2>Manage Assets</h2>
+					<h2>Assets</h2>
                     <p>
                         The Manage Assets screen allows administrators
                         to modify, add and delete Assets.
