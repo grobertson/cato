@@ -3171,6 +3171,7 @@ proc new_connection {connection_system conn_name conn_type {cloud_name ""}} {
 			if {"$state" == "running"} {
 				break
 			} elseif {"$state" == "pending"} {
+				insert_audit $::STEP_ID  "" "Instance $connection_system status is pending. Will check again in 10 seconds." ""
 				sleep 10
 			} else {
 				error_out "The instance $connection_system is not in a running or pending state. Current state is $state. Cannot connect" 9999
@@ -4068,6 +4069,7 @@ proc connect_system {system conn_type namespace} {
 				if {"$timeout_flag" != "1"} {
 					break
 				}
+				insert_audit $::STEP_ID  "" "Timeout attempting to connect to $::system_arr($system,address). Will try again in 10 seconds." ""
 				sleep 10
 			}
 		}
