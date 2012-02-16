@@ -355,7 +355,10 @@ namespace Web
         {
 			taskMethods tm = new taskMethods();
 			
-			string sInstance = FORM["Instance"];
+			string sInstance = QS["Instance"];
+			if (string.IsNullOrEmpty(sInstance))
+				sInstance = FORM["Instance"];
+
 			if (!string.IsNullOrEmpty(sInstance))
 			{
 				tm.wmStopTask(sInstance);
@@ -372,12 +375,16 @@ namespace Web
 
         private void GetTask(ref HttpContext context)
         {
-			string sTaskID = FORM["TaskID"];
+			string sTaskID = QS["TaskID"];
 			if (string.IsNullOrEmpty(sTaskID))
 			{
-				RESPONSE.ErrorCode = "3040";
-				RESPONSE.ErrorMessage = "TaskID argument was not provided.";
-				ThrowResponseAndEnd(ref context);
+				sTaskID = FORM["TaskID"];
+				if (string.IsNullOrEmpty(sTaskID))
+				{
+					RESPONSE.ErrorCode = "3040";
+					RESPONSE.ErrorMessage = "TaskID argument was not provided.";
+					ThrowResponseAndEnd(ref context);
+				}
 			}
 
 			string sErr = "";
