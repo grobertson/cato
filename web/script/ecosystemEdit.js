@@ -288,10 +288,10 @@ function getEcosystemLog() {
         	}
 
             //hide the stop button if it's already stopped
-            if (log.storm_status == 'Stopped') {
-            	$("#show_stopstorm_btn").hide();
-        	} else {
+            if (log.storm_status == 'Running') {
             	$("#show_stopstorm_btn").show();
+        	} else {
+            	$("#show_stopstorm_btn").hide();
         	}
 			
 			var html = "";
