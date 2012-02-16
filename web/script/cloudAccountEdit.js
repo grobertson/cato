@@ -194,10 +194,7 @@ function TestConnection() {
     var account_id = $("#hidCurrentEditID").val();
     var cloud_id = $("#ddlTestCloud").val();
 
-    //if there's no cloud_id, it's not been saved yet.  We can't do anything.
-    //but there's no point in displaying anything, as the save routine should handle all
-    //the field level validation.
-    if (cloud_id != "")
+    if (cloud_id.length == 36 && account_id.length == 36)
     {    
 		ClearTestResult();
 		$("#conn_test_result").text("Testing...");
@@ -237,6 +234,10 @@ function TestConnection() {
 	            showAlert(response.responseText);
 	        }
 	    });
+	} else {
+		ClearTestResult();
+		$("#conn_test_result").css("color","red");
+		$("#conn_test_result").text("Unable to test.  Please try again.");
 	}
 }
 
@@ -410,9 +411,13 @@ function SaveItem(close_after_save) {
         	try {
 	            var account = jQuery.parseJSON(response.d);
 		        if (account) {
+					//if there are errors or info, we're closing the dialog.
+					//just makes things cleaner regarding the "mode" (add or edit)
 		        	if (account.info) {
+		            	$("#edit_dialog").dialog('close');
 	        			showInfo(account.info);
 		        	} else if (account.error) {
+		            	$("#edit_dialog").dialog('close');
 		        		showAlert(account.error);
 		        	} else {
 						// clear the search field and fire a search click, should reload the grid
