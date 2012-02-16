@@ -435,7 +435,13 @@ proc gather_aws_system_info {instance_id user_id region} {
         set params "InstanceId $instance_id"
         lappend cmd $params
         lappend cmd {}
-        set result [eval $cmd]
+        catch {set result [eval $cmd]} err_msg
+	if {[string match "*does not exist*" $err_msg]} {
+		# maybe the instance has been submitted to start
+		# we'll take a nap and try again once
+		sleep 5
+		set result [eval $cmd]
+	}
 	output $result
         set xmldoc [dom parse -simple $result]
         set root [$xmldoc documentElement]
@@ -2916,7 +2922,7 @@ proc get_ecosystem_registry {key} {
 		set key_node [$dataset_root selectNodes /registry/$key]
 		if {"$key_node" > ""} {
 			set is_encrypted [$key_node getAttribute encrypt ""]
-			if {"$is_encrypted" == "true"} {
+			if {"$is_encrypted" == "true" && "$return_string" ne ""} {
 				set return_string [decrypt_string $return_string $::SITE_KEY]
 				lappend ::SENSITIVE $return_string
 			}
@@ -3073,7 +3079,12 @@ proc winrm_cmd {command} {
 	output "The dos command is >$command<"
 	package require tclwinrm
 	set user_pass [lookup_shared_cred $shared_cred]
-	tclwinrm::configure http $address 5985 [lindex $user_pass 0] [decrypt_string [lindex $user_pass 1] $::SITE_KEY]
+	if {[lindex $user_pass 1] ne ""} {
+		set pass [decrypt_string [lindex $user_pass 1] $::SITE_KEY]
+	} else {
+		set pass ""
+	}
+	tclwinrm::configure http $address 5985 [lindex $user_pass 0] $pass
 	if {$::DEBUG_LEVEL > 2} {
 		set debug 1
 	} else {
@@ -3156,7 +3167,6 @@ proc new_connection {connection_system conn_name conn_type {cloud_name ""}} {
 			error_out "The user id value is required for a connection type of ssh - ec2, example: root@$connection_system" 9999
 		}
 		for {set ii 0} {$ii < 20} {incr ii} {
-			sleep 1
 			set state [gather_aws_system_info $connection_system $user_id $cloud_name]
 			if {"$state" == "running"} {
 				break
