@@ -1636,7 +1636,9 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				return 1
 			} else {
 				set error_msg "Timeout waiting for password prompt"
-				append login_output $expect_out(buffer)
+				if {[info exists expect_out(buffer)]} {
+					append login_output $expect_out(buffer)
+				}
 				append error_msg "\n$login_output"
 				error_out $error_msg 1019
 			}
@@ -2857,7 +2859,7 @@ proc process_buffer {output_buffer} {
 					}
 					xpath {
 						regsub -all "&" $output_buffer "&amp;" output_buffer
-						set xmldoc2 [dom parse $output_buffer]
+						set xmldoc2 [dom parse -simple $output_buffer]
 						set root2 [$xmldoc2 documentElement]
 						foreach the_node $variable_nodes {
 							set name [string toupper [$the_node selectNodes string(name)]]
