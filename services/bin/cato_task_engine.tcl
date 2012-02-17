@@ -96,12 +96,38 @@ proc aws_get_results {result path var_name} {
 	$xmldoc delete
 }
 proc get_meta {name} {
-        set proc_name get_my_ip
+        set proc_name get_meta
         package require http
         set tok [::http::geturl http://169.254.169.254/latest/meta-data/$name]
         set ip [::http::data $tok]
         ::http::cleanup $tok
         return $ip
+}
+proc get_local_ip {name} {
+        set proc_name get_what_is_ip
+	set sock [socket -async nothing 80]
+	set ip [lindex [fconfigure $sock -sockname] 0]
+	close $sock
+        return $ip
+}
+proc get_what_is_ip {name} {
+        set proc_name get_what_is_ip
+        package require http
+        set tok [::http::geturl http://automation.whatismyip.com/n09230945.asp]
+        set ip [::http::data $tok]
+        ::http::cleanup $tok
+        return $ip
+}
+proc get_ip {pub_or_priv} {
+	set ip ""
+	if {catch {set ip [get_meta $pub_or_priv]}} {
+		if {$pub_or_priv eq "public-ipv4"} {
+			set ip [get_what_is_ip]
+		} else {
+			set ip [get_local_ip]
+		}
+	}
+		
 }
 proc register_security_group {apply_to_group port region} {
         set proc_name register_security_group
@@ -382,6 +408,9 @@ proc aws_drill_in {node name params} {
 		if {"$name" == "UserData"} {
 			package require base64
 			#output "encoding user data"
+                        regsub -all "&amp;" $nodeValue {\&} nodeValue
+                        regsub -all "&gt;" $nodeValue ">" nodeValue
+                        regsub -all "&lt;" $nodeValue "<" nodeValue
 			set nodeValue [::base64::encode $nodeValue]
 		}
                 if {"$nodeValue" > ""} {
