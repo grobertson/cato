@@ -35,6 +35,10 @@ services/python/*
 
 *.so
 
+*.swp
+
+*.egg-info
+
 web/script/storm.js
 
 web/script/stormRunDialog.js
