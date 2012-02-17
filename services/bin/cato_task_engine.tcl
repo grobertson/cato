@@ -3853,9 +3853,9 @@ proc process_step {step_id task_name} {
 			$root delete
 			$xmldoc delete
 
-			#regsub -all "&amp;" $command {\&} command
-			#regsub -all "&gt;" $command ">" command
-			#regsub -all "&lt;" $command "<" command
+			regsub -all "&amp;" $command {\&} command
+			regsub -all "&gt;" $command ">" command
+			regsub -all "&lt;" $command "<" command
 
 			if {[info exists ::connection_arr($conn_name,handle)]} {
 				set spawn_id $::connection_arr($conn_name,handle)
