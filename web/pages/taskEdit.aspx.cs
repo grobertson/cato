@@ -28,7 +28,6 @@ namespace Web.pages
     {
         dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
-        ACWebMethods.taskMethods tm = new ACWebMethods.taskMethods();
 		
 		//Get a global Task object for this task
 		Task oTask;
@@ -135,7 +134,7 @@ namespace Web.pages
 					//the web method could do it when the dialog is popped instead of here.
 					//or this can stay, just call the WM and make it return both values so we can get rid of this
 					//and the identical func in taskView.
-                    if (!GetMaxVersion(sTaskID, ref sErr)) return false;
+                    if (!GetMaxVersion(oTask, ref sErr)) return false;
 
                     return true;
                 }
@@ -300,11 +299,11 @@ namespace Web.pages
         }
         #endregion
  
-        private bool GetMaxVersion(string sTaskID, ref string sErr)
+        private bool GetMaxVersion(Task oTask, ref string sErr)
         {
             try
             {
-                string sMaxVer = tm.wmGetTaskMaxVersion(sTaskID, ref sErr);
+                string sMaxVer = oTask.MaxVersion();
 
                 if (!string.IsNullOrEmpty(sMaxVer))
                 {

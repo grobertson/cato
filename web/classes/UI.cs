@@ -236,7 +236,7 @@ namespace acUI
 						return fn;
 					else 
 						return null;				
-				} catch (Exception ex) {
+				} catch (Exception) {
 					return null;
 				}
 			}

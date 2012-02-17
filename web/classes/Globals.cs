@@ -2158,6 +2158,8 @@ namespace Globals
 			this.OriginalTaskID = this.ID;
 			this.IsDefaultVersion = true;
 			
+			this.DBExists = _DBExists();
+			
 			//blank new task always gets a MAIN codeblock
 			Codeblock c = new Codeblock("MAIN");
 			this.Codeblocks.Add(c.Name, c);
@@ -2186,12 +2188,15 @@ namespace Globals
 				
 				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
 				this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
-				this.OriginalTaskID = this.ID;
+				//original id becomes the id if it's omitted from the xml
+				this.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : this.ID);
 				this.IsDefaultVersion = true;
 
 				this.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
 				this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
 				//this.UseConnectorSystem = false;
+
+				this.DBExists = _DBExists();
 				
 				//parameters
 				if (xeTask.Element("parameters") != null)
@@ -2243,6 +2248,9 @@ namespace Globals
 
                 if (dr != null)
                 {
+					//of course it exists...
+					this.DBExists = true;
+					
                     this.ID = dr["task_id"].ToString();
                     this.Name = dr["task_name"].ToString();
 					this.Code = dr["task_code"].ToString();
@@ -2385,42 +2393,103 @@ namespace Globals
 				throw ex;
             }
 		}
+
+		private bool _DBExists()
+		{	
+			dataAccess dc = new dataAccess();
+			string sErr = "";
+			
+			//task_id is the PK, and task_name+version is a unique index.
+			//so, we check the conflict property, and act accordingly
+			string sSQL = "select task_id, original_task_id from task" +
+				" where (task_name = '" + this.Name + "' and version = '" + this.Version + "')" +
+				" or task_id = '" + this.ID + "'";
+			
+			DataRow dr = null;
+			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+			{
+				throw new Exception("Task Object: Unable to check for existing Name/Version or ID. " + sErr);
+			}
+			
+			if (dr != null)
+			{
+				if (!string.IsNullOrEmpty(dr["task_id"].ToString())) {
+					//PAY ATTENTION! 
+					//if the task exists... it might have been by name/version, so...
+					//we're setting the ids to the same as the database so it's more accurate.
+					
+					this.ID = dr["task_id"].ToString();
+					this.OriginalTaskID = dr["original_task_id"].ToString();
+					return true;
+				}
+			}
+				
+			return false;
+		}
+		//what's the max version allowed for this task?
+		public string MaxVersion()
+		{
+			dataAccess dc = new dataAccess();
+            try
+            {
+				//if the task is in the db, get it's max
+				//if it's not, the max is 1.000
+                string sMax = "";
+
+				if (this.DBExists) {
+					string sErr = "";
+					string sSQL = "select max(version) as maxversion from task " +
+						" where original_task_id = '" + this.OriginalTaskID + "'";
+					if (!dc.sqlGetSingleString(ref sMax, sSQL, ref sErr)) throw new Exception(sErr);
+				}
+
+                return sMax;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+		}
 		
-		//take this Task and create the database records 
-		public bool DBCreate(ref string sErr)
+		//this will increment the major version - does NOT save the task.
+		public void IncrementMajorVersion()
+		{
+            try
+            {
+				string sMaxVer = MaxVersion();
+				this.Version = String.Format("{0:0.000}", Math.Round((Convert.ToDouble(sMaxVer) + .5), MidpointRounding.AwayFromZero));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+		}
+		//this will increment the minor version - does NOT save the task.
+		public void IncrementMinorVersion()
+		{
+            try
+            {
+				string sMaxVer = MaxVersion();
+				this.Version = String.Format("{0:0.000}", (Convert.ToDouble(sMaxVer) + .001));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+		}
+		
+		//Try to save the existing object, resolving conflicts as directed.
+		public bool DBSave(ref string sErr)
 		{
 			try
 			{
-                dataAccess dc = new dataAccess();
-                acUI.acUI ui = new acUI.acUI();
-				
-				//task_id is the PK, and task_name+version is a unique index.
-				//so, we check the conflict property, and act accordingly
-				string sSQL = "select task_id from task where task_name = '" + this.Name + "' and version = '" + this.Version + "'";
-	
-				string sExistingTaskID = "";
-				if (!dc.sqlGetSingleString(ref sExistingTaskID, sSQL, ref sErr))
-				{
-					sErr = "Unable to check for existing Name/Version. " + sErr;
-					return false;
-				}
-				
-				sSQL = "select count(*) from task where task_id = '" + this.ID + "'";
-	
-				int iIDExists = 0;
-				if (!dc.sqlGetSingleInteger(ref iIDExists, sSQL, ref sErr))
-				{
-					sErr = "Unable to check for existing IDs. " + sErr;
-					return false;
-				}
-				
 				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 				
-				if (iIDExists > 0 || !string.IsNullOrEmpty(sExistingTaskID))
+				if (this.DBExists)
 				{
 					//uh oh... this task exists.  unless told to do so, we stop here.
 					if (this.OnConflict == "cancel") {
-						sErr = "Another Task with that ID or Name/Version exists.  Conflict directive set to 'cancel'.";
+						sErr = "Another Task with that ID or Name/Version exists.  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
 						oTrans.RollBack();
 						return false;
 					}
@@ -2430,13 +2499,9 @@ namespace Globals
 						case "replace":
 							//whack it all so we can re-insert
 							//but by name or ID?  which was the conflict?
-							//if it's the ID no problem, the history will be fine.
-							//but if it's the name, we'll need to change our ID here to the ID of the one in the database.
 							
-							//task_id first, means we had a name/version collision we'll just plow and go
-							//but we need to use the ID from the database
-							if (ui.IsGUID(sExistingTaskID))
-							    this.ID = sExistingTaskID;
+							//no worries! the _DBExists function called when we created the object
+							//will have resolved any name/id issues.
 							
 							//if the ID existed it doesn't matter, we'll be plowing it anyway.
 							//by "plow" I mean drop and recreate the codeblocks and steps... the task row will be UPDATED
@@ -2476,15 +2541,45 @@ namespace Globals
 
 							break;
 						case "minor":
-							//THIS WILL CALL THE asNewMinorVersion
-							sErr = "Not yet implemented.";
-							return false;
-							//break;
+							this.IncrementMinorVersion();
+							
+							this.DBExists = false;
+							this.ID = Guid.NewGuid().ToString().ToLower();
+							this.IsDefaultVersion = false;
+
+							//insert the new version
+							oTrans.Command.CommandText = "insert task" +
+								" (task_id, original_task_id, version, default_version," +
+									" task_name, task_code, task_desc, task_status, created_dt)" +
+									" values " +
+									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
+									(this.IsDefaultVersion ? 1 : 0) + ", '" +
+									this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
+									"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+							if (!oTrans.ExecUpdate(ref sErr))
+								return false;
+
+							break;
 						case "major":
-							//THIS WILL CALL THE asNewMajorVersion method
-							sErr = "Not yet implemented.";
-							return false;
-							//break;
+							this.IncrementMajorVersion();
+											
+							this.DBExists = false;
+							this.ID = Guid.NewGuid().ToString().ToLower();
+							this.IsDefaultVersion = false;
+
+							//insert the new version
+							oTrans.Command.CommandText = "insert task" +
+								" (task_id, original_task_id, version, default_version," +
+									" task_name, task_code, task_desc, task_status, created_dt)" +
+									" values " +
+									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
+									(this.IsDefaultVersion ? 1 : 0) + ", '" +
+									this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
+									"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+							if (!oTrans.ExecUpdate(ref sErr))
+								return false;
+
+							break;
 						default:
 							//there is no default action... if the on_conflict didn't match we have a problem... bail.
 							sErr = "There is an ID or Name/Version conflict, and the on_conflict directive isn't a valid option. (replace/major/minor/cancel)";
@@ -2495,14 +2590,13 @@ namespace Globals
 				else 
 				{
 					//the default action is to ADD the new task row... nothing
-					sSQL = "insert task" +
+					oTrans.Command.CommandText = "insert task" +
 						" (task_id, original_task_id, version, default_version," +
 							" task_name, task_code, task_desc, task_status, created_dt)" +
 							" values " +
 							"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
 							this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
 							"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
-					oTrans.Command.CommandText = sSQL;
 					if (!oTrans.ExecUpdate(ref sErr))
 						return false;
 					
@@ -2514,16 +2608,15 @@ namespace Globals
 				//by the time we get here, there should for sure be a task row, either new or updated.				
 				//now, codeblocks
 				foreach (Codeblock c in this.Codeblocks.Values) {
-					sSQL = "insert task_codeblock (task_id, codeblock_name)" +
+					oTrans.Command.CommandText = "insert task_codeblock (task_id, codeblock_name)" +
 						" values ('" + this.ID + "', '" + c.Name + "')";
-					oTrans.Command.CommandText = sSQL;
 					if (!oTrans.ExecUpdate(ref sErr))
 						return false;
 									
 					//and steps
 					int iStepOrder = 1;
 					foreach (Step s in c.Steps.Values) {
-						sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
+						oTrans.Command.CommandText = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
 							" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
 								" function_name, function_xml)" +
 								" values (" +
@@ -2538,7 +2631,6 @@ namespace Globals
 								"'" + s.FunctionName + "'," +
 								"'" + s.FunctionXML + "'" +
 								")";
-						oTrans.Command.CommandText = sSQL;
 						if (!oTrans.ExecUpdate(ref sErr))
 							return false;
 						
@@ -2558,6 +2650,202 @@ namespace Globals
 			return true;
 		}
 
+		public string Copy(int iMode, string sNewTaskName, string sNewTaskCode)
+        {
+			//iMode 0=new task, 1=new major version, 2=new minor version
+			
+			//NOTE: this routine is not very object-aware.  It works and was copied in here
+			//so it can live with other relevant code.
+			//may update it later to be more object friendly
+			acUI.acUI ui = new acUI.acUI();
+			dataAccess dc = new dataAccess();
+			
+            string sErr = "";
+            string sSQL = "";
+
+            string sNewTaskID = ui.NewGUID();
+
+			int iIsDefault = 0;
+            string sTaskName = "";
+            string sOTID = "";
+
+            //do it all in a transaction
+            dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+
+            //figure out the new name and selected version
+            sTaskName = this.Name;
+            sOTID = this.OriginalTaskID;
+
+            //figure out the new version
+            switch (iMode)
+            {
+                case 0:
+		            //figure out the new name and selected version
+					int iExists = 0;
+					oTrans.Command.CommandText = "select count(*) from task where task_name = '" + sNewTaskName + "'";
+		            if (!oTrans.ExecGetSingleInteger(ref iExists, ref sErr))
+		                throw new Exception("Unable to check name conflicts for  [" + sNewTaskName + "]." + sErr);
+	
+					sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now.ToString() + ")" : sNewTaskName);
+                    iIsDefault = 1;
+                    this.Version = "1.000";
+                    sOTID = sNewTaskID;
+
+                    break;
+                case 1:
+                    this.IncrementMajorVersion();
+                    break;
+                case 2:
+                    this.IncrementMinorVersion();
+                    break;
+                default: //a iMode is required
+                    throw new Exception("A mode required for this copy operation." + sErr);
+            }
+
+            //if we are versioning, AND there are not yet any 'Approved' versions,
+            //we set this new version to be the default
+            //(that way it's the one that you get taken to when you pick it from a list)
+            if (iMode > 0)
+            {
+                sSQL = "select case when count(*) = 0 then 1 else 0 end" +
+                    " from task where original_task_id = '" + sOTID + "'" +
+                    " and task_status = 'Approved'";
+                dc.sqlGetSingleInteger(ref iIsDefault, sSQL, ref sErr);
+                if (sErr != "")
+                {
+                    oTrans.RollBack();
+                    throw new Exception(sErr);
+                }
+            }
+
+            //string sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now.ToString() + ")" : sNewTaskName);
+
+
+			//drop the temp tables.
+			oTrans.Command.CommandText = "drop temporary table if exists _copy_task";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            oTrans.Command.CommandText = "drop temporary table if exists _step_ids";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            oTrans.Command.CommandText = "drop temporary table if exists _copy_task_codeblock";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            oTrans.Command.CommandText = "drop temporary table if exists _copy_task_step";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+			//start copying
+            oTrans.Command.CommandText = "create temporary table _copy_task" +
+                " select * from task where task_id = '" + this.ID + "'";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            //update the task_id
+            oTrans.Command.CommandText = "update _copy_task set" +
+                " task_id = '" + sNewTaskID + "'," +
+                " original_task_id = '" + sOTID + "'," +
+                " version = '" + this.Version + "'," +
+                " task_name = '" + sTaskName + "'," +
+                " task_code = '" + sNewTaskCode + "'," +
+                " default_version = " + iIsDefault.ToString() + "," +
+                " task_status = 'Development'," +
+                " created_dt = now()";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            //codeblocks
+            oTrans.Command.CommandText = "create temporary table _copy_task_codeblock" +
+                " select '" + sNewTaskID + "' as task_id, codeblock_name" +
+                " from task_codeblock where task_id = '" + this.ID + "'";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+
+            //USING TEMPORARY TABLES... need a place to hold step ids while we manipulate them
+            oTrans.Command.CommandText = "create temporary table _step_ids" +
+                " select distinct step_id, uuid() as newstep_id" +
+                " from task_step where task_id = '" + this.ID + "'";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            //steps temp table
+            oTrans.Command.CommandText = "create temporary table _copy_task_step" +
+                " select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," +
+                " locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," +
+                " output_column_delimiter, variable_xml" +
+                " from task_step where task_id = '" + this.ID + "'";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            //update the step id
+            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
+                " set a.step_id = b.newstep_id" +
+                " where a.step_id = b.step_id";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            //update steps with codeblocks that reference a step (embedded steps)
+            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
+                " set a.codeblock_name = b.newstep_id" +
+                " where b.step_id = a.codeblock_name";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+
+            //spin the steps and update any embedded step id's in the commands
+            oTrans.Command.CommandText = "select step_id, newstep_id from _step_ids";
+            DataTable dtStepIDs = new DataTable();
+            if (!oTrans.ExecGetDataTable(ref dtStepIDs, ref sErr))
+                throw new Exception("Unable to get step ids." + sErr);
+
+            foreach (DataRow drStepIDs in dtStepIDs.Rows)
+            {
+                oTrans.Command.CommandText = "update _copy_task_step" +
+                    " set function_xml = replace(lower(function_xml), '" + drStepIDs["step_id"].ToString().ToLower() + "', '" + drStepIDs["newstep_id"].ToString() + "')" +
+                    " where function_name in ('if','loop','exists')";
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+            }
+
+
+            //finally, put the temp steps table in the real steps table
+            oTrans.Command.CommandText = "insert into task select * from _copy_task";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            oTrans.Command.CommandText = "insert into task_codeblock select * from _copy_task_codeblock";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+            oTrans.Command.CommandText = "insert into task_step select * from _copy_task_step";
+            if (!oTrans.ExecUpdate(ref sErr))
+                throw new Exception(sErr);
+
+
+			
+            //finally, if we versioned up and we set this one as the new default_version,
+            //we need to unset the other row
+            if (iMode > 0 && iIsDefault == 1)
+            {
+                oTrans.Command.CommandText = "update task" +
+                    " set default_version = 0" +
+                    " where original_task_id = '" + sOTID + "'" +
+                    " and task_id <> '" + sNewTaskID + "'";
+                if (!oTrans.ExecUpdate(ref sErr))
+                    throw new Exception(sErr);
+            }
+
+
+			oTrans.Commit();
+
+            return sNewTaskID;
+        }
+
+		
 		//INSTANCE METHOD - returns the object as XML
 		public string AsXML()
 		{

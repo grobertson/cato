@@ -64,6 +64,9 @@
                                 <th sortcolumn="task_status" width="75px">
                                     Status
                                 </th>
+                                <th sortcolumn="versions" width="25px">
+                                    Versions
+                                </th>
                             </tr>
                         </HeaderTemplate>
                         <ItemTemplate>
@@ -86,6 +89,9 @@
                                 </td>
                                 <td tag="selectable">
                                     <%#Eval("task_status")%>
+                                </td>
+                                <td tag="selectable">
+                                    <%#Eval("versions")%>
                                 </td>
                             </tr>
                         </ItemTemplate>

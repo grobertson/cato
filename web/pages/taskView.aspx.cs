@@ -33,7 +33,6 @@ namespace Web.pages
 
         acUI.acUI ui = new acUI.acUI();
         FunctionTemplates.HTMLTemplates ft = new FunctionTemplates.HTMLTemplates();
-        ACWebMethods.taskMethods tm = new ACWebMethods.taskMethods();
 
 		//Get a global Task object for this task
 		Task oTask;
@@ -100,7 +99,7 @@ namespace Web.pages
 		        lblTaskNameHeader.Text = ui.SafeHTML(oTask.Name);
 		        lblVersionHeader.Text = oTask.Version + (oTask.IsDefaultVersion ? " (default)" : "");
 		
-		        if (!GetMaxVersion(sTaskID, ref sErr)) return false;
+		        if (!GetMaxVersion(oTask, ref sErr)) return false;
 		
 		        return true;
 		    }
@@ -299,13 +298,12 @@ namespace Web.pages
 
             }
         }
-        private bool GetMaxVersion(string sTaskID, ref string sErr)
+        private bool GetMaxVersion(Task oTask, ref string sErr)
         {
 
             try
             {
-
-                string sMaxVer = tm.wmGetTaskMaxVersion(sTaskID, ref sErr);
+                string sMaxVer = oTask.MaxVersion();
 
                 if (!string.IsNullOrEmpty(sMaxVer))
                 {

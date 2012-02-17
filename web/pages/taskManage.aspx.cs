@@ -74,11 +74,12 @@ namespace Web.pages
                 } 
             }
 
-            sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status" +
-                   " from task a  " +
-                   " where default_version = 1" +
-                   sWhereString +
-                   " order by task_code";
+            sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," +
+                " (select count(*) from task where original_task_id = a.original_task_id) as versions" +   
+					" from task a  " +
+					" where default_version = 1" +
+					sWhereString +
+					" order by task_code";
 
 
             DataTable dt = new DataTable();

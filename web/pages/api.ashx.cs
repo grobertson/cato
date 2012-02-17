@@ -282,7 +282,7 @@ namespace Web
 			
 			//ok, now we have a task object.
 			//call it's "create" method to save the whole thing in the db.
-			if (t.DBCreate(ref sErr))
+			if (t.DBSave(ref sErr))
 			{
 				//success, but was there an error?
 				if (!string.IsNullOrEmpty(sErr))

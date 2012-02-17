@@ -2022,7 +2022,7 @@ namespace ACWebMethods
 				Task t = new Task(ui.unpackJSON(sTaskName), ui.unpackJSON(sTaskCode), ui.unpackJSON(sTaskDesc));
 
 				//commit it
-				if (t.DBCreate(ref sErr))
+				if (t.DBSave(ref sErr))
 				{
 					//success, but was there an error?
 					if (!string.IsNullOrEmpty(sErr))
@@ -2046,51 +2046,26 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmCopyTask(string sCopyTaskID, string sTaskCode, string sTaskName)
         {
-
-            dataAccess dc = new dataAccess();
             acUI.acUI ui = new acUI.acUI();
             string sErr = null;
-
-            // checks that cant be done on the client side
-            // is the name unique?
-            string sTaskNameInUse = "";
-            if (!dc.sqlGetSingleString(ref sTaskNameInUse, "select task_id from task where task_name = '" + sTaskName.Replace("'", "''") + "' limit 1", ref sErr))
-            {
-                throw new Exception(sErr);
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(sTaskNameInUse))
-                {
-                    return "Task Name [" + sTaskName + "] already in use.  Please choose another name.";
-                }
+			
+			//using the object
+			Task oTask = new Task(sCopyTaskID, true, ref sErr);
+			if (oTask == null)
+			{
+				throw new Exception("Unable to continue.  Unable to build Task object" + sErr);
+			}
+			
+			string sNewTaskID = oTask.Copy(0, sTaskName, sTaskCode);
+            if (string.IsNullOrEmpty(sNewTaskID))
+			{
+                return "Unable to create Task: " + sErr;
             }
 
-            // checks that cant be done on the client side
-            // is the name unique?
-            string sTaskCodeInUse = "";
-            if (!dc.sqlGetSingleString(ref sTaskCodeInUse, "select task_id from task where task_code = '" + sTaskCode.Replace("'", "''") + "' limit 1", ref sErr))
-            {
-                throw new Exception(sErr);
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(sTaskCodeInUse))
-                {
-                    return "Task Code [" + sTaskCode + "] already in use.  Please choose another code.";
-                }
-            }
-
-            string sNewTaskGUID = CopyTask(0, sCopyTaskID, sTaskName.Replace("'", "''"), sTaskCode.Replace("'", "''"));
-
-            if (!string.IsNullOrEmpty(sNewTaskGUID))
-            {
-                ui.WriteObjectAddLog(Globals.acObjectTypes.Task, sNewTaskGUID, sTaskName, "Copied from " + sCopyTaskID);
-            }
-
-
+			ui.WriteObjectAddLog(Globals.acObjectTypes.Task, oTask.ID, oTask.Name, "Copied from " + sCopyTaskID);
+            
             // success, return the new task_id
-            return sNewTaskGUID;
+            return sNewTaskID;
 
         }
 
@@ -2130,40 +2105,22 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmCreateNewTaskVersion(string sTaskID, string sMinorMajor)
         {
-            acUI.acUI ui = new acUI.acUI();
-
             try
             {
-                string sNewVersionGUID = CopyTask((sMinorMajor == "Major" ? 1 : 2), sTaskID, "", "");
+				string sErr = "";
+				Task oTask = new Task(sTaskID, true, ref sErr);
+				if (oTask == null)
+				{
+					throw new Exception("Unable to continue.  Unable to build Task object" + sErr);
+				}
+				
+				string sNewTaskID = oTask.Copy((sMinorMajor == "Major" ? 1 : 2), "", "");
+				if (string.IsNullOrEmpty(sNewTaskID))
+				{
+					return "Unable to create new Version: " + sErr;
+				}
 
-                if (!string.IsNullOrEmpty(sNewVersionGUID))
-                {
-                    ui.WriteObjectAddLog(Globals.acObjectTypes.Task, sNewVersionGUID, sNewVersionGUID, "");
-                }
-
-                return sNewVersionGUID;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        [WebMethod(EnableSession = true)]
-        public string wmGetTaskMaxVersion(string sTaskID, ref string sErr)
-        {
-            dataAccess dc = new dataAccess();
-            try
-            {
-
-                string sSQL = "select max(version) as maxversion from task " +
-                       " where original_task_id = " +
-                       " (select original_task_id from task where task_id = '" + sTaskID + "')";
-
-                string sMax = "";
-                if (!dc.sqlGetSingleString(ref sMax, sSQL, ref sErr)) throw new Exception(sErr);
-
-                return sMax;
+                return sNewTaskID;
             }
             catch (Exception ex)
             {
@@ -2347,205 +2304,6 @@ namespace ACWebMethods
             {
                 throw new Exception(ex.Message);
             }
-        }
-
-        private string CopyTask(int iMode, string sSourceTaskID, string sNewTaskName, string sNewTaskCode)
-        {
-            //iMode 0=new task, 1=new major version, 2=new minor version
-            dataAccess dc = new dataAccess();
-			acUI.acUI ui = new acUI.acUI();
-			
-            string sErr = "";
-            string sSQL = "";
-
-            string sNewTaskID = ui.NewGUID();
-
-            int iIsDefault = 0;
-            string sTaskName = "";
-            double dVersion = 1.000;
-            double dMaxVer = 0.000;
-            string sOTID = "";
-
-            //do it all in a transaction
-            dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
-
-            //figure out the new name and selected version
-            oTrans.Command.CommandText = "select task_name, version, original_task_id from task where task_id = '" + sSourceTaskID + "'";
-            DataRow dr = null;
-            if (!oTrans.ExecGetDataRow(ref dr, ref sErr))
-                throw new Exception("Unable to find task for ID [" + sSourceTaskID + "]." + sErr);
-
-            sTaskName = dr["task_name"].ToString();
-            dVersion = Convert.ToDouble(dr["version"]);
-            sOTID = dr["original_task_id"].ToString();
-
-            //figure out the new version
-            switch (iMode)
-            {
-                case 0:
-                    sTaskName = sNewTaskName;
-                    iIsDefault = 1;
-                    dVersion = 1.000;
-                    sOTID = sNewTaskID;
-
-                    break;
-                case 1:
-                    //gotta get the highest version
-                    sSQL = "select max(version) from task where task_id = '" + sOTID + "'";
-                    dc.sqlGetSingleDouble(ref dMaxVer, sSQL, ref sErr);
-                    if (sErr != "")
-                    {
-                        oTrans.RollBack();
-                        throw new Exception(sErr);
-                    }
-
-                    dVersion = dMaxVer + 1;
-
-                    break;
-                case 2:
-                    sSQL = "select max(version) from task where task_id = '" + sOTID + "'" +
-                        " and cast(version as unsigned) = " + Convert.ToInt32(dVersion);
-                    dc.sqlGetSingleDouble(ref dMaxVer, sSQL, ref sErr);
-                    if (sErr != "")
-                    {
-                        oTrans.RollBack();
-                        throw new Exception(sErr);
-                    }
-
-                    dVersion = dMaxVer + 0.001;
-
-                    break;
-                default: //a iMode is required
-                    throw new Exception("A mode required for this copy operation." + sErr);
-            }
-
-            //if we are versioning, AND there are not yet any 'Approved' versions,
-            //we set this new version to be the default
-            //(that way it's the one that you get taken to when you pick it from a list)
-            if (iMode > 0)
-            {
-                sSQL = "select case when count(*) = 0 then 1 else 0 end" +
-                    " from task where original_task_id = '" + sOTID + "'" +
-                    " and task_status = 'Approved'";
-                dc.sqlGetSingleInteger(ref iIsDefault, sSQL, ref sErr);
-                if (sErr != "")
-                {
-                    oTrans.RollBack();
-                    throw new Exception(sErr);
-                }
-            }
-
-
-            //start copying
-            oTrans.Command.CommandText = "create temporary table _copy_task" +
-                " select * from task where task_id = '" + sSourceTaskID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update the task_id
-            oTrans.Command.CommandText = "update _copy_task set" +
-                " task_id = '" + sNewTaskID + "'," +
-                " original_task_id = '" + sOTID + "'," +
-                " version = '" + dVersion + "'," +
-                " task_name = '" + sTaskName + "'," +
-                " default_version = " + iIsDefault.ToString() + "," +
-                " task_status = 'Development'," +
-                " created_dt = now()";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update the task_code if necessary
-            if (iMode == 0)
-            {
-                oTrans.Command.CommandText = "update _copy_task set task_code = '" + sNewTaskCode + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                    throw new Exception(sErr);
-            }
-
-            //codeblocks
-            oTrans.Command.CommandText = "create temporary table _copy_task_codeblock" +
-                " select '" + sNewTaskID + "' as task_id, codeblock_name" +
-                " from task_codeblock where task_id = '" + sSourceTaskID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-
-            //USING TEMPORARY TABLES... need a place to hold step ids while we manipulate them
-            oTrans.Command.CommandText = "create temporary table _step_ids" +
-                " select distinct step_id, uuid() as newstep_id" +
-                " from task_step where task_id = '" + sSourceTaskID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //steps temp table
-            oTrans.Command.CommandText = "create temporary table _copy_task_step" +
-                " select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," +
-                " locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," +
-                " output_column_delimiter, variable_xml" +
-                " from task_step where task_id = '" + sSourceTaskID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update the step id
-            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
-                " set a.step_id = b.newstep_id" +
-                " where a.step_id = b.step_id";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update steps with codeblocks that reference a step (embedded steps)
-            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
-                " set a.codeblock_name = b.newstep_id" +
-                " where b.step_id = a.codeblock_name";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-
-            //spin the steps and update any embedded step id's in the commands
-            oTrans.Command.CommandText = "select step_id, newstep_id from _step_ids";
-            DataTable dtStepIDs = new DataTable();
-            if (!oTrans.ExecGetDataTable(ref dtStepIDs, ref sErr))
-                throw new Exception("Unable to get step ids." + sErr);
-
-            foreach (DataRow drStepIDs in dtStepIDs.Rows)
-            {
-                oTrans.Command.CommandText = "update _copy_task_step" +
-                    " set function_xml = replace(lower(function_xml), '" + drStepIDs["step_id"].ToString().ToLower() + "', '" + drStepIDs["newstep_id"].ToString() + "')" +
-                    " where function_name in ('if','loop','exists')";
-                if (!oTrans.ExecUpdate(ref sErr))
-                    throw new Exception(sErr);
-            }
-
-
-            //finally, put the temp steps table in the real steps table
-            oTrans.Command.CommandText = "insert into task select * from _copy_task";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "insert into task_codeblock select * from _copy_task_codeblock";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "insert into task_step select * from _copy_task_step";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //finally, if we versioned up and we set this one as the new default_version,
-            //we need to unset the other row
-            if (iMode > 0 && iIsDefault == 1)
-            {
-                oTrans.Command.CommandText = "update task" +
-                    " set default_version = 0" +
-                    " where original_task_id = '" + sOTID + "'" +
-                    " and task_id <> '" + sNewTaskID + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                    throw new Exception(sErr);
-            }
-
-
-            oTrans.Commit();
-
-            return sNewTaskID;
         }
 
         [WebMethod(EnableSession = true)]
