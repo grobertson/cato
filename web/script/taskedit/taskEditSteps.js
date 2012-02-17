@@ -140,6 +140,10 @@ $(document).ready(function() {
 
             this.src = this.src.replace(/cnr/, "cnrgrey");
             $("#" + step_id).addClass("step_skip");
+
+			//remove the validation nag
+            $("#" + step_id).find(".step_validation_template").remove();
+            
             $("#step_header_" + step_id).addClass("step_header_skip");
             $("#step_detail_" + step_id).addClass("step_collapsed");
         }
@@ -918,9 +922,9 @@ function validateStep(in_element_id) {
 
     //if we didn't get a specific step_id, run the test on ALL STEPS!
     if (in_element_id)
-        container = "#" + in_element_id;
+        container = "#" + in_element_id + ":not(.step_skip)"; //no space before :not
     else
-        container = "#steps";
+        container = "#steps li:not(.step_skip)";
 
     //check required fields and alert
     var err_cnt = 0;
