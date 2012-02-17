@@ -230,11 +230,15 @@ namespace acUI
             Functions funcs =  GetTaskFunctions();
 			if (funcs != null)
 			{
-				Function fn = funcs[sFunctionName];
-				if (fn != null)
-					return fn;
-				else 
+				try {
+					Function fn = funcs[sFunctionName];
+					if (fn != null)
+						return fn;
+					else 
+						return null;				
+				} catch (Exception ex) {
 					return null;
+				}
 			}
 			else
 			{

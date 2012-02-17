@@ -112,6 +112,13 @@ function checkSyntax(syntax, strtocheck) {
                         return msg;
                 }
                 break;
+            case "cmd_line":
+                if (strtocheck != "") {
+                    msg = validateCommandLine(strtocheck);
+                    if (msg && msg != "")
+                        return msg;
+                }
+                break;
         }
     }
 
@@ -165,4 +172,10 @@ function validateVariable(name) {
     }
 
     return "Entry must be a [[variable]].";
+}
+function validateCommandLine(name) {
+	var trimmed = $.trim(name);
+	if (trimmed.length < name.length) {
+		return "Command has whitespace or newlines at the beginning or end.";
+	}
 }

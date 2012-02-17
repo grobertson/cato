@@ -52,11 +52,28 @@ namespace FunctionTemplates
         }
         public string DrawFullStep(Step oStep)
         {
-			Function fn = ui.GetTaskFunction(oStep.FunctionName);
-			if (fn == null)
-				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
-			
 			string sStepID = oStep.ID;
+			
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null) {
+				//the function doesn't exist (was probably deprecated)
+				//we need at least a basic strip with a delete button
+				string sNoFunc = "<li class=\"step\" id=\"" + sStepID + "\">";			
+				sNoFunc += "    <div class=\"ui-state-default ui-state-highlight step_header\" id=\"step_header_" + sStepID + "\">";
+				sNoFunc += "        <div class=\"step_header_title\"><img src=\"../images/icons/status_unknown_16.png\" /></div>";
+				sNoFunc += "        <div class=\"step_header_icons\">";
+				sNoFunc += "            <span class=\"step_delete_btn\" remove_id=\"" + sStepID + "\"><img src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Delete Step\" /></span>";
+				sNoFunc += "        </div>";
+				sNoFunc += "    </div>";
+				sNoFunc += "    <div id=\"step_detail_" + sStepID + "\" class=\"ui-widget-content ui-state-highlight ui-corner-bottom step_detail\" >";
+				sNoFunc += "Error building Step - Unable to get the details for the command type '" + oStep.FunctionName + "'.<br />";
+				sNoFunc += "This command type may have been deprecated - check the latest Cato release notes.<br />";
+				sNoFunc += "    </div>";
+				sNoFunc += "</li>";
+
+				return sNoFunc;
+			}
+
 			
             string sExpandedClass = (!oStep.UserSettings.Visible ? "step_collapsed" : "");
 
@@ -161,11 +178,27 @@ namespace FunctionTemplates
         }
         public string DrawEmbeddedStep(Step oStep)
         {
-			Function fn = ui.GetTaskFunction(oStep.FunctionName);
-			if (fn == null)
-				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
-			
 			string sStepID = oStep.ID;
+			
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null) {
+				//the function doesn't exist (was probably deprecated)
+				//we need at least a basic strip with a delete button
+				string sNoFunc = "<div class=\"embedded_step\" id=\"" + sStepID + "\">";
+				sNoFunc += "    <div class=\"ui-state-default ui-state-highlight embedded_step_header\" id=\"embedded_step_header_" + sStepID + "\">";
+				sNoFunc += "        <div class=\"step_header_title\"><img src=\"../images/icons/status_unknown_16.png\" /></div>";
+				sNoFunc += "        <div class=\"step_header_icons\">";
+				sNoFunc += "            <span class=\"embedded_step_delete_btn\" remove_id=\"" + sStepID + "\" parent_id=\"" + oStep.Codeblock + "\"><img src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Remove Command\" /></span>";
+				sNoFunc += "        </div>";
+				sNoFunc += "    </div>";
+				sNoFunc += "    <div id=\"step_detail_" + sStepID + "\" class=\"ui-widget-content ui-state-highlight ui-corner-bottom step_detail\" >";
+				sNoFunc += "Error building Step - Unable to get the details for the command type '" + oStep.FunctionName + "'.<br />";
+				sNoFunc += "This command type may have been deprecated - check the latest Cato release notes.<br />";
+				sNoFunc += "    </div>";
+				sNoFunc += "</div>";
+
+				return sNoFunc;
+			}
 			
             string sExpandedClass = (!oStep.UserSettings.Visible ? "step_collapsed" : "");
 
@@ -222,12 +255,25 @@ namespace FunctionTemplates
         }
         public string DrawReadOnlyStep(Step oStep, bool bDisplayNotes)
         {
-			Function fn = ui.GetTaskFunction(oStep.FunctionName);
-			if (fn == null)
-				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
-			
 			string sStepID = oStep.ID;
 
+			Function fn = ui.GetTaskFunction(oStep.FunctionName);
+			if (fn == null) {
+				//the function doesn't exist (was probably deprecated)
+				//we need at least a basic strip with a delete button
+				string sNoFunc = "<li>";			
+	            sNoFunc += "<div class=\"view_step\" id=\"" + sStepID + "\">";
+	            sNoFunc += "    <div class=\"view_step_header ui-state-default ui-state-highlight\" id=\"view_step_header_" + sStepID + "\"><img src=\"../images/icons/status_unknown_16.png\" /></div>";
+	            sNoFunc += "    <div class=\"view_step_detail ui-state-highlight\" id=\"step_detail_" + sStepID + "\">";
+				sNoFunc += "Error building Step - Unable to get the details for the command type '" + oStep.FunctionName + "'.<br />";
+				sNoFunc += "This command type may have been deprecated - check the latest Cato release notes.<br />";
+				sNoFunc += "      </div>";
+				sNoFunc += "</div>";
+				sNoFunc += "</li>";
+
+				return sNoFunc;
+			}
+			
             //set this global flag so embedded steps will know what to do
             bShowNotes = bDisplayNotes;
 
@@ -273,11 +319,24 @@ namespace FunctionTemplates
         }
         public string DrawEmbeddedReadOnlyStep(Step oStep, bool bDisplayNotes)
         {
+			string sStepID = oStep.ID;
+
 			Function fn = ui.GetTaskFunction(oStep.FunctionName);
-			if (fn == null)
-				return "Error building Step - Unable to get the details for the Command type '" + oStep.FunctionName + "'.";
-			
-            string sStepID = oStep.ID;
+			if (fn == null) {
+				//the function doesn't exist (was probably deprecated)
+				//we need at least a basic strip with a delete button
+				string sNoFunc = "<div class=\"embedded_step\" id=\"" + sStepID + "\">";			
+	            sNoFunc += "<div class=\"view_step\" id=\"" + sStepID + "\">";
+	            sNoFunc += "    <div class=\"view_step_header  ui-state-default ui-state-highlight\" id=\"view_step_header_" + sStepID + "\"><img src=\"../images/icons/status_unknown_16.png\" /></div>";
+	            sNoFunc += "    <div class=\"view_step_detail ui-state-highlight\" id=\"step_detail_" + sStepID + "\">";
+				sNoFunc += "Error building Step - Unable to get the details for the command type '" + oStep.FunctionName + "'.<br />";
+				sNoFunc += "This command type may have been deprecated - check the latest Cato release notes.<br />";
+				sNoFunc += "      </div>";
+				sNoFunc += "</div>";
+				sNoFunc += "</div>";
+
+				return sNoFunc;
+			}
 			
 			//set this global flag so embedded steps will know what to do
             bShowNotes = bDisplayNotes;
@@ -1784,7 +1843,7 @@ namespace FunctionTemplates
                 " link_to=\"" + sTextareaID + "\" /><br />" + Environment.NewLine;
 
             sHTML += "<textarea " + sCommonAttribs;
-            sHTML += " help=\"Enter a command to execute.\">" + sCommand + "</textarea>";
+            sHTML += " syntax=\"cmd_line\" help=\"Enter a command to execute.\">" + sCommand + "</textarea>";
 
             //variables
             sVarHTML += DrawVariableSectionForDisplay(oStep, true);
