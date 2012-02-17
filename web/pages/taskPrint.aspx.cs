@@ -45,6 +45,9 @@ namespace Web.pages
 			//instantiate the new Task object
 			oTask = new Task(sTaskID, false, ref sErr);
             
+			//put the xml in a box
+			ltXML.Text = ui.SafeHTML(oTask.AsXML());
+			
             //details
             if (!GetDetails(ref sErr))
             {

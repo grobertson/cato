@@ -39,18 +39,20 @@
                         Direct to Asset?<br />-->
         </div>
         <hr />
-		<div id="div_parameters" class="">
-            <h3>
-                Parameters</h3>
+		<div id="div_parameters">
+            <div id="div_taskxml" class="ui-state-default"><h3>Parameters</h3></div>
             <asp:PlaceHolder ID="phParameters" runat="server"></asp:PlaceHolder>
         </div>
         <hr />
-        <div id="div_steps" class="">
-            <h3>
-                Steps</h3>
+        <div id="div_steps">
+            <div id="div_taskxml" class="ui-state-default"><h3>Steps</h3></div>
             <ul id="codeblock_steps">
                 <asp:PlaceHolder ID="phSteps" runat="server"></asp:PlaceHolder>
             </ul>
+        </div>
+		<div id="div_taskxml">
+            <div id="div_taskxml" class="ui-state-default"><h3>Task XML</h3></div>
+			<pre><asp:Literal ID="ltXML" runat="server"></asp:Literal></pre>
         </div>
     </div>
 </asp:Content>

@@ -38,5 +38,7 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.PlaceHolder phParameters;
 		
 		protected System.Web.UI.WebControls.PlaceHolder phSteps;
+		
+		protected System.Web.UI.WebControls.Literal ltXML;
 	}
 }
