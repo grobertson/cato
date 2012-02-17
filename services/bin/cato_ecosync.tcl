@@ -60,7 +60,7 @@ proc add_new_objects {objects cloud_id object_type ecosystem_id} {
 proc remove_old_objects {objects object_type account_id cloud_id} {
 	
 	foreach object_id $objects {
-		set sql "delete ecosystem_object from ecosystem_object eo join ecosystem e where e.account_id = '$account_id' and eo.ecosystem_object_type = '$object_type' and eo.ecosystem_object_id = '$object_id' and eo.cloud_id = '$cloud_id'" 
+		set sql "delete eo from ecosystem_object eo join ecosystem e where e.account_id = '$account_id' and eo.ecosystem_object_type = '$object_type' and eo.ecosystem_object_id = '$object_id' and eo.cloud_id = '$cloud_id'" 
 		::mysql::exec $::CONN $sql
 		output "Deleting $object_id of type $object_type from account id $account_id and cloud id $cloud_id" 
 	}
@@ -90,10 +90,12 @@ proc get_cloud_objects {cloud_id account_id} {
 	}	
 	foreach object_type [array names obj_arr] {
 		#output "checking $object_type"
-		set old_objects [get_object_status $object_type $cloud_id $account_id $obj_arr($object_type)]
-		#output "old objects are $old_objects"
-		if {"$old_objects" > ""} {
-			remove_old_objects $old_objects $object_type $account_id $cloud_id
+		if {[info exists ::OBJECT_TYPES($object_type)]} {
+			set old_objects [get_object_status $object_type $cloud_id $account_id $obj_arr($object_type)]
+			#output "old objects are $old_objects"
+			if {"$old_objects" > ""} {
+				remove_old_objects $old_objects $object_type $account_id $cloud_id
+			}
 		}
 	}
 }
