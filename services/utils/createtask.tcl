@@ -154,6 +154,14 @@ regsub -all "&" $::RESULT "&amp;" ::RESULT
 set xmldoc [dom parse $::RESULT]
 set root [$xmldoc documentElement]
 
+#check for errors... if there's an error... just write the whole response
+set error [$root selectNodes string(//error)]
+if {"$error" != ""} {
+	set ::SILENT ""
+	output $::RESULT
+	exit	
+}
+
 # now, if it was successful we will have a task_id node.
 # the fastest way to do this is to assume success, check for that node, and display the error if it wasn't there.
 set task_id [$root selectNodes string(//task_id)]
