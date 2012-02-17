@@ -110,7 +110,7 @@ proc get_local_ip {name} {
 	close $sock
         return $ip
 }
-proc get_what_is_ip {name} {
+proc get_public_ip {} {
         set proc_name get_what_is_ip
         package require http
         set tok [::http::geturl http://automation.whatismyip.com/n09230945.asp]
@@ -120,9 +120,9 @@ proc get_what_is_ip {name} {
 }
 proc get_ip {pub_or_priv} {
 	set ip ""
-	if {catch {set ip [get_meta $pub_or_priv]}} {
+	if {[catch {set ip [get_meta $pub_or_priv]}]} {
 		if {$pub_or_priv eq "public-ipv4"} {
-			set ip [get_what_is_ip]
+			set ip [get_public_ip]
 		} else {
 			set ip [get_local_ip]
 		}
@@ -148,9 +148,9 @@ proc register_security_group {apply_to_group port region} {
 
         tclcloud::configure aws $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS
 	if {"$region" > ""} {
-		set ip [get_meta public-ipv4]
+		set ip [get_ip public-ipv4]
 	} else {
-		set ip [get_meta local-ipv4]
+		set ip [get_ip local-ipv4]
 	}
         #set params "GroupId $apply_to_group IpPermissions.1.Groups.1.UserId $::CSK_ACCOUNT IpPermissions.1.Groups.1.GroupId $::CSK_SECURITY_GROUP IpPermissions.1.IpProtocol tcp IpPermissions.1.FromPort $port IpPermissions.1.ToPort $port"
         set params "GroupId $apply_to_group IpPermissions.1.IpRanges.1.CidrIp $ip/32 IpPermissions.1.IpProtocol tcp IpPermissions.1.FromPort $port IpPermissions.1.ToPort $port"
@@ -1342,7 +1342,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				puts $fp $private_key
 				close $fp
 				file attributes $::TMP/$key_file -permissions 0600
-				spawn /usr/bin/ssh -t -i $::TMP/$key_file $userid@$address
+				spawn /usr/bin/ssh -i $::TMP/$key_file $userid@$address
 			} else {
 				spawn /usr/bin/ssh $userid@$address
 			}
@@ -1646,6 +1646,43 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			error_out $error_msg 1021
 		
 		}
+		#"byobu" {
+		#	sleep 1
+		#	set system_flag "UNIX"
+		#	set do_password 0
+		#	if {[info exists expect_out(buffer)]} {
+		#		append login_output $expect_out(buffer)
+		#	}
+		#	exp_send -s -- "byobu-disable\r"
+		#	expect {
+		#		-re "# $" {
+		#			set system_flag "UNIX"
+		#			set do_password 0
+		#		}
+		#		-re "% $" {
+		#			set system_flag "UNIX"
+		#			set do_password 0
+		#		}
+		#		-re "\\\$ $" {
+		#			#output "Found the dollar prompt" 3
+		#			set system_flag "UNIX"
+		#			set do_password 0
+		#		}
+		#		timeout {
+		#			if {$attempt_num == 1} {
+		#				close;wait
+		#				return 1
+		#			} else {
+		#				set error_msg "Timeout waiting for password prompt"
+		#				if {[info exists expect_out(buffer)]} {
+		#					append login_output $expect_out(buffer)
+		#				}
+		#				append error_msg "\n$login_output"
+		#				error_out $error_msg 1019
+		#			}
+		#		}
+		#	}
+		#}
 		-re "# $" {
 			set system_flag "UNIX"
 			set do_password 0
@@ -2545,10 +2582,10 @@ proc replace_variables {the_string} {
 						regsub -all -- "-" $subst_var "" subst_var
 					}
 					"_PUBLIC_IP" {
-						set subst_var [get_meta public-ipv4]
+						set subst_var [get_ip public-ipv4]
 					}
 					"_PRIVATE_IP" {
-						set subst_var [get_meta local-ipv4]
+						set subst_var [get_ip local-ipv4]
 					}
 					"_UUID" {
 						package require uuid
