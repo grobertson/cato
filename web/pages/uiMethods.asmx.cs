@@ -4287,23 +4287,25 @@ namespace ACWebMethods
 			//parameters
 			sb.Append(" \"storm_parameters\" : [");
 			
+			if (!string.IsNullOrEmpty(sStormParameterXML)) 
+			{
 			XDocument xDoc = XDocument.Parse(sStormParameterXML);
-			if (xDoc != null) {
-				IEnumerable<XElement> xParameters = xDoc.XPathSelectElements("//parameter");
-				int i = 1;
-				foreach (XElement xParameter in xParameters)
-				{
-					sb.AppendFormat("[ \"{0}\", \"{1}\" ]", 
-					                xParameter.Element("name").Value, 
-					                ui.packJSON(xParameter.Element("values").Value));
-					
-					if (i < xParameters.Count())
-						sb.Append(",");
-					
-					i++;
+				if (xDoc != null) {
+					IEnumerable<XElement> xParameters = xDoc.XPathSelectElements("//parameter");
+					int i = 1;
+					foreach (XElement xParameter in xParameters)
+					{
+						sb.AppendFormat("[ \"{0}\", \"{1}\" ]", 
+						                xParameter.Element("name").Value, 
+						                ui.packJSON(xParameter.Element("values").Value));
+						
+						if (i < xParameters.Count())
+							sb.Append(",");
+						
+						i++;
+					}
 				}
 			}
-				
 			sb.Append("] }");
 
 			return sb.ToString();
