@@ -1319,7 +1319,7 @@ namespace FunctionTemplates
                 " src=\"../images/icons/search.png\" />" + Environment.NewLine;
 
             sHTML += "<br />";
-            sHTML += "Task Handle: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, false, "handle", "") +
+            sHTML += "Task Handle: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "handle", "") +
                 " value=\"" + sHandle + "\" />" + Environment.NewLine;
 
             sHTML += "Time to Wait: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, false, "time_to_wait", "") +
