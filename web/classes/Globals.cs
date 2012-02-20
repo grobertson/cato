@@ -1581,6 +1581,16 @@ namespace Globals
 			
 			try
 			{
+				//fix defaults
+				if (this.IsDefault) {
+					sSQL = "update cloud_account set is_default = '0' where account_id <> '" + this.ID + "'";
+				
+					if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					{
+						throw new Exception(sErr);
+					}
+				}
+
 				//what's the original name?
 				string sOriginalName = "";
 				sSQL = "select account_name from cloud_account where account_id = '" + this.ID + "'";
