@@ -182,7 +182,7 @@ namespace ACWebMethods
             //if the function type is "_common" that means this is a literal column on the step table.
             if (sFunction == "_common")
             {
-                sValue = sValue.Replace("'", "''"); //escape single quotes for the SQL insert
+                sValue = sValue.Replace("'", "''").Replace("\\", "\\\\"); //escape single quotes for the SQL insert
                 sSQL = "update task_step set " +
                     sXPath + " = '" + sValue + "'" +
                     " where step_id = '" + sStepID + "';";
@@ -295,7 +295,7 @@ namespace ACWebMethods
 
 
                 sSQL = "update task_step set " +
-                    " function_xml = '" + xDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''") + "'" +
+                    " function_xml = '" + xDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''").Replace("\\", "\\\\") + "'" +
                     " where step_id = '" + sStepID + "';";
 
                 if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
@@ -1775,7 +1775,7 @@ namespace ACWebMethods
                     //we encoded this in javascript before the ajax call.
                     //the safest way to unencode it is to use the same javascript lib.
                     //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                    sValue = ui.unpackJSON(sValue);
+                    sValue = ui.unpackJSON(sValue).Replace("'", "''").Replace("\\", "\\\\");
 
                     string sOriginalTaskID = "";
 
@@ -1792,7 +1792,7 @@ namespace ACWebMethods
                     if (sColumn == "task_code" || sColumn == "task_name")
                     {
                         sSQL = "select task_id from task where " +
-                                sColumn.Replace("'", "''") + "='" + sValue.Replace("'", "''") + "'" +
+                                sColumn + "='" + sValue + "'" +
                                 " and original_task_id <> '" + sOriginalTaskID + "'";
 
                         string sValueExists = "";
@@ -1806,12 +1806,12 @@ namespace ACWebMethods
                     if (sColumn == "task_code" || sColumn == "task_name")
                     {
                         //changing the name or code updates ALL VERSIONS
-                        string sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
+                        string sSetClause = sColumn + "='" + sValue + "'";
                         sSQL = "update task set " + sSetClause + " where original_task_id = '" + sOriginalTaskID + "'";
                     }
                     else
                     {
-                        string sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
+                        string sSetClause = sColumn + "='" + sValue + "'";
 
                         //some columns on this table allow nulls... in their case an empty sValue is a null
                         if (sColumn == "concurrent_instances" || sColumn == "queue_depth")
@@ -1819,7 +1819,7 @@ namespace ACWebMethods
                             if (sValue.Replace(" ", "").Length == 0)
                                 sSetClause = sColumn + " = null";
                             else
-                                sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
+                                sSetClause = sColumn + "='" + sValue + "'";
                         }
 
                         //some columns are checkboxes, so make sure it is a db appropriate value (1 or 0)
@@ -1833,7 +1833,7 @@ namespace ACWebMethods
                         }
 
 
-                        sSQL = "update task set " + sSetClause + " where task_id = '" + sTaskID + "'";
+						sSQL = "update task set " + sSetClause + " where task_id = '" + sTaskID + "'";
                     }
 
 
