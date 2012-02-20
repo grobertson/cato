@@ -423,15 +423,6 @@ function SaveItem(close_after_save) {
 						// clear the search field and fire a search click, should reload the grid
 		                $("[id*='txtSearch']").val("");
 						GetAccounts();
-			            
-			            if (close_after_save) {
-			            	$("#edit_dialog").dialog('close');
-		            	} else {
-			            	//we aren't closing? fine, we're now in 'edit' mode.
-			            	$("#hidMode").val("edit");
-		            		$("#hidCurrentEditID").val(account.ID);
-		            		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
-		            	}
 		
 						var dropdown_label = account.Name + ' (' + account.Provider + ')';
 						//if we are adding a new one, add it to the dropdown too
@@ -445,6 +436,15 @@ function SaveItem(close_after_save) {
 		          			if (old_label != dropdown_label)
 		          				$('#ctl00_ddlCloudAccounts option[value="' + account.ID + '"]').text(dropdown_label);
 		          		}
+			            
+			            if (close_after_save) {
+			            	$("#edit_dialog").dialog('close');
+		            	} else {
+			            	//we aren't closing? fine, we're now in 'edit' mode.
+			            	$("#hidMode").val("edit");
+		            		$("#hidCurrentEditID").val(account.ID);
+		            		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
+		            	}
 	          		}
 		        } else {
 		            showAlert(response.d);
