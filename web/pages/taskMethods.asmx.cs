@@ -182,7 +182,7 @@ namespace ACWebMethods
             //if the function type is "_common" that means this is a literal column on the step table.
             if (sFunction == "_common")
             {
-                sValue = sValue.Replace("'", "''"); //escape single quotes for the SQL insert
+                sValue = sValue.Replace("'", "''").Replace("\\", "\\\\"); //escape single quotes for the SQL insert
                 sSQL = "update task_step set " +
                     sXPath + " = '" + sValue + "'" +
                     " where step_id = '" + sStepID + "';";
@@ -295,7 +295,7 @@ namespace ACWebMethods
 
 
                 sSQL = "update task_step set " +
-                    " function_xml = '" + xDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''") + "'" +
+                    " function_xml = '" + xDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''").Replace("\\", "\\\\") + "'" +
                     " where step_id = '" + sStepID + "';";
 
                 if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
