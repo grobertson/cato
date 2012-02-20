@@ -815,7 +815,8 @@ namespace acUI
         }
         public bool SendEmailMessage(string sTo, string sFrom, string sSubject, string sBody, ref string sErr)
         {
-            string sSQL = "insert into message (date_time_entered,process_type,status,msg_to,msg_from,msg_subject,msg_body)" + " values (now(), 1, 0, '" + sTo + "', '" + sFrom + "','" + sSubject.Replace("'", "''").Trim() + "','" + sBody.Replace("'", "''").Trim() + "')";
+            string sSQL = "insert into message (date_time_entered,process_type,status,msg_to,msg_from,msg_subject,msg_body)" + 
+				" values (now(), 1, 0, '" + sTo + "', '" + sFrom + "','" + TickSlash(sSubject.Trim()) + "','" + TickSlash(sBody.Trim()) + "')";
 
             if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                 return false;
@@ -825,6 +826,10 @@ namespace acUI
 
         #endregion
         #region "Misc Functions"
+		public string TickSlash(string s)
+		{
+			return s.Replace("'", "''").Replace("\\", "\\\\");
+		}
         public string PercentEncodeRfc3986(string s)
         {
             s = HttpUtility.UrlEncode(s, System.Text.Encoding.UTF8);
@@ -1522,7 +1527,7 @@ namespace acUI
             {
                 if (sFrom != sTo)
                 {
-                    dc.addSecurityLog(GetSessionUserID(), SecurityLogTypes.Object, SecurityLogActions.ObjectModify, oType, sObjectID, "Changed: " + sLabel + " from [" + sFrom.Replace("'", "''") + "] to [" + sTo.Replace("'", "''") + "].", ref sErr);
+                    dc.addSecurityLog(GetSessionUserID(), SecurityLogTypes.Object, SecurityLogActions.ObjectModify, oType, sObjectID, "Changed: " + sLabel + " from [" + TickSlash(sFrom) + "] to [" + TickSlash(sTo) + "].", ref sErr);
                 }
             }
         }
@@ -1538,7 +1543,7 @@ namespace acUI
                 }
                 else
                 {
-                    sMsg = "Changed: [" + sObjectName.Replace("'", "''") + "] - [" + sLog + "]";
+                    sMsg = "Changed: [" + TickSlash(sObjectName) + "] - [" + sLog + "]";
                 }
                 dc.addSecurityLog(GetSessionUserID(), SecurityLogTypes.Object, SecurityLogActions.ObjectModify, oType, sObjectID, sMsg, ref sErr);
             }
@@ -1550,11 +1555,11 @@ namespace acUI
             {
                 if (string.IsNullOrEmpty(sLog))
                 {
-                    sLog = "Created: [" + sObjectName.Replace("'", "''") + "].";
+                    sLog = "Created: [" + TickSlash(sObjectName) + "].";
                 }
                 else
                 {
-                    sLog = "Created: [" + sObjectName.Replace("'", "''") + "] - [" + sLog + "]";
+                    sLog = "Created: [" + TickSlash(sObjectName) + "] - [" + sLog + "]";
                 }
                 dc.addSecurityLog(GetSessionUserID(), SecurityLogTypes.Object, SecurityLogActions.ObjectAdd, oType, sObjectID, sLog, ref sErr);
             }
@@ -1566,11 +1571,11 @@ namespace acUI
             {
                 if (string.IsNullOrEmpty(sLog))
                 {
-                    sLog = "Deleted: [" + sObjectName.Replace("'", "''") + "].";
+                    sLog = "Deleted: [" + TickSlash(sObjectName) + "].";
                 }
                 else
                 {
-                    sLog = "Deleted: [" + sObjectName.Replace("'", "''") + "] - [" + sLog + "]";
+                    sLog = "Deleted: [" + TickSlash(sObjectName) + "] - [" + sLog + "]";
                 }
                 dc.addSecurityLog(GetSessionUserID(), SecurityLogTypes.Object, SecurityLogActions.ObjectDelete, oType, sObjectID, sLog, ref sErr);
             }

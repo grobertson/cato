@@ -440,8 +440,8 @@ namespace Globals
 				" ecosystem_name = '" + this.Name + "'," +
 				" ecotemplate_id = '" + this.EcotemplateID + "'," +
 				" account_id = '" + this.AccountID + "'," +
-				" ecosystem_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
-				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
+				" ecosystem_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
 				" where ecosystem_id = '" + this.ID + "'";
 			
 			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
@@ -468,12 +468,12 @@ namespace Globals
 					" storm_file, storm_status, storm_parameter_xml, storm_cloud_id)" +
                     " select '" + this.ID + "'," +
                     " '" + this.Name + "'," +
-                    (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+                    (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
                     " '" + AccountID + "'," +
                     " ecotemplate_id," +
                     " storm_file," +
-                    (string.IsNullOrEmpty(this.StormStatus) ? " null" : " '" + this.StormStatus.Replace("'","''") + "'") + "," +
-                    (string.IsNullOrEmpty(this.ParameterXML) ? " null" : " '" + this.ParameterXML.Replace("'","''").Replace("\\","\\\\") + "'") + "," +
+                    (string.IsNullOrEmpty(this.StormStatus) ? " null" : " '" + ui.TickSlash(this.StormStatus) + "'") + "," +
+                    (string.IsNullOrEmpty(this.ParameterXML) ? " null" : " '" + ui.TickSlash(this.ParameterXML) + "'") + "," +
                     (string.IsNullOrEmpty(this.CloudID) ? " null" : " '" + this.CloudID + "'") +
                     " from ecotemplate where ecotemplate_id = '" + this.EcotemplateID + "'";
 				
@@ -681,9 +681,9 @@ namespace Globals
 			
 			string sSQL = "update ecotemplate" + 
 				" set ecotemplate_name = '" + this.Name + "'," +
-				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
 				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") +
+				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
 				" where ecotemplate_id = '" + this.ID + "'";
 			
 			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
@@ -709,9 +709,9 @@ namespace Globals
 				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
 					" values ('" + this.ID + "'," +
 						" '" + this.Name + "'," +
-						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + this.Description.Replace("'","''") + "'") + "," +
+						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
 						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + this.StormFile.Replace("'","''").Replace("\\","\\\\") + "'") + 
+						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") + 
 						")";
 				
 				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
@@ -2483,6 +2483,7 @@ namespace Globals
 		{
 			try
 			{
+				acUI.acUI ui = new acUI.acUI();
 				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 				
 				if (this.DBExists)
@@ -2523,15 +2524,15 @@ namespace Globals
 							//update the task row
 		                    oTrans.Command.CommandText = "update task set" +
 								" version = '" + this.Version + "'," +
-								" task_name = '" + this.Name.Replace("'","") + "'," +
-								" task_code = '" + this.Code.Replace("'","") + "'," +
-								" task_desc = '" + this.Description.Replace("'","") + "'," +
+								" task_name = '" + ui.TickSlash(this.Name) + "'," +
+								" task_code = '" + ui.TickSlash(this.Code) + "'," +
+								" task_desc = '" + ui.TickSlash(this.Description) + "'," +
 								" task_status = '" + this.Status + "'," +
 								" default_version = '" + (this.IsDefaultVersion ? 1 : 0) + "'," +
 								" concurrent_instances = '" + this.ConcurrentInstances + "'," +
 								" queue_depth = '" + this.QueueDepth + "'," +
 								" created_dt = now()," +
-								" parameter_xml = " + (this.ParameterXDoc != null ? "'" + this.ParameterXDoc.ToString(SaveOptions.DisableFormatting).Replace("'","") + "'" : "null") +
+								" parameter_xml = " + (this.ParameterXDoc != null ? "'" + ui.TickSlash(this.ParameterXDoc.ToString(SaveOptions.DisableFormatting)) + "'" : "null") +
 								" where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
 		                        throw new Exception(sErr);
@@ -2554,8 +2555,8 @@ namespace Globals
 									" values " +
 									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
 									(this.IsDefaultVersion ? 1 : 0) + ", '" +
-									this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
-									"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+									ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
+									"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
 							if (!oTrans.ExecUpdate(ref sErr))
 								return false;
 
@@ -2574,8 +2575,8 @@ namespace Globals
 									" values " +
 									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
 									(this.IsDefaultVersion ? 1 : 0) + ", '" +
-									this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
-									"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+									ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
+									"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
 							if (!oTrans.ExecUpdate(ref sErr))
 								return false;
 
@@ -2595,8 +2596,8 @@ namespace Globals
 							" task_name, task_code, task_desc, task_status, created_dt)" +
 							" values " +
 							"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
-							this.Name.Replace("'","''") + "', '" + this.Code.Replace("'","") + "'," +
-							"'" + this.Description.Replace("'","''") + "','" + this.Status + "', now())";
+							ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
+							"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
 					if (!oTrans.ExecUpdate(ref sErr))
 						return false;
 					

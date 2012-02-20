@@ -5186,7 +5186,7 @@ namespace FunctionTemplates
 
 
                     //then send the whole doc back to the database
-                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + xd.ToString().Replace("'", "''").Replace("\\", "\\\\") + "'" +
+                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + ui.TickSlash(xd.ToString()) + "'" +
                         " where " + sWhereClause;
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     {
@@ -5249,7 +5249,7 @@ namespace FunctionTemplates
 
 
                     //then send the whole doc back to the database
-                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + xd.ToString().Replace("'", "''").Replace("\\", "\\\\") + "'" +
+                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + ui.TickSlash(xd.ToString()) + "'" +
                         " where " + sWhereClause;
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     {
@@ -5320,7 +5320,7 @@ namespace FunctionTemplates
 
 
                     //then send the whole doc back to the database
-                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + xd.ToString().Replace("'", "''").Replace("\\", "\\\\") + "'" +
+                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + ui.TickSlash(xd.ToString()) + "'" +
                         " where " + sWhereClause;
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     {
@@ -5369,7 +5369,7 @@ namespace FunctionTemplates
                     //whack it
                     xNodeToWhack.Remove();
 
-                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + xd.ToString().Replace("'", "''").Replace("\\", "\\\\") + "'" +
+                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + ui.TickSlash(xd.ToString()) + "'" +
                         " where " + sWhereClause;
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     {
@@ -5424,7 +5424,7 @@ namespace FunctionTemplates
 
 
                     //then send the whole doc back to the database
-                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + xd.ToString().Replace("'", "''").Replace("\\", "\\\\") + "'" +
+                    sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + ui.TickSlash(xd.ToString()) + "'" +
                         " where " + sWhereClause;
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     {
@@ -5527,7 +5527,7 @@ namespace FunctionTemplates
                         xNodeToEdit.ReplaceWith(SortXElementByNodeName(xNodeToEdit));
 
                         //then send the whole doc back to the database
-                        sSQL = "update object_registry set registry_xml = '" + xd.ToString().Replace("'", "''") + "'" +
+                        sSQL = "update object_registry set registry_xml = '" + ui.TickSlash(xd.ToString()) + "'" +
                             " where object_id = '" + sRegistryID + "'";
                         if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                         {

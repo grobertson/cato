@@ -182,7 +182,7 @@ namespace ACWebMethods
             //if the function type is "_common" that means this is a literal column on the step table.
             if (sFunction == "_common")
             {
-                sValue = sValue.Replace("'", "''").Replace("\\", "\\\\"); //escape single quotes for the SQL insert
+                sValue = ui.TickSlash(sValue); //escape single quotes for the SQL insert
                 sSQL = "update task_step set " +
                     sXPath + " = '" + sValue + "'" +
                     " where step_id = '" + sStepID + "';";
@@ -295,7 +295,7 @@ namespace ACWebMethods
 
 
                 sSQL = "update task_step set " +
-                    " function_xml = '" + xDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''").Replace("\\", "\\\\") + "'" +
+                    " function_xml = '" + ui.TickSlash(xDoc.ToString(SaveOptions.DisableFormatting)) + "'" +
                     " where step_id = '" + sStepID + "';";
 
                 if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
@@ -1261,7 +1261,7 @@ namespace ACWebMethods
             //we encoded this in javascript before the ajax call.
             //the safest way to unencode it is to use the same javascript lib.
             //(sometimes the javascript and .net libs don't translate exactly, google it.)
-            sParameterXML = ui.unpackJSON(sParameterXML).Replace("'", "''");
+            sParameterXML = ui.unpackJSON(sParameterXML);
 							
 			//we gotta peek into the XML and encrypt any newly keyed values
 			um.PrepareAndEncryptParameterXML(ref sParameterXML);				
@@ -1277,7 +1277,7 @@ namespace ACWebMethods
                     string sSQL = "call addTaskInstance ('" + sTaskID + "','" + 
 						sUserID + "',NULL," + 
 						iDebugLevel + ",NULL,'" + 
-						sParameterXML + "','" + 
+						ui.TickSlash(sParameterXML) + "','" + 
 						sEcosystemID + "','" + 
 						sAccountID + "')";
 
@@ -1775,8 +1775,9 @@ namespace ACWebMethods
                     //we encoded this in javascript before the ajax call.
                     //the safest way to unencode it is to use the same javascript lib.
                     //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                    sValue = ui.unpackJSON(sValue).Replace("'", "''").Replace("\\", "\\\\");
-
+                    sValue = ui.unpackJSON(sValue);
+					sValue = ui.TickSlash(sValue);
+					
                     string sOriginalTaskID = "";
 
                     sSQL = "select original_task_id from task where task_id = '" + sTaskID + "'";

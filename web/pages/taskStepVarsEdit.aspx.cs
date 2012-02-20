@@ -101,6 +101,8 @@ namespace Web.pages
         public static string wmUpdateVars(string sStepID, string sOutputProcessingType, string sRowDelimiter, string sColDelimiter, object[] oVarArray)
         {
             dataAccess dc = new dataAccess();
+			acUI.acUI ui = new acUI.acUI();
+			
             string sErr = "";
             string sSQL = "";
             int i = 0;
@@ -201,7 +203,7 @@ namespace Web.pages
 			}
 
             sSQL = "update task_step set " +
-                " variable_xml = '" + xVarsDoc.ToString(SaveOptions.DisableFormatting).Replace("'", "''") + "'" +
+                " variable_xml = '" + ui.TickSlash(xVarsDoc.ToString(SaveOptions.DisableFormatting)) + "'" +
                 " where step_id = '" + sStepID + "';";
 
             if (!dc.sqlExecuteUpdate(sSQL, ref sErr))

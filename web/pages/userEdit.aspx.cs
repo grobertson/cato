@@ -301,7 +301,7 @@ namespace Web.pages
 
 
             // add security log
-            ui.WriteObjectAddLog(Globals.acObjectTypes.User, sNewUserID, sFullName.Trim().Replace("'", "''"), "");
+            ui.WriteObjectAddLog(Globals.acObjectTypes.User, sNewUserID, sFullName, "");
 
             //email out the password
             string sBody = "";
@@ -614,7 +614,7 @@ namespace Web.pages
             }
 
             // add security log
-            ui.WriteObjectChangeLog(Globals.acObjectTypes.User, sEditUserID, sFullName.Trim().Replace("'", "''"), sChangeDetail);
+            ui.WriteObjectChangeLog(Globals.acObjectTypes.User, sEditUserID, sFullName, sChangeDetail);
 
             // no errors to here, so return an empty string
 

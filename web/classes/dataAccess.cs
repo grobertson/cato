@@ -775,7 +775,7 @@ public class dataAccess
     public void addSecurityLog(string sUserID, SecurityLogTypes LogType, SecurityLogActions Action, acObjectTypes ObjectType, string ObjectID, string LogMessage, ref string sErr, ref acTransaction oTrans)
     {
         string sSQL = null;
-        string sTrimmedLog = LogMessage.Replace("'", "''").Trim();
+        string sTrimmedLog = LogMessage.Replace("'", "''").Replace("\\","\\\\").Trim();
         if (!string.IsNullOrEmpty(sTrimmedLog))
             if (sTrimmedLog.Length > 7999)
                 sTrimmedLog = sTrimmedLog.Substring(0, 7998);
@@ -808,7 +808,7 @@ public class dataAccess
         string ObjectID, string LogMessage, ref  string sErr)
     {
         string sSQL = null;
-        string sTrimmedLog = LogMessage.Replace("'", "''").Trim();
+        string sTrimmedLog = LogMessage.Replace("'", "''").Replace ("\\","\\\\").Trim();
         if (!string.IsNullOrEmpty(sTrimmedLog))
             if (sTrimmedLog.Length > 7999)
                 sTrimmedLog = sTrimmedLog.Substring(0, 7998);

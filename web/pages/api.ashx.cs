@@ -255,7 +255,7 @@ namespace Web
 			string sErr = "";
 			
 			//we encoded this in javascript before the ajax call.
-			sTaskXML = ui.unpackJSON(sTaskXML).Replace("'", "''");
+			sTaskXML = ui.unpackJSON(sTaskXML);
 			
 			
 			//TODO: parameter xml will be inside the task xml...

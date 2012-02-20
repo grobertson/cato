@@ -2366,12 +2366,13 @@ namespace ACWebMethods
                     //the safest way to unencode it is to use the same javascript lib.
                     //(sometimes the javascript and .net libs don't translate exactly, google it.)
                     sValue = ui.unpackJSON(sValue);
-
+					sValue = ui.TickSlash(sValue);
+					
                     // check for existing name
                     if (sColumn == "action_name")
                     {
                         sSQL = "select action_id from ecotemplate_action where " +
-                                " action_name = '" + sValue.Replace("'", "''") + "'" +
+                                " action_name = '" + sValue + "'" +
                                 " and ecotemplate_id = '" + sEcoTemplateID + "'";
 
                         string sValueExists = "";
@@ -2382,7 +2383,7 @@ namespace ACWebMethods
                             return sValue + " exists, please choose another value.";
                     }
 
-                    string sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
+                    string sSetClause = sColumn + "='" + sValue + "'";
 
                     //some columns on this table allow nulls... in their case an empty sValue is a null
                     if (sColumn == "action_desc" || sColumn == "category" || sColumn == "task_version")
@@ -2390,7 +2391,7 @@ namespace ACWebMethods
                         if (sValue.Replace(" ", "").Length == 0)
                             sSetClause = sColumn + " = null";
                         else
-                            sSetClause = sColumn + "='" + sValue.Replace("'", "''") + "'";
+                            sSetClause = sColumn + "='" + sValue + "'";
                     }
 
                     sSQL = "update ecotemplate_action set " + sSetClause + " where action_id = '" + sActionID + "'";
@@ -3408,7 +3409,7 @@ namespace ACWebMethods
                 //we encoded this in javascript before the ajax call.
                 //the safest way to unencode it is to use the same javascript lib.
                 //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                sParameterXML = ui.unpackJSON(sParameterXML).Replace("'", "''");
+                sParameterXML = ui.unpackJSON(sParameterXML);
 				
 				//we gotta peek into the XML and encrypt any newly keyed values
 				PrepareAndEncryptParameterXML(ref sParameterXML);				
@@ -3436,7 +3437,7 @@ namespace ACWebMethods
 					" '" + sDaysOrWeeks + "'," +
 					(!string.IsNullOrEmpty(sLabel) ? " '" + sLabel + "'" : "null") + "," +
 					(!string.IsNullOrEmpty(sDesc) ? " '" + sDesc + "'" : "null") + "," +
-					(!string.IsNullOrEmpty(sParameterXML) ? " '" + sParameterXML + "'" : "null") + "," +
+					(!string.IsNullOrEmpty(sParameterXML) ? " '" + ui.TickSlash(sParameterXML) + "'" : "null") + "," +
 					(iDebugLevel > -1 ? iDebugLevel.ToString() : "null") +
 					")";
 
@@ -3463,7 +3464,7 @@ namespace ACWebMethods
                 //we encoded this in javascript before the ajax call.
                 //the safest way to unencode it is to use the same javascript lib.
                 //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                sParameterXML = ui.unpackJSON(sParameterXML).Replace("'", "''");
+                sParameterXML = ui.unpackJSON(sParameterXML);
 				
 				//we gotta peek into the XML and encrypt any newly keyed values
 				PrepareAndEncryptParameterXML(ref sParameterXML);				
@@ -3479,7 +3480,7 @@ namespace ACWebMethods
 					(!string.IsNullOrEmpty(sEcosystemID) ? " '" + sEcosystemID + "'" : "''") + "," +
 					(!string.IsNullOrEmpty(sCloudAccountID) ? " '" + sCloudAccountID + "'" : "''") + "," +
 					" str_to_date('" + sRunOn + "', '%m/%d/%Y %H:%i')," +
-					(!string.IsNullOrEmpty(sParameterXML) ? " '" + sParameterXML + "'" : "null") + "," +
+					(!string.IsNullOrEmpty(sParameterXML) ? " '" + ui.TickSlash(sParameterXML) + "'" : "null") + "," +
 					(iDebugLevel > -1 ? iDebugLevel.ToString() : "null") + "," +
 					" 'manual'" +
 					")";
@@ -3510,7 +3511,7 @@ namespace ACWebMethods
                 //we encoded this in javascript before the ajax call.
                 //the safest way to unencode it is to use the same javascript lib.
                 //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                sParameterXML = ui.unpackJSON(sParameterXML).Replace("'", "''");
+                sParameterXML = ui.unpackJSON(sParameterXML);
 				
 				//we gotta peek into the XML and encrypt any newly keyed values
 				PrepareAndEncryptParameterXML(ref sParameterXML);				
@@ -3520,7 +3521,7 @@ namespace ACWebMethods
                 string sErr = null;
 
                 sSQL = "update action_plan" +
-                    " set parameter_xml = " + (!string.IsNullOrEmpty(sParameterXML) ? "'" + sParameterXML + "'" : "null") + "," +
+                    " set parameter_xml = " + (!string.IsNullOrEmpty(sParameterXML) ? "'" + ui.TickSlash(sParameterXML) + "'" : "null") + "," +
                     " debug_level = " + (iDebugLevel > -1 ? iDebugLevel.ToString() : "null") +
                     " where plan_id = " + iPlanID.ToString();
 
@@ -3552,7 +3553,7 @@ namespace ACWebMethods
                 //we encoded this in javascript before the ajax call.
                 //the safest way to unencode it is to use the same javascript lib.
                 //(sometimes the javascript and .net libs don't translate exactly, google it.)
-                sParameterXML = ui.unpackJSON(sParameterXML).Replace("'", "''");
+                sParameterXML = ui.unpackJSON(sParameterXML);
 				
 				//we gotta peek into the XML and encrypt any newly keyed values
 				PrepareAndEncryptParameterXML(ref sParameterXML);				
@@ -3579,7 +3580,7 @@ namespace ACWebMethods
                     " days_or_weeks = '" + sDaysOrWeeks + "'," +
                     " label = " + (!string.IsNullOrEmpty(sLabel) ? "'" + sLabel + "'" : "null") + "," +
                     " descr = " + (!string.IsNullOrEmpty(sDesc) ? "'" + sDesc + "'" : "null") + "," +
-                    " parameter_xml = " + (!string.IsNullOrEmpty(sParameterXML) ? "'" + sParameterXML + "'" : "null") + "," +
+                    " parameter_xml = " + (!string.IsNullOrEmpty(sParameterXML) ? "'" + ui.TickSlash(sParameterXML) + "'" : "null") + "," +
                     " debug_level = " + (iDebugLevel > -1 ? iDebugLevel.ToString() : "null") +
                     " where schedule_id = '" + sScheduleID + "'";
 
