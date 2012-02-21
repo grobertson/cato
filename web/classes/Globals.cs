@@ -213,7 +213,7 @@ namespace Globals
 	public class DatabaseSettings
     {
 
-        private static int iConnectionTimeout = 90;
+        private static int iConnectionTimeout = 15;
         public static int ConnectionTimeout
         {
             get { return iConnectionTimeout; }
