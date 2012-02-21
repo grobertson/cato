@@ -275,6 +275,12 @@ namespace Globals
             get { return sServerUseSSL; }
             set { sServerUseSSL = value; }
         }
+        private static bool bSqlLog = false;
+        public static bool SqlLog
+        {
+            get { return bSqlLog; }
+            set { bSqlLog = value; }
+        }
         private static bool bDbLog = false;
         public static bool DbLog
         {

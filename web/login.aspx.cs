@@ -88,15 +88,15 @@ namespace Web
 				//not able to perform the very first database hit.
 				//this line serves as an inital db hit, but we aren't trapping it
 				dc.TestDBConnection(ref sErr);
-				if(sErr != "") {
-					//there is a weird mysql error on initial startup.
-					//we're gonna try sleeping a bit then try again
-					System.Threading.Thread.Sleep(2000);
-					
-					dc.TestDBConnection(ref sErr);
-					if(sErr != "")
-						Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
-				}
+//				if(sErr != "") {
+//					//there is a weird mysql error on initial startup.
+//					//we're gonna try sleeping a bit then try again
+//					System.Threading.Thread.Sleep(2000);
+//					
+//					dc.TestDBConnection(ref sErr);
+//					if(sErr != "")
+//						Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
+//				}
 
 				//JUST get the login message here
 				string sLoginMessage = "Welcome to Cato";
