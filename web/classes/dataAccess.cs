@@ -143,6 +143,9 @@ public class dataAccess
                             if (int.TryParse(sVal, out result))
                                 DatabaseSettings.ConnectionTimeout = result;
                             break;
+                        case "sqllog":
+                                DatabaseSettings.SqlLog = IsTrue(sVal);
+                            break;
                         case "dblog":
                                 DatabaseSettings.DbLog = IsTrue(sVal);
                             break;
@@ -268,8 +271,8 @@ public class dataAccess
         }
         else
         {
-            if (DatabaseSettings.DbLog)
-				Console.WriteLine(sSQL);
+            if (DatabaseSettings.SqlLog)
+				Console.WriteLine(DateTime.Now.ToString() + "-- " + sSQL);
             return true;
         }
     }
@@ -290,6 +293,7 @@ public class dataAccess
             }
             catch (MySqlException ex)
             {
+				Console.WriteLine(ex.InnerException.ToString());
 				switch (ex.Number)
                 {
                     case 0:
@@ -301,18 +305,19 @@ public class dataAccess
                     default:
 						//well, to try to stop the random mysql connection error...
 						//if we get here we'll sleep and try to connect again.
-						Console.WriteLine("--- MySQL: conn failed, first attempt.");
-						System.Threading.Thread.Sleep(2000);
+						if (DatabaseSettings.DbLog)
+							Console.WriteLine("--- MySQL: conn failed, first attempt.");
+						//System.Threading.Thread.Sleep(2000);
 						
 			            try
 			            {
 							MySqlConnection oConn = new MySqlConnection(sConString);
 			                oConn.Open();
-							Console.WriteLine("------ MySQL: conn failed, second attempt.");
 							return oConn;
 			            }
 			            catch (MySqlException ex2)
 			            {
+							//Console.WriteLine(ex.ToString());
 							switch (ex2.Number)
 			                {
 			                    case 0:
@@ -322,6 +327,8 @@ public class dataAccess
 			                        ErrorMessage = FormatError("MySQL: Invalid username/password.");
 			                        break;
 			                    default:
+									if (DatabaseSettings.DbLog)
+										Console.WriteLine("------ MySQL: conn failed, second attempt.");
 			                        ErrorMessage = FormatError("MySQL: Unable to connect. " + ex.Message);
 			                        break;
 			                }
@@ -349,14 +356,29 @@ public class dataAccess
     }
     public void connClose(MySqlConnection oConn)
     {
-        if (oConn != null)
+        try
         {
-            if (oConn.State != ConnectionState.Closed)
-            {
-                oConn.Close();
-				oConn.Dispose();
-            }
+			oConn.Close();
+			oConn.Dispose();
+
+			if (DatabaseSettings.SqlLog)
+				Console.WriteLine("# Closed");
+			
+			return;
+		}
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return;
         }
+//        if (oConn != null)
+//        {
+//            if (oConn.State != ConnectionState.Closed)
+//            {
+//                oConn.Close();
+//				oConn.Dispose();
+//            }
+//        }
     }
 
     public bool sqlGetSingleObject(ref object o, string sSQL, ref string ErrorMessage)
