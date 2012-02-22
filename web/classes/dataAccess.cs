@@ -43,15 +43,6 @@ public class dataAccess
 	public bool TestDBConnection(ref string sErr) {
 	/*
 	 * We'll be doing a simple query against the database to verify connectivity.
-	 * 
-	 * NOTE: on several completely random places, we've noted an odd connection issue, 
-	 * that seems to only happen immediately after the box (apache/mysql/mono) starts up.
-	 * 
-	 * In those places, hitting this function first seems to "clear the pipes" and subsequent 
-	 * queries work fine.
-	 * 
-	 * This is a terrible workaround hack, but we can move on and fix when the cause is finally found.
-	 * 
 	 * */
 		string sSQL = "select 'Database Test Successful' from login_security_settings";
 		string sTestResult = "";
@@ -135,15 +126,20 @@ public class dataAccess
                             DatabaseSettings.EnvironmentKey = sVal;
                             iImportant++;
                             break;
-                        case "databaseusessl":
+                        case "dbusessl":
                             DatabaseSettings.UseSSL = sVal;
                             break;
                         case "dbconnectiontimeout":
-                            int result;
-                            if (int.TryParse(sVal, out result))
-                                DatabaseSettings.ConnectionTimeout = result;
+                            int timeout;
+                            if (int.TryParse(sVal, out timeout))
+                                DatabaseSettings.ConnectionTimeout = timeout;
                             break;
-                        case "sqllog":
+                        case "dbconnectionretries":
+                            int retries;
+                            if (int.TryParse(sVal, out retries))
+                                DatabaseSettings.ConnectionRetries = retries;
+                            break;
+                        case "dbsqllog":
                                 DatabaseSettings.SqlLog = IsTrue(sVal);
                             break;
                         case "dblog":
@@ -207,12 +203,12 @@ public class dataAccess
             "UID=" + DatabaseSettings.DatabaseUID + ";" +
             "PWD=" + DeCrypt(DatabaseSettings.DatabaseUserPassword) + ";" +
             "CONNECTION TIMEOUT=" + DatabaseSettings.ConnectionTimeout + ";";
-        //"pooling=false" & ";"
+//            "POOLING=no;" +
 
         // bugzilla 1225, if the ssl settings are present add them
         if (DatabaseSettings.UseSSL.ToLower() == "true" || DatabaseSettings.UseSSL.ToLower() == "false")
         {
-            sDecryptedString += "Encrypt=" + DatabaseSettings.UseSSL + ";";
+            sDecryptedString += "ENCRYPT=" + DatabaseSettings.UseSSL + ";";
         }
 
         return sDecryptedString;
@@ -272,7 +268,7 @@ public class dataAccess
         else
         {
             if (DatabaseSettings.SqlLog)
-				Console.WriteLine(DateTime.Now.ToString() + "-- " + sSQL);
+				Console.WriteLine(DateTime.Now.ToString() + " -- " + sSQL);
             return true;
         }
     }
@@ -285,68 +281,43 @@ public class dataAccess
 
         if (!string.IsNullOrEmpty(sConString))
         {
-            try
-            {
-                MySqlConnection oConn = new MySqlConnection(sConString);
-                oConn.Open();
-                return oConn;
-            }
-            catch (MySqlException ex)
-            {
-				Console.WriteLine(ex.InnerException.ToString());
-				switch (ex.Number)
-                {
-                    case 0:
-                        ErrorMessage = FormatError("MySQL: Cannot connect to server.");
-                        break;
-                    case 1045:
-                        ErrorMessage = FormatError("MySQL: Invalid username/password.");
-                        break;
-                    default:
-						//well, to try to stop the random mysql connection error...
-						//if we get here we'll sleep and try to connect again.
+			MySqlConnection oConn = null;
+			for (int i = 0; i < DatabaseSettings.ConnectionRetries; i++) {
+	            try
+	            {
+	                oConn = new MySqlConnection(sConString);
+	                oConn.Open();
+	                return oConn;
+	            }
+	            catch (MySqlException ex)
+	            {
+					//Console.WriteLine(ex.ToString());
+					switch (ex.Number)
+					{
+					case 0:
+						ErrorMessage = FormatError("MySQL: Cannot connect to server.");
+						return null;
+					case 1045:
+						ErrorMessage = FormatError("MySQL: Invalid username/password.");
+						return null;
+					default:
 						if (DatabaseSettings.DbLog)
-							Console.WriteLine("--- MySQL: conn failed, first attempt.");
-						//System.Threading.Thread.Sleep(2000);
-						
-			            try
-			            {
-							MySqlConnection oConn = new MySqlConnection(sConString);
-			                oConn.Open();
-							return oConn;
-			            }
-			            catch (MySqlException ex2)
-			            {
-							//Console.WriteLine(ex.ToString());
-							switch (ex2.Number)
-			                {
-			                    case 0:
-			                        ErrorMessage = FormatError("MySQL: Cannot connect to server.");
-			                        break;
-			                    case 1045:
-			                        ErrorMessage = FormatError("MySQL: Invalid username/password.");
-			                        break;
-			                    default:
-									if (DatabaseSettings.DbLog)
-										Console.WriteLine("------ MySQL: conn failed, second attempt.");
-			                        ErrorMessage = FormatError("MySQL: Unable to connect. " + ex.Message);
-			                        break;
-			                }
-			                return null;
-			            }
-			            catch (Exception ex2)
-			            {
-			                ErrorMessage = FormatError("MySQL: Connection Error: " + ex2.Message);
-			                return null;
-			            }
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = FormatError("MySQL: Connection Error: " + ex.Message);
-                return null;
-            }
+							Console.WriteLine("-- MySQL: conn failed, attempt #" + i.ToString() + ".");
+						break;
+	                }
+	            }
+	            catch (Exception ex)
+	            {
+	                ErrorMessage = FormatError("MySQL: Connection Error: " + ex.Message);
+	                return null;
+	            }				
+			}
+			
+			//10 times no connection!?
+			if (DatabaseSettings.DbLog)
+				Console.WriteLine("-- MySQL: quit trying.");
+			ErrorMessage = FormatError("MySQL: Connection Error: Quit trying after 10 attempts.");
+			return null;
         }
         else
         {
@@ -354,15 +325,20 @@ public class dataAccess
             return null;
         }
     }
-    public void connClose(MySqlConnection oConn)
+    public void connClose(ref MySqlConnection oConn)
     {
         try
         {
-			oConn.Close();
-			oConn.Dispose();
-
+			if (oConn != null)
+			{
+				if (oConn.State != ConnectionState.Closed)
+					oConn.Close();
+				
+				oConn.Dispose();
+			}
+			
 			if (DatabaseSettings.SqlLog)
-				Console.WriteLine("# Closed");
+				Console.WriteLine(DateTime.Now.ToString() + " -- " + "## Closed");
 			
 			return;
 		}
@@ -489,7 +465,7 @@ public class dataAccess
         }
         finally
         {
-            connClose(oConn);
+            connClose(ref oConn);
         }
 
         return true;
@@ -518,7 +494,7 @@ public class dataAccess
         }
         finally
         {
-            connClose(oConn);
+            connClose(ref oConn);
         }
 
         return true;
@@ -597,7 +573,7 @@ public class dataAccess
         }
         finally
         {
-            connClose(oConn);
+            connClose(ref oConn);
         }
 
         return true;
@@ -627,7 +603,7 @@ public class dataAccess
         }
         finally
         {
-            connClose(oConn);
+            connClose(ref oConn);
         }
 
         return true;
