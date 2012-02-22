@@ -286,7 +286,7 @@ CREATE TABLE `ecosystem_log` (
   `ecosystem_id` varchar(36) NOT NULL,
   `ecosystem_object_type` varchar(32) NOT NULL,
   `logical_id` varchar(256) NULL,
-  `ecosystem_object_id` varchar(64) NOT NULL,
+  `ecosystem_object_id` varchar(64) NULL,
   `status` varchar(32) NOT NULL,
   `log` text NULL,
   `update_dt` datetime DEFAULT NULL,
