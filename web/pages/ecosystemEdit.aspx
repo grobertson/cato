@@ -46,6 +46,10 @@
             </div>
             <div id="div_objects" class="toolbox_panel hidden">
                 <!-- I imagine the actions for a specific object would go here. -->
+				<div id="discovery_btn" class="ui-widget-content ui-corner-all ui-state-focus action_btn pointer">
+					<img alt="" src="../images/icons/cloud_discovery_24.png" height="48" width="48" />
+					<span>Cloud Discovery</span>
+				</div>
             </div>
             <div id="div_actions" class="toolbox_panel">
                 <span class="detail_label">Select a Category:</span>
