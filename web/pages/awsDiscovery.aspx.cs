@@ -218,7 +218,7 @@ namespace Web.pages
             foreach (DataColumn dc in dt.Columns)
             {
                 sHTML += "<th>";
-                sHTML += dc.ColumnName;
+                sHTML += dc.Caption;
                 sHTML += "</th>";
             }
 
