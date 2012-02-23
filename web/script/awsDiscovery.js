@@ -75,6 +75,13 @@ $(document).ready(function () {
     });
 
 
+	//if an ecosystem_id was provided, select it from the dropdown
+    var sel_eco_id = getQuerystringVariable("ecosystem_id");
+    if (sel_eco_id != "") {
+		$("#ctl00_phDetail_ddlEcosystems").val(sel_eco_id);
+    }
+
+
     $("#add_to_ecosystem_btn").click(function () {
             Save();
     });
