@@ -313,9 +313,9 @@ namespace Web.pages
             //default message if undefined in the table
             if (string.IsNullOrEmpty(sBody))
                 sBody = sFullName + " - an account has been created for you in " + ag.APP_NAME + "." + Environment.NewLine + Environment.NewLine +
-                "Your User Name: " + sLoginID + "." + Environment.NewLine +
-                "Your temporary password: " + sUserPassword + "." + Environment.NewLine + Environment.NewLine +
-					"Access the application at <a href='" + sURL + "' target='_blank'>" + sURL + "</a>.";
+                "Your User Name: " + sLoginID + Environment.NewLine +
+                "Your temporary password: " + sUserPassword + Environment.NewLine + Environment.NewLine +
+					"Access the application at: " + sURL;
 			
 
             //replace our special tokens with the values
