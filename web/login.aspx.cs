@@ -84,19 +84,8 @@ namespace Web
 				
 				ui.SetSessionObject("app_url", HttpContext.Current.Request.Url.Authority, "Security");
 				
-				//now, for some reason we were having issues with the initial startup of apache
-				//not able to perform the very first database hit.
-				//this line serves as an inital db hit, but we aren't trapping it
+				//this line serves as an inital db hit to wake things up, but we aren't trapping it
 				dc.TestDBConnection(ref sErr);
-				if(sErr != "") {
-					//there is a weird mysql error on initial startup.
-					//we're gonna try sleeping a bit then try again
-					System.Threading.Thread.Sleep(2000);
-					
-					dc.TestDBConnection(ref sErr);
-					if(sErr != "")
-						Response.Write("<!--DATABASE TEST FAILED: " + sErr + "-->");
-				}
 
 				//JUST get the login message here
 				string sLoginMessage = "Welcome to Cato";

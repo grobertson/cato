@@ -220,6 +220,13 @@ namespace Globals
             set { iConnectionTimeout = value; }
         }
 
+		private static int iConnectionRetries = 15;
+        public static int ConnectionRetries
+        {
+            get { return iConnectionRetries; }
+            set { iConnectionRetries = value; }
+        }
+
         private static string sAppInstance = "";
         public static string AppInstance
         {
@@ -275,7 +282,15 @@ namespace Globals
             get { return sServerUseSSL; }
             set { sServerUseSSL = value; }
         }
-        private static bool bDbLog = false;
+
+		private static bool bSqlLog = false;
+        public static bool SqlLog
+        {
+            get { return bSqlLog; }
+            set { bSqlLog = value; }
+        }
+
+		private static bool bDbLog = false;
         public static bool DbLog
         {
             get { return bDbLog; }
@@ -1500,19 +1515,10 @@ namespace Globals
 				{
 					int iExists = -1;
 					
-					//as a reminder, we were doing this because of a random screws mysql connection error.
 					string sSQL = "select count(*) as cnt from cloud_account";
-                	if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
-					{
-						System.Threading.Thread.Sleep(300);
-						if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr))
-						{
-							System.Threading.Thread.Sleep(300);
-							if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr)) {
-								oTrans.RollBack();
-								throw new Exception("Unable to count Cloud Accounts: " + sErr);
-							}
-						}
+					if (!dc.sqlGetSingleInteger(ref iExists, sSQL, ref sErr)) {
+						oTrans.RollBack();
+						throw new Exception("Unable to count Cloud Accounts: " + sErr);
 					}
 					
 					if (iExists == 0)
