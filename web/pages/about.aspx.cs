@@ -27,7 +27,8 @@ namespace Web.pages
     public partial class about : System.Web.UI.Page
     {
         acUI.AppGlobals ag = new acUI.AppGlobals();
-
+		dataAccess dc = new dataAccess();
+		
         protected void Page_Load(object sender, EventArgs e)
         {
             lblAbout.Text = "About " + ag.APP_NAME;
@@ -48,6 +49,8 @@ namespace Web.pages
 
             lblDatabaseAddress.Text = DatabaseSettings.DatabaseAddress.ToString();
             lblDatabaseName.Text = DatabaseSettings.DatabaseName.ToString();
+			
+			lblTime.Text = dc.GetDatabaseTime();
 
             lblInstance.Text = DatabaseSettings.AppInstance.ToString();
         }

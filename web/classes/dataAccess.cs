@@ -357,6 +357,23 @@ public class dataAccess
 //        }
     }
 
+    public string GetDatabaseTime()
+    {
+        try
+        {
+			string ErrorMessage = "";
+            object o = new object();
+            if (!sqlExecuteScalar(ref o, "select now()", ref ErrorMessage))
+                return ErrorMessage;
+            string s = Convert.ToString((object.ReferenceEquals(o, DBNull.Value) ? "" : o));
+            return s;
+        }
+        catch (Exception ex)
+        {
+            return FormatError(ex.Message);
+        }
+
+    }
     public bool sqlGetSingleObject(ref object o, string sSQL, ref string ErrorMessage)
     {
         try

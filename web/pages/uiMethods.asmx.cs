@@ -60,6 +60,13 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
+        public string wmGetDatabaseTime()
+        {
+			dataAccess dc = new dataAccess();
+            return dc.GetDatabaseTime();
+        }
+
+        [WebMethod(EnableSession = true)]
         public string wmGetHostname()
         {
             return Server.MachineName.ToString();

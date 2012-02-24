@@ -21,6 +21,9 @@
             <b>Database: </b>
             <asp:Label runat="server" ID="lblDatabaseName"></asp:Label><br />
             <br />
+            <b>Server Time: </b>
+            <asp:Label runat="server" ID="lblTime"></asp:Label><br />
+            <br />
             <b>Version: </b>
             <asp:Label runat="server" ID="lblVersion"></asp:Label><br />
             <br />
