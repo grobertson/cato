@@ -1632,10 +1632,12 @@ namespace ACWebMethods
             if (bHasIcon)
             {
                 if (sValue != "")
-                    sIcon = "<img class=\"custom_icon\" src=\"../images/custom/" + sPropertyName.Replace(" ", "") + "_" + sValue.Replace(" ", "") + ".png\" alt=\"\" />";
+                    sIcon = "<img class=\"custom_icon\" src=\"../images/custom/" + 
+						sPropertyName.Replace(" ", "") + "_" + 
+						sValue.Replace(" ", "") + ".png\" alt=\"\" />".ToLower();
             }
 
-            sHTML += (sValue == "" ? "" : "<div class=\"ecosystem_item_property\">" + sPropertyName + ": <span class=\"ecosystem_item_property_value\">" + sIcon + sValue + "</span></div>");
+            sHTML += (sValue == "" ? "" : "<div class=\"ecosystem_item_property\">" + dr.Table.Columns[sPropertyName].Caption + ": <span class=\"ecosystem_item_property_value\">" + sIcon + sValue + "</span></div>");
 
             return sHTML;
         }
