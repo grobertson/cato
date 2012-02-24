@@ -1426,7 +1426,7 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 			append error_msg "\n$login_output"
 			error_out $error_msg 1013
 		}
-		"No route to host" {
+		-re "No route to host|Network is unreachable|onnection reset by peer|onnection refused|onnection closed by" {
 			#set error_msg "$telnet_ssh no route to host $address, check network or firewall settings"
 			#error_out $error_msg 3000
 			if {$attempt_num == 1} {

@@ -64,10 +64,17 @@ def read_config():
 
 class CatoProcess():
         def __init__(self, process_name):
-		self.host_domain = os.getlogin() +'@'+ os.uname()[1]
+		# the following line does not work for a service started in the 
+		# background. Hardcoding to root until a fix is found
+		#self.host_domain = os.getlogin() +'@'+ os.uname()[1]
+		self.host_domain = 'root@'+ os.uname()[1]
 		self.host = os.uname()[1]
 		self.platform = os.uname()[0]
-		self.user = os.getlogin()
+		# the following line does not work for a service started in the 
+		# background. Hardcoding to root until a fix is found
+		#self.host_domain = os.getlogin() +'@'+ os.uname()[1]
+		#self.user = os.getlogin()
+		self.user = 'root'
 		self.my_pid = os.getpid()
 		self.process_name = process_name
 		self.initialize_logfile()
