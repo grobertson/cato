@@ -87,6 +87,52 @@ namespace Web
 				//this line serves as an inital db hit to wake things up, but we aren't trapping it
 				dc.TestDBConnection(ref sErr);
 
+				// APPLICATION SETTINGS (XDocument)
+				if (!ui.PutApplicationSettingsInSession(ref sErr))
+				{
+					lblErrorMessage.Text = sErr;
+					return;
+				}
+	
+				/*
+				 * LICENSING
+				 * 
+				 * We'll be forcing the user to accept the license agreement on the very first run.
+				 * 
+				 * If the agreement has not been recorded, you cannot log in.
+				 * (We'll accomplish this by hiding the controls on this page if there's no agreement.)
+				 * 
+				 * The agreement is stored in the application_settings table.
+				 * 
+				 * */
+				string sLicenseStatus = ui.GetApplicationSetting("general/license_status");
+				sLicenseStatus = (string.IsNullOrEmpty(sLicenseStatus) ? "" : sLicenseStatus); //nonexistent or empty are both just empty
+				if (sLicenseStatus != "agreed")
+				{
+					//get the license
+					string sLicenseText = GetLicenseFile();
+					if (string.IsNullOrEmpty(sLicenseText))
+						sLicenseText = "Copyright 2012 Cloud Sidekick" +
+							Environment.NewLine + Environment.NewLine + 
+							"Use of this software indicates agreement with the included software LICENSE." + 
+							Environment.NewLine + Environment.NewLine + 
+							"The LICENSE can be found in the application directory where this Cloud Sidekick product is installed." + 
+							"";
+					
+					//show the license
+					ltLicenseText.Text = ui.FixBreaks(ui.SafeHTML(sLicenseText));
+					pnlLicense.Visible = true;
+					
+					//hide the login form
+					pnlAllLogin.Visible = false;
+					
+					//stop processing the page
+					return;
+				}
+
+				
+				//Licensing all good? Continue...
+				
 				//JUST get the login message here
 				string sLoginMessage = "Welcome to Cato";
 				sSQL = "select login_message from login_security_settings where id = 1";
@@ -267,13 +313,6 @@ namespace Web
 
 				// USER SETTINGS (XDocument)
                 if (!ui.PutUserSettingsInSession(ref sErr))
-                {
-                    lblErrorMessage.Text = sErr;
-                    return;
-                }
-				
-				// APPLICATION SETTINGS (XDocument)
-                if (!ui.PutApplicationSettingsInSession(ref sErr))
                 {
                     lblErrorMessage.Text = sErr;
                     return;
@@ -1055,6 +1094,29 @@ namespace Web
 
         }
 
+		protected string GetLicenseFile()
+		{
+			try
+			{
+				string sFileContents = "";
+	            StreamReader oReader = default(StreamReader);
+	            oReader = new StreamReader(HttpContext.Current.Server.MapPath("~/LICENSE"));
+	            sFileContents = oReader.ReadToEnd();
+	            oReader.Close();
+				return sFileContents;
+	        }
+	        catch (System.IO.FileNotFoundException)
+	        {
+	            //lblErrorMessage.Text = "LICENSE file not found.";
+	            return "";
+	        }
+	        catch (Exception ex)
+	        {
+	            lblErrorMessage.Text =  ex.Message;
+	            return "";
+	        }
+		}
+		
         #region "Buttons"
         protected void btnLogin_Click(object sender, System.EventArgs e)
         {
@@ -1168,6 +1230,17 @@ namespace Web
             txtLoginPassword.Text = txtCurrentPassword.Text;
             //string sTest = txtWarningCurrentPassword.Text;
             AttemptLogin();
+        }
+        protected void btnLicenseAgree_Click(object sender, EventArgs e)
+        {
+            //save the license agreement, and the timestamp
+			if (!ui.SetApplicationSetting("general", "license_status", "agreed", ref sErr))
+				lblErrorMessage.Text =  sErr;
+			if (!ui.SetApplicationSetting("general", "license_datetime", DateTime.UtcNow.ToString(), ref sErr))
+				lblErrorMessage.Text =  sErr;
+
+			//all good?  just reload the page
+			HttpContext.Current.Response.Redirect("login.aspx", false);
         }
         #endregion
 

@@ -15,6 +15,8 @@ namespace Web {
 		
 		protected System.Web.UI.HtmlControls.HtmlForm form1;
 		
+		protected System.Web.UI.WebControls.Panel pnlAllLogin;
+		
 		protected System.Web.UI.WebControls.Label lblMessage;
 		
 		protected System.Web.UI.WebControls.Panel pnlLogin;
@@ -92,6 +94,12 @@ namespace Web {
 		protected System.Web.UI.WebControls.HiddenField hidID;
 		
 		protected System.Web.UI.WebControls.Label lblErrorMessage;
+		
+		protected System.Web.UI.WebControls.Panel pnlLicense;
+		
+		protected System.Web.UI.WebControls.Literal ltLicenseText;
+		
+		protected System.Web.UI.WebControls.Button btnLicenseAgree;
 		
 		protected System.Web.UI.WebControls.Literal ltAnnouncement;
 	}

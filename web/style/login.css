@@ -1,8 +1,6 @@
 /* Login Page */
 body
 {
-	background-image: url("../images/login-bggradient.png");
-	background-repeat: repeat-x;
 	font: normal 12px Arial, lucida, sans-serif;
 }
 #wrapper
