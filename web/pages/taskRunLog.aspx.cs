@@ -74,37 +74,48 @@ namespace Web.pages
                         dc.sqlGetSingleString(ref sTaskInstance, sSQL, ref sErr);
                     }
                 }
-
-                //now we are sure we have the instance... put it on the page...
-                hidInstanceID.Value = sTaskInstance;
-
-                //PERMISSION CHECK
-                //now... kick out if the user isn't allowed to see this page
-
-                //it's a little backwards... IsPageAllowed will kick out this page for users...
-                //so don't bother to check that if we can determine the user has permission by 
-                //a group association to this task
-                string sOTID = "";
-                string stiSQL = "select t.original_task_id" +
-                   " from tv_task_instance ti join task t on ti.task_id = t.task_id" +
-                   " where ti.task_instance = '" + sTaskInstance + "'";
-
-                dc.sqlGetSingleString(ref sOTID, stiSQL, ref sErr);
-
-                //now we know the ID, see if we are grouped with it
-                //this will kick out if they DONT match tags and they AREN'T in a role with sufficient privileges
-                if (!ui.UserAndObjectTagsMatch(sOTID, 3)) ui.IsPageAllowed("You do not have permission to view this Task.");
-                //END PERMISSION CHECK
-
-
-                //all good... continue...
-                if (!GetDetails(sTaskInstance, ref sErr))
-                {
-                    ui.RaiseError(Page, "Unable to continue.  Task Instance record not found for instance_id [" + sTaskInstance + "]. " + sErr, true, "");
-                    return;
-                }
-
-                GetLog(sTaskInstance, sRows);
+				
+				if (!string.IsNullOrEmpty(sTaskInstance))
+				{
+	                //now we are sure we have the instance... put it on the page...
+	                hidInstanceID.Value = sTaskInstance;
+	
+	                //PERMISSION CHECK
+	                //now... kick out if the user isn't allowed to see this page
+	
+	                //it's a little backwards... IsPageAllowed will kick out this page for users...
+	                //so don't bother to check that if we can determine the user has permission by 
+	                //a group association to this task
+	                string sOTID = "";
+	                string stiSQL = "select t.original_task_id" +
+	                   " from tv_task_instance ti join task t on ti.task_id = t.task_id" +
+	                   " where ti.task_instance = '" + sTaskInstance + "'";
+	
+	                dc.sqlGetSingleString(ref sOTID, stiSQL, ref sErr);
+	
+	                //now we know the ID, see if we are grouped with it
+	                //this will kick out if they DONT match tags and they AREN'T in a role with sufficient privileges
+	                if (!ui.UserAndObjectTagsMatch(sOTID, 3)) ui.IsPageAllowed("You do not have permission to view this Task.");
+	                //END PERMISSION CHECK
+	
+	
+	                //all good... continue...
+	                if (!GetDetails(sTaskInstance, ref sErr))
+	                {
+	                    ui.RaiseError(Page, "Unable to continue.  Task Instance record not found for instance_id [" + sTaskInstance + "]. " + sErr, true, "");
+	                    return;
+	                }
+	
+	                GetLog(sTaskInstance, sRows);
+				} 
+				else
+				{
+					lblTaskInstance.Text = "N/A";
+                    lblStatus.Text = "Never Executed";
+                    lblSubmittedDT.Text = "N/A";
+                    lblStartedDT.Text = "N/A";
+                    lblCompletedDT.Text = "N/A";
+				}
             }
         }
         private bool GetDetails(string sTaskInstance, ref string sErr)

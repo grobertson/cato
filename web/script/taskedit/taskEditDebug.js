@@ -173,6 +173,9 @@ function doDebugStop() {
 
     var $instance = $("#ctl00_phDetail_hidDebugActiveInstance");
 
+	if ($instance.val() == '')
+		return;
+
     $.ajax({
         async: false,
         type: "POST",
