@@ -1913,68 +1913,71 @@ namespace Globals
 		public XDocument VariableXDoc;
 			
 		public Task Task; // step has a parent task
-		public StepUserSettings UserSettings; //Step has user settings from the db
+		public StepUserSettings UserSettings = new StepUserSettings(); //user settings cannot be null, they have defaults.
 		
 		//constructor from an xElement
 		public Step(XElement xStep, Codeblock c, Task t)
 		{
-			this.ID = Guid.NewGuid().ToString().ToLower();
-			this.Codeblock = c.Name;
-			this.Task = t;
-			
-			//stuff that shouldn't matter from the XML and we need to work out if it's required.
-			this.Order = 0;
-			this.Locked = false;
-
-			this.Description = (xStep.Element("description") != null ? xStep.Element("description").Value : "");
-
-			this.Commented = (xStep.Attribute("commented") != null ? (xStep.Attribute("commented").Value == "1" ? true : false) : false);
-			
-			int i = 0;
-
-			if (xStep.Attribute("output_parse_type") != null)
+			if (xStep != null)
 			{
-				int.TryParse(xStep.Attribute("output_parse_type").Value, out i);
-				this.OutputParseType = i;
-			}
-			if (xStep.Attribute("output_row_delimiter") != null)
-			{
-				int.TryParse(xStep.Attribute("output_row_delimiter").Value, out i);
-				this.OutputRowDelimiter = i;
-			}
-			if (xStep.Attribute("output_column_delimiter") != null)
-			{
-				int.TryParse(xStep.Attribute("output_column_delimiter").Value, out i);
-				this.OutputColumnDelimiter = i;
-			}
-
-			if (xStep.Element("function") != null)
-			{
-				this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
-
-				//once parsed, it's cleaner.  update the object with the cleaner xml
-				if (!string.IsNullOrEmpty(this.FunctionXML))
+				this.ID = Guid.NewGuid().ToString().ToLower();
+				this.Codeblock = c.Name;
+				this.Task = t;
+				
+				//stuff that shouldn't matter from the XML and we need to work out if it's required.
+				this.Order = 0;
+				this.Locked = false;
+	
+				this.Description = (xStep.Element("description") != null ? xStep.Element("description").Value : "");
+	
+				this.Commented = (xStep.Attribute("commented") != null ? (xStep.Attribute("commented").Value == "1" ? true : false) : false);
+				
+				int i = 0;
+	
+				if (xStep.Attribute("output_parse_type") != null)
 				{
-					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-					this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+					int.TryParse(xStep.Attribute("output_parse_type").Value, out i);
+					this.OutputParseType = i;
 				}
-			}
-			
-			if (xStep.Element("variable_xml") != null)
-			{
-				this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
-
-				//once parsed, it's cleaner.  update the object with the cleaner xml
-				if (!string.IsNullOrEmpty(this.VariableXML)) 
+				if (xStep.Attribute("output_row_delimiter") != null)
 				{
-					this.VariableXDoc = XDocument.Parse(this.VariableXML);
-					this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+					int.TryParse(xStep.Attribute("output_row_delimiter").Value, out i);
+					this.OutputRowDelimiter = i;
 				}
+				if (xStep.Attribute("output_column_delimiter") != null)
+				{
+					int.TryParse(xStep.Attribute("output_column_delimiter").Value, out i);
+					this.OutputColumnDelimiter = i;
+				}
+	
+				if (xStep.Element("function") != null)
+				{
+					this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
+	
+					//once parsed, it's cleaner.  update the object with the cleaner xml
+					if (!string.IsNullOrEmpty(this.FunctionXML))
+					{
+						this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+						this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+					}
+				}
+				
+				if (xStep.Element("variable_xml") != null)
+				{
+					this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
+	
+					//once parsed, it's cleaner.  update the object with the cleaner xml
+					if (!string.IsNullOrEmpty(this.VariableXML)) 
+					{
+						this.VariableXDoc = XDocument.Parse(this.VariableXML);
+						this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+					}
+				}
+				
+				//well for now this method is for the API and xml based task creation, not the gui.
+				//so, the full function object is not required.
+				this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
 			}
-			
-			//well for now this method is for the API and xml based task creation, not the gui.
-			//so, the full function object is not required.
-			this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
 		}
 		
 		//constructor from a DataRow
@@ -2013,13 +2016,6 @@ namespace Globals
 
 			//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
 			this.FunctionName = dr["function_name"].ToString();
-			
-			this.UserSettings = new StepUserSettings();
-			this.UserSettings.Visible = (string.IsNullOrEmpty(dr["visible"].ToString()) ? true : (dr["visible"].ToString() == "0" ? false : true));
-			this.UserSettings.Breakpoint = (string.IsNullOrEmpty(dr["breakpoint"].ToString()) ? true : (dr["breakpoint"].ToString() == "0" ? false : true));
-			this.UserSettings.Skip = (string.IsNullOrEmpty(dr["skip"].ToString()) ? true : (dr["skip"].ToString() == "0" ? false : true));
-			
-			this.UserSettings.Button = (string.IsNullOrEmpty(dr["button"].ToString()) ? "" : dr["button"].ToString());
 			
 			
 			//NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
@@ -2060,11 +2056,9 @@ namespace Globals
 
             string sSQL = "select t.task_name, t.version," +
                 " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-                " us.visible, us.breakpoint, us.skip, us.button" +
+                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
                 " from task_step s" +
                 " join task t on s.task_id = t.task_id" +
-                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
                 " where s.step_id = '" + sStepID + "' limit 1";
 
             DataTable dt = new DataTable();
@@ -2076,6 +2070,7 @@ namespace Globals
 			if (dt.Rows.Count == 1)
             {
 				PopulateStep(dt.Rows[0], null);
+				GetUserSettings(sUserID);
 			}
 		}
 
@@ -2107,6 +2102,59 @@ namespace Globals
 
 			
 			this.FunctionName = cs.FunctionName;
+		}
+
+		public void GetUserSettings(string sUserID)
+		{
+			dataAccess dc = new dataAccess();
+			string sErr = "";
+            string sSQL = "select visible, breakpoint, skip, button" +
+                " from task_step_user_settings" +
+				" where user_id = '" + sUserID + "'" +
+                " and step_id = '" + this.ID + "' limit 1";
+
+            DataRow dr = null;
+            if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+            {
+                throw new Exception("Unable to get data row for step_id [" + this.ID + "].<br />" + sErr);
+            }
+
+			if (dr != null)
+            {
+				this.UserSettings.Visible = (string.IsNullOrEmpty(dr["visible"].ToString()) ? true : (dr["visible"].ToString() == "0" ? false : true));
+				this.UserSettings.Breakpoint = (string.IsNullOrEmpty(dr["breakpoint"].ToString()) ? true : (dr["breakpoint"].ToString() == "0" ? false : true));
+				this.UserSettings.Skip = (string.IsNullOrEmpty(dr["skip"].ToString()) ? true : (dr["skip"].ToString() == "0" ? false : true));
+				this.UserSettings.Button = (string.IsNullOrEmpty(dr["button"].ToString()) ? "" : dr["button"].ToString());
+			}
+		}
+		
+		public string AsXML()
+		{					
+			//if there's no function XML we're not doing anything... this step is busted.
+			if (this.FunctionXDoc != null) {
+				XElement xStep = new XElement("step");
+				
+				xStep.SetAttributeValue("id", this.ID);
+				xStep.SetAttributeValue("output_parse_type", this.OutputParseType);
+				xStep.SetAttributeValue("output_column_delimiter", this.OutputColumnDelimiter);
+				xStep.SetAttributeValue("output_row_delimiter", this.OutputRowDelimiter);
+				xStep.SetAttributeValue("commented", this.Commented);
+				
+				xStep.SetElementValue("description", this.Description);
+				
+				XElement xeFunc = XElement.Parse(this.FunctionXDoc.ToString(SaveOptions.DisableFormatting));
+				xStep.Add(xeFunc);
+				
+				//variables aren't required but might be here.
+				if (this.VariableXDoc != null) {	
+					XElement xeVars = XElement.Parse(this.VariableXDoc.ToString(SaveOptions.DisableFormatting));
+					xStep.Add(xeVars);
+				}
+				
+				return xStep.ToString();
+			}
+			
+			return "";
 		}
 	}
 	
@@ -2884,30 +2932,15 @@ namespace Globals
 				//steps
 				xCodeblock.Add(new XElement("steps"));
 				XElement xSteps = xCodeblock.Element("steps");
-
+				
 				foreach (Step s in c.Steps.Values) {
-					//if there's no function XML we're not doing anything... this step is busted.
-					if (s.FunctionXDoc != null) {
-						XElement xStep = new XElement("step");
-						
-						xStep.SetAttributeValue("id", s.ID);
-						xStep.SetAttributeValue("output_parse_type", s.OutputParseType);
-						xStep.SetAttributeValue("output_column_delimiter", s.OutputColumnDelimiter);
-						xStep.SetAttributeValue("output_row_delimiter", s.OutputRowDelimiter);
-						xStep.SetAttributeValue("commented", s.Commented);
-						
-						xStep.SetElementValue("description", s.Description);
-						
-						XElement xeFunc = XElement.Parse(s.FunctionXDoc.ToString(SaveOptions.DisableFormatting));
-						xStep.Add(xeFunc);
-						
-						//variables aren't required but might be here.
-						if (s.VariableXDoc != null) {	
-							XElement xeVars = XElement.Parse(s.VariableXDoc.ToString(SaveOptions.DisableFormatting));
-							xStep.Add(xeVars);
+					string sStepXML = s.AsXML();
+					if (!string.IsNullOrEmpty(sStepXML))
+					{
+						XElement xStep = XElement.Parse(sStepXML);
+						if (xStep != null) {	
+							xSteps.Add(xStep);
 						}
-						
-						xSteps.Add(xStep);
 					}
 				}
 				
@@ -2925,15 +2958,14 @@ namespace Globals
 	}
 	public class StepUserSettings
 	{
-		public bool Visible;
-		public bool Breakpoint;
-		public bool Skip;
-		public string Button;
+		public bool Visible = true;
+		public bool Breakpoint= false;
+		public bool Skip = false;
+		public string Button = "";
 
 		//constructor
 		public StepUserSettings()
 		{
-
 		}
 	}
 #endregion
