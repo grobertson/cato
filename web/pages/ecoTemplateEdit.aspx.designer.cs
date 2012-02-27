@@ -28,5 +28,7 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.PlaceHolder phActions;
 		
 		protected System.Web.UI.WebControls.HiddenField hidEcoTemplateID;
+		
+		protected System.Web.UI.WebControls.Literal ltActionPickerIcons;
 	}
 }

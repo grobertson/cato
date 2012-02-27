@@ -1947,7 +1947,7 @@ namespace ACWebMethods
                             //gotta clear the floats
                             sHTML += "<div class=\"clearfloat\">";
 
-                            sHTML += "<img src=\"../images/actions/" + sIcon + "\" alt=\"\" />";
+                            sHTML += "<img class=\"action_icon\" src=\"../images/actions/" + sIcon + "\" alt=\"\" />";
 
 
                             sHTML += " </div>";
@@ -2089,6 +2089,7 @@ namespace ACWebMethods
             string sActionName = dr["action_name"].ToString();
             string sCategory = dr["category"].ToString();
             string sDesc = (string.IsNullOrEmpty(dr["action_desc"].ToString()) ? "" : dr["action_desc"].ToString());
+            string sIcon = (string.IsNullOrEmpty(dr["action_icon"].ToString()) ? "action_default_48.png" : dr["action_icon"].ToString());
             string sOriginalTaskID = dr["original_task_id"].ToString();
             string sTaskID = dr["task_id"].ToString();
             string sTaskCode = dr["task_code"].ToString();            
@@ -2132,7 +2133,11 @@ namespace ACWebMethods
                 " value=\"" + sCategory + "\" />"
                 + Environment.NewLine;
 
-            sHTML += "<br />";
+            //Icon
+            sHTML += "Icon: " + Environment.NewLine;
+            sHTML += "<img class=\"action_icon\" src=\"../images/actions/" + sIcon + "\" />" + Environment.NewLine;
+
+			sHTML += "<br />";
 
             //Description
             sHTML += "Description:<br />" + Environment.NewLine;
@@ -2269,7 +2274,7 @@ namespace ACWebMethods
             {
                 if (!string.IsNullOrEmpty(sEcoTemplateID))
                 {
-                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.task_version," +
+                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.action_icon, ea.original_task_id, ea.task_version," +
                         " t.task_id, t.task_code, t.task_name," +
                         " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" +
                         " from ecotemplate_action ea" +
@@ -2322,7 +2327,7 @@ namespace ACWebMethods
             {
                 if (!string.IsNullOrEmpty(sActionID))
                 {
-                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.task_version," +
+                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.action_icon, ea.original_task_id, ea.task_version," +
                         " t.task_id, t.task_code, t.task_name," +
                         " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" +
                         " from ecotemplate_action ea" +

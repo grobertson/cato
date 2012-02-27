@@ -55,6 +55,28 @@ $(document).ready(function () {
         }
     });
 
+    //caction icon picker dialog
+    $("#action_icon_dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 600,
+        buttons: {
+            "Save": function () {
+            	SaveIcon();
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+    $(".action_icon").live("click", function () {
+        $("#selected_action_id").val($(this).parents("li").attr('id').replace(/ac_/, ""));
+        $("#action_icon_dialog").dialog('open');
+    });
+    $(".action_picker_icon").live("click", function () {
+        $("#selected_action_icon").val($(this).attr("icon_name"));
+    });
+
     //the hook for the 'show log' link
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function () {
@@ -267,6 +289,42 @@ $(document).ready(function () {
         }
     });
 });
+
+function SaveIcon() {
+	var action_id = $("#selected_action_id").val();
+	var value = $("#selected_action_icon").val();
+	var icon = value;  //because the value is getting encoded for the wire
+	
+    //escape it
+    value = packJSON(value);
+
+    $("#update_success_msg").text("Updating...").show();
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "uiMethods.asmx/wmUpdateEcoTemplateAction",
+        data: '{"sEcoTemplateID":"' + g_id + '","sActionID":"' + action_id + '","sColumn":"action_icon","sValue":"' + value + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            if (msg.d != '') {
+                $("#update_success_msg").text("Update Failed").fadeOut(2000);
+                showInfo(msg.d);
+            }
+            else {
+            	//update the icon on the page
+            	$("#ac_" + action_id).find(".action_icon").attr("src","../images/actions/" + icon);
+                $("#update_success_msg").text("Update Successful").fadeOut(2000);
+            }
+        },
+        error: function (response) {
+            $("#update_success_msg").fadeOut(2000);
+            showAlert(response.responseText);
+        }
+    });
+
+	$("#action_icon_dialog").dialog('close');
+}
 
 function tabWasClicked(tab) {
     //we'll be hiding and showing right side content when tabs are selected.
