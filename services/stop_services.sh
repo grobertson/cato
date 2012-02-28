@@ -28,7 +28,7 @@ while [[ $count -lt ${#FULL_PROCS[*]} ]]; do
     fi 
         (( count += 1 ))
 done
-if [ "$1" = "leavecron" ];
+if [ "$1" = "leavecron" ]; then
 	echo "Removing startup.sh from crontab"
 		crontab -l | grep -v start_services.sh > $CATO_HOME/conf/crontab.backup 2>/dev/null
 		crontab -r 2>/dev/null
