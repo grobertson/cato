@@ -42,6 +42,7 @@ namespace Web
 		//some globals
 		NameValueCollection QS;
 		NameValueCollection FORM;
+		NameValueCollection PARAMS;
 		apiResponse RESPONSE = new apiResponse();
 		
 		public virtual void ProcessRequest(HttpContext context)
@@ -80,6 +81,12 @@ namespace Web
 				QS = context.Request.QueryString;
 				//form
 				FORM = context.Request.Form;
+				//all params
+				//why?  because in many cases below we don't know whether the user will have sent
+				//args on the form or querystring.
+				//why not do everything using params?
+				//because for some internal cases we want to ONLY look at the QS for values, like signature.
+				PARAMS = context.Request.Params;
 				
 				//authenticate
 				bool bSuccess = Authenticate();
@@ -110,6 +117,9 @@ namespace Web
 						break;
 					case "GetTask":
 						GetTask(ref context);
+						break;
+					case "GetEcotemplate":
+						GetEcotemplate(ref context);
 						break;
 					case "HelloWorld":
 						RESPONSE.Response = "Hello there!";
@@ -238,7 +248,7 @@ namespace Web
 				return false;
 		}
 
-        #region "Tasks"
+#region "Tasks"
         private void CreateTask(ref HttpContext context)
 		{
 			acUI.acUI ui = new acUI.acUI();
@@ -307,14 +317,14 @@ namespace Web
 			taskMethods tm = new taskMethods();
 			
 			//string TaskID, string EcosystemID, string AccountID, string AssetID, string ParameterXML, int DebugLevel
-			string TaskID = FORM["TaskID"];
+			string TaskID = PARAMS["TaskID"];
 			if (!string.IsNullOrEmpty(TaskID))
 			{
-				string EcosystemID = FORM["EcosystemID"];
-				string AccountID = FORM["AccountID"];
-				string AssetID = FORM["AssetID"];
-				string ParameterXML = FORM["ParameterXML"];
-				string sDebugLevel = FORM["DebugLevel"];
+				string EcosystemID = PARAMS["EcosystemID"];
+				string AccountID = PARAMS["AccountID"];
+				string AssetID = PARAMS["AssetID"];
+				string ParameterXML = PARAMS["ParameterXML"];
+				string sDebugLevel = PARAMS["DebugLevel"];
 				
 				int iDebugLevel = 4;
 				iDebugLevel = (int.TryParse(sDebugLevel, out iDebugLevel) ? 4 : iDebugLevel);
@@ -350,7 +360,6 @@ namespace Web
 			}
         }
 
-
         private void StopTask(ref HttpContext context)
         {
 			taskMethods tm = new taskMethods();
@@ -372,27 +381,65 @@ namespace Web
 			}
         }
 
-
         private void GetTask(ref HttpContext context)
         {
-			string sTaskID = QS["TaskID"];
+			string sTaskID = PARAMS["TaskID"];
 			if (string.IsNullOrEmpty(sTaskID))
 			{
-				sTaskID = FORM["TaskID"];
-				if (string.IsNullOrEmpty(sTaskID))
-				{
-					RESPONSE.ErrorCode = "3040";
-					RESPONSE.ErrorMessage = "TaskID argument was not provided.";
-					ThrowResponseAndEnd(ref context);
-				}
+				RESPONSE.ErrorCode = "3040";
+				RESPONSE.ErrorMessage = "TaskID argument was not provided.";
+				ThrowResponseAndEnd(ref context);
 			}
 
 			string sErr = "";
 			Task t = new Task(sTaskID, false, ref sErr);
+			if (t == null)
+			{
+				RESPONSE.ErrorCode = "3041";
+				RESPONSE.ErrorMessage = "Could not get Task for ID [" + sTaskID + "].";
+				ThrowResponseAndEnd(ref context);
+			}
+			else
+			{
+				string sTaskXML = t.AsXML();
+				RESPONSE.Response = sTaskXML;
+			}
+		}
+#endregion
+
+#region "Ecotemplates"
+        private void GetEcotemplate(ref HttpContext context)
+        {
+			string sID = PARAMS["id"];
+			if (string.IsNullOrEmpty(sID))
+			{
+				RESPONSE.ErrorCode = "5140";
+				RESPONSE.ErrorMessage = "ID argument was not provided.";
+				ThrowResponseAndEnd(ref context);
+			}
 			
-			string sTaskXML = t.AsXML();
-			RESPONSE.Response = sTaskXML;
-        }
+			bool bIncludeTasks = false;
+			string sIncludeTasks = PARAMS["include_tasks"];
+			if (!string.IsNullOrEmpty(sIncludeTasks))
+			{
+				if ("true,yes,1".IndexOf(sIncludeTasks.ToLower()) > -1)
+					bIncludeTasks = true;
+			}
+			
+			Ecotemplate e = new Ecotemplate(sID);
+			if (e == null)
+			{
+				RESPONSE.ErrorCode = "5141";
+				RESPONSE.ErrorMessage = "Could not get Ecotemplate for ID [" + sID + "].";
+				ThrowResponseAndEnd(ref context);
+			}
+			else
+			{
+				e.IncludeTasks = bIncludeTasks;
+				string sXML = e.AsXML();
+				RESPONSE.Response = sXML;
+			}
+		}
 #endregion
 
 		//required for the ashx file.	

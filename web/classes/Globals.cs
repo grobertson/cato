@@ -579,6 +579,7 @@ namespace Globals
 		public string Description;
 		public string StormFileType;
 		public string StormFile;
+		public bool IncludeTasks = false; //used for export to xml
 		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
 		
 		//an empty constructor
@@ -750,6 +751,41 @@ namespace Globals
 				throw new Exception(ex.Message);
 			}		
 		}
+
+		public XElement AsXElement()
+		{					
+			XElement xe = new XElement("ecotemplate");
+				
+			xe.SetAttributeValue("id", this.ID);
+			xe.SetAttributeValue("name", this.Name);
+			xe.SetElementValue("description", this.Description);
+			xe.SetAttributeValue("storm_file_type", this.StormFileType);
+			xe.SetAttributeValue("storm_file", this.StormFile);
+			
+			XElement xActions = new XElement("actions");
+			foreach (EcotemplateAction ea in this.Actions.Values) {
+				ea.IncludeTask = this.IncludeTasks;
+				string sActionXML = ea.AsXML();
+				if (!string.IsNullOrEmpty(sActionXML))
+				{
+					XElement xAction = XElement.Parse(sActionXML);
+					if (xAction != null) {	
+						xActions.Add(xAction);
+					}
+				}				
+			}
+			xe.Add(xActions);
+			
+			return xe;
+		}
+		public string AsXML()
+		{
+			XElement xe = this.AsXElement();
+			if (xe != null)
+				return xe.ToString();
+			else 
+				return null;
+		}
 	}
 	public class EcotemplateAction
 	{
@@ -762,6 +798,11 @@ namespace Globals
 		public string Icon;
 		public string ParameterDefaultsXML;
 		public Ecotemplate Ecotemplate; //pointer to our parent Template.
+		
+		//for export, we might want to tell the action to include the whole referenced task object
+		//pretty rare, since for general use we don't wanna be lugging around a whole task.
+		public bool IncludeTask = false;
+		public Task Task;
 		
 		//static method, given an ID.
 		static public EcotemplateAction GetFromID(string sActionID)
@@ -828,6 +869,42 @@ namespace Globals
 			ParameterDefaultsXML = dr["parameter_defaults"].ToString();
 		}
 
+		public string AsXML()
+		{					
+			XElement xe = new XElement("action");
+				
+			xe.SetAttributeValue("id", this.ID);
+			xe.SetAttributeValue("name", this.Name);
+			xe.SetElementValue("description", this.Description);
+			xe.SetAttributeValue("category", this.Category);
+			xe.SetAttributeValue("icon", this.Icon);
+			
+			if (!string.IsNullOrEmpty(this.ParameterDefaultsXML))
+			{
+				XElement xParameters = XElement.Parse(this.ParameterDefaultsXML);
+				if (xParameters != null) {	
+					xe.Add(xParameters);
+				}
+			}				
+			
+			//we'll always include the original_task_id and version attributes
+			//even if the task is included.
+			xe.SetAttributeValue("original_task_id", this.OriginalTaskID);
+			xe.SetAttributeValue("task_version", this.TaskVersion);
+			if (this.IncludeTask == true)
+			{
+				string sErr = "";
+				Task t = new Task(this.OriginalTaskID, this.TaskVersion, ref sErr);
+				if (t != null) {
+					XElement xTask = t.AsXElement();
+					if (xTask != null) {	
+						xe.Add(xTask);
+					}
+				}
+			}
+			
+			return xe.ToString();
+		}
 	}
 	#endregion
 	
@@ -2128,7 +2205,7 @@ namespace Globals
 			}
 		}
 		
-		public string AsXML()
+		public XElement AsXElement()
 		{					
 			//if there's no function XML we're not doing anything... this step is busted.
 			if (this.FunctionXDoc != null) {
@@ -2151,10 +2228,18 @@ namespace Globals
 					xStep.Add(xeVars);
 				}
 				
-				return xStep.ToString();
+				return xStep;
 			}
 			
-			return "";
+			return null;
+		}
+		public string AsXML()
+		{
+			XElement xd = this.AsXElement();
+			if (xd != null)
+				return xd.ToString();
+			else 
+				return null;
 		}
 	}
 	
@@ -2289,7 +2374,6 @@ namespace Globals
 			try
             {
 				dataAccess dc = new dataAccess();
-				acUI.acUI ui = new acUI.acUI();
 				
 				string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
 					" task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" +
@@ -2302,150 +2386,193 @@ namespace Globals
 
                 if (dr != null)
                 {
-					//of course it exists...
-					this.DBExists = true;
-					
-                    this.ID = dr["task_id"].ToString();
-                    this.Name = dr["task_name"].ToString();
-					this.Code = dr["task_code"].ToString();
-                    this.Version = dr["version"].ToString();
-                    this.Status = dr["task_status"].ToString();
-                    this.OriginalTaskID = dr["original_task_id"].ToString();
-
-					this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
-
-                    this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
-
-                    this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
-                    this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
-
-					this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
-
-					/*                    
-                     * ok, this is important.
-                     * there are some rules for the process of 'Approving' a task and other things.
-                     * so, we'll need to know some count information
-                     */
-                    sSQL = "select count(*) from task" +
-                        " where original_task_id = '" + this.OriginalTaskID + "'" +
-                        " and task_status = 'Approved'";
-                    int iCount = 0;
-                    if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-                    {
-                        return;
-                    }
-
-					this.NumberOfApprovedVersions = iCount;
-
-                    sSQL = "select count(*) from task" +
-                        " where original_task_id = '" + this.OriginalTaskID + "'";
-					if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-                    {
-                        return;
-                    }
-
-					this.NumberOfOtherVersions = iCount;
-					
-					
-					//now, the fun stuff
-					//1 get all the codeblocks and populate that dictionary
-					//2 then get all the steps... ALL the steps in one sql
-					//..... and while spinning them put them in the appropriate codeblock
-					
-					//GET THE CODEBLOCKS
-					sSQL = "select codeblock_name" +
-						" from task_codeblock" +
-						" where task_id = '" + sTaskID + "'" +
-						" order by codeblock_name";
-					
-					DataTable dt = new DataTable();
-					if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-					{
-						return;
-					}
-					
-					if (dt.Rows.Count > 0)
-					{
-						foreach (DataRow drCB in dt.Rows)
-						{
-							this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
-						}
-					}
-					else
-					{
-						//uh oh... there are no codeblocks!
-						//since all tasks require a MAIN codeblock... if it's missing,
-						//we can just repair it right here.
-						sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + sTaskID + "', 'MAIN')";
-						if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-						{
-							return;
-						}
-						
-						this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
-					}
-					
-					
-					//GET THE STEPS
-					//we need the userID to get the user settings in some cases
-					if (IncludeUserSettings) {
-						string sUserID = ui.GetSessionUserID();
-						
-						//NOTE: it may seem like sorting will be an issue, but it shouldn't.
-						//sorting ALL the steps by their ID here will ensure they get added to their respective 
-						// codeblocks in the right order.
-						sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-			                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-			                " us.visible, us.breakpoint, us.skip, us.button" +
-			                " from task_step s" +
-			                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-			                " where s.task_id = '" + sTaskID + "'" +
-			                " order by s.step_order";
-					}
-					else
-					{
-						sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-			                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-							" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
-							" from task_step s" +
-			                " where s.task_id = '" + sTaskID + "'" +
-			                " order by s.step_order";
-					}
-
-					DataTable dtSteps = new DataTable();
-		            if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
-		                sErr += "Database Error: " + sErr;
-		
-					if (dtSteps.Rows.Count > 0)
-		            {
-		                foreach (DataRow drSteps in dtSteps.Rows)
-		                {
-							Step oStep = new Step(drSteps, this);
-							if (oStep != null)
-							{
-								//a 'REAL' codeblock will be in this collection
-								// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
-								if (this.Codeblocks.ContainsKey(oStep.Codeblock))
-								{
-									this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
-								}
-								else
-								{
-									//so, what do we do if we found a step that's not in a 'real' codeblock?
-									//nothing!  the gui will take care of drawing those embedded steps! 
-									
-									//maybe one day we'll do the full recusrive loading of all embedded steps here
-									// but not today... it's a big deal and we need to let these changes settle down first.
-								}
-							}
-						}
-		            }
+					PopulateTask(dr, IncludeUserSettings, ref sErr);
 				}
             }
             catch (Exception ex)
             {
 				throw ex;
             }
+		}
+		public Task(string sOriginalTaskID, string sVersion, ref string sErr)
+		{
+			try
+            {
+				dataAccess dc = new dataAccess();
+				
+				string sVersionClause = "";
+				if (string.IsNullOrEmpty(sVersion))
+					sVersionClause = " and default_version = 1";
+				else
+					sVersionClause = " and version = '" + sVersion + "'";
+				
+				string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
+					" task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" +
+					" from task" +
+					" where original_task_id = '" + sOriginalTaskID + "'" +
+					sVersionClause;
+				
+                DataRow dr = null;
+                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) 
+					return;
+
+                if (dr != null)
+                {
+					PopulateTask(dr, false, ref sErr);
+				}
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
+		}
+		
+		private Task PopulateTask(DataRow dr, bool IncludeUserSettings, ref string sErr)
+		{	
+			dataAccess dc = new dataAccess();
+			acUI.acUI ui = new acUI.acUI();
+
+			//of course it exists...
+			this.DBExists = true;
+			
+	        this.ID = dr["task_id"].ToString();
+	        this.Name = dr["task_name"].ToString();
+			this.Code = dr["task_code"].ToString();
+	        this.Version = dr["version"].ToString();
+	        this.Status = dr["task_status"].ToString();
+	        this.OriginalTaskID = dr["original_task_id"].ToString();
+	
+			this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
+	
+	        this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
+	
+	        this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
+	        this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
+	
+			this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
+	
+			//parameters
+			if (!string.IsNullOrEmpty(dr["parameter_xml"].ToString()))
+			{
+				XDocument xParameters = XDocument.Parse(dr["parameter_xml"].ToString());
+				if (xParameters != null) {	
+					this.ParameterXDoc = xParameters;
+				}
+			}				
+
+			/*                    
+	         * ok, this is important.
+	         * there are some rules for the process of 'Approving' a task and other things.
+	         * so, we'll need to know some count information
+	         */
+	        string sSQL = "select count(*) from task" +
+	            " where original_task_id = '" + this.OriginalTaskID + "'" +
+	            " and task_status = 'Approved'";
+	        int iCount = 0;
+	        if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+	            return null;
+	
+			this.NumberOfApprovedVersions = iCount;
+	
+	        sSQL = "select count(*) from task" +
+	            " where original_task_id = '" + this.OriginalTaskID + "'";
+			if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+	            return null;
+	
+			this.NumberOfOtherVersions = iCount;
+			
+			
+			//now, the fun stuff
+			//1 get all the codeblocks and populate that dictionary
+			//2 then get all the steps... ALL the steps in one sql
+			//..... and while spinning them put them in the appropriate codeblock
+			
+			//GET THE CODEBLOCKS
+			sSQL = "select codeblock_name" +
+				" from task_codeblock" +
+				" where task_id = '" + this.ID + "'" +
+				" order by codeblock_name";
+			
+			DataTable dt = new DataTable();
+			if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				return null;
+			
+			if (dt.Rows.Count > 0)
+			{
+				foreach (DataRow drCB in dt.Rows)
+				{
+					this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
+				}
+			}
+			else
+			{
+				//uh oh... there are no codeblocks!
+				//since all tasks require a MAIN codeblock... if it's missing,
+				//we can just repair it right here.
+				sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + this.ID + "', 'MAIN')";
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					return null;
+				
+				this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
+			}
+			
+			
+			//GET THE STEPS
+			//we need the userID to get the user settings in some cases
+			if (IncludeUserSettings) {
+				string sUserID = ui.GetSessionUserID();
+				
+				//NOTE: it may seem like sorting will be an issue, but it shouldn't.
+				//sorting ALL the steps by their ID here will ensure they get added to their respective 
+				// codeblocks in the right order.
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+	                " us.visible, us.breakpoint, us.skip, us.button" +
+	                " from task_step s" +
+	                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
+	                " where s.task_id = '" + this.ID + "'" +
+	                " order by s.step_order";
+			}
+			else
+			{
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+					" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
+					" from task_step s" +
+	                " where s.task_id = '" + this.ID + "'" +
+	                " order by s.step_order";
+			}
+	
+			DataTable dtSteps = new DataTable();
+	        if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
+	            sErr += "Database Error: " + sErr;
+	
+			if (dtSteps.Rows.Count > 0)
+	        {
+	            foreach (DataRow drSteps in dtSteps.Rows)
+	            {
+					Step oStep = new Step(drSteps, this);
+					if (oStep != null)
+					{
+						//a 'REAL' codeblock will be in this collection
+						// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+						if (this.Codeblocks.ContainsKey(oStep.Codeblock))
+						{
+							this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+						}
+						else
+						{
+							//so, what do we do if we found a step that's not in a 'real' codeblock?
+							//nothing!  the gui will take care of drawing those embedded steps! 
+							
+							//maybe one day we'll do the full recusrive loading of all embedded steps here
+							// but not today... it's a big deal and we need to let these changes settle down first.
+						}
+					}
+				}
+	        }
+			
+			return this;
 		}
 
 		private bool _DBExists()
@@ -2902,12 +3029,9 @@ namespace Globals
 
 		
 		//INSTANCE METHOD - returns the object as XML
-		public string AsXML()
+		public XElement AsXElement()
 		{
-			XDocument xd = new XDocument();
-			
-			xd.Add(new XElement("task"));
-			XElement xTask = xd.Element("task");
+			XElement xTask = new XElement("task");
 			
 			xTask.SetAttributeValue("id", this.ID);
 			xTask.SetAttributeValue("original_id", this.OriginalTaskID);
@@ -2947,12 +3071,20 @@ namespace Globals
 				xCodeblocks.Add(xCodeblock);
 			}
 			
-			
-			//parameters should already be an XDocument
-			xd.Add(this.ParameterXDoc);
+			//parameters, if defined
+			if (this.ParameterXDoc != null)
+				if (this.ParameterXDoc.Root != null)
+					xTask.Add(this.ParameterXDoc.Root);
 
-					
-			return xd.ToString();
+			return xTask;
+		}
+		public string AsXML()
+		{
+			XElement xe = this.AsXElement();
+			if (xe != null)
+				return xe.ToString();
+			else 
+				return null;
 		}
 
 	}
