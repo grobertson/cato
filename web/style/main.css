@@ -148,7 +148,6 @@ body
 #head
 {
 	position: absolute;
-	overflow: hidden;
 	min-width: 1024px;
 	margin: 0px;
 	top: 0px;
