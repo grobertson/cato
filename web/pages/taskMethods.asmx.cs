@@ -54,7 +54,7 @@ namespace ACWebMethods
 				
 				foreach (Codeblock cb in oTask.Codeblocks.Values)
 				{
-					sCBHTML += "<li class=\"ui-widget-content ui-corner-all codeblock\" id=\"cb_" + cb.Name + "\">";
+					sCBHTML += "<li class=\"ui-widget-content codeblock\" id=\"cb_" + cb.Name + "\">";
 					sCBHTML += "<div>";
 					sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">";
 					sCBHTML += "<span>" + cb.Name + "</span>";

@@ -111,18 +111,34 @@
 	width: 200px;
 	background: #EEEEEE;
 }
+#codeblock_picker
+{
+	position:absolute; 
+	box-shadow: 5px 5px 5px #CCCCCC;
+}
+#codeblock_picker_btn
+{
+	margin-left: 8px;
+}
+#codeblock_add_btn
+{
+	margin: 6px 0px 6px 0px;
+}
 .codeblock
 {
-	padding: 5px 0px 10px 5px;
-	margin: 5px 5px 5px 5px; /*background-image: url( 'images/item_bg_alt.png' );*/
+	padding: 5px 0px 10px 10px;
 	color: #404040;
 	font-weight: bold;
 	height: 10px;
+	width: 200px;
 	list-style-type: none;
+	border-top: none;
+	border-left: none;
+	border-right: none;
 }
 .codeblock_title
 {
-	margin: 0px 0px 0px 5px;
+	margin: 0px 0px 0px 0px;
 	float: left;
 	cursor: pointer;
 }
@@ -306,13 +322,12 @@
 
 #task_steps
 {
-	background: #fff; /*padding: 5px 5px 5px 5px;*/
 }
 
 .te_header
 {
-	height: 25px;
-	font-size: 12px;
+	height: 28px;
+	font-size: 1.1em;
 	font-weight: bold;
 }
 

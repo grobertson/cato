@@ -15,6 +15,18 @@
 
 $(document).ready(function () {
 
+    $("#codeblock_picker_btn").button({ icons: { primary: "ui-icon-circle-triangle-s"}, text: false });
+
+    //the hover event of the codeblock picker activator
+    $("#codeblock_picker_btn").hover(function () {
+        $("#codeblock_picker").show();
+    });
+	//and hide it when focus leaves the popup div
+    $("#codeblock_picker").mouseleave(function () {
+        $(this).hide();
+    });
+
+    
     //make the codeblock add button
     $("#codeblock_add_btn").button({ icons: { primary: "ui-icon-plus"} });
 
@@ -33,7 +45,7 @@ $(document).ready(function () {
 
 
     //the onclick event of the 'copy' link of each codeblock
-    $("#div_codeblocks .codeblock_copy_btn").live("click", function () {
+    $("#codeblock_picker .codeblock_copy_btn").live("click", function () {
         $("#update_success_msg").text("Copying...").show();
 
         var cb = $(this).attr("codeblock_name");
@@ -55,23 +67,26 @@ $(document).ready(function () {
             }
         });
 
+        $("#codeblock_picker").hide();
+
     });
 
     //the onclick event of the 'delete' link of each codeblock
-    $("#div_codeblocks .codeblock_delete_btn").live("click", function () {
+    $("#codeblock_picker .codeblock_delete_btn").live("click", function () {
         $("#codeblock_to_delete").val($(this).attr("remove_id"));
         $("#codeblock_delete_confirm_dialog").dialog('open');
     });
 
     //the onclick event of the 'codeblock' elements
-    $("#div_codeblocks .codeblock_title").live("click", function () {
+    $("#codeblock_picker .codeblock_title").live("click", function () {
         cb = $(this).attr("name");
 
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
         doGetSteps();
+        $("#codeblock_picker").hide();
     });
     //the onclick event of the 'codeblock rename icon'
-    $("#div_codeblocks .codeblock_rename").live("click", function () {
+    $("#codeblock_picker .codeblock_rename").live("click", function () {
         cb = $(this).attr("codeblock_name");
         ShowCodeblockEdit(cb);
     });
@@ -106,7 +121,7 @@ $(document).ready(function () {
     });
 
     //hover effect
-    $("#div_codeblocks .codeblock").live("hover", function () {
+    $("#codeblock_picker .codeblock").live("hover", function () {
         $("#te_help_box_detail").html("Click a Codeblock to edit its steps.");
     }, function () {
         $("#te_help_box_detail").html("");
@@ -252,6 +267,8 @@ function doCodeblockAdd() {
         $("#codeblock_edit_dialog_msg").text("Codeblock Name is required.");
         $("#new_codeblock_name").focus();
     }
+
+    $("#codeblock_picker").hide();
 }
 
 function doCodeblockDelete() {
@@ -286,5 +303,7 @@ function doCodeblockDelete() {
             hidePleaseWait();
         }
     });
+    
+    $("#codeblock_picker").hide();
 }
 
