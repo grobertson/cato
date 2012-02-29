@@ -813,7 +813,7 @@ function doStepAdd(new_step) {
 
             //but we will change the sortable if this command has embedded commands.
             //you have to add the embedded command NOW, or click cancel.
-            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists") {
+            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
                 doDropZoneEnable($("#" + new_step_id + " .step_nested_drop_target"));
             }
             else {

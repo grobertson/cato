@@ -309,7 +309,7 @@ function doEmbeddedStepAdd(func, droptarget) {
                 doClearClipboard(item.replace(/clip_/, ""))
 
             //you have to add the embedded command NOW, or click cancel.
-            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists") {
+            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
                 doDropZoneEnable($("#" + new_step_id + " .step_nested_drop_target"));
             }
 
@@ -433,7 +433,7 @@ function doDropZoneEnable($ctl) {
 
             //DO NOT init the sortable if the command you just dropped has an embedded command
             //at this time it's IF and LOOP and EXISTS
-            if (func != "fn_if" && func != "fn_loop" && func != "fn_exists")
+            if (func != "fn_if" && func != "fn_loop" && func != "fn_exists" && func != "fn_while")
                 initSortable();
         }
     });
