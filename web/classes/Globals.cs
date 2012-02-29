@@ -580,6 +580,8 @@ namespace Globals
 		public string StormFileType;
 		public string StormFile;
 		public bool IncludeTasks = false; //used for export to xml
+		public bool DBExists;
+		public string OnConflict = "cancel";  //the default behavior for all conflicts is to cancel the operation
 		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
 		
 		//an empty constructor
@@ -588,12 +590,13 @@ namespace Globals
 			this.ID = ui.NewGUID();
 		}
 		
-		//aname and desc
+		//a name and desc
 		public Ecotemplate(string sName, string sDescription)
 		{
 			this.ID = ui.NewGUID();
 			this.Name = sName;
 			this.Description = sDescription;
+			this.DBExists = _DBExists();
 		}
 		
 		//the default constructor, given an ID loads it up.
@@ -614,6 +617,7 @@ namespace Globals
             {
                 if (dr != null)
                 {
+					this.DBExists = true;
 					this.ID = dr["ecotemplate_id"].ToString();;
 					this.Name = dr["ecotemplate_name"].ToString();
 					this.Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
@@ -647,36 +651,107 @@ namespace Globals
 			
 		}
 		
+		//from an XML document
+		static public Ecotemplate FromXML(string sEcotemplateXML, ref string sErr)
+		{
+			Ecotemplate et = new Ecotemplate();
+			
+			XDocument xEcotemplate = XDocument.Parse(sEcotemplateXML);
+			if (xEcotemplate != null)
+			{
+				XElement xe = xEcotemplate.Element("ecotemplate");
+				
+				//some of these properties will not be required coming from the XML.
+				
+				//if there's no ID we create one
+				et.ID = (xe.Attribute("id") != null ? xe.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+				et.Name = xe.Attribute("name").Value;
+				et.Description = xe.Element("description").Value;
+				
+				et.DBExists = et._DBExists();
+
+				if (xe.Element("storm_file") != null)
+				{
+					XElement xeSF = xe.Element("storm_file");
+					et.StormFile = xeSF.Value;
+					et.StormFileType = (xeSF.Attribute("storm_file_type") != null ? xeSF.Attribute("storm_file_type").Value : ""); //cancel is the default
+				}	
+				
+				//if there are conflicts when we try to save, what do we do?
+				et.OnConflict = (xe.Attribute("on_conflict") != null ? xe.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+
+				//actions
+				foreach (XElement xAction in xe.XPathSelectElements("//actions/action")) {
+					EcotemplateAction ea = new EcotemplateAction(xAction, et, ref sErr);
+					
+					if (ea != null)
+					{
+						//if the xml contains a complete Task, we have to deal with it
+						//otherwise just set the OriginalTaskID and TaskVersion properties.
+
+						et.Actions.Add(ea.ID, ea);
+					}
+				}
+				
+				return et;
+			}
+			
+			return null;
+		}
+
+		private bool _DBExists()
+		{	
+			dataAccess dc = new dataAccess();
+			string sErr = "";
+			
+			//task_id is the PK, and task_name+version is a unique index.
+			//so, we check the conflict property, and act accordingly
+			string sSQL = "select ecotemplate_id from ecotemplate" +
+				" where ecotemplate_name = '" + this.Name + "'" +
+				" or ecotemplate_id = '" + this.ID + "'";
+			
+			DataRow dr = null;
+			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+			{
+				throw new Exception("Ecotemplate Object: Unable to check for existing Name or ID. " + sErr);
+			}
+			
+			if (dr != null)
+			{
+				if (!string.IsNullOrEmpty(dr["ecotemplate_id"].ToString())) {
+					//PAY ATTENTION! 
+					//if the template exists... it might have been by name, so...
+					//we're setting the ids to the same as the database so it's more accurate.
+					
+					this.ID = dr["ecotemplate_id"].ToString();
+					return true;
+				}
+			}
+				
+			return false;
+		}
+
 		//makes a copy of this template in the database
 		public bool DBCopy(string sNewName, ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			
-			//1) create a new template in the db
-			//2) batch copy all the steps from the old template to the new
-			
-			//1) 
 			Ecotemplate et = new Ecotemplate();
 			if (et != null)
 			{
 				//populate it
+				et.ID = Guid.NewGuid().ToString().ToLower();
 				et.Name = sNewName;
 				et.Description = this.Description;
 				et.StormFileType = this.StormFileType;
 				et.StormFile = this.StormFile;
-				et.DBCreateNew(ref sErr);
+				et.Actions = this.Actions;
+				
+				//we gave it a new name and id, recheck if it exists
+				et.DBExists = et._DBExists();
+				
+				et.DBSave(ref sErr);
 				
 				if (!string.IsNullOrEmpty(sErr))
 					return false;
-				
-				//2
-				string sSQL = "insert into ecotemplate_action" + 
-					" select uuid() as action_id, '" + et.ID + "', action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
-					" from ecotemplate_action" +
-					" where ecotemplate_id = '" + this.ID + "'";
-				
-				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-					throw new Exception(sErr);
 			
 				return true;
 			}
@@ -685,6 +760,7 @@ namespace Globals
 		}
 
 		//saves this template to the database
+		//DOES NOT include Actions
 		public bool DBUpdate(ref string sErr)
 		{
             dataAccess dc = new dataAccess();
@@ -709,59 +785,165 @@ namespace Globals
 		}
 
 		//saves this template as a new template in the db
-		public bool DBCreateNew(ref string sErr)
+		public bool DBSave(ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			string sSQL = "";
-			
-			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
-			{
-				sErr = "ID and Name are required Ecotemplate properties.";
-				return false;
-			}
-			
 			try
 			{
-				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
-					" values ('" + this.ID + "'," +
-						" '" + this.Name + "'," +
-						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
-						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") + 
-						")";
+				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 				
-				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				if (this.DBExists)
 				{
-					if (sErr == "key_violation")
-					{
-						sErr = "An Ecotemplate with that name already exists.  Please select another name.";
+					//uh oh... this ecotemplate exists.  unless told to do so, we stop here.
+					if (this.OnConflict == "cancel") {
+						sErr = "Another Ecotemplate with that ID or Name exists.  [" + this.ID + "/" + this.Name + "]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
+						oTrans.RollBack();
 						return false;
 					}
-					else 
-						throw new Exception(sErr);
+					else {
+						//ok, what are we supposed to do then?
+						switch (this.OnConflict) {
+						case "replace":
+							//whack it all so we can re-insert
+							//but by name or ID?  which was the conflict?
+							
+							//no worries! the _DBExists function called when we created the object
+							//will have resolved any name/id issues.
+							
+							//if the ID existed it doesn't matter, we'll be plowing it anyway.
+							//by "plow" I mean drop and recreate the actions... the ecotemplate row will be UPDATED
+							if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+							{
+								sErr = "ID and Name are required Ecotemplate properties.";
+								return false;
+							}
+							
+							oTrans.Command.CommandText = "update ecotemplate" + 
+								" set ecotemplate_name = '" + this.Name + "'," +
+								" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+								" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+								" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
+								" where ecotemplate_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+
+
+							oTrans.Command.CommandText = "delete from ecotemplate_action" +
+								" where ecotemplate_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+							break;
+						default:
+							//there is no default action... if the on_conflict didn't match we have a problem... bail.
+							sErr = "There is an ID or Name conflict, and the on_conflict directive isn't a valid option. (replace/cancel)";
+							return false;
+						}
+					}
+				}
+				else 
+				{
+					//doesn't exist, we'll add it
+					if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+					{
+						sErr = "ID and Name are required Ecotemplate properties.";
+						return false;
+					}
+				
+					oTrans.Command.CommandText = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
+						" values ('" + this.ID + "'," +
+							" '" + this.Name + "'," +
+							(string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+							(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+							(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") + 
+							")";
+					
+					if (!oTrans.ExecUpdate(ref sErr))
+						return false;
+					
+					//ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
 				}
 				
-				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
+				//create the actions
+				//actions aren't referenced by id anywhere, so we'll just give them a new guid
+				//to prevent any risk of PK issues.
+				foreach (EcotemplateAction ea in this.Actions.Values) {
+					oTrans.Command.CommandText = "insert into ecotemplate_action" + 
+						" (action_id, ecotemplate_id, action_name, action_desc, category, action_icon, original_task_id, task_version, parameter_defaults)" +
+						" values (" +
+						" uuid()," + 
+						" '" + this.ID + "'," + 
+						" '" + ui.TickSlash(ea.Name) + "'," + 
+						" '" + ui.TickSlash(ea.Description) + "'," + 
+						" '" + ui.TickSlash(ea.Category) + "'," + 
+						" '" + ea.Icon + "'," + 
+						" '" + ea.OriginalTaskID + "'," + 
+						" '" + ea.TaskVersion + "'," + 
+						" '" + ui.TickSlash(ea.ParameterDefaultsXML) + "'" + 
+						")";
+					
+					if (!oTrans.ExecUpdate(ref sErr))
+						return false;
+					
+					//now, does this action contain a <task> section?  If so, we'll branch off and do 
+					//the create task logic.
+					if (ea.Task != null) 
+					{
+						if (!ea.Task.DBSave(ref sErr, oTrans))
+						{
+							//the task 'should' have rolled back on any errors, but in case it didn't.
+							try {
+								oTrans.RollBack();
+								return false;
+							} catch (Exception) {
+							}
+						}
+						else
+						{
+							if (!string.IsNullOrEmpty(sErr))
+							{
+								try {
+									oTrans.RollBack();
+									return false;
+								} catch (Exception) {
+								}
+							}
+									
+							//finally, don't forget to update the action with the new values if any
+							ea.OriginalTaskID = ea.Task.OriginalTaskID;
+							
+							//we don't update the version if the action referenced the default (it was empty)
+							if  (!string.IsNullOrEmpty(ea.TaskVersion))
+								ea.TaskVersion = ea.Task.Version;
+						}
+					}
+				}
 				
 				//yay!
+				oTrans.Commit();
 				return true;
+
 			}
 			catch (Exception ex)
 			{
 				throw new Exception(ex.Message);
-			}		
+			}	
 		}
 
 		public XElement AsXElement()
 		{					
 			XElement xe = new XElement("ecotemplate");
 				
-			xe.SetAttributeValue("id", this.ID);
+			//don't think we need id's in this xml - will just create problems with RI down the road.
+			//xe.SetAttributeValue("id", this.ID);
 			xe.SetAttributeValue("name", this.Name);
 			xe.SetElementValue("description", this.Description);
-			xe.SetAttributeValue("storm_file_type", this.StormFileType);
-			xe.SetAttributeValue("storm_file", this.StormFile);
-			
+
+			//storm
+			XElement xStorm = new XElement("storm_file");
+			xStorm.SetAttributeValue("storm_file_type", this.StormFileType);
+			xStorm.SetValue(this.StormFile);
+			xe.Add(xStorm);
+
+			//actions
 			XElement xActions = new XElement("actions");
 			foreach (EcotemplateAction ea in this.Actions.Values) {
 				ea.IncludeTask = this.IncludeTasks;
@@ -805,7 +987,7 @@ namespace Globals
 		public Task Task;
 		
 		//static method, given an ID.
-		static public EcotemplateAction GetFromID(string sActionID)
+		static public EcotemplateAction FromID(string sActionID)
 		{
 			if (string.IsNullOrEmpty(sActionID))
 				throw new Exception("Error building Ecotemplate Action object: Action ID is required.");	
@@ -869,11 +1051,47 @@ namespace Globals
 			ParameterDefaultsXML = dr["parameter_defaults"].ToString();
 		}
 
+		//build from an XElement, part of the Ecotemplate XDocument
+		public EcotemplateAction(XElement xAction, Ecotemplate parent, ref string sErr)
+		{
+			if (xAction.Attribute("name") == null) 
+				throw new Exception("Error creating Action from XML - 'name' attribute is required.");
+			if (string.IsNullOrEmpty(xAction.Attribute("name").Value)) 
+				throw new Exception("Error creating Action from XML - 'name' attribute cannot be empty.");
+				
+			//action ALWAYS gets a new id.  There's no reason to bother reading one from the xml.
+			this.ID = Guid.NewGuid().ToString().ToLower();
+
+			//(xAction.Element("description") != null ? xAction.Element("description").Value : "");
+			Ecotemplate = parent;
+			
+			this.Name = xAction.Attribute("name").Value;
+			this.Description = (xAction.Attribute("description") != null ? xAction.Attribute("description").Value : "");
+			
+			this.Category = (xAction.Attribute("category") != null ? xAction.Attribute("category").Value : "");
+			this.Icon = (xAction.Attribute("icon") != null ? xAction.Attribute("icon").Value : "");
+			
+			//whether it has a task bundled inside or not, we'll still set these first from the attributes
+			//and change them later if we need to.
+			this.OriginalTaskID = (xAction.Attribute("original_task_id") != null ? xAction.Attribute("original_task_id").Value : "");
+			this.TaskVersion = (xAction.Attribute("task_version") != null ? xAction.Attribute("task_version").Value : "");
+
+			this.ParameterDefaultsXML = (xAction.Element("parameters") != null ? 
+			                             xAction.Element("parameters").ToString(SaveOptions.DisableFormatting) : 
+			                             "");
+			
+			if (xAction.Element("task") != null) 
+			{
+				this.Task = new Task(xAction.Element("task").ToString(SaveOptions.DisableFormatting));
+			}
+	}
+
 		public string AsXML()
 		{					
 			XElement xe = new XElement("action");
 				
-			xe.SetAttributeValue("id", this.ID);
+			//don't think we need to put id's in this xml
+			//xe.SetAttributeValue("id", this.ID);
 			xe.SetAttributeValue("name", this.Name);
 			xe.SetElementValue("description", this.Description);
 			xe.SetAttributeValue("category", this.Category);
@@ -2660,19 +2878,25 @@ namespace Globals
 		}
 		
 		//Try to save the existing object, resolving conflicts as directed.
-		public bool DBSave(ref string sErr)
+		public bool DBSave(ref string sErr, dataAccess.acTransaction oTrans)
 		{
 			try
 			{
 				acUI.acUI ui = new acUI.acUI();
-				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				bool bLocalTransaction = true;
+				//if we weren't given a transaction, create one
+				if (oTrans != null)
+					bLocalTransaction = false;
+				else
+					oTrans = new dataAccess.acTransaction(ref sErr);
 				
 				if (this.DBExists)
 				{
 					//uh oh... this task exists.  unless told to do so, we stop here.
 					if (this.OnConflict == "cancel") {
-						sErr = "Another Task with that ID or Name/Version exists.  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
-						oTrans.RollBack();
+						sErr = "Another Task with that ID or Name/Version exists.  [" + this.ID + "/" + this.Name + "/" + this.Version + "]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
+						if (bLocalTransaction) oTrans.RollBack();
 						return false;
 					}
 					else {
@@ -2692,15 +2916,15 @@ namespace Globals
 		                        " where step_id in" +
 		                        " (select step_id from task_step where task_id = '" + this.ID + "')";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 		                    oTrans.Command.CommandText = "delete from task_step where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 		                    oTrans.Command.CommandText = "delete from task_codeblock where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 							//update the task row
 		                    oTrans.Command.CommandText = "update task set" +
@@ -2716,7 +2940,7 @@ namespace Globals
 								" parameter_xml = " + (this.ParameterXDoc != null ? "'" + ui.TickSlash(this.ParameterXDoc.ToString(SaveOptions.DisableFormatting)) + "'" : "null") +
 								" where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 		                    //need to update this to work without session
 							//ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, this.ID, this.Name, "Task Updated");
@@ -2820,7 +3044,7 @@ namespace Globals
 					}
 				}
 				
-				oTrans.Commit();
+				if (bLocalTransaction) oTrans.Commit();
 			
 			}
 			catch (Exception ex)

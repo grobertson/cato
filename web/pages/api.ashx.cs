@@ -97,7 +97,6 @@ namespace Web
 					{
 						RESPONSE.ErrorCode = "0001";
 						RESPONSE.ErrorMessage = "Action argument was not provided.";
-						ThrowResponseAndEnd(ref context);
 					}
 					
 					RESPONSE.Method = sAction;
@@ -121,11 +120,15 @@ namespace Web
 					case "GetEcotemplate":
 						GetEcotemplate(ref context);
 						break;
+					case "CreateEcotemplate":
+						CreateEcotemplate(ref context);
+						break;
 					case "HelloWorld":
 						RESPONSE.Response = "Hello there!";
 						break;
 					default:
-						context.Response.Write("<error>Unrecognized action specified.</error>");
+						RESPONSE.ErrorCode = "0002";
+						RESPONSE.ErrorMessage = "Unrecognized action specified.";
 						break;
 					}
 				}
@@ -152,7 +155,7 @@ namespace Web
 		private void ThrowResponseAndEnd(ref HttpContext context)
 		{
 			context.Response.Write(RESPONSE.AsXML());
-			return;
+		return;
 		}
 		/*
 		AUTHENTICATION PROCESS
@@ -292,7 +295,7 @@ namespace Web
 			
 			//ok, now we have a task object.
 			//call it's "create" method to save the whole thing in the db.
-			if (t.DBSave(ref sErr))
+			if (t.DBSave(ref sErr, null))
 			{
 				//success, but was there an error?
 				if (!string.IsNullOrEmpty(sErr))
@@ -408,6 +411,51 @@ namespace Web
 #endregion
 
 #region "Ecotemplates"
+        private void CreateEcotemplate(ref HttpContext context)
+		{
+			acUI.acUI ui = new acUI.acUI();
+			
+			string sXML = FORM["EcotemplateXML"];
+			if (string.IsNullOrEmpty(sXML))
+			{
+				RESPONSE.ErrorCode = "5100";
+				RESPONSE.ErrorMessage = "EcotemplateXML argument was not provided.";
+				ThrowResponseAndEnd(ref context);
+			}
+
+			//we encoded this in javascript before the ajax call.
+			sXML = ui.unpackJSON(sXML);
+		
+			string sErr = "";
+			Ecotemplate et = Ecotemplate.FromXML(sXML, ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+			{
+				RESPONSE.ErrorCode = "5101";
+				RESPONSE.ErrorMessage = "Build Ecotemplate from XML failed";
+				RESPONSE.ErrorDetail = sErr;
+			}
+			//ok, now we have an object.
+			//call it's "create" method to save the whole thing in the db.
+			if (et.DBSave(ref sErr))
+			{
+				//success, but was there an error?
+				if (!string.IsNullOrEmpty(sErr))
+				{
+					RESPONSE.ErrorCode = "5102";
+					RESPONSE.ErrorMessage = "Ecotemplate Create Failed";
+					RESPONSE.ErrorDetail = sErr;
+				}
+			}	
+			else
+			{
+				RESPONSE.ErrorCode = "5103";
+				RESPONSE.ErrorMessage = "Ecotemplate Create Failed";
+				RESPONSE.ErrorDetail = sErr;
+			}
+			
+			RESPONSE.Response = "<ecotemplate_id>" + et.ID + "</ecotemplate_id>";
+        }
+
         private void GetEcotemplate(ref HttpContext context)
         {
 			string sID = PARAMS["id"];

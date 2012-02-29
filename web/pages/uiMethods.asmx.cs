@@ -1668,17 +1668,7 @@ namespace ACWebMethods
 					{
 	                    string sErr = "";
 	
-	                    //we encoded this in javascript before the ajax call.
-	                    //the safest way to unencode it is to use the same javascript lib.
-	                    //(sometimes the javascript and .net libs don't translate exactly, google it.)
 	                    sValue = ui.unpackJSON(sValue);
-	
-	                    // check for existing name
-	                    if (sColumn == "Name")
-	                    {
-	                        if (et.Name == sValue)
-	                            return sValue + " exists, please choose another name.";
-	                    }
 	
 						//we have to use Reflection to find the class field by name
 						bool bSuccess = false;
@@ -1686,6 +1676,9 @@ namespace ACWebMethods
 						if (f != null) {
 							f.SetValue(et, sValue);
 							bSuccess = et.DBUpdate(ref sErr);
+							
+							if (!string.IsNullOrEmpty(sErr))
+								return sErr;
 						}
 						
 						if (bSuccess)
@@ -1739,7 +1732,7 @@ namespace ACWebMethods
 				string sSrc = ui.unpackJSON(sStormFileSource);
 				et.StormFileType = (sSrc == "URL" ? "URL" : "Text");
 				et.StormFile = ui.unpackJSON(sStormFile);
-				if(et.DBCreateNew(ref sErr))
+				if(et.DBSave(ref sErr))
 					return et.ID;
 				else
 					return sErr;
