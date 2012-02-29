@@ -3212,7 +3212,7 @@ namespace Globals
             {
                 oTrans.Command.CommandText = "update _copy_task_step" +
                     " set function_xml = replace(lower(function_xml), '" + drStepIDs["step_id"].ToString().ToLower() + "', '" + drStepIDs["newstep_id"].ToString() + "')" +
-                    " where function_name in ('if','loop','exists')";
+                    " where function_name in ('if','loop','exists','while')";
                 if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
             }
