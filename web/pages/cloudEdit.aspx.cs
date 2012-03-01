@@ -27,7 +27,6 @@ namespace Web.pages
 {
     public partial class cloudEdit : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
 
         protected void Page_Load(object sender, EventArgs e)
@@ -56,89 +55,61 @@ namespace Web.pages
 			return sOptionHTML;
 		}
 		public string GetClouds(string sSearch) {
-            string sSQL = "";
             string sErr = "";
-			string sWhereString = "";
+			string sHTML = "";
 
-            if (sSearch.Length > 0)
-            {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = sSearch.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-                    //if the value is a guid, it's an existing task.
-                    //otherwise it's a new task.
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (cloud_name like '%" + aSearchTerms[i] + "%' " +
-                            "or provider like '%" + aSearchTerms[i] + "%' " +
-                            "or api_url like '%" + aSearchTerms[i] + "%') ";
-                    }
-                }
-            }
-
-            sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" +
-                " from clouds" +
-                " where 1=1 " + sWhereString +
-                " order by provider, cloud_name";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                ui.RaiseError(Page, sErr, true, "");
-            }
-			
-            string sHTML = "";
-
-            //the first DataColumn is the "id"
-            // string sIDColumnName = sDataColumns[0];
-
-            //buld the table
-            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
-            sHTML += "<tr>";
-            sHTML += "<th class=\"chkboxcolumn\">";
-            sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />";
-            sHTML += "</th>";
-
-            sHTML += "<th sortcolumn=\"cloud_name\">Cloud Name</th>";
-            sHTML += "<th sortcolumn=\"provider\">Type</th>";
-            sHTML += "<th sortcolumn=\"api_protocol\">Protocol</th>";
-            sHTML += "<th sortcolumn=\"api_url\">URL</th>";
-
-            sHTML += "</tr>";
-
-            //loop rows
-            foreach (DataRow dr in dt.Rows)
-            {
-                sHTML += "<tr account_id=\"" + dr["cloud_id"].ToString() + "\">";
-                sHTML += "<td class=\"chkboxcolumn\">";
-                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
-                    " id=\"chk_" + dr[0].ToString() + "\"" +
-                    " object_id=\"" + dr[0].ToString() + "\"" +
-                    " tag=\"chk\" />";
-                sHTML += "</td>";
-
-                sHTML += "<td tag=\"selectable\">" + dr["cloud_name"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["api_protocol"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["api_url"].ToString() +  "</td>";
-
-                sHTML += "</tr>";
-            }
-
-            sHTML += "</table>";
+			Clouds c = new Clouds(sSearch, ref sErr);
+				
+			if (c!= null && string.IsNullOrEmpty(sErr))
+			{
+	            //build the table
+	            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
+	            sHTML += "<tr>";
+	            sHTML += "<th class=\"chkboxcolumn\">";
+	            sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />";
+	            sHTML += "</th>";
+	
+	            sHTML += "<th sortcolumn=\"cloud_name\">Cloud Name</th>";
+	            sHTML += "<th sortcolumn=\"provider\">Type</th>";
+	            sHTML += "<th sortcolumn=\"api_protocol\">Protocol</th>";
+	            sHTML += "<th sortcolumn=\"api_url\">URL</th>";
+	
+	            sHTML += "</tr>";
+	
+	            //loop rows
+	            foreach (DataRow dr in c.DataTable.Rows)
+	            {
+	                sHTML += "<tr account_id=\"" + dr["cloud_id"].ToString() + "\">";
+	                sHTML += "<td class=\"chkboxcolumn\">";
+	                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
+	                    " id=\"chk_" + dr[0].ToString() + "\"" +
+	                    " object_id=\"" + dr[0].ToString() + "\"" +
+	                    " tag=\"chk\" />";
+	                sHTML += "</td>";
+	
+	                sHTML += "<td tag=\"selectable\">" + dr["cloud_name"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["api_protocol"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["api_url"].ToString() +  "</td>";
+	
+	                sHTML += "</tr>";
+	            }
+	
+	            sHTML += "</table>";
+			}
+			else
+			{
+				ui.RaiseError(Page, "Unable to get Clouds.", false, sErr);
+			}
 			
 			return sHTML;
 		}
 
-        #region "Web Methods"
         [WebMethod(EnableSession = true)]
         public static string wmGetClouds(string sSearch)
         {
 			cloudEdit ce = new cloudEdit();
             return ce.GetClouds(sSearch);
         }
-        #endregion
     }
 }

@@ -1509,6 +1509,42 @@ namespace Globals
 		
     }
 	
+	public class Clouds
+	{
+		public DataTable DataTable = new DataTable();
+		
+		public Clouds(string sFilter, ref string sErr)
+		{
+			//builds a list from the db, with the optional filter
+			dataAccess dc = new dataAccess();
+            string sWhereString = "";
+
+            if (!string.IsNullOrEmpty(sFilter))
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (cloud_name like '%" + aSearchTerms[i] + "%' " +
+                            "or provider like '%" + aSearchTerms[i] + "%' " +
+                            "or api_url like '%" + aSearchTerms[i] + "%') ";
+                    }
+                } 
+            }
+
+            string sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" +
+                " from clouds" +
+                " where 1=1 " + sWhereString +
+                " order by provider, cloud_name";
+
+            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+                return;
+		}
+	}
+
 	public class Cloud
     {
         public string ID;
@@ -1702,7 +1738,7 @@ namespace Globals
 		
 		public CloudAccounts(string sFilter, ref string sErr)
 		{
-			//buids a list of ecosystems from the db, with the optional filter
+			//builds a list from the db, with the optional filter
 			dataAccess dc = new dataAccess();
             string sWhereString = "";
 

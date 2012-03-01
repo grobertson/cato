@@ -56,14 +56,13 @@ namespace Web.pages
 		}
 		public string GetAccounts(string sSearch) {
             string sErr = "";
+			string sHTML = "";
 
 			CloudAccounts ca = new CloudAccounts(sSearch, ref sErr);
 				
-			string sHTML = "";
-
 			if (ca != null && string.IsNullOrEmpty(sErr))
 			{
-	            //buld the table
+	            //build the table
 	            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
 	            sHTML += "<tr>";
 	            sHTML += "<th class=\"chkboxcolumn\">";
