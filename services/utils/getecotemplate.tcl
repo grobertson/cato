@@ -110,9 +110,37 @@ output "\n\nConnecting using: $url"
 http_get $url
 
 # process the results
-output $::RESULT
+#output $::RESULT
+
+# the output buffer will be xml
+# so... load the XML into a dom and return either the error OR the result only
+regsub -all "&" $::RESULT "&amp;" ::RESULT
+set xmldoc [dom parse $::RESULT]
+set root [$xmldoc documentElement]
+
+#check for errors... if there's an error... just write the whole response
+set error [$root selectNodes string(//error)]
+if {"$error" != ""} {
+	set ::SILENT ""
+	output $::RESULT
+	exit	
+}
+
+# the fastest way to do this is to assume success, check for that node, and display the error if it wasn't there.
+set result_xdoc [$root selectNodes //ecotemplate]
+set result_xml [string trim [$result_xdoc asXML]]
+
+if {"$result_xml" == ""} {
+	set ::SILENT ""
+	output $::RESULT
+} else {
+	# if the silent flag is set, output only the task_id
+	if {"$::SILENT" == "-silent"} {
+		puts $result_xml
+	} else {
+		output "$::RESULT"
+	}
+}
 
 # and we're done
 exit
-
-
