@@ -654,49 +654,55 @@ namespace Globals
 		//from an XML document
 		static public Ecotemplate FromXML(string sEcotemplateXML, ref string sErr)
 		{
-			Ecotemplate et = new Ecotemplate();
-			
-			XDocument xEcotemplate = XDocument.Parse(sEcotemplateXML);
-			if (xEcotemplate != null)
-			{
-				XElement xe = xEcotemplate.Element("ecotemplate");
+			try {
+				Ecotemplate et = new Ecotemplate();
 				
-				//some of these properties will not be required coming from the XML.
-				
-				//if there's no ID we create one
-				et.ID = (xe.Attribute("id") != null ? xe.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
-				et.Name = xe.Attribute("name").Value;
-				et.Description = xe.Element("description").Value;
-				
-				et.DBExists = et._DBExists();
-
-				if (xe.Element("storm_file") != null)
+				XDocument xEcotemplate = XDocument.Parse(sEcotemplateXML);
+				if (xEcotemplate != null)
 				{
-					XElement xeSF = xe.Element("storm_file");
-					et.StormFile = xeSF.Value;
-					et.StormFileType = (xeSF.Attribute("storm_file_type") != null ? xeSF.Attribute("storm_file_type").Value : ""); //cancel is the default
-				}	
-				
-				//if there are conflicts when we try to save, what do we do?
-				et.OnConflict = (xe.Attribute("on_conflict") != null ? xe.Attribute("on_conflict").Value : "cancel"); //cancel is the default
-
-				//actions
-				foreach (XElement xAction in xe.XPathSelectElements("//actions/action")) {
-					EcotemplateAction ea = new EcotemplateAction(xAction, et, ref sErr);
+					XElement xe = xEcotemplate.Element("ecotemplate");
 					
-					if (ea != null)
+					//some of these properties will not be required coming from the XML.
+					
+					//if there's no ID we create one
+					et.ID = (xe.Attribute("id") != null ? xe.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+					et.Name = xe.Attribute("name").Value;
+					et.Description = xe.Element("description").Value;
+					
+					et.DBExists = et._DBExists();
+	
+					if (xe.Element("storm_file") != null)
 					{
-						//if the xml contains a complete Task, we have to deal with it
-						//otherwise just set the OriginalTaskID and TaskVersion properties.
-
-						et.Actions.Add(ea.ID, ea);
+						XElement xeSF = xe.Element("storm_file");
+						et.StormFile = xeSF.Value;
+						et.StormFileType = (xeSF.Attribute("storm_file_type") != null ? xeSF.Attribute("storm_file_type").Value : ""); //cancel is the default
+					}	
+					
+					//if there are conflicts when we try to save, what do we do?
+					et.OnConflict = (xe.Attribute("on_conflict") != null ? xe.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+	
+					//actions
+					foreach (XElement xAction in xe.XPathSelectElements("//actions/action")) {
+						EcotemplateAction ea = new EcotemplateAction(xAction, et, ref sErr);
+						
+						if (ea != null)
+						{
+							//if the xml contains a complete Task, we have to deal with it
+							//otherwise just set the OriginalTaskID and TaskVersion properties.
+	
+							et.Actions.Add(ea.ID, ea);
+						}
 					}
+					
+					return et;
 				}
 				
-				return et;
+				return null;
+				
+			} catch (Exception ex) {
+				sErr = "Ecotemplate.FromXML: " + ex.Message;
+				return null;
 			}
-			
-			return null;
 		}
 
 		private bool _DBExists()
@@ -1082,7 +1088,7 @@ namespace Globals
 			
 			if (xAction.Element("task") != null) 
 			{
-				this.Task = new Task(xAction.Element("task").ToString(SaveOptions.DisableFormatting));
+				this.Task = Task.FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
 			}
 	}
 
@@ -2523,66 +2529,79 @@ namespace Globals
 		}
 
 		//Constructor, from an XML document
-		public Task(string sTaskXML)
+		static public Task FromXML(string sTaskXML, ref string sErr)
 		{
-			XDocument xTask = XDocument.Parse(sTaskXML);
-			if (xTask != null)
+			try
 			{
-				XElement xeTask = xTask.Element("task");
-				
-				//some of these properties will not be required coming from the XML.
-				
-				//if there's no ID we create one
-				this.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
-				this.Name = xeTask.Attribute("name").Value;
-				this.Code = xeTask.Attribute("code").Value;
-				this.Description = xeTask.Element("description").Value;
-				
-				//if there are conflicts when we try to save this Task, what do we do?
-				this.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
-
-				//this stuff needs discussion for how it would run on a non-local task
-				
-				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
-				this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
-				//original id becomes the id if it's omitted from the xml
-				this.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : this.ID);
-				this.IsDefaultVersion = true;
-
-				this.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
-				this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
-				//this.UseConnectorSystem = false;
-
-				this.DBExists = _DBExists();
-				
-				//parameters
-				if (xeTask.Element("parameters") != null)
+				XDocument xTask = XDocument.Parse(sTaskXML);
+				if (xTask != null)
 				{
-					this.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
-				}
-
-				//now, codeblocks.
-				foreach (XElement xCodeblock in xeTask.XPathSelectElements("//codeblocks/codeblock")) {
-					if (xCodeblock.Attribute("name") == null) 
-						throw new Exception("Task XML: All Codeblocks must have the 'name' attribute.");
+					Task t = new Task();
+					XElement xeTask = xTask.Element("task");
 					
-					Codeblock c = new Codeblock(xCodeblock.Attribute("name").Value);
+					//some of these properties will not be required coming from the XML.
+	
+					//if there's no ID we create one
+					t.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+					t.Name = xeTask.Attribute("name").Value;
+					t.Code = xeTask.Attribute("code").Value;
+					t.Description = xeTask.Element("description").Value;
 					
-					if (c != null)
+					//if there are conflicts when we try to save this Task, what do we do?
+					t.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+	
+					//this stuff needs discussion for how it would run on a non-local task
+					
+					t.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
+					t.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
+					//original id becomes the id if it's omitted from the xml
+					t.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : t.ID);
+					t.IsDefaultVersion = true;
+	
+					t.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
+					t.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
+					//this.UseConnectorSystem = false;
+	
+					t.DBExists = t._DBExists();
+					
+					//parameters
+					if (xeTask.Element("parameters") != null)
 					{
-						//steps.
-						foreach (XElement xStep in xCodeblock.XPathSelectElements("steps/step")) {
-							Step s = new Step(xStep, c, this);
-							
-							if (s != null)
-							{
-								c.Steps.Add(s.ID, s);
-							}
-						}
-
-						this.Codeblocks.Add(c.Name, c);
+						t.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
 					}
+	
+					//now, codeblocks.
+					foreach (XElement xCodeblock in xeTask.XPathSelectElements("//codeblocks/codeblock")) {
+						if (xCodeblock.Attribute("name") == null) 
+						{
+							sErr = ("Task.FromXML: All Codeblocks must have the 'name' attribute.");
+							return null;
+						}
+						Codeblock c = new Codeblock(xCodeblock.Attribute("name").Value);
+						
+						if (c != null)
+						{
+							//steps.
+							foreach (XElement xStep in xCodeblock.XPathSelectElements("steps/step")) {
+								Step s = new Step(xStep, c, t);
+								
+								if (s != null)
+								{
+									c.Steps.Add(s.ID, s);
+								}
+							}
+	
+							t.Codeblocks.Add(c.Name, c);
+						}
+					}
+						
+					return t;
 				}
+				
+				return null;
+			} catch (Exception ex) {
+				sErr = "Task.FromXML: " + ex.Message;
+				return null;
 			}
 		}
 
@@ -2958,10 +2977,15 @@ namespace Globals
 								" (task_id, original_task_id, version, default_version," +
 									" task_name, task_code, task_desc, task_status, created_dt)" +
 									" values " +
-									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
-									(this.IsDefaultVersion ? 1 : 0) + ", '" +
-									ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
-									"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
+									" ('" + this.ID + "'," +
+									" '" + this.OriginalTaskID + "'," +
+									" " + this.Version + "," +
+									" " + (this.IsDefaultVersion ? 1 : 0) + "," +
+									" '" + ui.TickSlash(this.Name) + "'," +
+									" '" + ui.TickSlash(this.Code) + "'," +
+									" '" + ui.TickSlash(this.Description) + "'," +
+									" '" + this.Status + "'," +
+									" now())";
 							if (!oTrans.ExecUpdate(ref sErr))
 								return false;
 
@@ -2978,10 +3002,15 @@ namespace Globals
 								" (task_id, original_task_id, version, default_version," +
 									" task_name, task_code, task_desc, task_status, created_dt)" +
 									" values " +
-									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
-									(this.IsDefaultVersion ? 1 : 0) + ", '" +
-									ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
-									"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
+									" ('" + this.ID + "'," +
+									" '" + this.OriginalTaskID + "'," +
+									" " + this.Version + "," +
+									" " + (this.IsDefaultVersion ? 1 : 0) + "," +
+									" '" + ui.TickSlash(this.Name) + "'," +
+									" '" + ui.TickSlash(this.Code) + "'," +
+									" '" + ui.TickSlash(this.Description) + "'," +
+									" '" + this.Status + "'," +
+									" now())";
 							if (!oTrans.ExecUpdate(ref sErr))
 								return false;
 
@@ -3000,9 +3029,15 @@ namespace Globals
 						" (task_id, original_task_id, version, default_version," +
 							" task_name, task_code, task_desc, task_status, created_dt)" +
 							" values " +
-							"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
-							ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
-							"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
+							" ('" + this.ID + "'," +
+							"'" + this.ID + "'," +
+							" " + this.Version + "," +
+							" 1," +
+							" '" + ui.TickSlash(this.Name) + "'," +
+							" '" + ui.TickSlash(this.Code) + "'," +
+							" '" + ui.TickSlash(this.Description) + "'," +
+							" '" + this.Status + "'," +
+							" now())";
 					if (!oTrans.ExecUpdate(ref sErr))
 						return false;
 					
@@ -3035,7 +3070,7 @@ namespace Globals
 								s.OutputRowDelimiter.ToString() + "," + 
 								s.OutputColumnDelimiter.ToString() + "," +
 								"'" + s.FunctionName + "'," +
-								"'" + s.FunctionXML + "'" +
+								"'" + ui.TickSlash(s.FunctionXML) + "'" +
 								")";
 						if (!oTrans.ExecUpdate(ref sErr))
 							return false;

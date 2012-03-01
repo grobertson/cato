@@ -269,6 +269,12 @@ namespace Web
 			
 			//we encoded this in javascript before the ajax call.
 			sTaskXML = ui.unpackJSON(sTaskXML);
+			if (!string.IsNullOrEmpty(sErr))
+			{
+				RESPONSE.ErrorCode = "3001";
+				RESPONSE.ErrorMessage = "Build Ecotemplate from XML failed";
+				RESPONSE.ErrorDetail = sErr;
+			}
 			
 			
 			//TODO: parameter xml will be inside the task xml...
@@ -291,7 +297,7 @@ namespace Web
 			//will return a standard XML error document if there's a problem.
 			//or a standard result XML if it's successful.
 			
-			Task t = new Task(sTaskXML);
+			Task t = Task.FromXML(sTaskXML, ref sErr);
 			
 			//ok, now we have a task object.
 			//call it's "create" method to save the whole thing in the db.
@@ -300,14 +306,14 @@ namespace Web
 				//success, but was there an error?
 				if (!string.IsNullOrEmpty(sErr))
 				{
-					RESPONSE.ErrorCode = "3000";
+					RESPONSE.ErrorCode = "3002";
 					RESPONSE.ErrorMessage = "Task Create Failed";
 					RESPONSE.ErrorDetail = sErr;
 				}
 			}	
 			else
 			{
-				RESPONSE.ErrorCode = "3001";
+				RESPONSE.ErrorCode = "3003";
 				RESPONSE.ErrorMessage = "Task Create Failed";
 				RESPONSE.ErrorDetail = sErr;
 			}
