@@ -44,6 +44,7 @@ namespace ACWebMethods
         {
             try
             {
+				acUI.acUI ui = new acUI.acUI();
 				string sErr = "";
 				//instantiate the new Task object
 				Task oTask = new Task(sTaskID, false, ref sErr);
@@ -54,6 +55,10 @@ namespace ACWebMethods
 				
 				foreach (Codeblock cb in oTask.Codeblocks.Values)
 				{
+					//if it's a guid it's a bogus codeblock (for export only)
+					if (ui.IsGUID(cb.Name))
+						continue;
+
 					sCBHTML += "<li class=\"ui-widget-content codeblock\" id=\"cb_" + cb.Name + "\">";
 					sCBHTML += "<div>";
 					sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">";
@@ -2042,6 +2047,42 @@ namespace ACWebMethods
                 throw new Exception(ex.Message);
             }
 
+        }
+
+		[WebMethod(EnableSession = true)]
+        public string wmCreateTaskFromXML(string sXML)
+        {
+            try
+            {
+				if (string.IsNullOrEmpty(sXML))
+					throw new Exception("Task XML is required.");
+					
+	            acUI.acUI ui = new acUI.acUI();
+	            string sErr = "";
+	
+				Task t = Task.FromXML(ui.unpackJSON(sXML), ref sErr);
+	
+				if (!string.IsNullOrEmpty(sErr))
+					throw new Exception("Could not create Ecotemplate from XML: " + sErr);
+	
+				if (t != null) {
+					if(t.DBSave(ref sErr, null))
+					{
+						if (!string.IsNullOrEmpty(sErr))
+							throw new Exception(sErr);
+						
+						return t.ID;
+					}
+					else
+						return sErr;
+				}
+				else
+					return sErr;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [WebMethod(EnableSession = true)]

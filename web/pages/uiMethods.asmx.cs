@@ -1722,6 +1722,42 @@ namespace ACWebMethods
 		}
 
         [WebMethod(EnableSession = true)]
+        public string wmCreateEcotemplateFromXML(string sXML)
+        {
+            try
+            {
+				if (string.IsNullOrEmpty(sXML))
+					throw new Exception("Ecotemplate XML is required.");
+					
+	            acUI.acUI ui = new acUI.acUI();
+	            string sErr = "";
+	
+				Ecotemplate et = Ecotemplate.FromXML(ui.unpackJSON(sXML), ref sErr);
+	
+				if (!string.IsNullOrEmpty(sErr))
+					throw new Exception("Could not create Ecotemplate from XML: " + sErr);
+	
+				if (et != null) {
+					if(et.DBSave(ref sErr))
+					{
+						if (!string.IsNullOrEmpty(sErr))
+							throw new Exception(sErr);
+						
+						return et.ID;
+					}
+					else
+						return sErr;
+				}
+				else
+					return sErr;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [WebMethod(EnableSession = true)]
         public string wmCreateEcotemplate(string sName, string sDescription, string sStormFileSource, string sStormFile)
         {
             acUI.acUI ui = new acUI.acUI();

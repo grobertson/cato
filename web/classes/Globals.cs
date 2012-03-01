@@ -2435,7 +2435,13 @@ namespace Globals
 			if (this.FunctionXDoc != null) {
 				XElement xStep = new XElement("step");
 				
-				xStep.SetAttributeValue("id", this.ID);
+				//the ID isn't necessary, unless this step is 'embedded' OR allows embedded.
+				//how do we tell?  easy... the codeblock_name is a guid and the step_order is -1
+				if (this.Codeblock.Length == 36 && this.Order == -1)
+					xStep.SetAttributeValue("id", this.ID);
+				if ("if,loop,exists,while".Contains(this.FunctionName.ToLower()))
+					xStep.SetAttributeValue("id", this.ID);
+				
 				xStep.SetAttributeValue("output_parse_type", this.OutputParseType);
 				xStep.SetAttributeValue("output_column_delimiter", this.OutputColumnDelimiter);
 				xStep.SetAttributeValue("output_row_delimiter", this.OutputRowDelimiter);
@@ -2800,8 +2806,17 @@ namespace Globals
 						else
 						{
 							//so, what do we do if we found a step that's not in a 'real' codeblock?
-							//nothing!  the gui will take care of drawing those embedded steps! 
+							//well, the gui will take care of drawing those embedded steps...
 							
+							//but we have a problem with export, version up, etc.
+							
+							//these steps can't be orphans!
+							//so, we'll go ahead and create codeblocks for them.
+							//this is terrible, but part of the problem with this embedded stuff.
+							//we'll tweak the gui so GUID named codeblocks don't show.
+							this.Codeblocks.Add(oStep.Codeblock, new Codeblock(oStep.Codeblock));
+							this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+
 							//maybe one day we'll do the full recusrive loading of all embedded steps here
 							// but not today... it's a big deal and we need to let these changes settle down first.
 						}
@@ -2914,7 +2929,9 @@ namespace Globals
 				{
 					//uh oh... this task exists.  unless told to do so, we stop here.
 					if (this.OnConflict == "cancel") {
-						sErr = "Another Task with that ID or Name/Version exists.  [" + this.ID + "/" + this.Name + "/" + this.Version + "]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
+						sErr = "Another Task with that ID or Name/Version exists." +
+							"[" + this.ID + "/" + this.Name + "/" + this.Version + "]" +
+								"  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
 						if (bLocalTransaction) oTrans.RollBack();
 						return false;
 					}
@@ -2969,7 +2986,7 @@ namespace Globals
 							this.IncrementMinorVersion();
 							
 							this.DBExists = false;
-							this.ID = Guid.NewGuid().ToString().ToLower();
+							this.ID = ui.NewGUID();
 							this.IsDefaultVersion = false;
 
 							//insert the new version
@@ -2994,7 +3011,7 @@ namespace Globals
 							this.IncrementMajorVersion();
 											
 							this.DBExists = false;
-							this.ID = Guid.NewGuid().ToString().ToLower();
+							this.ID = ui.NewGUID();
 							this.IsDefaultVersion = false;
 
 							//insert the new version
@@ -3049,14 +3066,30 @@ namespace Globals
 				//by the time we get here, there should for sure be a task row, either new or updated.				
 				//now, codeblocks
 				foreach (Codeblock c in this.Codeblocks.Values) {
-					oTrans.Command.CommandText = "insert task_codeblock (task_id, codeblock_name)" +
-						" values ('" + this.ID + "', '" + c.Name + "')";
-					if (!oTrans.ExecUpdate(ref sErr))
-						return false;
-									
+					//PAY ATTENTION to crazy stuff here.
+					//for exportability, embedded steps are held in codeblocks that don't really exist in the database
+					// they are created on the task object when it's created from the db or xml.
+					//BUT, when actually saving it, we don't wanna save these dummy codeblocks.
+					//(having real dummy codeblocks in the db would freak out the command engine)
+					
+					//so ... if the codeblock name is a guid, we:
+					//a) DO NOT insert it
+					//b) any steps inside it are set to step_order=-1
+					bool bIsBogusCodeblock = (ui.IsGUID(c.Name));
+					
+					if (!bIsBogusCodeblock)
+					{
+						oTrans.Command.CommandText = "insert task_codeblock (task_id, codeblock_name)" +
+							" values ('" + this.ID + "', '" + c.Name + "')";
+						if (!oTrans.ExecUpdate(ref sErr))
+							return false;
+					}
+					
 					//and steps
 					int iStepOrder = 1;
 					foreach (Step s in c.Steps.Values) {
+						iStepOrder = (bIsBogusCodeblock ? -1 : iStepOrder);
+						
 						oTrans.Command.CommandText = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
 							" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
 								" function_name, function_xml)" +
@@ -3292,7 +3325,7 @@ namespace Globals
 		{
 			XElement xTask = new XElement("task");
 			
-			xTask.SetAttributeValue("id", this.ID);
+			//xTask.SetAttributeValue("id", this.ID);
 			xTask.SetAttributeValue("original_id", this.OriginalTaskID);
 			xTask.SetAttributeValue("name", this.Name);
 			xTask.SetAttributeValue("code", this.Code);
