@@ -2485,6 +2485,94 @@ namespace Globals
 			this.Name = sCodeblockName;
 		}
 	}
+	public class Tasks : Dictionary<string, Task>  //Tasks is a shallow collection of Task objects
+	{
+		//NOTE: these are NOT complete tasks... just the key properties.
+		//IF you wanna get a full task from this collection...
+		//do a "new Task(
+		public string ID;
+		public string OriginalTaskID;
+		public string Name;
+		public string Code;
+		public string Version;
+		public string Status;
+		public string Description;
+		public bool IsDefaultVersion;
+
+		public Tasks(string sFilter)
+		{
+            DataTable dt = GetFromDB(sFilter);
+            if (dt != null)
+            {
+				if (dt.Rows.Count > 0)
+	            {
+					foreach(DataRow dr in dt.Rows)
+					{
+						Task t = new Task();
+				        t.ID = dr["task_id"].ToString();
+				        t.OriginalTaskID = dr["original_task_id"].ToString();
+				        t.Name = dr["task_name"].ToString();
+						t.Code = dr["task_code"].ToString();
+				        t.Version = dr["version"].ToString();
+				        t.Status = dr["task_status"].ToString();
+						t.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
+				        t.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
+					
+						this.Add(t.ID, t);
+					}
+				}
+            }
+		}
+		
+		static public DataTable AsDataTable(string sFilter)
+		{
+			DataTable dt = GetFromDB(sFilter);
+			if (dt != null)
+				return dt;
+			
+			return null;
+		}
+		
+		static private DataTable GetFromDB(string sFilter)
+		{
+			dataAccess dc = new dataAccess();
+			string sWhereString = "";
+
+            if (sFilter.Length > 0)
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+
+                    //if the value is a guid, it's an existing task.
+                    //otherwise it's a new task.
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (a.task_name like '%" + aSearchTerms[i] +
+                           "%' or a.task_desc like '%" + aSearchTerms[i] +
+                           "%' or a.task_status like '%" + aSearchTerms[i] +
+                           "%' or a.task_code like '%" + aSearchTerms[i] + "%' ) ";
+                    }
+                } 
+            }
+
+            string sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," +
+                " (select count(*) from task where original_task_id = a.original_task_id) as versions" +   
+					" from task a  " +
+					" where default_version = 1" +
+					sWhereString +
+					" order by task_code";
+
+			string sErr = "";
+            DataTable dt = new DataTable();
+            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				throw new Exception(sErr); 
+			
+			return dt;
+		}
+	}
 	
 	public class Task
 	{
