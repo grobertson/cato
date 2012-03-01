@@ -297,7 +297,7 @@ namespace Web
 			//will return a standard XML error document if there's a problem.
 			//or a standard result XML if it's successful.
 			
-			Task t = Task.FromXML(sTaskXML, ref sErr);
+			Task t = new Task().FromXML(sTaskXML, ref sErr);
 			
 			//ok, now we have a task object.
 			//call it's "create" method to save the whole thing in the db.
@@ -433,7 +433,7 @@ namespace Web
 			sXML = ui.unpackJSON(sXML);
 		
 			string sErr = "";
-			Ecotemplate et = Ecotemplate.FromXML(sXML, ref sErr);
+			Ecotemplate et = new Ecotemplate().FromXML(sXML, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 			{
 				RESPONSE.ErrorCode = "5101";

@@ -1732,7 +1732,7 @@ namespace ACWebMethods
 	            acUI.acUI ui = new acUI.acUI();
 	            string sErr = "";
 	
-				Ecotemplate et = Ecotemplate.FromXML(ui.unpackJSON(sXML), ref sErr);
+				Ecotemplate et = new Ecotemplate().FromXML(ui.unpackJSON(sXML), ref sErr);
 	
 				if (!string.IsNullOrEmpty(sErr))
 					throw new Exception("Could not create Ecotemplate from XML: " + sErr);

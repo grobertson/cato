@@ -2060,7 +2060,7 @@ namespace ACWebMethods
 	            acUI.acUI ui = new acUI.acUI();
 	            string sErr = "";
 	
-				Task t = Task.FromXML(ui.unpackJSON(sXML), ref sErr);
+				Task t = new Task().FromXML(ui.unpackJSON(sXML), ref sErr);
 	
 				if (!string.IsNullOrEmpty(sErr))
 					throw new Exception("Could not create Ecotemplate from XML: " + sErr);

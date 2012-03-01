@@ -652,7 +652,7 @@ namespace Globals
 		}
 		
 		//from an XML document
-		static public Ecotemplate FromXML(string sEcotemplateXML, ref string sErr)
+		public Ecotemplate FromXML(string sEcotemplateXML, ref string sErr)
 		{
 			try {
 				Ecotemplate et = new Ecotemplate();
@@ -1088,7 +1088,7 @@ namespace Globals
 			
 			if (xAction.Element("task") != null) 
 			{
-				this.Task = Task.FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
+				this.Task = new Task().FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
 			}
 	}
 
@@ -2623,7 +2623,7 @@ namespace Globals
 		}
 
 		//Constructor, from an XML document
-		static public Task FromXML(string sTaskXML, ref string sErr)
+		public Task FromXML(string sTaskXML, ref string sErr)
 		{
 			try
 			{
