@@ -1692,6 +1692,48 @@ namespace Globals
 			}		
 		}
    }
+	
+	//CloudAccounts contains a DataTable
+	//more efficient to read from the DB as a DataTable than to loop and create a dictionary.
+	//if you want a dictionary, that's an instance method.
+	public class CloudAccounts
+	{
+		public DataTable DataTable = new DataTable();
+		
+		public CloudAccounts(string sFilter, ref string sErr)
+		{
+			//buids a list of ecosystems from the db, with the optional filter
+			dataAccess dc = new dataAccess();
+            string sWhereString = "";
+
+            if (!string.IsNullOrEmpty(sFilter))
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (account_name like '%" + aSearchTerms[i] + "%' " +
+                            "or account_number like '%" + aSearchTerms[i] + "%' " +
+                            "or provider like '%" + aSearchTerms[i] + "%' " +
+                            "or login_id like '%" + aSearchTerms[i] + "%') ";
+                    }
+                } 
+            }
+
+            string sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," +
+                " case is_default when 1 then 'Yes' else 'No' end as is_default," +
+				" (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" +
+                " from cloud_account" +
+                " where 1=1 " + sWhereString +
+                " order by is_default desc, account_name";
+
+            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+                return;
+		}
+	}
 
 	public class CloudAccount
     {
