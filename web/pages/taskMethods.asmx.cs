@@ -2055,7 +2055,7 @@ namespace ACWebMethods
             try
             {
 				if (string.IsNullOrEmpty(sXML))
-					throw new Exception("Task XML is required.");
+					return "{\"error\" : \"Task XML is required.\"}";
 					
 	            acUI.acUI ui = new acUI.acUI();
 	            string sErr = "";
@@ -2063,21 +2063,21 @@ namespace ACWebMethods
 				Task t = new Task().FromXML(ui.unpackJSON(sXML), ref sErr);
 	
 				if (!string.IsNullOrEmpty(sErr))
-					throw new Exception("Could not create Ecotemplate from XML: " + sErr);
+					return "{\"error\" : \"Could not create Task from XML: " + sErr + "\"}";
 	
 				if (t != null) {
 					if(t.DBSave(ref sErr, null))
 					{
 						if (!string.IsNullOrEmpty(sErr))
-							throw new Exception(sErr);
+							return "{\"error\" : \"" + sErr + "\"}";
 						
-						return t.ID;
+						return "{\"type\" : \"task\", \"id\" : \"" + t.ID + "\"}";
 					}
 					else
-						return sErr;
+						return "{\"error\" : \"" + sErr + "\"}";
 				}
 				else
-					return sErr;
+					return "{\"error\" : \"" + sErr + "\"}";
             }
             catch (Exception ex)
             {

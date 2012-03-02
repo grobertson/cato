@@ -1722,12 +1722,57 @@ namespace ACWebMethods
 		}
 
         [WebMethod(EnableSession = true)]
+        public string wmCreateObjectFromXML(string sXML)
+        {
+            try
+            {
+				acUI.acUI ui = new acUI.acUI();
+
+				if (string.IsNullOrEmpty(sXML))
+					throw new Exception("XML is required.");
+					
+				//sXML is json packed.  We'll unpack it locally to check it,
+				string sTestXML = ui.unpackJSON(sXML);
+				//what is it?
+				XDocument xd = XDocument.Parse(sTestXML);
+				if (xd != null)
+				{
+					string sResult = "";
+
+					//an ecotemplate?
+					XElement xe = xd.Element("ecotemplate");
+					if (xe != null)
+					{
+						sResult = wmCreateEcotemplateFromXML(sXML); //send the original xml
+					}
+					//a task?
+					xe = xd.Element("task");
+					if (xe != null)
+					{
+						taskMethods tm = new taskMethods();
+						sResult = tm.wmCreateTaskFromXML(sXML); //send the original xml
+					}
+					
+					return sResult;
+				}
+				else
+				{
+					return "Text is not a valid XML document.";
+				}
+            }
+            catch (Exception ex)
+            {
+                return "Unable to continue.  Text could not be validated as an XML document." + ex.Message;
+            }
+        }
+
+        [WebMethod(EnableSession = true)]
         public string wmCreateEcotemplateFromXML(string sXML)
         {
             try
             {
 				if (string.IsNullOrEmpty(sXML))
-					throw new Exception("Ecotemplate XML is required.");
+					return "{\"error\" : \"Ecotemplate XML is required.\"}";
 					
 	            acUI.acUI ui = new acUI.acUI();
 	            string sErr = "";
@@ -1735,21 +1780,21 @@ namespace ACWebMethods
 				Ecotemplate et = new Ecotemplate().FromXML(ui.unpackJSON(sXML), ref sErr);
 	
 				if (!string.IsNullOrEmpty(sErr))
-					throw new Exception("Could not create Ecotemplate from XML: " + sErr);
+					return "{\"error\" : \"Could not create Ecotemplate from XML: " + sErr + "\"}";
 	
 				if (et != null) {
 					if(et.DBSave(ref sErr))
 					{
 						if (!string.IsNullOrEmpty(sErr))
-							throw new Exception(sErr);
+							return "{\"error\" : \"" + sErr + "\"}";
 						
-						return et.ID;
+						return "{\"type\" : \"ecotemplate\", \"id\" : \"" + et.ID + "\"}";
 					}
 					else
-						return sErr;
+						return "{\"error\" : \"" + sErr + "\"}";
 				}
 				else
-					return sErr;
+					return "{\"error\" : \"" + sErr + "\"}";
             }
             catch (Exception ex)
             {

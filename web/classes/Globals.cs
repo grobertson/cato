@@ -945,6 +945,7 @@ namespace Globals
 			//don't think we need id's in this xml - will just create problems with RI down the road.
 			//xe.SetAttributeValue("id", this.ID);
 			xe.SetAttributeValue("name", this.Name);
+			xe.SetAttributeValue("on_conflict", "cancel");
 			xe.SetElementValue("description", this.Description);
 
 			//storm
@@ -3502,6 +3503,7 @@ namespace Globals
 			xTask.SetAttributeValue("version", this.Version);
 			xTask.SetAttributeValue("concurrent_instances", this.ConcurrentInstances);
 			xTask.SetAttributeValue("queue_depth", this.QueueDepth);
+			xTask.SetAttributeValue("on_conflict", "cancel");
 			
 			xTask.SetElementValue("description", this.Description);
 			

@@ -102,7 +102,7 @@
 						</div>
 					</td>
 					<td>
-						<asp:Button CssClass="ui-widget ui-state-default ui-corner-all ui-button-text-only" Style="margin-top: -10px; font-weight: normal; font-size: 10pt;" ID="btnImport" runat="server" Text="Import" OnClick="btnImport_Click" />
+						<asp:Button CssClass="ui-widget ui-state-default ui-corner-all ui-button-text-only" Style="margin-top: -10px; font-weight: normal; font-size: 10pt;" ID="btnImport" runat="server" Text="Load" OnClick="btnImport_Click" />
 					</td>
 				</tr>
 			</table>
