@@ -305,15 +305,31 @@ function ExportTasks() {
 }
 
 function SaveNewTask() {
+    var bSave = true;
+    var sValidationErr = "";
+    
     //some client side validation before we attempt to save
-    var sTaskName = packJSON($("[jqname='txtTaskName']").val());
-    var sTaskCode = packJSON($("[jqname='txtTaskCode']").val());
-    var sTaskDesc = packJSON($("[jqname='txtTaskDesc']").val());
+    var sTaskName = $("[jqname='txtTaskName']").val();
+    var sTaskCode = $("[jqname='txtTaskCode']").val();
+    var sTaskDesc = $("[jqname='txtTaskDesc']").val();
 
-	if (sTaskName == "") {
-        showAlert("Please provide a Task Name.");
+	if (sTaskName.length < 3) {
+        sValidationErr += "- Task Name is required and must be at least three characters in length.<br />";
+        bSave = false;
+    }
+	if (sTaskCode.length < 1) {
+        sValidationErr += "- Task Code is required.";
+        bSave = false;
+    }
+
+    if (bSave != true) {
+        showAlert(sValidationErr);
         return false;
     }
+
+    sTaskName = packJSON(sTaskName);
+    sTaskCode = packJSON(sTaskCode);
+    sTaskDesc = packJSON(sTaskDesc);
 
     $.ajax({
         type: "POST",
