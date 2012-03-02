@@ -305,16 +305,13 @@ function ExportTasks() {
 }
 
 function SaveNewTask() {
-    var bSave = true;
-    var strValidationError = '';
-    
     //some client side validation before we attempt to save
     var sTaskName = packJSON($("[jqname='txtTaskName']").val());
     var sTaskCode = packJSON($("[jqname='txtTaskCode']").val());
     var sTaskDesc = packJSON($("[jqname='txtTaskDesc']").val());
 
-    if (bSave != true) {
-        showAlert(strValidationError);
+	if (sTaskName == "") {
+        showAlert("Please provide a Task Name.");
         return false;
     }
 

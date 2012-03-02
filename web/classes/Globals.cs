@@ -799,6 +799,12 @@ namespace Globals
 		{
 			try
 			{
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+				{
+					sErr = "ID and Name are required Ecotemplate properties.";
+					return false;
+				}
+
 				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 				
 				if (this.DBExists)
@@ -821,12 +827,6 @@ namespace Globals
 							
 							//if the ID existed it doesn't matter, we'll be plowing it anyway.
 							//by "plow" I mean drop and recreate the actions... the ecotemplate row will be UPDATED
-							if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
-							{
-								sErr = "ID and Name are required Ecotemplate properties.";
-								return false;
-							}
-							
 							oTrans.Command.CommandText = "update ecotemplate" + 
 								" set ecotemplate_name = '" + this.Name + "'," +
 								" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
@@ -851,13 +851,7 @@ namespace Globals
 				}
 				else 
 				{
-					//doesn't exist, we'll add it
-					if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
-					{
-						sErr = "ID and Name are required Ecotemplate properties.";
-						return false;
-					}
-				
+					//doesn't exist, we'll add it				
 					oTrans.Command.CommandText = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
 						" values ('" + this.ID + "'," +
 							" '" + this.Name + "'," +
@@ -3094,6 +3088,13 @@ namespace Globals
 					bLocalTransaction = false;
 				else
 					oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+				{
+					sErr = "ID and Name are required Task properties.";
+					if (bLocalTransaction) oTrans.RollBack();
+					return false;
+				}
 				
 				if (this.DBExists)
 				{
