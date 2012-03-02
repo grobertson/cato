@@ -835,6 +835,24 @@ namespace acUI
 		}
         #endregion
         #region "Misc Functions"
+		public void Housekeeping()
+		{
+			//no fail, no error
+			try {
+				//clean old files out of the /temp directory
+				string[] files = Directory.GetFiles(Server.MapPath("~/temp"));
+	
+				foreach (string file in files)
+				{
+					FileInfo fi = new FileInfo(file);
+					if (fi.LastAccessTime < DateTime.Now.AddDays(-GlobalSettings.UITempDirDays))
+					  fi.Delete();
+				}
+			} catch (Exception ex) {
+				Console.WriteLine("Unable to clean /temp. " + ex.Message);
+				return;
+			}
+		}
 		public string TickSlash(string s)
 		{
 			return s.Replace("'", "''").Replace("\\", "\\\\");

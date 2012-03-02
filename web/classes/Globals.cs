@@ -302,6 +302,12 @@ namespace Globals
 	#region "Global Settings"
 	public class GlobalSettings
     {
+        private static int iTempDirDays = 5;
+        public static int UITempDirDays
+        {
+            get { return iTempDirDays; }
+            set { iTempDirDays = value; }
+        }
         private static string sStormApiURL = "";
         public static string StormApiURL
         {

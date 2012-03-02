@@ -151,6 +151,11 @@ public class dataAccess
                         case "stormapiport":
                             GlobalSettings.StormApiPort = sVal;
                             break;
+                        case "uitempdirdays":
+                            int days;
+                            if (int.TryParse(sVal, out days))
+                                GlobalSettings.UITempDirDays = days;
+                            break;
                     }
                 }
 
