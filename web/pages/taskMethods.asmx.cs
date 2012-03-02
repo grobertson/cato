@@ -1966,24 +1966,62 @@ namespace ACWebMethods
 			//pretty much just call the ImportExport function
 			try
 			{
-				//what are we gonna call the final file?
-				string sUserID = ui.GetSessionUserID();
-				string sFileName = sUserID + "_backup";
-				string sPath = Server.MapPath("~/temp/");
+				//interesting mid-point stopping point...
+				//if only one task was selected, export it as XML
+				//if more than one, export it the old way as a .csk bundle.
 				
-				if (sTaskArray.Length < 36)
-				return "";
-				sTaskArray = ui.QuoteUp(sTaskArray);
-				
-				if (!ie.doBatchTaskExport(sPath, sTaskArray, sFileName, ref sErr))
+				//(because the end goal is the .csk files are still just zip files, 
+				//but will contain the new style xml files.
+				if (sTaskArray.Contains(","))
 				{
-					throw new Exception("Unable to export Tasks." + sErr);
+					if (sTaskArray.Length < 36)
+						return "";
+					
+					sTaskArray = ui.QuoteUp(sTaskArray);
+
+					//what are we gonna call the final file?
+					string sUserID = ui.GetSessionUserID();
+					string sFileName = sUserID + "_backup";
+					string sPath = Server.MapPath("~/temp/");
+
+					if (!ie.doBatchTaskExport(sPath, sTaskArray, sFileName, ref sErr))
+					{
+						throw new Exception("Unable to export Tasks." + sErr);
+					}
+					
+					if (sErr == "")
+						return sFileName + ".csk";
+					else
+						return sErr;
 				}
-				
-				if (sErr == "")
-					return sFileName + ".csk";
 				else
-					return sErr;
+				{
+					if (sTaskArray.Length == 36)
+					{
+						Task t = new Task(sTaskArray, "", ref sErr);
+						if (t != null)
+						{
+							string sXML = t.AsXML();
+		
+							//what are we gonna call the final file?
+							TimeSpan oTS = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+							int iSecs  = (int) oTS.TotalSeconds;
+							string sFileName = Server.UrlEncode(t.Name.Replace(" ","").Replace("/","")) + "_" + iSecs.ToString() + ".xml";
+							string sPath = Server.MapPath("~/temp/");
+		
+							ui.SaveStringToFile(sPath + sFileName, sXML);
+							return sFileName;
+						}
+						else
+						{
+							return "Unable to get Task [" + sTaskArray + "] to export.";
+						}				
+					}
+					else
+					{
+						return "Error: Selected Task ID wasn't the right length.";
+					}				
+				}
 			}
 			catch (Exception ex)
 			{
