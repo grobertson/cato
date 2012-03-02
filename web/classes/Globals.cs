@@ -776,7 +776,7 @@ namespace Globals
 			}
 			
 			string sSQL = "update ecotemplate" + 
-				" set ecotemplate_name = '" + this.Name + "'," +
+				" set ecotemplate_name = '" + ui.TickSlash(this.Name) + "'," +
 				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
 				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
 				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
