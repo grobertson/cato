@@ -655,8 +655,6 @@ namespace Globals
 		public Ecotemplate FromXML(string sEcotemplateXML, ref string sErr)
 		{
 			try {
-				Ecotemplate et = new Ecotemplate();
-				
 				XDocument xEcotemplate = XDocument.Parse(sEcotemplateXML);
 				if (xEcotemplate != null)
 				{
@@ -665,36 +663,36 @@ namespace Globals
 					//some of these properties will not be required coming from the XML.
 					
 					//if there's no ID we create one
-					et.ID = (xe.Attribute("id") != null ? xe.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
-					et.Name = xe.Attribute("name").Value;
-					et.Description = xe.Element("description").Value;
+					this.ID = (xe.Attribute("id") != null ? xe.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+					this.Name = xe.Attribute("name").Value;
+					this.Description = xe.Element("description").Value;
 					
-					et.DBExists = et._DBExists();
+					this.DBExists = _DBExists();
 	
 					if (xe.Element("storm_file") != null)
 					{
 						XElement xeSF = xe.Element("storm_file");
-						et.StormFile = xeSF.Value;
-						et.StormFileType = (xeSF.Attribute("storm_file_type") != null ? xeSF.Attribute("storm_file_type").Value : ""); //cancel is the default
+						this.StormFile = xeSF.Value;
+						this.StormFileType = (xeSF.Attribute("storm_file_type") != null ? xeSF.Attribute("storm_file_type").Value : ""); //cancel is the default
 					}	
 					
 					//if there are conflicts when we try to save, what do we do?
-					et.OnConflict = (xe.Attribute("on_conflict") != null ? xe.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+					this.OnConflict = (xe.Attribute("on_conflict") != null ? xe.Attribute("on_conflict").Value : "cancel"); //cancel is the default
 	
 					//actions
 					foreach (XElement xAction in xe.XPathSelectElements("//actions/action")) {
-						EcotemplateAction ea = new EcotemplateAction(xAction, et, ref sErr);
+						EcotemplateAction ea = new EcotemplateAction(xAction, this, ref sErr);
 						
 						if (ea != null)
 						{
 							//if the xml contains a complete Task, we have to deal with it
 							//otherwise just set the OriginalTaskID and TaskVersion properties.
 	
-							et.Actions.Add(ea.ID, ea);
+							this.Actions.Add(ea.ID, ea);
 						}
 					}
 					
-					return et;
+					return this;
 				}
 				
 				return null;
@@ -2708,38 +2706,37 @@ namespace Globals
 				XDocument xTask = XDocument.Parse(sTaskXML);
 				if (xTask != null)
 				{
-					Task t = new Task();
 					XElement xeTask = xTask.Element("task");
 					
 					//some of these properties will not be required coming from the XML.
 	
 					//if there's no ID we create one
-					t.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
-					t.Name = xeTask.Attribute("name").Value;
-					t.Code = xeTask.Attribute("code").Value;
-					t.Description = xeTask.Element("description").Value;
+					this.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+					this.Name = xeTask.Attribute("name").Value;
+					this.Code = xeTask.Attribute("code").Value;
+					this.Description = xeTask.Element("description").Value;
 					
 					//if there are conflicts when we try to save this Task, what do we do?
-					t.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+					this.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
 	
 					//this stuff needs discussion for how it would run on a non-local task
 					
-					t.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
-					t.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
+					this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
+					this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
 					//original id becomes the id if it's omitted from the xml
-					t.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : t.ID);
-					t.IsDefaultVersion = true;
+					this.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : this.ID);
+					this.IsDefaultVersion = true;
 	
-					t.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
-					t.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
+					this.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
+					this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
 					//this.UseConnectorSystem = false;
 	
-					t.DBExists = t._DBExists();
+					this.DBExists = _DBExists();
 					
 					//parameters
 					if (xeTask.Element("parameters") != null)
 					{
-						t.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
+						this.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
 					}
 	
 					//now, codeblocks.
@@ -2755,7 +2752,7 @@ namespace Globals
 						{
 							//steps.
 							foreach (XElement xStep in xCodeblock.XPathSelectElements("steps/step")) {
-								Step s = new Step(xStep, c, t);
+								Step s = new Step(xStep, c, this);
 								
 								if (s != null)
 								{
@@ -2763,11 +2760,11 @@ namespace Globals
 								}
 							}
 	
-							t.Codeblocks.Add(c.Name, c);
+							this.Codeblocks.Add(c.Name, c);
 						}
 					}
-						
-					return t;
+					
+					return this;
 				}
 				
 				return null;
