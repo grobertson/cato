@@ -302,7 +302,7 @@ namespace Globals
 	#region "Global Settings"
 	public class GlobalSettings
     {
-        private static int iTempDirDays = 5;
+        private static int iTempDirDays = 30;
         public static int UITempDirDays
         {
             get { return iTempDirDays; }
