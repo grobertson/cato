@@ -1803,7 +1803,7 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
-        public string wmExportEcotemplates(string sEcotemplateArray)
+        public string wmExportEcotemplates(string sEcotemplateArray, string sIncludeTasks)
         {
 			//doesn't work like the Task export - just dump the xml from the object to a file.
 			
@@ -1813,14 +1813,15 @@ namespace ACWebMethods
 			try
 			{
 				Ecotemplate et = new Ecotemplate(sEcotemplateArray);
+				et.IncludeTasks = (sIncludeTasks == "1" ? true : false);
 				if (et != null)
 				{
 					string sXML = et.AsXML();
 
 					//what are we gonna call the final file?
-					TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-					int ts  = (int) t.TotalSeconds;
-					string sFileName = Server.UrlEncode(et.Name.Replace(" ","").Replace("/","")) + "_" + ts.ToString() + ".xml";
+					TimeSpan oTS = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+					int iSecs  = (int) oTS.TotalSeconds;
+					string sFileName = Server.UrlEncode(et.Name.Replace(" ","").Replace("/","")) + "_" + iSecs.ToString() + ".xml";
 					string sPath = Server.MapPath("~/temp/");
 
 					ui.SaveStringToFile(sPath + sFileName, sXML);

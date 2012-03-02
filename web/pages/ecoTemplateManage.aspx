@@ -173,10 +173,13 @@
         </table>
     </div>
     <div id="delete_dialog" class="hidden" title="Delete Ecosystem Templates">
-        Are you sure you want to delete these Eco Templates?
+        Are you sure you want to delete these Ecosystem Templates?
     </div>
     <div id="export_dialog" class="hidden" title="Export">
         Are you sure you want to export these Ecosystem Templates?
+		<p>
+			<input id="export_include_tasks" type="checkbox" /><label for="export_include_tasks">Include Action Tasks?</label>
+		</p>
     </div>
     <div id="copy_dialog" class="hidden" title="Copy Ecosystem Template">
         <table id="tblCopy" width="100%">

@@ -56,6 +56,7 @@ $(document).ready(function () {
     $("#export_dialog").dialog({
         autoOpen: false,
         modal: true,
+        width: 500,
         buttons: {
             "Export": function () {
                 showPleaseWait();
@@ -241,10 +242,11 @@ function DeleteItems() {
 
 function ExportEcotemplates() {
     var ArrayString = $("#hidSelectedArray").val();
+    var include_tasks = ($('#export_include_tasks').attr('checked') == "checked" ? 1 : 0);
     $.ajax({
         type: "POST",
         url: "uiMethods.asmx/wmExportEcotemplates",
-        data: '{"sEcotemplateArray":"' + ArrayString + '"}',
+        data: '{"sEcotemplateArray":"' + ArrayString + '", "sIncludeTasks":"' + include_tasks + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
