@@ -824,6 +824,15 @@ namespace acUI
             return true;
         }
 
+		public bool SaveStringToFile(string sFullPath, string sData)
+		{
+			try {
+				System.IO.File.WriteAllText(sFullPath, sData);
+				return true;
+			} catch (Exception ex) {
+				throw ex;
+			}
+		}
         #endregion
         #region "Misc Functions"
 		public string TickSlash(string s)

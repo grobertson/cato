@@ -1758,6 +1758,41 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
+        public string wmExportEcotemplates(string sEcotemplateArray)
+        {
+			//doesn't work like the Task export - just dump the xml from the object to a file.
+			
+			//for the moment we're only allowing one at a time.
+			acUI.acUI ui = new acUI.acUI();
+			
+			try
+			{
+				Ecotemplate et = new Ecotemplate(sEcotemplateArray);
+				if (et != null)
+				{
+					string sXML = et.AsXML();
+
+					//what are we gonna call the final file?
+					TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+					int ts  = (int) t.TotalSeconds;
+					string sFileName = Server.UrlEncode(et.Name.Replace(" ","").Replace("/","")) + "_" + ts.ToString() + ".xml";
+					string sPath = Server.MapPath("~/temp/");
+
+					ui.SaveStringToFile(sPath + sFileName, sXML);
+					return sFileName;
+				}
+				else
+				{
+					return "Unable to get Template [" + sEcotemplateArray + "] to export.";
+				}				
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+        }
+		
+        [WebMethod(EnableSession = true)]
         public string wmCreateEcotemplate(string sName, string sDescription, string sStormFileSource, string sStormFile)
         {
             acUI.acUI ui = new acUI.acUI();

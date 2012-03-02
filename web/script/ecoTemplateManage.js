@@ -19,6 +19,7 @@ $(document).ready(function () {
 
     $("#edit_dialog").hide();
     $("#delete_dialog").hide();
+    $("#export_dialog").hide();
 
     //define dialogs
     $('#edit_dialog').dialog('option', 'title', 'New Ecotemplate');
@@ -52,6 +53,20 @@ $(document).ready(function () {
         ]
     });
 
+    $("#export_dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            "Export": function () {
+                showPleaseWait();
+                ExportEcotemplates();
+                $(this).dialog('close');
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
     $("#copy_dialog").dialog({
         autoOpen: false,
         modal: true,
@@ -168,6 +183,23 @@ function ShowItemAdd() {
     $("#txtTemplateName").focus();
 }
 
+function ShowItemExport() {
+    // clear all of the previous values
+    var ArrayString = $("#hidSelectedArray").val();
+    if (ArrayString.length == 0) {
+        showInfo('Select an Ecosystem Template to Export.');
+        return false;
+    }
+    if (ArrayString.indexOf(",") > -1) {
+    	//make a comment and clear the selection.
+        showInfo('Only one Ecosystem Template can be exported at a time.');
+        ClearSelectedRows();
+        return false;
+    }
+	
+    $("#export_dialog").dialog('open');
+}
+
 function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
@@ -207,7 +239,49 @@ function DeleteItems() {
 
 }
 
+function ExportEcotemplates() {
+    var ArrayString = $("#hidSelectedArray").val();
+    $.ajax({
+        type: "POST",
+        url: "uiMethods.asmx/wmExportEcotemplates",
+        data: '{"sEcotemplateArray":"' + ArrayString + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            //the return code might be a filename or an error.
+            //if it's valid, it will have a ".xml" in it.
+            //otherwise we assume it's an error
+            if (msg.d.indexOf(".xml") > -1) {
+                //developer utility for renaming the file
+                //note: only works with one task at a time.
+                //var filename = RenameBackupFile(msg.d, ArrayString);
+                //the NORMAL way
+                var filename = msg.d;
+                
+                $("#hidSelectedArray").val("");
+                $("#export_dialog").dialog('close');
 
+                // clear the search field and fire a search click, should reload the grid
+                $("#ctl00_phDetail_txtSearch").val("");
+                $("#ctl00_phDetail_btnSearch").click();
+
+                hidePleaseWait();
+
+                //ok, we're gonna do an iframe in the dialog to force the
+                //file download
+                var html = "Click <a href='fileDownload.ashx?filename=" + filename + "'>here</a> to download your file.";
+                html += "<iframe id='file_iframe' width='0px' height=0px' src='fileDownload.ashx?filename=" + filename + "'>";
+                showInfo('Export Successful', html, true);
+
+            } else {
+                showAlert(msg.d);
+            }
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function Save() {
     var bSave = true;

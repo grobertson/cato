@@ -349,7 +349,7 @@
     <None Include="script\jsonlint\LICENSE" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -540,5 +540,6 @@
     <Content Include="script\jsonlint\c\js\jsl.interactions.js" />
     <Content Include="script\jsonlint\c\js\jsl.parser.js" />
     <Content Include="script\jsonlint\c\js\json2.js" />
+    <Content Include="pages\fileDownload.ashx" />
   </ItemGroup>
 </Project>

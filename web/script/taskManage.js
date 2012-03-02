@@ -83,7 +83,6 @@ function ShowItemAdd() {
 }
 
 function ShowItemExport() {
-    // if there are 0 users select then show a message
     // clear all of the previous values
     var ArrayString = $("#hidSelectedArray").val();
     if (ArrayString.length == 0) {
@@ -95,7 +94,6 @@ function ShowItemExport() {
 }
 
 function ShowItemCopy() {
-
     // clear all of the previous values
     var ArrayString = $("#hidSelectedArray").val();
     if (ArrayString.length == 0) {
