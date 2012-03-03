@@ -182,14 +182,14 @@ $(document).ready(function () {
         $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
     });
 
-    //finally, init the draggable items (commands and the clipboard)
-    //this will also be called when items are added/removed from the clipboard.
-    initDraggable();
-
 	//get the codeblocks
 	doGetCodeblocks();
 	//get the steps
 	doGetSteps();
+
+    //finally, init the draggable items (commands and the clipboard)
+    //this will also be called when items are added/removed from the clipboard.
+    initDraggable();
 });
 
 function doGetSteps() {

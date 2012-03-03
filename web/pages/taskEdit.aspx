@@ -196,8 +196,8 @@
                     <span id="step_toggle_all_btn" class="pointer">
                         <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Steps"
                             title="Expand/Collapse All Steps" /></span><span 
-							id="codeblock_steps_title" class="step_title"></span><span id="codeblock_picker_btn"></span>                
-					<div id="codeblock_picker" class="ui-widget-content ui-corner-bottom hidden">
+							id="codeblock_steps_title" class="step_title"></span><span id="codeblock_selector_btn"></span>                
+					<div id="codeblock_selector" class="ui-widget-content ui-corner-bottom hidden">
                     	<ul id="codeblocks">
 						</ul>
                     	<center><span id="codeblock_add_btn">Add New</span></center>

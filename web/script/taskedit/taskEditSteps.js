@@ -580,7 +580,8 @@ function initSortable() {
             //if this is a new step... add
             //(add will reorder internally)
             var new_step = $(ui.item[0]);
-            if (new_step.attr("id").indexOf("fn_") == 0 || new_step.attr("id").indexOf("clip_") == 0) {
+            var new_step_id = new_step.attr("id");
+            if (new_step_id.indexOf("fn_") == 0 || new_step_id.indexOf("clip_") == 0 || new_step_id.indexOf("cb_") == 0) {
                 doStepAdd(new_step);
             } else {
                 //else just reorder what's here.

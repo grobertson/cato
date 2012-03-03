@@ -15,14 +15,14 @@
 
 $(document).ready(function () {
 
-    $("#codeblock_picker_btn").button({ icons: { primary: "ui-icon-circle-triangle-s"}, text: false });
+    $("#codeblock_selector_btn").button({ icons: { primary: "ui-icon-circle-triangle-s"}, text: false });
 
     //the hover event of the codeblock picker activator
-    $("#codeblock_picker_btn").hover(function () {
-        $("#codeblock_picker").show();
+    $("#codeblock_selector_btn").hover(function () {
+        $("#codeblock_selector").show();
     });
 	//and hide it when focus leaves the popup div
-    $("#codeblock_picker").mouseleave(function () {
+    $("#codeblock_selector").mouseleave(function () {
         $(this).hide();
     });
 
@@ -45,7 +45,7 @@ $(document).ready(function () {
 
 
     //the onclick event of the 'copy' link of each codeblock
-    $("#codeblock_picker .codeblock_copy_btn").live("click", function () {
+    $("#codeblock_selector .codeblock_copy_btn").live("click", function () {
         $("#update_success_msg").text("Copying...").show();
 
         var cb = $(this).attr("codeblock_name");
@@ -67,26 +67,26 @@ $(document).ready(function () {
             }
         });
 
-        $("#codeblock_picker").hide();
+        $("#codeblock_selector").hide();
 
     });
 
     //the onclick event of the 'delete' link of each codeblock
-    $("#codeblock_picker .codeblock_delete_btn").live("click", function () {
+    $("#codeblock_selector .codeblock_delete_btn").live("click", function () {
         $("#codeblock_to_delete").val($(this).attr("remove_id"));
         $("#codeblock_delete_confirm_dialog").dialog('open');
     });
 
     //the onclick event of the 'codeblock' elements
-    $("#codeblock_picker .codeblock_title").live("click", function () {
+    $("#codeblock_selector .codeblock_title").live("click", function () {
         cb = $(this).attr("name");
 
         $("#ctl00_phDetail_hidCodeblockName").val(cb);
         doGetSteps();
-        $("#codeblock_picker").hide();
+        $("#codeblock_selector").hide();
     });
     //the onclick event of the 'codeblock rename icon'
-    $("#codeblock_picker .codeblock_rename").live("click", function () {
+    $("#codeblock_selector .codeblock_rename").live("click", function () {
         cb = $(this).attr("codeblock_name");
         ShowCodeblockEdit(cb);
     });
@@ -121,7 +121,7 @@ $(document).ready(function () {
     });
 
     //hover effect
-    $("#codeblock_picker .codeblock").live("hover", function () {
+    $("#codeblock_selector .codeblock").live("hover", function () {
         $("#te_help_box_detail").html("Click a Codeblock to edit its steps.");
     }, function () {
         $("#te_help_box_detail").html("");
@@ -139,6 +139,26 @@ function doGetCodeblocks() {
         dataType: "json",
         success: function (retval) {
             $("#codeblocks").html(retval.d);
+            
+        	//crazy... we can drag out of the codeblock selector!
+		    $("#codeblock_selector .codeblock").draggable("destroy");
+		    $("#codeblock_selector .codeblock").draggable({
+		        distance: 30,
+		        connectToSortable: '#steps',
+		        appendTo: 'body',
+		        revert: 'invalid',
+		        scroll: false,
+		        opacity: 0.95,
+		        helper: function( event ) {
+					return $( "<div class='ui-widget-content ui-corner-all' style='height: 20px;'>" + $(this).find("span").text() + "</div>" );
+				},
+		        start: function (event, ui) {
+		            $("#dd_dragging").val("true");
+		        },
+		        stop: function (event, ui) {
+		            $("#dd_dragging").val("false");
+		        }
+		    })
         },
         error: function (response) {
             showAlert(response.responseText);

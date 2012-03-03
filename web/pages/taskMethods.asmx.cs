@@ -461,6 +461,11 @@ namespace ACWebMethods
                 string sErr = "";
                 string sSQL = "";
                 string sNewStepID = "";
+				
+				//in some cases, we'll have some special values to go ahead and set in the function_xml
+				//when it's added
+				//it's content will be xpath, value
+				Dictionary<string, string> dValues = new Dictionary<string, string>();
 
                 if (!ui.IsGUID(sTaskID))
                     throw new Exception("Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]" + sErr);
@@ -474,9 +479,17 @@ namespace ACWebMethods
                 //the function has a fn_ or clip_ prefix on it from the HTML.  Strip it off.
                 //FIX... test the string to see if it BEGINS with fn_ or clip_
                 //IF SO... cut off the beginning... NOT a replace operation.
-                if (sItem.StartsWith("fn_")) sItem = sItem.Remove(0, 3);
+				if (sItem.StartsWith("fn_")) sItem = sItem.Remove(0, 3);
                 if (sItem.StartsWith("clip_")) sItem = sItem.Remove(0, 5);
 
+				//could also beging with cb_, which means a codeblock was dragged and dropped.
+				//this special case will result in a codeblock command.
+				if (sItem.StartsWith("cb_")) {
+					//so, the sItem becomes "codeblock"
+					string sCBName = sItem.Remove(0, 3);
+					dValues.Add("//codeblock", sCBName);
+					sItem = "codeblock";
+				}
                 //NOTE: !! yes we are adding the step with an order of -1
                 //the update event on the client does not know the index at which it was dropped.
                 //so, we have to insert it first to get the HTML... but the very next step
@@ -524,20 +537,27 @@ namespace ACWebMethods
                     //sOPM: 0=none, 1=delimited, 2=parsed
                     string sOPM = "0";
 
-					//read the opm from the xml file.
-					XDocument xd = XDocument.Parse(func.TemplateXML);
-					if (xd != null) {
-						if (xd.XPathSelectElement("//function") != null)
+					//gotta do a few things to the templatexml
+					XDocument xdTemplate = XDocument.Parse(func.TemplateXML);
+					if (xdTemplate != null) {
+						if (xdTemplate.XPathSelectElement("//function") != null)
 						{
-							XElement xe = xd.XPathSelectElement("//function");
+							XElement xe = xdTemplate.XPathSelectElement("//function");
 							if (xe != null) {
-								{
-									sOPM = (xe.Attribute("parse_method") == null ? "0" : xe.Attribute("parse_method").Value);
+								//get the OPM
+								sOPM = (xe.Attribute("parse_method") == null ? "0" : xe.Attribute("parse_method").Value);
+
+								//there may be some provided values ... so alter the func.TemplateXML accordingly
+								foreach (string sXPath in dValues.Keys) {
+									XElement xNode = xe.XPathSelectElement(sXPath);
+									if (xNode != null) {
+										xNode.SetValue(dValues[sXPath]);
+									}
 								}
 							}
 						}
 					}
-
+					
 					sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
 						" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
 						" function_name, function_xml)" +
@@ -548,7 +568,7 @@ namespace ACWebMethods
 						"-1," +
 						"0,0," + sOPM + ",0,0," +
 						"'" + func.Name + "'," +
-						"'" + func.TemplateXML + "'" +
+						"'" + xdTemplate.ToString(SaveOptions.DisableFormatting) + "'" +
 						")";
 
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
