@@ -96,17 +96,17 @@ $(document).ready(function () {
     $(".datetimepicker").datetimepicker();
     $("#run_now_btn").button({ icons: { primary: "ui-icon-play"} });
     $("#run_now_btn").live("click", function () {
-		if (checkRequiredParams() == true)
+		if (checkRequiredParams() == true && checkParamConstraints() == true)
 	    	LaunchTask();
     });
     $("#run_later_btn").button({ icons: { primary: "ui-icon-seek-next"} });
     $("#run_later_btn").live("click", function () {
-		if (checkRequiredParams() == true)
+		if (checkRequiredParams() == true && checkParamConstraints() == true)
 	    	RunLater();
     });
     $("#run_repeatedly_btn").button({ icons: { primary: "ui-icon-calculator"} });
     $("#run_repeatedly_btn").live("click", function () {
-        if (checkRequiredParams() == true)
+        if (checkRequiredParams() == true && checkParamConstraints() == true)
 	    	RunRepeatedly();
     });
 
@@ -284,6 +284,28 @@ $(document).ready(function () {
 
 
 });
+
+//NOTE: this is different than checkRequiredParameters.  
+// in those cases we're checking our "required" flag... here we're more specific.
+function checkParamConstraints() {
+	//look over the parameters and do their constraint checking
+	var msg = "";
+	
+	if ($(".task_launch_parameter_value_input").length > 0) {
+		var warn = false;
+		$(".task_launch_parameter_value_input").each(function(){
+			msg += checkFieldConstraints($(this));
+		});
+	
+		if (msg.length > 0) {
+			return false;
+		} else {
+			return true;
+		}
+	} else
+		return true; //there are no parameters
+}
+
 
 //check parameters before launching or scheduling
 function checkRequiredParams() {

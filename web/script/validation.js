@@ -16,6 +16,9 @@
 
 //dynamic field validation based on custom xhtml tags
 $(document).ready(function() {
+    $(":input[validate_as='number']").live("keypress", function(e) {
+        return restrictEntryToNumber(e, this);
+    });
     $(":input[validate_as='posint']").live("keypress", function(e) {
         return restrictEntryToPositiveInteger(e, this);
     });
@@ -63,9 +66,9 @@ function checkFieldConstraints($ctl) {
 	if ($ctl.attr("constraint")) {
 		var val = $ctl.val();
 		var rx = $ctl.attr("constraint");
-		var patt = new RegExp(rx);
+		var patt = new RegExp("^" + rx + "$", "g");
 		
-		if (!val.match(patt)) {
+		if (!patt.test(val)) {
 			msg += "<li>" + $ctl.attr("constraint_msg") + "</li>";
 		}
 	}
@@ -76,6 +79,32 @@ function checkFieldConstraints($ctl) {
     	var ml = $ctl.attr("minlength");
     	if (val.length < ml) {
     		msg += "<li>Value must be at least " + ml + " characters long.</li>";
+		}
+	}
+    
+	//maxvalue check - only applies to numerics
+	if ($ctl.attr("maxvalue")) {
+    	var val = $ctl.val();
+    	if (isFinite(val)) {
+	    	var max = $ctl.attr("maxvalue");
+	    	if (isFinite(max)) {
+		    	if (val > max) {
+	    			msg += "<li>Value cannot be greater than " + max + ".</li>";
+				}
+			}
+		}
+	}
+    
+	//minvalue check - only applies to numerics
+	if ($ctl.attr("minvalue")) {
+    	var val = $ctl.val();
+    	if (isFinite(val)) {
+	    	var min = $ctl.attr("minvalue");
+	    	if (isFinite(min)) {
+		    	if (val < min) {
+	    			msg += "<li>Value cannot be less than " + min + ".</li>";
+				}
+			}
 		}
 	}
     

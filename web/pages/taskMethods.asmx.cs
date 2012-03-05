@@ -2777,6 +2777,12 @@ namespace ACWebMethods
                 string sEncrypt = "false";
                 string sValuesHTML = "";
                 string sPresentAs = "value";
+				string sConstraint = "";
+				string sConstraintMsg = "";										
+				string sMinLength = "";
+				string sMaxLength = "";
+				string sMinValue = "";
+				string sMaxValue = "";
 
                 if (!string.IsNullOrEmpty(sParamID))
                 {
@@ -2799,11 +2805,11 @@ namespace ACWebMethods
 
                         XElement xName = xParameter.XPathSelectElement("name");
                         if (xName == null) return "Error: XML does not contain parameter name.";
-                        XElement xDesc = xParameter.XPathSelectElement("desc");
-                        if (xDesc == null) return "Error: XML does not contain parameter description.";
+						sName = xName.Value;
 
-                        sName = xName.Value;
-                        sDesc = xDesc.Value;
+						XElement xDesc = xParameter.XPathSelectElement("desc");
+                        if (xDesc != null)
+							sDesc = xDesc.Value;
 
                         if (xParameter.Attribute("required") != null)
                             sRequired = xParameter.Attribute("required").Value;
@@ -2813,6 +2819,21 @@ namespace ACWebMethods
 
                         if (xParameter.Attribute("encrypt") != null)
                             sEncrypt = xParameter.Attribute("encrypt").Value;
+
+                        if (xParameter.Attribute("maxlength") != null)
+                            sMaxLength = xParameter.Attribute("maxlength").Value;
+                        if (xParameter.Attribute("maxvalue") != null)
+                            sMaxValue = xParameter.Attribute("maxvalue").Value;
+                        if (xParameter.Attribute("minlength") != null)
+                            sMinLength = xParameter.Attribute("minlength").Value;
+                        if (xParameter.Attribute("minvalue") != null)
+                            sMinValue = xParameter.Attribute("minvalue").Value;
+
+                        if (xParameter.Attribute("constraint") != null)
+                            sConstraint = xParameter.Attribute("constraint").Value;
+
+                        if (xParameter.Attribute("constraint_msg") != null)
+                            sConstraintMsg = xParameter.Attribute("constraint_msg").Value;
 
 
                         XElement xValues = xd.XPathSelectElement("//parameter[@id = \"" + sParamID + "\"]/values");
@@ -2882,14 +2903,32 @@ namespace ACWebMethods
                     " validate_as=\"variable\" value=\"" + sName + "\" />";
 
                 sHTML += "Options:<div class=\"param_edit_options\">";
-                sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_required\"" + (sRequired == "true" ? "checked=\"checked\"" : "") + " /> Required?</span>";
-                sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_prompt\"" + (sPrompt == "true" ? "checked=\"checked\"" : "") + " /> Prompt?</span>";
-                sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_encrypt\"" + (sEncrypt == "true" ? "checked=\"checked\"" : "") + " /> Encrypt?</span>";
-                sHTML += "</div>";
+                sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_required\"" + (sRequired == "true" ? "checked=\"checked\"" : "") + " /> <label for=\"param_edit_required\">Required?</label></span>";
+                sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_prompt\"" + (sPrompt == "true" ? "checked=\"checked\"" : "") + " /> <label for=\"param_edit_prompt\">Prompt?</label></span>";
+                sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_encrypt\"" + (sEncrypt == "true" ? "checked=\"checked\"" : "") + " /> <label for=\"param_edit_encrypt\">Encrypt?</label></span>";
+
+				sHTML += "<hr />";
+
+				sHTML += "Min / Max Length: <input type=\"text\" class=\"w25px\" id=\"param_edit_minlength\"" +
+                    " validate_as=\"posint\" value=\"" + sMinLength + "\" /> / " +
+					" <input type=\"text\" class=\"w25px\" id=\"param_edit_maxlength\"" +
+                    " validate_as=\"posint\" value=\"" + sMaxLength + "\" />" +
+					"<br />";
+				sHTML += "Min / Max Value: <input type=\"text\" class=\"w25px\" id=\"param_edit_minvalue\"" +
+                    " validate_as=\"number\" value=\"" + sMinValue + "\" /> / " +
+					" <input type=\"text\" class=\"w25px\" id=\"param_edit_maxvalue\"" +
+                    " validate_as=\"number\" value=\"" + sMaxValue + "\" />" +
+					"<br />";
+				sHTML += "Constraint: <input type=\"text\" class=\"w95pct\" id=\"param_edit_constraint\"" +
+                    " value=\"" + sConstraint + "\" /><br />";
+				sHTML += "Constraint Help: <input type=\"text\" class=\"w95pct\" id=\"param_edit_constraint_msg\"" +
+                    " value=\"" + sConstraintMsg + "\" /><br />";
+
+				sHTML += "</div>";
 
                 sHTML += "<br />Description: <br /><textarea id=\"param_edit_desc\" rows=\"2\">" + sDesc + "</textarea>";
 
-                sHTML += "<div id=\"param_edit_values\">Values:<br />";
+				sHTML += "<div id=\"param_edit_values\">Values:<br />";
                 sHTML += "Present As: <select id=\"param_edit_present_as\">";
                 sHTML += "<option value=\"value\"" + (sPresentAs == "value" ? "selected=\"selected\"" : "") + ">Value</option>";
                 sHTML += "<option value=\"list\"" + (sPresentAs == "list" ? "selected=\"selected\"" : "") + ">List</option>";
@@ -2914,7 +2953,8 @@ namespace ACWebMethods
         [WebMethod(EnableSession = true)]
         public string wmUpdateTaskParam(string sType, string sID, string sParamID,
             string sName, string sDesc,
-            string sRequired, string sPrompt, string sEncrypt, string sPresentAs, string sValues)
+            string sRequired, string sPrompt, string sEncrypt, string sPresentAs, string sValues,
+            string sMinLength, string sMaxLength, string sMinValue, string sMaxValue, string sConstraint, string sConstraintMsg)
         {
             dataAccess dc = new dataAccess();
 
@@ -2932,7 +2972,9 @@ namespace ACWebMethods
             //the safest way to unencode it is to use the same javascript lib.
             //(sometimes the javascript and .net libs don't translate exactly, google it.)
             sDesc = ui.unpackJSON(sDesc).Trim();
-
+			sConstraint = ui.unpackJSON(sConstraint);
+			sConstraintMsg = ui.unpackJSON(sConstraintMsg).Trim();
+			
             //normalize and clean the values
             sRequired = (dc.IsTrue(sRequired) ? "true" : "false");
             sPrompt = (dc.IsTrue(sPrompt) ? "true" : "false");
@@ -2964,7 +3006,12 @@ namespace ACWebMethods
                 if (!dc.sqlGetSingleString(ref sXML, sSQL, ref sErr))
                     throw new Exception(sErr);
 
-                string sAddXML = "<parameter id=\"" + sParamID + "\" required=\"" + sRequired + "\" prompt=\"" + sPrompt + "\" encrypt=\"" + sEncrypt + "\">" +
+                string sAddXML = "<parameter id=\"" + sParamID + "\"" +
+					" required=\"" + sRequired + "\" prompt=\"" + sPrompt + "\" encrypt=\"" + sEncrypt + "\"" +
+					" minlength=\"" + sMinLength + "\" maxlength=\"" + sMaxLength + "\"" +
+					" minvalue=\"" + sMinValue + "\" maxvalue=\"" + sMaxValue + "\"" +
+					" constraint=\"" + sConstraint + "\" constraint_msg=\"" + sConstraintMsg + "\"" +
+					">" +						
                     "<name>" + sName + "</name>" +
                     "<desc>" + sDesc + "</desc>" +
                     "</parameter>";
@@ -2999,6 +3046,12 @@ namespace ACWebMethods
                 ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "required", sRequired);
                 ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "prompt", sPrompt);
                 ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "encrypt", sEncrypt);
+                ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minlength", sMinLength);
+                ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxlength", sMaxLength);
+                ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minvalue", sMinValue);
+                ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxvalue", sMaxValue);
+                ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint", sConstraint);
+                ft.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint_msg", sConstraintMsg);
 
                 bParamAdd = false;
             }
