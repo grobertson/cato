@@ -27,18 +27,9 @@ function packJSON(instr) {
 	if (instr === "" || instr === undefined) {
 		return "";
 	}
-	//terrible ugly here, but this is a temporary fix to keep bad data from getting pasted in
-	//if there's a char > 255, remove it.
-	// for ticket #28 ... this should html encode it and decode it on the server.
-	var cleanstr = "";
-	for (var i = 0; i < instr.length; i++) {
-		if (instr.charCodeAt(i) <= 255) {
-			cleanstr += instr[i];
-		}
-	}
 
 	//NOTE! base64 encoding still has a couple of reserved characters so we explicitly replace them AFTER
-	var outstr = $.base64.encode(cleanstr);
+	var outstr = $.base64.encode(instr);
 	return outstr.replace(/\//g, "%2F").replace(/\+/g, "%2B");
 }
 
