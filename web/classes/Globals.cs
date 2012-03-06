@@ -352,7 +352,8 @@ namespace Globals
                 } 
             }
 
-            string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name" +
+            string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name, created_dt, last_update_dt," +
+				" (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" +
 				" from ecosystem e" +
 				" join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
 				" where e.account_id = '" + sAccountID + "'" +
@@ -392,6 +393,9 @@ namespace Globals
 		public string ParameterXML;
 		public string CloudID;
 		public string StormStatus;
+		public Nullable<DateTime> CreatedDate;
+		public Nullable<DateTime> LastUpdate;
+		public int NumObjects = 0;
 		
 		//an empty constructor
 		public Ecosystem()
@@ -407,6 +411,7 @@ namespace Globals
 			this.Description = sDescription;
 			this.EcotemplateID = sEcotemplateID;
 			this.AccountID = sAccountID;
+			this.CreatedDate = DateTime.Now;
 		}
 		
 		//the default constructor, given an ID loads it up.
@@ -419,7 +424,8 @@ namespace Globals
 			
 			string sErr = "";
                 string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file, e.storm_status," +
-                    " e.account_id, e.ecotemplate_id, et.ecotemplate_name" +
+                    " e.account_id, e.ecotemplate_id, et.ecotemplate_name, e.created_dt, e.last_update_dt," +
+					" (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" +
                     " from ecosystem e" +
                     " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
                     " where e.ecosystem_id = '" + sEcosystemID + "'";
@@ -437,6 +443,9 @@ namespace Globals
 					this.Description = (object.ReferenceEquals(dr["ecosystem_desc"], DBNull.Value) ? "" : dr["ecosystem_desc"].ToString());
 					this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
 					this.StormStatus = (object.ReferenceEquals(dr["storm_status"], DBNull.Value) ? "" : dr["storm_status"].ToString());
+					if (!object.ReferenceEquals(dr["created_dt"], DBNull.Value)) this.CreatedDate = Convert.ToDateTime(dr["created_dt"].ToString());
+					if (!object.ReferenceEquals(dr["last_update_dt"], DBNull.Value)) this.LastUpdate = Convert.ToDateTime(dr["last_update_dt"].ToString());
+					this.NumObjects = Convert.ToInt16(dr["num_objects"].ToString());
 				}
 			}
 			else 
@@ -462,6 +471,7 @@ namespace Globals
 				" ecotemplate_id = '" + this.EcotemplateID + "'," +
 				" account_id = '" + this.AccountID + "'," +
 				" ecosystem_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+				" last_update_dt = now()," +
 				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
 				" where ecosystem_id = '" + this.ID + "'";
 			
@@ -486,7 +496,7 @@ namespace Globals
 			try
 			{
                 sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," +
-					" storm_file, storm_status, storm_parameter_xml, storm_cloud_id)" +
+					" storm_file, storm_status, storm_parameter_xml, storm_cloud_id, created_dt, last_update_dt)" +
                     " select '" + this.ID + "'," +
                     " '" + this.Name + "'," +
                     (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
@@ -495,7 +505,8 @@ namespace Globals
                     " storm_file," +
                     (string.IsNullOrEmpty(this.StormStatus) ? " null" : " '" + ui.TickSlash(this.StormStatus) + "'") + "," +
                     (string.IsNullOrEmpty(this.ParameterXML) ? " null" : " '" + ui.TickSlash(this.ParameterXML) + "'") + "," +
-                    (string.IsNullOrEmpty(this.CloudID) ? " null" : " '" + this.CloudID + "'") +
+                    (string.IsNullOrEmpty(this.CloudID) ? " null" : " '" + this.CloudID + "'") + "," +
+					" now(), now()" +
                     " from ecotemplate where ecotemplate_id = '" + this.EcotemplateID + "'";
 				
 				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))

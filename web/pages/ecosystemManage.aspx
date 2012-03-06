@@ -61,6 +61,15 @@
                                 <th sortcolumn="ecosystem_desc" width="200px">
                                     Description
                                 </th>
+                                <th sortcolumn="created_dt">
+                                    Created
+                                </th>
+                                <th sortcolumn="last_update_dt">
+                                    Last Update
+                                </th>
+                                <th sortcolumn="num_objects">
+                                    Cloud Items
+                                </th>
                             </tr>
                         </HeaderTemplate>
                         <ItemTemplate>
@@ -77,6 +86,15 @@
                                 </td>
                                 <td tag="selectable">
                                     <%#Eval("ecosystem_desc")%>
+                                </td>
+                                <td tag="selectable">
+                                    <%#Eval("created_dt")%>
+                                </td>
+                                <td tag="selectable">
+                                    <%#Eval("last_update_dt")%>
+                                </td>
+                                <td tag="selectable">
+                                    <%#Eval("num_objects")%>
                                 </td>
                             </tr>
                         </ItemTemplate>

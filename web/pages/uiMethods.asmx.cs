@@ -4334,13 +4334,14 @@ namespace ACWebMethods
 			string sErr = "";
 			
 			//status and parameters
-			string sSQL = "select storm_status, storm_parameter_xml from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
+			string sSQL = "select storm_status, storm_parameter_xml, last_update_dt from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
 			DataRow dr = null;
 			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
 				throw new Exception(sErr);
 
 			string sStormStatus = (string.IsNullOrEmpty(dr["storm_status"].ToString()) ? "" : dr["storm_status"].ToString());
 			string sStormParameterXML = (string.IsNullOrEmpty(dr["storm_parameter_xml"].ToString()) ? "" : dr["storm_parameter_xml"].ToString());
+			string sLastUpdateDT = (string.IsNullOrEmpty(dr["last_update_dt"].ToString()) ? "" : dr["last_update_dt"].ToString());
 
 			//log
 			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, convert(update_dt, CHAR(20))" +
@@ -4365,6 +4366,7 @@ namespace ACWebMethods
 			
 			//build the json
 			sb.Append("{ \"storm_status\" : \"" + (string.IsNullOrEmpty(sStormStatus) ? "" : sStormStatus) + "\",");
+			sb.Append("\"last_update_dt\" : \"" + (string.IsNullOrEmpty(sLastUpdateDT) ? "" : sLastUpdateDT) + "\",");
 			
 			//log
 			sb.Append(" \"ecosystem_log\" : [");
