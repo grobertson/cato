@@ -186,9 +186,9 @@ proc gather_account_info {account_id} {
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 		if {"$::CLOUD_TYPE" ne "Amazon AWS"} {
 			set uri [get_cloud_uri $::CLOUD_TYPE]
-			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) [list "[lindex $row 1]$uri" [lindex $row 3]]
+			set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,[lindex $row 0]) [list "[lindex $row 1]$uri" [lindex $row 3] [lindex $row 1]]
 			if {$ii == 0} {
-				set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) [list "[lindex $row 1]$uri" [lindex $row 3]]
+				set ::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) [list "[lindex $row 1]$uri" [lindex $row 3] [lindex $row 1]]
 				set ::CLOUD_IDS($::CLOUD_TYPE,default) [lindex $row 2]
 				incr ii
 			}
@@ -262,6 +262,7 @@ proc aws_Generic {product operation path command} {
 				error_out "Cloud region $aws_region does not exist. Either create a $::CLOUD_TYPE Cloud definition or enter an existing cloud name in the region field" 9999
 			}
 			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 0]
+                        set ::_CLOUD_ENDPOINT [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 2]
 			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 1]]
 			if {"$endpoint" == ""} {
 				error_out "$::CLOUD_TYPE error: Region $aws_region for $::CLOUD_TYPE cloud not defined. Region name must match a valid cloud name." 9999
@@ -271,6 +272,7 @@ proc aws_Generic {product operation path command} {
 				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
 			}
 			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 0]
+                        set ::_CLOUD_ENDPOINT [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 2]
 			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 1]]
 			if {"$endpoint" == ""} {
 				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
@@ -438,6 +440,7 @@ proc gather_aws_system_info {instance_id user_id region} {
                                 error_out "Cloud region $region does not exist. Either create a $::CLOUD_TYPE Cloud definition or enter an existing cloud name in the region field" 9999
                         }
                         set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 0]
+                        set ::_CLOUD_ENDPOINT [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 2]
                         set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 1]]
                         if {"$endpoint" == ""} {
                                 error_out "Region $region for $::CLOUD_TYPE cloud not defined. Region name must match a valid cloud name." 9999
@@ -447,6 +450,7 @@ proc gather_aws_system_info {instance_id user_id region} {
 				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
 			}
 			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 0]
+                        set ::_CLOUD_ENDPOINT [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 2]
                         set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,default) 1]]
 			if {"$endpoint" == ""} {
 				error_out "$::CLOUD_TYPE error: A default cloud for $::CLOUD_TYPE not defined. Create a valid cloud with endpoint url for $::CLOUD_TYPE." 9999
@@ -731,6 +735,7 @@ proc initialize {} {
 	set ::CLOUD_ENDPOINTS() ""
 	set ::CLOUD_IDS() ""
 	set ::runtime_arr(_AWS_REGION,1) ""
+	set ::_CLOUD_ENDPOINT ""
 
 	#set ::FILTER_BUFFER 0
 	#set ::TIMEOUT_CODEBLOCK "" 
@@ -771,11 +776,11 @@ proc get_steps {task_id} {
 			and commented = 0
 		order by codeblock_name, step_order asc"
 
-	#output $sql 2
+	output $sql 2
 	$::db_query $::CONN $sql
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 
-		#output "DEBUG: $row" 4
+		output "DEBUG: $row" 4
 		if {[catch {set ::step_arr([string tolower [lindex $row 0]]) $row} err_msg]} {
 			switch -glob $err_msg {
 				"unmatched open brace*" {
@@ -2590,6 +2595,9 @@ proc replace_variables {the_string} {
 					"_UUID" {
 						package require uuid
 						set subst_var [::uuid::uuid generate]
+					}
+					"_CLOUD_ENDPOINT" {
+						set subst_var $::_CLOUD_ENDPOINT
 					}
 					"_CLOUD_LOGIN_PASS" {
 						set subst_var $::CLOUD_LOGIN_PASS
