@@ -718,29 +718,23 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xFromAsset = xd.XPathSelectElement("//from_asset");
-            if (xFromAsset == null) return "Error: XML does not contain from_asset";
             XElement xFromFile = xd.XPathSelectElement("//from_file");
-            if (xFromFile == null) return "Error: XML does not contain from_file";
             XElement xToAsset = xd.XPathSelectElement("//to_asset");
-            if (xToAsset == null) return "Error: XML does not contain to_asset";
             XElement xToFile = xd.XPathSelectElement("//to_file");
-            if (xToFile == null) return "Error: XML does not contain to_file";
             XElement xMode = xd.XPathSelectElement("//mode");
-            if (xMode == null) return "Error: XML does not contain mode.";
             XElement xCommand = xd.XPathSelectElement("//command");
-            if (xCommand == null) return "Error: XML does not contain command.";
             XElement xRetVar = xd.XPathSelectElement("//returnvar");
-            if (xRetVar == null) return "Error: XML does not contain returnvar.";
 
-            string sFromAsset = xFromAsset.Value;
+            string sFromAsset = (xFromAsset == null ? "" : xFromAsset.Value);
+            string sFromFile = (xFromFile == null ? "" : xFromFile.Value);
+            string sToAsset = (xToAsset == null ? "" : xToAsset.Value);
+            string sToFile = (xToFile == null ? "" : xToFile.Value);
+            string sMode = (xMode == null ? "" : xMode.Value);
+            string sCommand = (xCommand == null ? "" : xCommand.Value);
+            string sRetVar = (xRetVar == null ? "" : xRetVar.Value);
+
             string sFromAssetName = "";
-            string sFromFile = xFromFile.Value;
-            string sToAsset = xToAsset.Value;
             string sToAssetName = "";
-            string sToFile = xToFile.Value;
-            string sMode = xMode.Value;
-            string sCommand = xCommand.Value;
-            string sRetVar = xRetVar.Value;
             string sFromElementID = "";
             string sToElementID = "";
             string sHTML = "";
@@ -910,15 +904,11 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xFileName = xd.XPathSelectElement("//filename");
-            if (xFileName == null) return "Error: XML does not contain filename";
             XElement xStart = xd.XPathSelectElement("//start");
-            if (xStart == null) return "Error: XML does not contain start.";
             XElement xNumChars = xd.XPathSelectElement("//num_chars");
-            if (xNumChars == null) return "Error: XML does not contain num_chars.";
-
-            string sFileName = xFileName.Value;
-            string sStart = xStart.Value;
-            string sNumChars = xNumChars.Value;
+            string sFileName = (xFileName == null ? "" : xFileName.Value);
+            string sStart = (xStart == null ? "" : xStart.Value);
+            string sNumChars = (xNumChars == null ? "" : xNumChars.Value);
             string sHTML = "";
 
             sHTML += "<table width=\"99%\" border=\"0\">" + Environment.NewLine;
@@ -954,9 +944,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xText = xd.XPathSelectElement("//text");
-            if (xText == null) return "Error: XML does not contain 'text' field.";
-
-            string sCommand = xText.Value;
+            string sCommand = (xText == null ? "" : xText.Value);
             string sHTML = "";
             string sFieldID = "";
 
@@ -986,14 +974,11 @@ namespace FunctionTemplates
             string sHTML = "";
 
             XElement xXPath = xd.XPathSelectElement("//xpath");
-            if (xXPath == null) return "Error: XML does not contain xpath";
             XElement xValue = xd.XPathSelectElement("//value");
-            if (xValue == null) return "Error: XML does not contain value";
             //XElement xCreateNode = xd.XPathSelectElement("//create_node");
-            //if (xCreateNode == null) return "Error: XML does not contain create_node";
 
-            string sXPath = xXPath.Value;
-            string sValue = xValue.Value;
+            string sXPath = (xXPath == null ? "" : xXPath.Value);
+            string sValue = (xValue == null ? "" : xValue.Value);
             //string sCreateNode = xCreateNode.Value;
 
             sHTML += "XPath:<br />";
@@ -1017,24 +1002,19 @@ namespace FunctionTemplates
 			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
-            string sAssetID = "";
             string sAssetName = "";
             string sHTML = "";
             string sErr = "";
 
             XElement xAsset = xd.XPathSelectElement("//asset_id");
-            if (xAsset == null) return "Error: XML does not contain asset_id";
-            sAssetID = xAsset.Value;
-
             XElement xXPath = xd.XPathSelectElement("//xpath");
-            if (xXPath == null) return "Error: XML does not contain xpath";
             XElement xValue = xd.XPathSelectElement("//value");
-            if (xValue == null) return "Error: XML does not contain value";
             //XElement xCreateNode = xd.XPathSelectElement("//create_node");
             //if (xCreateNode == null) return "Error: XML does not contain create_node";
 
-            string sXPath = xXPath.Value;
-            string sValue = xValue.Value;
+            string sXPath = (xXPath == null ? "" : xXPath.Value);
+            string sValue = (xValue == null ? "" : xValue.Value);
+            string sAssetID = (xAsset == null ? "" : xAsset.Value);
             //string sCreateNode = xCreateNode.Value;
 
             //IF IT's A GUID...
@@ -1110,11 +1090,7 @@ namespace FunctionTemplates
 			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
-            string sOriginalTaskID = "";
-            string sVersion = "";
             string sActualTaskID = "";
-            string sTime = "";
-            string sHandle = "";
             //string sOnSuccess = "";
             //string sOnError = "";
             string sAssetID = "";
@@ -1124,20 +1100,16 @@ namespace FunctionTemplates
             string sErr = "";
 
             XElement xOTID = xd.XPathSelectElement("//original_task_id");
-            if (xOTID == null) return "Error: XML does not contain original_task_id";
-            sOriginalTaskID = xOTID.Value;
+            string sOriginalTaskID = (xOTID == null ? "" : xOTID.Value);
 
             XElement xVer = xd.XPathSelectElement("//version");
-            if (xVer == null) return "Error: XML does not contain version";
-            sVersion = xVer.Value;
+            string sVersion = (xVer == null ? "" : xVer.Value);
 
             XElement xHandle = xd.XPathSelectElement("//handle");
-            if (xHandle == null) return "Error: XML does not contain handle";
-            sHandle = xHandle.Value;
+            string sHandle = (xHandle == null ? "" : xHandle.Value);
 
             XElement xTime = xd.XPathSelectElement("//time_to_wait");
-            if (xTime == null) return "Error: XML does not contain time_to_wait";
-            sTime = xTime.Value;
+            string sTime = (xTime == null ? "" : xTime.Value);
 
             //XElement xSuccess = xd.XPathSelectElement("//on_success");
             //if (xSuccess == null) return "Error: XML does not contain on_success";
@@ -1196,8 +1168,7 @@ namespace FunctionTemplates
             }
 
             XElement xAsset = xd.XPathSelectElement("//asset_id");
-            if (xAsset == null) return "Error: XML does not contain asset_id";
-            sAssetID = xAsset.Value;
+            sAssetID = (xAsset == null ? "" : xAsset.Value);
 
             //IF IT's A GUID...
             // get the asset name belonging to this asset_id
@@ -1354,12 +1325,9 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xStatus = xd.XPathSelectElement("//status");
-            if (xStatus == null) return "Error: XML does not contain status";
             XElement xMsg = xd.XPathSelectElement("//message");
-            if (xMsg == null) return "Error: XML does not contain message";
-
-            string sStatus = xStatus.Value;
-            string sMsg = xMsg.Value;
+            string sStatus = (xStatus == null ? "" : xStatus.Value);
+            string sMsg = (xMsg == null ? "" : xMsg.Value);
             string sFieldID = "";
             string sHTML = "";
 
@@ -1699,18 +1667,14 @@ namespace FunctionTemplates
             * So, we just wipe any unused fields based on the current mode.
             * */
             XElement xCommand = xd.XPathSelectElement("//sql");
-            if (xCommand == null) return "Error: XML does not contain sql.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name.";
             XElement xMode = xd.XPathSelectElement("//mode");
-            if (xMode == null) return "Error: XML does not contain mode.";
             XElement xHandle = xd.XPathSelectElement("//handle");
-            if (xHandle == null) return "Error: XML does not contain handle.";
 
-            string sCommand = xCommand.Value;
-            string sConnName = xConnName.Value;
-            string sMode = xMode.Value;
-            string sHandle = xHandle.Value;
+            string sCommand = (xCommand == null ? "" : xCommand.Value);
+            string sConnName = (xConnName == null ? "" : xConnName.Value);
+            string sMode = (xMode == null ? "" : xMode.Value);
+            string sHandle = (xHandle == null ? "" : xHandle.Value);
             string sHTML = "";
             string sElementID = "";
             string sFieldID = "";
@@ -1737,7 +1701,6 @@ namespace FunctionTemplates
             sHTML += "  <option " + SetOption("PL/SQL", sMode) + " value=\"PL/SQL\">PL/SQL</option>" + Environment.NewLine;
             sHTML += "  <option " + SetOption("PREPARE", sMode) + " value=\"PREPARE\">PREPARE</option>" + Environment.NewLine;
             sHTML += "  <option " + SetOption("RUN", sMode) + " value=\"RUN\">RUN</option>" + Environment.NewLine;
-
             sHTML += "</select>" + Environment.NewLine;
 
 
@@ -1816,12 +1779,9 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
 			XElement xCommand = xd.XPathSelectElement("//command");
-            if (xCommand == null) return "Error: XML does not contain command.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name.";
-
-            string sCommand = xCommand.Value;
-            string sConnName = xConnName.Value;
+            string sCommand = (xCommand == null ? "" : xCommand.Value);
+            string sConnName = (xConnName == null ? "" : xConnName.Value);
             string sHTML = "";
             string sElementID = "";
             string sTextareaID = "";
@@ -1850,15 +1810,11 @@ namespace FunctionTemplates
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
-            if (xTimeout == null) return "Error: XML does not contain timeout.";
             XElement xPos = xd.XPathSelectElement("//positive_response");
-            if (xPos == null) return "Error: XML does not contain positive_response.";
             XElement xNeg = xd.XPathSelectElement("//negative_response");
-            if (xNeg == null) return "Error: XML does not contain negative_response.";
-
-            string sTimeout = xTimeout.Value;
-            string sPos = ui.SafeHTML(xPos.Value);
-            string sNeg = ui.SafeHTML(xNeg.Value);
+            string sTimeout = (xTimeout == null ? "" : xTimeout.Value);
+            string sPos = (xPos == null ? "" : ui.SafeHTML(xPos.Value));
+            string sNeg = (xNeg == null ? "" : ui.SafeHTML(xNeg.Value));
 
             sOptionHTML += "<table class=\"fn_layout_table\">" + Environment.NewLine;
 
@@ -1882,8 +1838,6 @@ namespace FunctionTemplates
 
             sOptionHTML += "</table>";
 
-
-
             return sHTML;
         }
         public string NewConnection(Step oStep)
@@ -1893,22 +1847,16 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xAsset = xd.XPathSelectElement("//asset");
-            if (xAsset == null) return "Error: XML does not contain asset";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name";
             XElement xConnType = xd.XPathSelectElement("//conn_type");
-            if (xConnType == null) return "Error: XML does not contain conn_type";
             XElement xCloudName = xd.XPathSelectElement("//cloud_name");
+			string sAssetID = (xAsset == null ? "" : xAsset.Value);
+			string sConnName = (xConnName == null ? "" : xConnName.Value);
+			string sConnType = (xConnType == null ? "" : xConnType.Value);
 			string sCloudName = (xCloudName == null ? "" : xCloudName.Value);
-
-            string sAssetID = xAsset.Value;
-            string sConnName = xConnName.Value;
-            string sConnType = xConnType.Value;
             string sElementID = "";
             string sAssetName = "";
-
             string sHTML = "";
-
             string sErr = "";
 
             sHTML += "Connect via: " + Environment.NewLine;
@@ -2039,12 +1987,8 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name";
-
-            string sConnName = xConnName.Value;
-
+            string sConnName = (xConnName == null ? "" : xConnName.Value);
             string sHTML = "";
-
             string sElementID = "";
 
             sHTML += "Connection Name: " + Environment.NewLine;
@@ -2063,12 +2007,10 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xType = xd.XPathSelectElement("//type");
-            if (xType == null) return "Error: XML does not contain type";
             XElement xURL = xd.XPathSelectElement("//url");
-            if (xURL == null) return "Error: XML does not contain url";
 
-            string sType = xType.Value;
-            string sURL = xURL.Value;
+            string sType = (xType == null ? "" : xType.Value);
+            string sURL = (xURL == null ? "" : xURL.Value);
             string sFieldID = "";
             string sHTML = "";
 
@@ -2119,9 +2061,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xCB = xd.XPathSelectElement("//codeblock");
-            if (xCB == null) return "Error: XML does not contain codeblock";
-
-            string sCB = xCB.Value;
+            string sCB = (xCB == null ? "" : xCB.Value);
             string sHTML = "";
             string sElementID = "";
 
@@ -2173,20 +2113,16 @@ namespace FunctionTemplates
 			string sFunction = oStep.FunctionName;
 			XDocument xd = oStep.FunctionXDoc;
 
-            string sOriginalTaskID = "";
-            string sVersion = "";
             string sActualTaskID = "";
             string sLabel = "";
             string sHTML = "";
             string sErr = "";
 
             XElement xOTID = xd.XPathSelectElement("//original_task_id");
-            if (xOTID == null) return "Error: XML does not contain original_task_id";
-            sOriginalTaskID = xOTID.Value;
+            string sOriginalTaskID = (xOTID == null ? "" : xOTID.Value);
 
             XElement xVer = xd.XPathSelectElement("//version");
-            if (xVer == null) return "Error: XML does not contain version";
-            sVersion = xVer.Value;
+            string sVersion = (xVer == null ? "" : xVer.Value);
 
             //get the name and code for belonging to this otid and version
             if (ui.IsGUID(sOriginalTaskID))
@@ -2235,8 +2171,6 @@ namespace FunctionTemplates
                     }
                 }
             }
-
-
 
             //all good, draw the widget
             string sOTIDField = "";
@@ -2315,9 +2249,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xDebugLevel = xd.XPathSelectElement("//debug_level");
-            if (xDebugLevel == null) return "Error: XML does not contain debug_level";
-
-            string sDebugLevel = xDebugLevel.Value;
+            string sDebugLevel = (xDebugLevel == null ? "" : xDebugLevel.Value);
             string sHTML = "";
 
             sHTML += "Logging Level: " + Environment.NewLine;
@@ -2339,9 +2271,8 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xSeconds = xd.XPathSelectElement("//seconds");
-            if (xSeconds == null) return "Error: XML does not contain seconds";
 
-            string sSeconds = xSeconds.Value;
+            string sSeconds = (xSeconds == null ? "" : xSeconds.Value);
             string sHTML = "";
 
             sHTML += "Seconds to Sleep: " + Environment.NewLine;
@@ -2350,7 +2281,6 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-
         public string GetTaskInstance(Step oStep)
         {
 			string sStepID = oStep.ID;
@@ -2358,12 +2288,10 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xInstance = xd.XPathSelectElement("//instance");
-            if (xInstance == null) return "Error: XML does not contain instance";
             XElement xHandle = xd.XPathSelectElement("//handle");
-            if (xHandle == null) return "Error: XML does not contain handle";
 
-            string sInstance = xInstance.Value;
-            string sHandle = xHandle.Value;
+            string sInstance = (xInstance == null ? "" : xInstance.Value);
+            string sHandle = (xHandle == null ? "" : xHandle.Value);
             string sHTML = "";
 
             sHTML += "Task Instance: " + Environment.NewLine;
@@ -2383,10 +2311,9 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xTaskInstance = xd.XPathSelectElement("//task_instance");
-            if (xTaskInstance == null) return "Error: XML does not contain task_instance";
+            string sTaskInstance = (xTaskInstance == null ? "" : xTaskInstance.Value);
 
-            string sTaskInstance = xTaskInstance.Value;
-            string sHTML = "";
+			string sHTML = "";
 
             sHTML += "Task Instance ID(s): " + Environment.NewLine;
             sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, true, "task_instance", "w75pct") +
@@ -2479,19 +2406,16 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xVariable = xd.XPathSelectElement("//variable_name");
-            if (xVariable == null) return "Error: XML does not contain variable_name";
             XElement xStart = xd.XPathSelectElement("//start");
-            if (xStart == null) return "Error: XML does not contain start";
             XElement xEnd = xd.XPathSelectElement("//end");
-            if (xEnd == null) return "Error: XML does not contain end";
             XElement xSource = xd.XPathSelectElement("//source");
-            if (xSource == null) return "Error: XML does not contain source";
 
-            string sVariable = xVariable.Value;
-            string sStart = xStart.Value;
-            string sEnd = xEnd.Value;
-            string sSource = xSource.Value;
-            string sFieldID = "";
+            string sVariable = (xVariable == null ? "" : xVariable.Value);
+            string sStart = (xStart == null ? "" : xStart.Value);
+            string sEnd  = (xEnd == null ? "" : xEnd.Value);
+            string sSource = (xSource == null ? "" : xSource.Value);
+
+			string sFieldID = "";
             string sHTML = "";
 
             //Trac#389 - Make sure variable names are trimmed of whitespace if it exists
@@ -2535,28 +2459,21 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xStart = xd.XPathSelectElement("//start");
-            if (xStart == null) return "Error: XML does not contain start";
             XElement xIncrement = xd.XPathSelectElement("//increment");
-            if (xIncrement == null) return "Error: XML does not contain increment";
             XElement xCounter = xd.XPathSelectElement("//counter");
-            if (xCounter == null) return "Error: XML does not contain counter";
             XElement xTest = xd.XPathSelectElement("//test");
-            if (xTest == null) return "Error: XML does not contain test";
             XElement xCompareTo = xd.XPathSelectElement("//compare_to");
-            if (xCompareTo == null) return "Error: XML does not contain compare_to";
             XElement xMax = xd.XPathSelectElement("//max");
-            if (xMax == null) return "Error: XML does not contain max";
             XElement xAction = xd.XPathSelectElement("//action");
-            if (xAction == null) return "Error: XML does not contain action";
 
-            string sStart = xStart.Value;
-            string sIncrement = xIncrement.Value;
-            string sCounter = xCounter.Value;
-            string sTest = xTest.Value;
-            string sCompareTo = xCompareTo.Value;
-            string sMax = xMax.Value;
-            string sAction = xAction.Value;
-            string sHTML = "";
+            string sStart = (xStart == null ? "" : xStart.Value);
+            string sIncrement = (xIncrement == null ? "" : xIncrement.Value);
+            string sCounter = (xCounter == null ? "" : xCounter.Value);
+            string sTest = (xTest == null ? "" : xTest.Value);
+            string sCompareTo = (xCompareTo == null ? "" : xCompareTo.Value);
+            string sMax = (xMax == null ? "" : xMax.Value);
+            string sAction = (xAction == null ? "" : xAction.Value);
+			string sHTML = "";
 
 
             sHTML += "Counter variable " + Environment.NewLine;
@@ -2606,12 +2523,10 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xTest = xd.XPathSelectElement("//test");
-            if (xTest == null) return "Error: XML does not contain test";
             XElement xAction = xd.XPathSelectElement("//action");
-            if (xAction == null) return "Error: XML does not contain action";
 
-            string sTest = xTest.Value;
-            string sAction = xAction.Value;
+            string sTest = (xTest == null ? "" : xTest.Value);
+            string sAction = (xAction == null ? "" : xAction.Value);
             string sHTML = "";
 
             sHTML += "While: " + Environment.NewLine;
@@ -2634,9 +2549,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xMessage = xd.XPathSelectElement("//message");
-            if (xMessage == null) return "Error: XML does not contain message";
-
-            string sMessage = xMessage.Value;
+            string sMessage = (xMessage == null ? "" : xMessage.Value);
             string sFieldID = "";
             string sHTML = "";
 
@@ -2662,12 +2575,10 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xLanguage = xd.XPathSelectElement("//language");
-            if (xLanguage == null) return "Error: XML does not contain language";
             XElement xScript = xd.XPathSelectElement("//script");
-            if (xScript == null) return "Error: XML does not contain script";
 
-            string sLanguage = xLanguage.Value;
-            string sScript = xScript.Value;
+            string sLanguage = (xLanguage == null ? "" : xLanguage.Value);
+            string sScript = (xScript == null ? "" : xScript.Value);
             string sFieldID = "";
             string sHTML = "";
 
@@ -2847,14 +2758,11 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xXPath = xd.XPathSelectElement("//xpath");
-            if (xXPath == null) return "Error: XML does not contain xpath";
             XElement xValue = xd.XPathSelectElement("//value");
-            if (xValue == null) return "Error: XML does not contain value";
-            XElement xCreateNode = xd.XPathSelectElement("//create_node");
-            if (xCreateNode == null) return "Error: XML does not contain create_node";
+            //XElement xCreateNode = xd.XPathSelectElement("//create_node");
 
-            string sXPath = ui.SafeHTML(xXPath.Value);
-            string sValue = ui.SafeHTML(xValue.Value);
+            string sXPath = (xXPath == null ? "" : ui.SafeHTML(xXPath.Value));
+            string sValue = (xValue == null ? "" : ui.SafeHTML(xValue.Value));
             //string sCreateNode = (xCreateNode.Value == "1" ? "Yes" : "No");
             string sHTML = "";
 
@@ -2869,23 +2777,18 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-
         public string SetAssetRegistry_View(Step oStep)
         {
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xAsset = xd.XPathSelectElement("//asset_id");
-            if (xAsset == null) return "Error: XML does not contain asset_id";
             XElement xXPath = xd.XPathSelectElement("//xpath");
-            if (xXPath == null) return "Error: XML does not contain xpath";
             XElement xValue = xd.XPathSelectElement("//value");
-            if (xValue == null) return "Error: XML does not contain value";
-            XElement xCreateNode = xd.XPathSelectElement("//create_node");
-            if (xCreateNode == null) return "Error: XML does not contain create_node";
+            //XElement xCreateNode = xd.XPathSelectElement("//create_node");
 
-            string sAsset = xAsset.Value;
-            string sXPath = ui.SafeHTML(xXPath.Value);
-            string sValue = ui.SafeHTML(xValue.Value);
+            string sAsset = (xAsset == null ? "" : xAsset.Value);
+            string sXPath = (xXPath == null ? "" : ui.SafeHTML(xXPath.Value));
+            string sValue = (xValue == null ? "" : ui.SafeHTML(xValue.Value));
             //string sCreateNode = (xCreateNode.Value == "1" ? "Yes" : "No");
             string sAssetName = "";
             string sHTML = "";
@@ -2921,30 +2824,23 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-
         public string Transfer_View(Step oStep)
         {
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xFromAsset = xd.XPathSelectElement("//from_asset");
-            if (xFromAsset == null) return "Error: XML does not contain from_asset";
             XElement xFromFile = xd.XPathSelectElement("//from_file");
-            if (xFromFile == null) return "Error: XML does not contain from_file";
             XElement xToAsset = xd.XPathSelectElement("//to_asset");
-            if (xToAsset == null) return "Error: XML does not contain to_asset";
             XElement xToFile = xd.XPathSelectElement("//to_file");
-            if (xToFile == null) return "Error: XML does not contain to_file";
             XElement xCommand = xd.XPathSelectElement("//command");
-            if (xCommand == null) return "Error: XML does not contain command.";
             XElement xMode = xd.XPathSelectElement("//mode");
-            if (xMode == null) return "Error: XML does not contain mode.";
 
-            string sFromAsset = xFromAsset.Value;
-            string sFromFile = ui.SafeHTML(xFromFile.Value);
-            string sToAsset = xToAsset.Value;
-            string sToFile = ui.SafeHTML(xToFile.Value);
-            string sMode = ui.SafeHTML(xMode.Value);
-            string sCommand = ui.SafeHTML(xCommand.Value);
+            string sFromAsset = (xFromAsset == null ? "" : xFromAsset.Value);
+            string sFromFile = (xFromFile == null ? "" : ui.SafeHTML(xFromFile.Value));
+            string sToAsset = (xToAsset == null ? "" : xToAsset.Value);
+            string sToFile = (xToFile == null ? "" : ui.SafeHTML(xToFile.Value));
+            string sMode = (xMode == null ? "" : ui.SafeHTML(xMode.Value));
+            string sCommand = (xCommand == null ? "" : ui.SafeHTML(xCommand.Value));
             string sFromAssetName = "";
             string sToAssetName = "";
             string sHTML = "";
@@ -3001,15 +2897,12 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xFileName = xd.XPathSelectElement("//filename");
-            if (xFileName == null) return "Error: XML does not contain filename";
             XElement xStart = xd.XPathSelectElement("//start");
-            if (xStart == null) return "Error: XML does not contain start.";
             XElement xNumChars = xd.XPathSelectElement("//num_chars");
-            if (xNumChars == null) return "Error: XML does not contain num_chars.";
 
-            string sFileName = xFileName.Value;
-            string sStart = xStart.Value;
-            string sNumChars = xNumChars.Value;
+            string sFileName = (xFileName == null ? "" : xFileName.Value);
+            string sStart = (xStart == null ? "" : xStart.Value);
+            string sNumChars = (xNumChars == null ? "" : xNumChars.Value);
             string sHTML = "";
 
             sHTML += "<table width=\"99%\" border=\"0\">" + Environment.NewLine;
@@ -3035,9 +2928,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xText = xd.XPathSelectElement("//text");
-            if (xText == null) return "Error: XML does not contain 'text' field.";
-
-            string sCommand = ui.SafeHTML(xText.Value);
+            string sCommand = (xText == null ? "" : ui.SafeHTML(xText.Value));
             string sHTML = "";
 
             sHTML += "Text to Process:<br />" + Environment.NewLine;
@@ -3065,16 +2956,13 @@ namespace FunctionTemplates
             string sErr = "";
 
             XElement xOTID = xd.XPathSelectElement("//original_task_id");
-            if (xOTID == null) return "Error: XML does not contain original_task_id";
-            sOriginalTaskID = ui.SafeHTML(xOTID.Value);
+            sOriginalTaskID = (xOTID == null ? "" : ui.SafeHTML(xOTID.Value));
 
             XElement xVer = xd.XPathSelectElement("//version");
-            if (xVer == null) return "Error: XML does not contain version";
-            sVersion = ui.SafeHTML(xVer.Value);
+            sVersion = (xVer == null ? "" : ui.SafeHTML(xVer.Value));
 
             XElement xTime = xd.XPathSelectElement("//time_to_wait");
-            if (xTime == null) return "Error: XML does not contain time_to_wait";
-            sTime = ui.SafeHTML(xTime.Value);
+            sTime = (xTime == null ? "" : ui.SafeHTML(xTime.Value));
 
             //XElement xSuccess = xd.XPathSelectElement("//on_success");
             //if (xSuccess == null) return "Error: XML does not contain on_success";
@@ -3085,8 +2973,7 @@ namespace FunctionTemplates
             //sOnError = ui.SafeHTML(xError.Value);
 
             XElement xHandle = xd.XPathSelectElement("//handle");
-            if (xHandle == null) return "Error: XML does not contain handle";
-            sHandle = ui.SafeHTML(xHandle.Value);
+            sHandle = (xHandle == null ? "" : ui.SafeHTML(xHandle.Value));
 
             //get the name and code for belonging to this otid and version
             if (ui.IsGUID(sOriginalTaskID))
@@ -3112,8 +2999,7 @@ namespace FunctionTemplates
             }
 
             XElement xAsset = xd.XPathSelectElement("//asset_id");
-            if (xAsset == null) return "Error: XML does not contain asset_id";
-            sAssetID = xAsset.Value;
+			sAssetID = (xAsset == null ? "" : xAsset.Value);
 
             //get the asset name belonging to this asset_id
             if (ui.IsGUID(sAssetID))
@@ -3185,13 +3071,9 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xStatus = xd.XPathSelectElement("//status");
-            if (xStatus == null) return "Error: XML does not contain status";
             XElement xMsg = xd.XPathSelectElement("//message");
-            if (xMsg == null) return "Error: XML does not contain message";
-
-            string sStatus = ui.SafeHTML(xStatus.Value);
-            string sMsg = ui.SafeHTML(xMsg.Value);
-
+            string sStatus = (xStatus == null ? "" : ui.SafeHTML(xStatus.Value));
+            string sMsg = (xMsg == null ? "" : ui.SafeHTML(xMsg.Value));
             string sHTML = "";
 
             sHTML += "End with Status:" + Environment.NewLine;
@@ -3285,11 +3167,11 @@ namespace FunctionTemplates
             // Exists have a Positive and Negative action
             sHTML += "<br /><br />Positive Action:<br />" + Environment.NewLine;
             XElement xPositiveAction = xd.XPathSelectElement("//actions/positive_action");
-            if (xPositiveAction == null) return "Error: XML does not contain positive_action";
+            string sPosAction = (xPositiveAction == null ? "" : xPositiveAction.Value);			
 
-            if (ui.IsGUID(xPositiveAction.Value))
+            if (ui.IsGUID(sPosAction))
             {
-                Step oEmbeddedStep = GetSingleStep(xPositiveAction.Value, sUserID, ref sErr);
+                Step oEmbeddedStep = GetSingleStep(sPosAction, sUserID, ref sErr);
                 if (oEmbeddedStep != null && sErr == "")
                     sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                 else
@@ -3303,11 +3185,11 @@ namespace FunctionTemplates
 
             sHTML += "Negative Action:<br />" + Environment.NewLine;
             XElement xNegativeAction = xd.XPathSelectElement("//actions/negative_action");
-            if (xNegativeAction == null) return "Error: XML does not contain negative_action";
+            string sNegAction = (xNegativeAction == null ? "" : xNegativeAction.Value);			
 
-            if (ui.IsGUID(xNegativeAction.Value))
+            if (ui.IsGUID(sNegAction))
             {
-                Step oEmbeddedStep = GetSingleStep(xNegativeAction.Value, sUserID, ref sErr);
+                Step oEmbeddedStep = GetSingleStep(sNegAction, sUserID, ref sErr);
                 if (oEmbeddedStep != null && sErr == "")
                     sHTML += DrawEmbeddedReadOnlyStep(oEmbeddedStep, bShowNotes);
                 else
@@ -3424,18 +3306,14 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xCommand = xd.XPathSelectElement("//sql");
-            if (xCommand == null) return "Error: XML does not contain sql.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name.";
             XElement xMode = xd.XPathSelectElement("//mode");
-            if (xMode == null) return "Error: XML does not contain mode.";
             XElement xHandle = xd.XPathSelectElement("//handle");
-            if (xHandle == null) return "Error: XML does not contain handle.";
 
-            string sCommand = ui.SafeHTML(xCommand.Value);
-            string sConnName = ui.SafeHTML(xConnName.Value);
-            string sMode = ui.SafeHTML(xMode.Value);
-            string sHandle = ui.SafeHTML(xHandle.Value);
+            string sCommand = (xCommand == null ? "" : ui.SafeHTML(xCommand.Value));
+            string sConnName = (xConnName == null ? "" : ui.SafeHTML(xConnName.Value));
+            string sMode = (xMode == null ? "" : ui.SafeHTML(xMode.Value));
+            string sHandle = (xHandle == null ? "" : ui.SafeHTML(xHandle.Value));
             bool bDrawVarSection = false;
             bool bDrawSQLBox = false;
             bool bDrawHandle = false;
@@ -3492,12 +3370,10 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xCommand = xd.XPathSelectElement("//command");
-            if (xCommand == null) return "Error: XML does not contain command.";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name.";
 
-            string sCommand = ui.SafeHTML(xCommand.Value);
-            string sConnName = ui.SafeHTML(xConnName.Value);
+            string sCommand = (xCommand == null ? "" : ui.SafeHTML(xCommand.Value));
+            string sConnName = (xConnName == null ? "" : ui.SafeHTML(xConnName.Value));
             string sHTML = "";
 
             sHTML += "Connection:" + Environment.NewLine;
@@ -3511,15 +3387,12 @@ namespace FunctionTemplates
 
             //for the options panel
             XElement xTimeout = xd.XPathSelectElement("//timeout");
-            if (xTimeout == null) return "Error: XML does not contain timeout.";
             XElement xPos = xd.XPathSelectElement("//positive_response");
-            if (xPos == null) return "Error: XML does not contain positive_response.";
             XElement xNeg = xd.XPathSelectElement("//negative_response");
-            if (xNeg == null) return "Error: XML does not contain negative_response.";
 
-            string sTimeout = ui.SafeHTML(xTimeout.Value);
-            string sPos = ui.SafeHTML(xPos.Value);
-            string sNeg = ui.SafeHTML(xNeg.Value);
+            string sTimeout = (xTimeout == null ? "" : ui.SafeHTML(xTimeout.Value));
+            string sPos = (xPos == null ? "" : ui.SafeHTML(xPos.Value));
+            string sNeg = (xNeg == null ? "" : ui.SafeHTML(xNeg.Value));
 
             sOptionHTML += "Timeout: <span class=\"code\">" + sTimeout + "</span><br />";
             sOptionHTML += "Positive Response: <span class=\"code\">" + sPos + "</span><br />";
@@ -3532,15 +3405,12 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xAsset = xd.XPathSelectElement("//asset");
-            if (xAsset == null) return "Error: XML does not contain asset";
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name";
             XElement xConnType = xd.XPathSelectElement("//conn_type");
-            if (xConnType == null) return "Error: XML does not contain conn_type";
 
-            string sAsset = xAsset.Value;
-            string sConnName = ui.SafeHTML(xConnName.Value);
-            string sConnType = ui.SafeHTML(xConnType.Value);
+            string sAsset = (xAsset == null ? "" : xAsset.Value);
+            string sConnName = (xConnName == null ? "" : ui.SafeHTML(xConnName.Value));
+            string sConnType = (xConnType == null ? "" : ui.SafeHTML(xConnType.Value));
 
             string sAssetName = "";
             string sHTML = "";
@@ -3576,10 +3446,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xConnName = xd.XPathSelectElement("//conn_name");
-            if (xConnName == null) return "Error: XML does not contain conn_name";
-
-            string sConnName = ui.SafeHTML(xConnName.Value);
-
+            string sConnName = (xConnName == null ? "" : ui.SafeHTML(xConnName.Value));
             string sHTML = "";
 
             sHTML += "Connection Name: " + Environment.NewLine;
@@ -3592,12 +3459,9 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xType = xd.XPathSelectElement("//type");
-            if (xType == null) return "Error: XML does not contain type";
             XElement xURL = xd.XPathSelectElement("//url");
-            if (xURL == null) return "Error: XML does not contain url";
-
-            string sType = ui.SafeHTML(xType.Value);
-            string sURL = ui.SafeHTML(xURL.Value);
+            string sType = (xType == null ? "" : ui.SafeHTML(xType.Value));
+            string sURL = (xURL == null ? "" : ui.SafeHTML(xURL.Value));
             string sHTML = "";
 
             sHTML += "Request Type: <span class=\"code\">" + sType + "</span> <br />" + Environment.NewLine;
@@ -3623,9 +3487,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xCB = xd.XPathSelectElement("//codeblock");
-            if (xCB == null) return "Error: XML does not contain codeblock";
-
-            string sCB = ui.SafeHTML(xCB.Value);
+            string sCB = (xCB == null ? "" : ui.SafeHTML(xCB.Value));
             string sHTML = "";
 
             sHTML += "Codeblock: " + Environment.NewLine;
@@ -3644,12 +3506,10 @@ namespace FunctionTemplates
             string sErr = "";
 
             XElement xOTID = xd.XPathSelectElement("//original_task_id");
-            if (xOTID == null) return "Error: XML does not contain original_task_id";
-            sOriginalTaskID = xOTID.Value;
+            sOriginalTaskID = (xOTID == null ? "" : xOTID.Value);
 
             XElement xVer = xd.XPathSelectElement("//version");
-            if (xVer == null) return "Error: XML does not contain version";
-            sVersion = xVer.Value;
+            sVersion = (xVer == null ? "" : xVer.Value);
 
             //get the name and code for belonging to this otid and version
             if (ui.IsGUID(sOriginalTaskID))
@@ -3687,9 +3547,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xSeconds = xd.XPathSelectElement("//seconds");
-            if (xSeconds == null) return "Error: XML does not contain seconds";
-
-            string sSeconds = ui.SafeHTML(xSeconds.Value);
+            string sSeconds = (xSeconds == null ? "" : ui.SafeHTML(xSeconds.Value));
             string sHTML = "";
 
             sHTML += "Seconds to Sleep: " + Environment.NewLine;
@@ -3704,12 +3562,9 @@ namespace FunctionTemplates
             string sUserID = ui.GetSessionUserID();
 
             XElement xTest = xd.XPathSelectElement("//test");
-            if (xTest == null) return "Error: XML does not contain test";
             XElement xAction = xd.XPathSelectElement("//action");
-            if (xAction == null) return "Error: XML does not contain action";
-
-            string sTest = ui.SafeHTML(xTest.Value);
-            string sAction = ui.SafeHTML(xAction.Value);
+            string sTest = (xTest == null ? "" : ui.SafeHTML(xTest.Value));
+            string sAction = (xAction == null ? "" : ui.SafeHTML(xAction.Value));
             string sHTML = "";
             string sErr = "";
 
@@ -3737,9 +3592,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xDebugLevel = xd.XPathSelectElement("//debug_level");
-            if (xDebugLevel == null) return "Error: XML does not contain debug_level";
-
-            string sDebugLevel = ui.SafeHTML(xDebugLevel.Value);
+            string sDebugLevel = (xDebugLevel == null ? "" : ui.SafeHTML(xDebugLevel.Value));
             string sHTML = "";
 
             switch (sDebugLevel)
@@ -3768,18 +3621,14 @@ namespace FunctionTemplates
 
             return sHTML;
         }
-
         public string GetTaskInstance_View(Step oStep)
         {
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xInstance = xd.XPathSelectElement("//instance");
-            if (xInstance == null) return "Error: XML does not contain instance";
             XElement xHandle = xd.XPathSelectElement("//handle");
-            if (xHandle == null) return "Error: XML does not contain handle";
-
-            string sInstance = ui.SafeHTML(xInstance.Value);
-            string sHandle = ui.SafeHTML(xHandle.Value);
+            string sInstance = (xInstance == null ? "" : ui.SafeHTML(xInstance.Value));
+            string sHandle = (xHandle == null ? "" : ui.SafeHTML(xHandle.Value));
             string sHTML = "";
 
             sHTML += "Task Instance: " + Environment.NewLine;
@@ -3794,9 +3643,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xTaskInstance = xd.XPathSelectElement("//task_instance");
-            if (xTaskInstance == null) return "Error: XML does not contain task_instance";
-
-            string sTaskInstance = ui.SafeHTML(xTaskInstance.Value);
+            string sTaskInstance = (xTaskInstance == null ? "" : ui.SafeHTML(xTaskInstance.Value));
             string sHTML = "";
 
             sHTML += "Task Instance ID(s): " + Environment.NewLine;
@@ -3846,18 +3693,13 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xVariable = xd.XPathSelectElement("//variable_name");
-            if (xVariable == null) return "Error: XML does not contain variable_name";
             XElement xStart = xd.XPathSelectElement("//start");
-            if (xStart == null) return "Error: XML does not contain start";
             XElement xEnd = xd.XPathSelectElement("//end");
-            if (xEnd == null) return "Error: XML does not contain end";
             XElement xSource = xd.XPathSelectElement("//source");
-            if (xSource == null) return "Error: XML does not contain source";
-
-            string sVariable = ui.SafeHTML(xVariable.Value);
-            string sStart = ui.SafeHTML(xStart.Value);
-            string sEnd = ui.SafeHTML(xEnd.Value);
-            string sSource = ui.SafeHTML(xSource.Value);
+            string sVariable = (xVariable == null ? "" : ui.SafeHTML(xVariable.Value));
+            string sStart = (xStart == null ? "" : ui.SafeHTML(xStart.Value));
+            string sEnd = (xEnd == null ? "" : ui.SafeHTML(xEnd.Value));
+            string sSource = (xSource == null ? "" : ui.SafeHTML(xSource.Value));
             string sHTML = "";
 
             sHTML += "Variable:" + Environment.NewLine;
@@ -3881,27 +3723,20 @@ namespace FunctionTemplates
             string sUserID = ui.GetSessionUserID();
 
             XElement xStart = xd.XPathSelectElement("//start");
-            if (xStart == null) return "Error: XML does not contain start";
             XElement xIncrement = xd.XPathSelectElement("//increment");
-            if (xIncrement == null) return "Error: XML does not contain increment";
             XElement xCounter = xd.XPathSelectElement("//counter");
-            if (xCounter == null) return "Error: XML does not contain counter";
             XElement xTest = xd.XPathSelectElement("//test");
-            if (xTest == null) return "Error: XML does not contain test";
             XElement xCompareTo = xd.XPathSelectElement("//compare_to");
-            if (xCompareTo == null) return "Error: XML does not contain compare_to";
             XElement xMax = xd.XPathSelectElement("//max");
-            if (xMax == null) return "Error: XML does not contain max";
             XElement xAction = xd.XPathSelectElement("//action");
-            if (xAction == null) return "Error: XML does not contain action";
 
-            string sStart = ui.SafeHTML(xStart.Value);
-            string sIncrement = ui.SafeHTML(xIncrement.Value);
-            string sCounter = ui.SafeHTML(xCounter.Value);
-            string sTest = ui.SafeHTML(xTest.Value);
-            string sCompareTo = ui.SafeHTML(xCompareTo.Value);
-            string sMax = ui.SafeHTML(xMax.Value);
-            string sAction = xAction.Value;
+            string sStart = (xStart == null ? "" : ui.SafeHTML(xStart.Value));
+            string sIncrement = (xIncrement == null ? "" : ui.SafeHTML(xIncrement.Value));
+            string sCounter = (xCounter == null ? "" : ui.SafeHTML(xCounter.Value));
+            string sTest = (xTest == null ? "" : ui.SafeHTML(xTest.Value));
+            string sCompareTo = (xCompareTo == null ? "" : ui.SafeHTML(xCompareTo.Value));
+            string sMax = (xMax == null ? "" : ui.SafeHTML(xMax.Value));
+            string sAction = (xAction == null ? "" : xAction.Value);
             string sErr = "";
             string sHTML = "";
 
@@ -3944,9 +3779,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xMessage = xd.XPathSelectElement("//message");
-            if (xMessage == null) return "Error: XML does not contain message";
-
-            string sMessage = ui.SafeHTML(xMessage.Value);
+            string sMessage = (xMessage == null ? "" : ui.SafeHTML(xMessage.Value));
             string sHTML = "";
 
             sHTML += "Log Message: <br />" + Environment.NewLine;
@@ -3959,13 +3792,9 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xLanguage = xd.XPathSelectElement("//language");
-            if (xLanguage == null) return "Error: XML does not contain language";
             XElement xScript = xd.XPathSelectElement("//script");
-            if (xScript == null) return "Error: XML does not contain script";
-
-            string sLanguage = ui.SafeHTML(xLanguage.Value);
-            string sScript = ui.FixBreaks(ui.SafeHTML(xScript.Value));
-
+            string sLanguage = (xLanguage == null ? "" : ui.SafeHTML(xLanguage.Value));
+            string sScript = (xScript == null ? "" : ui.SafeHTML(xScript.Value));
             string sHTML = "";
 
             sHTML += "Language: <span class=\"code\">" + sLanguage + "</span><br />" + Environment.NewLine;

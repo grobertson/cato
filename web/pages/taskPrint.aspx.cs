@@ -116,7 +116,11 @@ namespace Web.pages
 				//for the rest of the codeblocks
 				foreach (Codeblock cb in oTask.Codeblocks.Values)
                 {
+					//don't redraw MAIN
 					if (cb.Name == "MAIN")
+						continue;
+					//if it's a guid it's a bogus codeblock (for export only)
+					if (ui.IsGUID(cb.Name))
 						continue;
 					
                     lt.Text += "<div class=\"ui-state-default te_header\" id=\"cbt_" + cb.Name + "\">" + cb.Name + "</div>";

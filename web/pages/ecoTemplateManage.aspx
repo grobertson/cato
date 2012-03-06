@@ -50,7 +50,8 @@
         <asp:UpdatePanel ID="udpList" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
                 <span id="lblItemsSelected">0</span> Items Selected <span id="clear_selected_btn"></span><span 
-					id="item_create_btn">Create</span><span id="item_copy_btn">Copy</span><span id="item_delete_btn">Delete</span>
+					id="item_create_btn">Create</span><span id="item_copy_btn">Copy</span><span 
+					id="item_export_btn">Export</span><span id="item_delete_btn">Delete</span>
                 <asp:TextBox ID="txtSearch" runat="server" class="search_text" />
                 <span id="item_search_btn">Search</span>
                 <asp:ImageButton ID="btnSearch" class="hidden" OnClick="btnSearch_Click" runat="server" />
@@ -172,7 +173,13 @@
         </table>
     </div>
     <div id="delete_dialog" class="hidden" title="Delete Ecosystem Templates">
-        Are you sure you want to delete these Eco Templates?
+        Are you sure you want to delete these Ecosystem Templates?
+    </div>
+    <div id="export_dialog" class="hidden" title="Export">
+        Are you sure you want to export these Ecosystem Templates?
+		<p>
+			<input id="export_include_tasks" type="checkbox" /><label for="export_include_tasks">Include Action Tasks?</label>
+		</p>
     </div>
     <div id="copy_dialog" class="hidden" title="Copy Ecosystem Template">
         <table id="tblCopy" width="100%">

@@ -150,6 +150,8 @@ namespace Web
 					ltAnnouncement.Text = sResult;
 				}
 				
+				//a little housekeeping
+				ui.Housekeeping();
 			}
         }
 

@@ -83,7 +83,6 @@ function ShowItemAdd() {
 }
 
 function ShowItemExport() {
-    // if there are 0 users select then show a message
     // clear all of the previous values
     var ArrayString = $("#hidSelectedArray").val();
     if (ArrayString.length == 0) {
@@ -95,7 +94,6 @@ function ShowItemExport() {
 }
 
 function ShowItemCopy() {
-
     // clear all of the previous values
     var ArrayString = $("#hidSelectedArray").val();
     if (ArrayString.length == 0) {
@@ -274,7 +272,7 @@ function ExportTasks() {
             //the return code might be a filename or an error.
             //if it's valid, it will have a ".csk" in it.
             //otherwise we assume it's an error
-            if (msg.d.indexOf(".csk") > -1) {
+            if (msg.d.indexOf(".csk") > -1 || msg.d.indexOf(".xml") > -1) {
                 //developer utility for renaming the file
                 //note: only works with one task at a time.
                 //var filename = RenameBackupFile(msg.d, ArrayString);
@@ -292,8 +290,8 @@ function ExportTasks() {
 
                 //ok, we're gonna do an iframe in the dialog to force the
                 //file download
-                var html = "Click <a href='../temp/" + filename + "'>here</a> to download your file.";
-                html += "<iframe width='0px' height=0px' src='../temp/" + filename + "'>";
+                var html = "Click <a href='fileDownload.ashx?filename=" + filename + "'>here</a> to download your file.";
+                html += "<iframe id='file_iframe' width='0px' height=0px' src='fileDownload.ashx?filename=" + filename + "'>";
                 showInfo('Export Successful', html, true);
 
             } else {
@@ -308,17 +306,30 @@ function ExportTasks() {
 
 function SaveNewTask() {
     var bSave = true;
-    var strValidationError = '';
+    var sValidationErr = "";
     
     //some client side validation before we attempt to save
-    var sTaskName = packJSON($("[jqname='txtTaskName']").val());
-    var sTaskCode = packJSON($("[jqname='txtTaskCode']").val());
-    var sTaskDesc = packJSON($("[jqname='txtTaskDesc']").val());
+    var sTaskName = $("[jqname='txtTaskName']").val();
+    var sTaskCode = $("[jqname='txtTaskCode']").val();
+    var sTaskDesc = $("[jqname='txtTaskDesc']").val();
+
+	if (sTaskName.length < 3) {
+        sValidationErr += "- Task Name is required and must be at least three characters in length.<br />";
+        bSave = false;
+    }
+	if (sTaskCode.length < 1) {
+        sValidationErr += "- Task Code is required.";
+        bSave = false;
+    }
 
     if (bSave != true) {
-        showAlert(strValidationError);
+        showAlert(sValidationErr);
         return false;
     }
+
+    sTaskName = packJSON(sTaskName);
+    sTaskCode = packJSON(sTaskCode);
+    sTaskDesc = packJSON(sTaskDesc);
 
     $.ajax({
         type: "POST",

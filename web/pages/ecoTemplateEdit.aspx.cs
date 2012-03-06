@@ -59,7 +59,24 @@ namespace Web.pages
                 ltActions.Text = wm.wmGetEcotemplateActions(sEcoTemplateID);
                 phActions.Controls.Add(ltActions);
 
-
+				//the icons are in the icons/actions directory
+				//get a list of them all, and draw them on the picker dialog
+				string sIconHTML = "";
+				try {
+					string[] aFiles = Directory.GetFiles(Server.MapPath("~/images/actions"));
+					if (aFiles != null)
+					{
+						foreach (string sFile in aFiles)
+						{
+							string sName = Path.GetFileName(sFile);  //just the name, not the path
+							sIconHTML += "<img class='action_picker_icon' icon_name='" + sName + "' src='../images/actions/" + sName + "' />";
+						}
+					}
+				} catch (Exception ex) {
+					sIconHTML = ex.Message;
+				}
+				
+				ltActionPickerIcons.Text = sIconHTML;
             }
         }
 

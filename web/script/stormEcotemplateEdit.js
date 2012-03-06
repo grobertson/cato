@@ -150,17 +150,24 @@ function ShowStorm() {
         $("#storm_file_desc").html(unpackJSON(storm.HTMLDescription));
         $("#storm_file_text").html(unpackJSON(storm.HTMLText));
     
-    	jsl.interactions.json_in(unpackJSON(storm.Text));
-	    var success = jsl.interactions.validate_string();
-        if (success) {
-			$("#storm_file_error").empty();
-			$("#storm_file_error").hide();
-        	$("#run_storm_btn").button("enable");
-		} else {
-			$("#storm_file_error").text(jsl.interactions.validation_msg());
-			$("#storm_file_error").show();
-        	$("#run_storm_btn").button("disable");
-		}
+		$("#storm_file_error").empty();
+		$("#storm_file_error").hide();
+    	$("#run_storm_btn").button("disable");
+
+    	var storm_text = unpackJSON(storm.Text);
+    	
+    	if (storm_text.length > 0) {
+	    	jsl.interactions.json_in(storm_text);
+		    var success = jsl.interactions.validate_string();
+	        if (success) {
+	        	$("#run_storm_btn").button("enable");
+			} else {
+				$("#storm_file_error").text(jsl.interactions.validation_msg());
+				$("#storm_file_error").show();
+			}
+        }
+
+
 
         //turn on the buttons
         $("#edit_storm_btn").show();

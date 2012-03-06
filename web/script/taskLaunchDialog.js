@@ -40,6 +40,8 @@ $(document).ready(function () {
                 '       <span id="run_now_btn" class="floatright">Run Now</span>' +
                 '   </div>' +
                 '   <div id="RunLaterTab">' +
+            	'   	Current Server Time: <span class="current_time"></span>' +
+                '       <hr />' +
                 '       <div>Will be started in the future, and run only once, using the Parameters selected on the left.</div>' +
                 '       <hr />' +
                 '       Run On: <input type="text" id="run_on_date" class="datetimepicker" />' +
@@ -47,6 +49,8 @@ $(document).ready(function () {
                 '       <span id="run_later_btn" class="floatright">Plan</span>' +
                 '   </div>' +
                 '   <div id="RunRepeatedlyTab">' +
+            	'   	Current Server Time: <span class="current_time"></span>' +
+                '       <hr />' +
                 '       <div id="run_repeatedly_content">' +
                 '           <div>Will be scheduled to run on a repeating basis, using the criteria selected below, and the Parameters selected on the left.</div>' +
                 '           <hr />' +
@@ -351,6 +355,8 @@ function getParamXML(id, type, eco_id) {
 }
 
 function ShowTaskLaunchDialog(jsonargs) {
+	$('.current_time').load('uiMethods.asmx/wmGetDatabaseTime');    
+	
     //function takes a json array as arguments
     //'{"task_id":"","task_name":"","account_id":"","account_name":"","ecosystem_id":"","task_instance":"","asset_id":"","action_id":""}'
 
@@ -667,7 +673,7 @@ function RunRepeatedly() {
 }
 
 function RunLater() {
-    //future enhancement:
+	//future enhancement:
     //if this save would be really close to a recurring entry ... courtesy prompt the user?
 
     var run_on = $("#run_on_date").val();

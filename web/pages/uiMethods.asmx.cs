@@ -60,6 +60,13 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
+        public string wmGetDatabaseTime()
+        {
+			dataAccess dc = new dataAccess();
+            return dc.GetDatabaseTime();
+        }
+
+        [WebMethod(EnableSession = true)]
         public string wmGetHostname()
         {
             return Server.MachineName.ToString();
@@ -1661,17 +1668,7 @@ namespace ACWebMethods
 					{
 	                    string sErr = "";
 	
-	                    //we encoded this in javascript before the ajax call.
-	                    //the safest way to unencode it is to use the same javascript lib.
-	                    //(sometimes the javascript and .net libs don't translate exactly, google it.)
 	                    sValue = ui.unpackJSON(sValue);
-	
-	                    // check for existing name
-	                    if (sColumn == "Name")
-	                    {
-	                        if (et.Name == sValue)
-	                            return sValue + " exists, please choose another name.";
-	                    }
 	
 						//we have to use Reflection to find the class field by name
 						bool bSuccess = false;
@@ -1679,6 +1676,9 @@ namespace ACWebMethods
 						if (f != null) {
 							f.SetValue(et, sValue);
 							bSuccess = et.DBUpdate(ref sErr);
+							
+							if (!string.IsNullOrEmpty(sErr))
+								return sErr;
 						}
 						
 						if (bSuccess)
@@ -1722,6 +1722,123 @@ namespace ACWebMethods
 		}
 
         [WebMethod(EnableSession = true)]
+        public string wmCreateObjectFromXML(string sXML)
+        {
+            try
+            {
+				acUI.acUI ui = new acUI.acUI();
+
+				if (string.IsNullOrEmpty(sXML))
+					throw new Exception("XML is required.");
+					
+				//sXML is json packed.  We'll unpack it locally to check it,
+				string sTestXML = ui.unpackJSON(sXML);
+				//what is it?
+				XDocument xd = XDocument.Parse(sTestXML);
+				if (xd != null)
+				{
+					string sResult = "";
+
+					//an ecotemplate?
+					XElement xe = xd.Element("ecotemplate");
+					if (xe != null)
+					{
+						sResult = wmCreateEcotemplateFromXML(sXML); //send the original xml
+					}
+					//a task?
+					xe = xd.Element("task");
+					if (xe != null)
+					{
+						taskMethods tm = new taskMethods();
+						sResult = tm.wmCreateTaskFromXML(sXML); //send the original xml
+					}
+					
+					return sResult;
+				}
+				else
+				{
+					return "Text is not a valid XML document.";
+				}
+            }
+            catch (Exception ex)
+            {
+                return "Unable to continue.  Text could not be validated as an XML document." + ex.Message;
+            }
+        }
+
+        [WebMethod(EnableSession = true)]
+        public string wmCreateEcotemplateFromXML(string sXML)
+        {
+            try
+            {
+				if (string.IsNullOrEmpty(sXML))
+					return "{\"error\" : \"Ecotemplate XML is required.\"}";
+					
+	            acUI.acUI ui = new acUI.acUI();
+	            string sErr = "";
+	
+				Ecotemplate et = new Ecotemplate().FromXML(ui.unpackJSON(sXML), ref sErr);
+	
+				if (!string.IsNullOrEmpty(sErr))
+					return "{\"error\" : \"Could not create Ecotemplate from XML: " + sErr + "\"}";
+	
+				if (et != null) {
+					if(et.DBSave(ref sErr))
+					{
+						if (!string.IsNullOrEmpty(sErr))
+							return "{\"error\" : \"" + sErr + "\"}";
+						
+						return "{\"type\" : \"ecotemplate\", \"id\" : \"" + et.ID + "\"}";
+					}
+					else
+						return "{\"error\" : \"" + sErr + "\"}";
+				}
+				else
+					return "{\"error\" : \"" + sErr + "\"}";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [WebMethod(EnableSession = true)]
+        public string wmExportEcotemplates(string sEcotemplateArray, string sIncludeTasks)
+        {
+			//doesn't work like the Task export - just dump the xml from the object to a file.
+			
+			//for the moment we're only allowing one at a time.
+			acUI.acUI ui = new acUI.acUI();
+			
+			try
+			{
+				Ecotemplate et = new Ecotemplate(sEcotemplateArray);
+				et.IncludeTasks = (sIncludeTasks == "1" ? true : false);
+				if (et != null)
+				{
+					string sXML = et.AsXML();
+
+					//what are we gonna call the final file?
+					TimeSpan oTS = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+					int iSecs  = (int) oTS.TotalSeconds;
+					string sFileName = Server.UrlEncode(et.Name.Replace(" ","").Replace("/","")) + "_" + iSecs.ToString() + ".xml";
+					string sPath = Server.MapPath("~/temp/");
+
+					ui.SaveStringToFile(sPath + sFileName, sXML);
+					return sFileName;
+				}
+				else
+				{
+					return "Unable to get Template [" + sEcotemplateArray + "] to export.";
+				}				
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+        }
+		
+        [WebMethod(EnableSession = true)]
         public string wmCreateEcotemplate(string sName, string sDescription, string sStormFileSource, string sStormFile)
         {
             acUI.acUI ui = new acUI.acUI();
@@ -1732,7 +1849,7 @@ namespace ACWebMethods
 				string sSrc = ui.unpackJSON(sStormFileSource);
 				et.StormFileType = (sSrc == "URL" ? "URL" : "Text");
 				et.StormFile = ui.unpackJSON(sStormFile);
-				if(et.DBCreateNew(ref sErr))
+				if(et.DBSave(ref sErr))
 					return et.ID;
 				else
 					return sErr;
@@ -1940,7 +2057,7 @@ namespace ACWebMethods
                             //gotta clear the floats
                             sHTML += "<div class=\"clearfloat\">";
 
-                            sHTML += "<img src=\"../images/actions/" + sIcon + "\" alt=\"\" />";
+                            sHTML += "<img class=\"action_icon\" src=\"../images/actions/" + sIcon + "\" alt=\"\" />";
 
 
                             sHTML += " </div>";
@@ -2082,6 +2199,7 @@ namespace ACWebMethods
             string sActionName = dr["action_name"].ToString();
             string sCategory = dr["category"].ToString();
             string sDesc = (string.IsNullOrEmpty(dr["action_desc"].ToString()) ? "" : dr["action_desc"].ToString());
+            string sIcon = (string.IsNullOrEmpty(dr["action_icon"].ToString()) ? "action_default_48.png" : dr["action_icon"].ToString());
             string sOriginalTaskID = dr["original_task_id"].ToString();
             string sTaskID = dr["task_id"].ToString();
             string sTaskCode = dr["task_code"].ToString();            
@@ -2125,7 +2243,11 @@ namespace ACWebMethods
                 " value=\"" + sCategory + "\" />"
                 + Environment.NewLine;
 
-            sHTML += "<br />";
+            //Icon
+            sHTML += "Icon: " + Environment.NewLine;
+            sHTML += "<img class=\"action_icon\" src=\"../images/actions/" + sIcon + "\" />" + Environment.NewLine;
+
+			sHTML += "<br />";
 
             //Description
             sHTML += "Description:<br />" + Environment.NewLine;
@@ -2262,7 +2384,7 @@ namespace ACWebMethods
             {
                 if (!string.IsNullOrEmpty(sEcoTemplateID))
                 {
-                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.task_version," +
+                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.action_icon, ea.original_task_id, ea.task_version," +
                         " t.task_id, t.task_code, t.task_name," +
                         " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" +
                         " from ecotemplate_action ea" +
@@ -2315,7 +2437,7 @@ namespace ACWebMethods
             {
                 if (!string.IsNullOrEmpty(sActionID))
                 {
-                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.task_version," +
+                    sSQL = "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.action_icon, ea.original_task_id, ea.task_version," +
                         " t.task_id, t.task_code, t.task_name," +
                         " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" +
                         " from ecotemplate_action ea" +

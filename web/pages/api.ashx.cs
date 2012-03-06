@@ -42,6 +42,7 @@ namespace Web
 		//some globals
 		NameValueCollection QS;
 		NameValueCollection FORM;
+		NameValueCollection PARAMS;
 		apiResponse RESPONSE = new apiResponse();
 		
 		public virtual void ProcessRequest(HttpContext context)
@@ -80,6 +81,12 @@ namespace Web
 				QS = context.Request.QueryString;
 				//form
 				FORM = context.Request.Form;
+				//all params
+				//why?  because in many cases below we don't know whether the user will have sent
+				//args on the form or querystring.
+				//why not do everything using params?
+				//because for some internal cases we want to ONLY look at the QS for values, like signature.
+				PARAMS = context.Request.Params;
 				
 				//authenticate
 				bool bSuccess = Authenticate();
@@ -90,7 +97,6 @@ namespace Web
 					{
 						RESPONSE.ErrorCode = "0001";
 						RESPONSE.ErrorMessage = "Action argument was not provided.";
-						ThrowResponseAndEnd(ref context);
 					}
 					
 					RESPONSE.Method = sAction;
@@ -111,11 +117,18 @@ namespace Web
 					case "GetTask":
 						GetTask(ref context);
 						break;
+					case "GetEcotemplate":
+						GetEcotemplate(ref context);
+						break;
+					case "CreateEcotemplate":
+						CreateEcotemplate(ref context);
+						break;
 					case "HelloWorld":
 						RESPONSE.Response = "Hello there!";
 						break;
 					default:
-						context.Response.Write("<error>Unrecognized action specified.</error>");
+						RESPONSE.ErrorCode = "0002";
+						RESPONSE.ErrorMessage = "Unrecognized action specified.";
 						break;
 					}
 				}
@@ -142,7 +155,7 @@ namespace Web
 		private void ThrowResponseAndEnd(ref HttpContext context)
 		{
 			context.Response.Write(RESPONSE.AsXML());
-			return;
+		return;
 		}
 		/*
 		AUTHENTICATION PROCESS
@@ -238,7 +251,7 @@ namespace Web
 				return false;
 		}
 
-        #region "Tasks"
+#region "Tasks"
         private void CreateTask(ref HttpContext context)
 		{
 			acUI.acUI ui = new acUI.acUI();
@@ -256,6 +269,12 @@ namespace Web
 			
 			//we encoded this in javascript before the ajax call.
 			sTaskXML = ui.unpackJSON(sTaskXML);
+			if (!string.IsNullOrEmpty(sErr))
+			{
+				RESPONSE.ErrorCode = "3001";
+				RESPONSE.ErrorMessage = "Build Ecotemplate from XML failed";
+				RESPONSE.ErrorDetail = sErr;
+			}
 			
 			
 			//TODO: parameter xml will be inside the task xml...
@@ -278,23 +297,23 @@ namespace Web
 			//will return a standard XML error document if there's a problem.
 			//or a standard result XML if it's successful.
 			
-			Task t = new Task(sTaskXML);
+			Task t = new Task().FromXML(sTaskXML, ref sErr);
 			
 			//ok, now we have a task object.
 			//call it's "create" method to save the whole thing in the db.
-			if (t.DBSave(ref sErr))
+			if (t.DBSave(ref sErr, null))
 			{
 				//success, but was there an error?
 				if (!string.IsNullOrEmpty(sErr))
 				{
-					RESPONSE.ErrorCode = "3000";
+					RESPONSE.ErrorCode = "3002";
 					RESPONSE.ErrorMessage = "Task Create Failed";
 					RESPONSE.ErrorDetail = sErr;
 				}
 			}	
 			else
 			{
-				RESPONSE.ErrorCode = "3001";
+				RESPONSE.ErrorCode = "3003";
 				RESPONSE.ErrorMessage = "Task Create Failed";
 				RESPONSE.ErrorDetail = sErr;
 			}
@@ -307,14 +326,14 @@ namespace Web
 			taskMethods tm = new taskMethods();
 			
 			//string TaskID, string EcosystemID, string AccountID, string AssetID, string ParameterXML, int DebugLevel
-			string TaskID = FORM["TaskID"];
+			string TaskID = PARAMS["TaskID"];
 			if (!string.IsNullOrEmpty(TaskID))
 			{
-				string EcosystemID = FORM["EcosystemID"];
-				string AccountID = FORM["AccountID"];
-				string AssetID = FORM["AssetID"];
-				string ParameterXML = FORM["ParameterXML"];
-				string sDebugLevel = FORM["DebugLevel"];
+				string EcosystemID = PARAMS["EcosystemID"];
+				string AccountID = PARAMS["AccountID"];
+				string AssetID = PARAMS["AssetID"];
+				string ParameterXML = PARAMS["ParameterXML"];
+				string sDebugLevel = PARAMS["DebugLevel"];
 				
 				int iDebugLevel = 4;
 				iDebugLevel = (int.TryParse(sDebugLevel, out iDebugLevel) ? 4 : iDebugLevel);
@@ -350,7 +369,6 @@ namespace Web
 			}
         }
 
-
         private void StopTask(ref HttpContext context)
         {
 			taskMethods tm = new taskMethods();
@@ -372,27 +390,110 @@ namespace Web
 			}
         }
 
-
         private void GetTask(ref HttpContext context)
         {
-			string sTaskID = QS["TaskID"];
+			string sTaskID = PARAMS["TaskID"];
 			if (string.IsNullOrEmpty(sTaskID))
 			{
-				sTaskID = FORM["TaskID"];
-				if (string.IsNullOrEmpty(sTaskID))
-				{
-					RESPONSE.ErrorCode = "3040";
-					RESPONSE.ErrorMessage = "TaskID argument was not provided.";
-					ThrowResponseAndEnd(ref context);
-				}
+				RESPONSE.ErrorCode = "3040";
+				RESPONSE.ErrorMessage = "TaskID argument was not provided.";
+				ThrowResponseAndEnd(ref context);
 			}
 
 			string sErr = "";
 			Task t = new Task(sTaskID, false, ref sErr);
+			if (t == null)
+			{
+				RESPONSE.ErrorCode = "3041";
+				RESPONSE.ErrorMessage = "Could not get Task for ID [" + sTaskID + "].";
+				ThrowResponseAndEnd(ref context);
+			}
+			else
+			{
+				string sTaskXML = t.AsXML();
+				RESPONSE.Response = sTaskXML;
+			}
+		}
+#endregion
+
+#region "Ecotemplates"
+        private void CreateEcotemplate(ref HttpContext context)
+		{
+			acUI.acUI ui = new acUI.acUI();
 			
-			string sTaskXML = t.AsXML();
-			RESPONSE.Response = sTaskXML;
+			string sXML = FORM["EcotemplateXML"];
+			if (string.IsNullOrEmpty(sXML))
+			{
+				RESPONSE.ErrorCode = "5100";
+				RESPONSE.ErrorMessage = "EcotemplateXML argument was not provided.";
+				ThrowResponseAndEnd(ref context);
+			}
+
+			//we encoded this in javascript before the ajax call.
+			sXML = ui.unpackJSON(sXML);
+		
+			string sErr = "";
+			Ecotemplate et = new Ecotemplate().FromXML(sXML, ref sErr);
+			if (!string.IsNullOrEmpty(sErr))
+			{
+				RESPONSE.ErrorCode = "5101";
+				RESPONSE.ErrorMessage = "Build Ecotemplate from XML failed";
+				RESPONSE.ErrorDetail = sErr;
+			}
+			//ok, now we have an object.
+			//call it's "create" method to save the whole thing in the db.
+			if (et.DBSave(ref sErr))
+			{
+				//success, but was there an error?
+				if (!string.IsNullOrEmpty(sErr))
+				{
+					RESPONSE.ErrorCode = "5102";
+					RESPONSE.ErrorMessage = "Ecotemplate Create Failed";
+					RESPONSE.ErrorDetail = sErr;
+				}
+			}	
+			else
+			{
+				RESPONSE.ErrorCode = "5103";
+				RESPONSE.ErrorMessage = "Ecotemplate Create Failed";
+				RESPONSE.ErrorDetail = sErr;
+			}
+			
+			RESPONSE.Response = "<ecotemplate_id>" + et.ID + "</ecotemplate_id>";
         }
+
+        private void GetEcotemplate(ref HttpContext context)
+        {
+			string sID = PARAMS["id"];
+			if (string.IsNullOrEmpty(sID))
+			{
+				RESPONSE.ErrorCode = "5140";
+				RESPONSE.ErrorMessage = "ID argument was not provided.";
+				ThrowResponseAndEnd(ref context);
+			}
+			
+			bool bIncludeTasks = false;
+			string sIncludeTasks = PARAMS["include_tasks"];
+			if (!string.IsNullOrEmpty(sIncludeTasks))
+			{
+				if ("true,yes,1".IndexOf(sIncludeTasks.ToLower()) > -1)
+					bIncludeTasks = true;
+			}
+			
+			Ecotemplate e = new Ecotemplate(sID);
+			if (e == null)
+			{
+				RESPONSE.ErrorCode = "5141";
+				RESPONSE.ErrorMessage = "Could not get Ecotemplate for ID [" + sID + "].";
+				ThrowResponseAndEnd(ref context);
+			}
+			else
+			{
+				e.IncludeTasks = bIncludeTasks;
+				string sXML = e.AsXML();
+				RESPONSE.Response = sXML;
+			}
+		}
 #endregion
 
 		//required for the ashx file.	

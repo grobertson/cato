@@ -28,7 +28,6 @@ namespace Web.pages
 {
     public partial class cloudAccountEdit : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
 
         protected void Page_Load(object sender, EventArgs e)
@@ -56,96 +55,67 @@ namespace Web.pages
 			return sOptionHTML;
 		}
 		public string GetAccounts(string sSearch) {
-            string sSQL = "";
             string sErr = "";
-			string sWhereString = "";
+			string sHTML = "";
 
-            if (sSearch.Length > 0)
-            {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = sSearch.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-                    //if the value is a guid, it's an existing task.
-                    //otherwise it's a new task.
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (account_name like '%" + aSearchTerms[i] + "%' " +
-                            "or account_number like '%" + aSearchTerms[i] + "%' " +
-                            "or provider like '%" + aSearchTerms[i] + "%' " +
-                            "or login_id like '%" + aSearchTerms[i] + "%') ";
-                    }
-                }
-            }
-
-            sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," +
-                " case is_default when 1 then 'Yes' else 'No' end as is_default," +
-				" (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" +
-                " from cloud_account" +
-                " where 1=1 " + sWhereString +
-                " order by is_default desc, account_name";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                ui.RaiseError(Page, sErr, true, "");
-            }
-			
-            string sHTML = "";
-
-            //the first DataColumn is the "id"
-            // string sIDColumnName = sDataColumns[0];
-
-            //buld the table
-            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
-            sHTML += "<tr>";
-            sHTML += "<th class=\"chkboxcolumn\">";
-            sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />";
-            sHTML += "</th>";
-
-            sHTML += "<th sortcolumn=\"account_name\">Account Name</th>";
-            sHTML += "<th sortcolumn=\"account_number\">Account Number</th>";
-            sHTML += "<th sortcolumn=\"provider\">Type</th>";
-            sHTML += "<th sortcolumn=\"login_id\">Login ID</th>";
-            sHTML += "<th sortcolumn=\"is_default\">Default?</th>";
-
-            sHTML += "</tr>";
-
-            //loop rows
-            foreach (DataRow dr in dt.Rows)
-            {
-                sHTML += "<tr account_id=\"" + dr["account_id"].ToString() + "\">";
-                
-				if (dr["has_ecosystems"].ToString() == "0")
-				{
-					sHTML += "<td class=\"chkboxcolumn\">";
-	                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
-	                    " id=\"chk_" + dr[0].ToString() + "\"" +
-	                    " object_id=\"" + dr[0].ToString() + "\"" +
-	                    " tag=\"chk\" />";
-	                sHTML += "</td>";
-				}
-				else 
-				{
-					sHTML += "<td>";
-					sHTML += "<img class=\"account_help_btn trans50\"" +
-	                    " src=\"../images/icons/info.png\" alt=\"\" style=\"padding: 2px 0 0 2px; width: 12px; height: 12px;\"" +
-	                    " title=\"This account has associated Ecosystems and cannot be deleted.\" />";
-					sHTML += "</td>";
-				}
+			CloudAccounts ca = new CloudAccounts(sSearch, ref sErr);
 				
-				
-                sHTML += "<td tag=\"selectable\">" + dr["account_name"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["account_number"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["login_id"].ToString() +  "</td>";
-                sHTML += "<td tag=\"selectable\">" + dr["is_default"].ToString() +  "</td>";
-
-                sHTML += "</tr>";
-            }
-
-            sHTML += "</table>";
+			if (ca != null && string.IsNullOrEmpty(sErr))
+			{
+	            //build the table
+	            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
+	            sHTML += "<tr>";
+	            sHTML += "<th class=\"chkboxcolumn\">";
+	            sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />";
+	            sHTML += "</th>";
+	
+	            sHTML += "<th sortcolumn=\"account_name\">Account Name</th>";
+	            sHTML += "<th sortcolumn=\"account_number\">Account Number</th>";
+	            sHTML += "<th sortcolumn=\"provider\">Type</th>";
+	            sHTML += "<th sortcolumn=\"login_id\">Login ID</th>";
+	            sHTML += "<th sortcolumn=\"is_default\">Default?</th>";
+	
+	            sHTML += "</tr>";
+	
+	            //loop rows
+	            foreach (DataRow dr in ca.DataTable.Rows)
+	            {
+	                sHTML += "<tr account_id=\"" + dr["account_id"].ToString() + "\">";
+	                
+					if (dr["has_ecosystems"].ToString() == "0")
+					{
+						sHTML += "<td class=\"chkboxcolumn\">";
+		                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
+		                    " id=\"chk_" + dr["account_id"].ToString() + "\"" +
+		                    " object_id=\"" + dr["account_id"].ToString() + "\"" +
+		                    " tag=\"chk\" />";
+		                sHTML += "</td>";
+					}
+					else 
+					{
+						sHTML += "<td>";
+						sHTML += "<img class=\"account_help_btn trans50\"" +
+		                    " src=\"../images/icons/info.png\" alt=\"\" style=\"padding: 2px 0 0 2px; width: 12px; height: 12px;\"" +
+		                    " title=\"This account has associated Ecosystems and cannot be deleted.\" />";
+						sHTML += "</td>";
+					}
+					
+					
+	                sHTML += "<td tag=\"selectable\">" + dr["account_name"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["account_number"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["login_id"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["is_default"].ToString() +  "</td>";
+	
+	                sHTML += "</tr>";
+	            }
+	
+	            sHTML += "</table>";
+			}
+			else
+			{
+				ui.RaiseError(Page, "Unable to get Cloud Accounts.", false, sErr);
+			}
 			
 			return sHTML;
 		}

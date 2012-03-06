@@ -44,6 +44,7 @@ namespace ACWebMethods
         {
             try
             {
+				acUI.acUI ui = new acUI.acUI();
 				string sErr = "";
 				//instantiate the new Task object
 				Task oTask = new Task(sTaskID, false, ref sErr);
@@ -54,7 +55,11 @@ namespace ACWebMethods
 				
 				foreach (Codeblock cb in oTask.Codeblocks.Values)
 				{
-					sCBHTML += "<li class=\"ui-widget-content ui-corner-all codeblock\" id=\"cb_" + cb.Name + "\">";
+					//if it's a guid it's a bogus codeblock (for export only)
+					if (ui.IsGUID(cb.Name))
+						continue;
+
+					sCBHTML += "<li class=\"ui-widget-content codeblock\" id=\"cb_" + cb.Name + "\">";
 					sCBHTML += "<div>";
 					sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">";
 					sCBHTML += "<span>" + cb.Name + "</span>";
@@ -456,6 +461,11 @@ namespace ACWebMethods
                 string sErr = "";
                 string sSQL = "";
                 string sNewStepID = "";
+				
+				//in some cases, we'll have some special values to go ahead and set in the function_xml
+				//when it's added
+				//it's content will be xpath, value
+				Dictionary<string, string> dValues = new Dictionary<string, string>();
 
                 if (!ui.IsGUID(sTaskID))
                     throw new Exception("Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]" + sErr);
@@ -469,9 +479,17 @@ namespace ACWebMethods
                 //the function has a fn_ or clip_ prefix on it from the HTML.  Strip it off.
                 //FIX... test the string to see if it BEGINS with fn_ or clip_
                 //IF SO... cut off the beginning... NOT a replace operation.
-                if (sItem.StartsWith("fn_")) sItem = sItem.Remove(0, 3);
+				if (sItem.StartsWith("fn_")) sItem = sItem.Remove(0, 3);
                 if (sItem.StartsWith("clip_")) sItem = sItem.Remove(0, 5);
 
+				//could also beging with cb_, which means a codeblock was dragged and dropped.
+				//this special case will result in a codeblock command.
+				if (sItem.StartsWith("cb_")) {
+					//so, the sItem becomes "codeblock"
+					string sCBName = sItem.Remove(0, 3);
+					dValues.Add("//codeblock", sCBName);
+					sItem = "codeblock";
+				}
                 //NOTE: !! yes we are adding the step with an order of -1
                 //the update event on the client does not know the index at which it was dropped.
                 //so, we have to insert it first to get the HTML... but the very next step
@@ -519,20 +537,27 @@ namespace ACWebMethods
                     //sOPM: 0=none, 1=delimited, 2=parsed
                     string sOPM = "0";
 
-					//read the opm from the xml file.
-					XDocument xd = XDocument.Parse(func.TemplateXML);
-					if (xd != null) {
-						if (xd.XPathSelectElement("//function") != null)
+					//gotta do a few things to the templatexml
+					XDocument xdTemplate = XDocument.Parse(func.TemplateXML);
+					if (xdTemplate != null) {
+						if (xdTemplate.XPathSelectElement("//function") != null)
 						{
-							XElement xe = xd.XPathSelectElement("//function");
+							XElement xe = xdTemplate.XPathSelectElement("//function");
 							if (xe != null) {
-								{
-									sOPM = (xe.Attribute("parse_method") == null ? "0" : xe.Attribute("parse_method").Value);
+								//get the OPM
+								sOPM = (xe.Attribute("parse_method") == null ? "0" : xe.Attribute("parse_method").Value);
+
+								//there may be some provided values ... so alter the func.TemplateXML accordingly
+								foreach (string sXPath in dValues.Keys) {
+									XElement xNode = xe.XPathSelectElement(sXPath);
+									if (xNode != null) {
+										xNode.SetValue(dValues[sXPath]);
+									}
 								}
 							}
 						}
 					}
-
+					
 					sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
 						" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
 						" function_name, function_xml)" +
@@ -543,7 +568,7 @@ namespace ACWebMethods
 						"-1," +
 						"0,0," + sOPM + ",0,0," +
 						"'" + func.Name + "'," +
-						"'" + func.TemplateXML + "'" +
+						"'" + xdTemplate.ToString(SaveOptions.DisableFormatting) + "'" +
 						")";
 
                     if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
@@ -1961,24 +1986,62 @@ namespace ACWebMethods
 			//pretty much just call the ImportExport function
 			try
 			{
-				//what are we gonna call the final file?
-				string sUserID = ui.GetSessionUserID();
-				string sFileName = sUserID + "_backup";
-				string sPath = Server.MapPath("~/temp/");
+				//interesting mid-point stopping point...
+				//if only one task was selected, export it as XML
+				//if more than one, export it the old way as a .csk bundle.
 				
-				if (sTaskArray.Length < 36)
-				return "";
-				sTaskArray = ui.QuoteUp(sTaskArray);
-				
-				if (!ie.doBatchTaskExport(sPath, sTaskArray, sFileName, ref sErr))
+				//(because the end goal is the .csk files are still just zip files, 
+				//but will contain the new style xml files.
+				if (sTaskArray.Contains(","))
 				{
-					throw new Exception("Unable to export Tasks." + sErr);
+					if (sTaskArray.Length < 36)
+						return "";
+					
+					sTaskArray = ui.QuoteUp(sTaskArray);
+
+					//what are we gonna call the final file?
+					string sUserID = ui.GetSessionUserID();
+					string sFileName = sUserID + "_backup";
+					string sPath = Server.MapPath("~/temp/");
+
+					if (!ie.doBatchTaskExport(sPath, sTaskArray, sFileName, ref sErr))
+					{
+						throw new Exception("Unable to export Tasks." + sErr);
+					}
+					
+					if (sErr == "")
+						return sFileName + ".csk";
+					else
+						return sErr;
 				}
-				
-				if (sErr == "")
-					return sFileName + ".csk";
 				else
-					return sErr;
+				{
+					if (sTaskArray.Length == 36)
+					{
+						Task t = new Task(sTaskArray, "", ref sErr);
+						if (t != null)
+						{
+							string sXML = t.AsXML();
+		
+							//what are we gonna call the final file?
+							TimeSpan oTS = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+							int iSecs  = (int) oTS.TotalSeconds;
+							string sFileName = Server.UrlEncode(t.Name.Replace(" ","").Replace("/","")) + "_" + iSecs.ToString() + ".xml";
+							string sPath = Server.MapPath("~/temp/");
+		
+							ui.SaveStringToFile(sPath + sFileName, sXML);
+							return sFileName;
+						}
+						else
+						{
+							return "Unable to get Task [" + sTaskArray + "] to export.";
+						}				
+					}
+					else
+					{
+						return "Error: Selected Task ID wasn't the right length.";
+					}				
+				}
 			}
 			catch (Exception ex)
 			{
@@ -2023,7 +2086,7 @@ namespace ACWebMethods
 				Task t = new Task(ui.unpackJSON(sTaskName), ui.unpackJSON(sTaskCode), ui.unpackJSON(sTaskDesc));
 
 				//commit it
-				if (t.DBSave(ref sErr))
+				if (t.DBSave(ref sErr, null))
 				{
 					//success, but was there an error?
 					if (!string.IsNullOrEmpty(sErr))
@@ -2042,6 +2105,42 @@ namespace ACWebMethods
                 throw new Exception(ex.Message);
             }
 
+        }
+
+		[WebMethod(EnableSession = true)]
+        public string wmCreateTaskFromXML(string sXML)
+        {
+            try
+            {
+				if (string.IsNullOrEmpty(sXML))
+					return "{\"error\" : \"Task XML is required.\"}";
+					
+	            acUI.acUI ui = new acUI.acUI();
+	            string sErr = "";
+	
+				Task t = new Task().FromXML(ui.unpackJSON(sXML), ref sErr);
+	
+				if (!string.IsNullOrEmpty(sErr))
+					return "{\"error\" : \"Could not create Task from XML: " + sErr + "\"}";
+	
+				if (t != null) {
+					if(t.DBSave(ref sErr, null))
+					{
+						if (!string.IsNullOrEmpty(sErr))
+							return "{\"error\" : \"" + sErr + "\"}";
+						
+						return "{\"type\" : \"task\", \"id\" : \"" + t.ID + "\"}";
+					}
+					else
+						return "{\"error\" : \"" + sErr + "\"}";
+				}
+				else
+					return "{\"error\" : \"" + sErr + "\"}";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [WebMethod(EnableSession = true)]

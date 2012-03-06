@@ -160,6 +160,8 @@ function doDebugStop() {
 
     instance = $("#ctl00_phDetail_hidInstanceID").val();
 
+	if (instance == '')
+		return;
 
     $.ajax({
         async: false,

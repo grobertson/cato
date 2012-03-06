@@ -302,6 +302,12 @@ namespace Globals
 	#region "Global Settings"
 	public class GlobalSettings
     {
+        private static int iTempDirDays = 30;
+        public static int UITempDirDays
+        {
+            get { return iTempDirDays; }
+            set { iTempDirDays = value; }
+        }
         private static string sStormApiURL = "";
         public static string StormApiURL
         {
@@ -579,6 +585,9 @@ namespace Globals
 		public string Description;
 		public string StormFileType;
 		public string StormFile;
+		public bool IncludeTasks = false; //used for export to xml
+		public bool DBExists;
+		public string OnConflict = "cancel";  //the default behavior for all conflicts is to cancel the operation
 		public Dictionary<string, EcotemplateAction> Actions = new Dictionary<string, EcotemplateAction>();
 		
 		//an empty constructor
@@ -587,12 +596,13 @@ namespace Globals
 			this.ID = ui.NewGUID();
 		}
 		
-		//aname and desc
+		//a name and desc
 		public Ecotemplate(string sName, string sDescription)
 		{
 			this.ID = ui.NewGUID();
 			this.Name = sName;
 			this.Description = sDescription;
+			this.DBExists = _DBExists();
 		}
 		
 		//the default constructor, given an ID loads it up.
@@ -613,6 +623,7 @@ namespace Globals
             {
                 if (dr != null)
                 {
+					this.DBExists = true;
 					this.ID = dr["ecotemplate_id"].ToString();;
 					this.Name = dr["ecotemplate_name"].ToString();
 					this.Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
@@ -646,36 +657,111 @@ namespace Globals
 			
 		}
 		
+		//from an XML document
+		public Ecotemplate FromXML(string sEcotemplateXML, ref string sErr)
+		{
+			try {
+				XDocument xEcotemplate = XDocument.Parse(sEcotemplateXML);
+				if (xEcotemplate != null)
+				{
+					XElement xe = xEcotemplate.Element("ecotemplate");
+					
+					//some of these properties will not be required coming from the XML.
+					
+					//if there's no ID we create one
+					this.ID = (xe.Attribute("id") != null ? xe.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+					this.Name = xe.Attribute("name").Value;
+					this.Description = xe.Element("description").Value;
+					
+					this.DBExists = _DBExists();
+	
+					if (xe.Element("storm_file") != null)
+					{
+						XElement xeSF = xe.Element("storm_file");
+						this.StormFile = xeSF.Value;
+						this.StormFileType = (xeSF.Attribute("storm_file_type") != null ? xeSF.Attribute("storm_file_type").Value : ""); //cancel is the default
+					}	
+					
+					//if there are conflicts when we try to save, what do we do?
+					this.OnConflict = (xe.Attribute("on_conflict") != null ? xe.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+	
+					//actions
+					foreach (XElement xAction in xe.XPathSelectElements("//actions/action")) {
+						EcotemplateAction ea = new EcotemplateAction(xAction, this, ref sErr);
+						
+						if (ea != null)
+						{
+							//if the xml contains a complete Task, we have to deal with it
+							//otherwise just set the OriginalTaskID and TaskVersion properties.
+	
+							this.Actions.Add(ea.ID, ea);
+						}
+					}
+					
+					return this;
+				}
+				
+				return null;
+				
+			} catch (Exception ex) {
+				sErr = "Ecotemplate.FromXML: " + ex.Message;
+				return null;
+			}
+		}
+
+		private bool _DBExists()
+		{	
+			dataAccess dc = new dataAccess();
+			string sErr = "";
+			
+			//task_id is the PK, and task_name+version is a unique index.
+			//so, we check the conflict property, and act accordingly
+			string sSQL = "select ecotemplate_id from ecotemplate" +
+				" where ecotemplate_name = '" + this.Name + "'" +
+				" or ecotemplate_id = '" + this.ID + "'";
+			
+			DataRow dr = null;
+			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+			{
+				throw new Exception("Ecotemplate Object: Unable to check for existing Name or ID. " + sErr);
+			}
+			
+			if (dr != null)
+			{
+				if (!string.IsNullOrEmpty(dr["ecotemplate_id"].ToString())) {
+					//PAY ATTENTION! 
+					//if the template exists... it might have been by name, so...
+					//we're setting the ids to the same as the database so it's more accurate.
+					
+					this.ID = dr["ecotemplate_id"].ToString();
+					return true;
+				}
+			}
+				
+			return false;
+		}
+
 		//makes a copy of this template in the database
 		public bool DBCopy(string sNewName, ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			
-			//1) create a new template in the db
-			//2) batch copy all the steps from the old template to the new
-			
-			//1) 
 			Ecotemplate et = new Ecotemplate();
 			if (et != null)
 			{
 				//populate it
+				et.ID = Guid.NewGuid().ToString().ToLower();
 				et.Name = sNewName;
 				et.Description = this.Description;
 				et.StormFileType = this.StormFileType;
 				et.StormFile = this.StormFile;
-				et.DBCreateNew(ref sErr);
+				et.Actions = this.Actions;
+				
+				//we gave it a new name and id, recheck if it exists
+				et.DBExists = et._DBExists();
+				
+				et.DBSave(ref sErr);
 				
 				if (!string.IsNullOrEmpty(sErr))
 					return false;
-				
-				//2
-				string sSQL = "insert into ecotemplate_action" + 
-					" select uuid() as action_id, '" + et.ID + "', action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
-					" from ecotemplate_action" +
-					" where ecotemplate_id = '" + this.ID + "'";
-				
-				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-					throw new Exception(sErr);
 			
 				return true;
 			}
@@ -684,6 +770,7 @@ namespace Globals
 		}
 
 		//saves this template to the database
+		//DOES NOT include Actions
 		public bool DBUpdate(ref string sErr)
 		{
             dataAccess dc = new dataAccess();
@@ -695,7 +782,7 @@ namespace Globals
 			}
 			
 			string sSQL = "update ecotemplate" + 
-				" set ecotemplate_name = '" + this.Name + "'," +
+				" set ecotemplate_name = '" + ui.TickSlash(this.Name) + "'," +
 				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
 				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
 				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
@@ -708,47 +795,183 @@ namespace Globals
 		}
 
 		//saves this template as a new template in the db
-		public bool DBCreateNew(ref string sErr)
+		public bool DBSave(ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			string sSQL = "";
-			
-			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
-			{
-				sErr = "ID and Name are required Ecotemplate properties.";
-				return false;
-			}
-			
 			try
 			{
-				sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
-					" values ('" + this.ID + "'," +
-						" '" + this.Name + "'," +
-						(string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
-						(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-						(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") + 
-						")";
-				
-				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
 				{
-					if (sErr == "key_violation")
-					{
-						sErr = "An Ecotemplate with that name already exists.  Please select another name.";
+					sErr = "ID and Name are required Ecotemplate properties.";
+					return false;
+				}
+
+				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				if (this.DBExists)
+				{
+					//uh oh... this ecotemplate exists.  unless told to do so, we stop here.
+					if (this.OnConflict == "cancel") {
+						sErr = "Another Ecotemplate with that ID or Name exists.  [" + this.ID + "/" + this.Name + "]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
+						oTrans.RollBack();
 						return false;
 					}
-					else 
-						throw new Exception(sErr);
+					else {
+						//ok, what are we supposed to do then?
+						switch (this.OnConflict) {
+						case "replace":
+							//whack it all so we can re-insert
+							//but by name or ID?  which was the conflict?
+							
+							//no worries! the _DBExists function called when we created the object
+							//will have resolved any name/id issues.
+							
+							//if the ID existed it doesn't matter, we'll be plowing it anyway.
+							//by "plow" I mean drop and recreate the actions... the ecotemplate row will be UPDATED
+							oTrans.Command.CommandText = "update ecotemplate" + 
+								" set ecotemplate_name = '" + this.Name + "'," +
+								" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+								" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+								" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
+								" where ecotemplate_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+
+
+							oTrans.Command.CommandText = "delete from ecotemplate_action" +
+								" where ecotemplate_id = '" + this.ID + "'";
+		                    if (!oTrans.ExecUpdate(ref sErr))
+		                        throw new Exception(sErr);
+							break;
+						default:
+							//there is no default action... if the on_conflict didn't match we have a problem... bail.
+							sErr = "There is an ID or Name conflict, and the on_conflict directive isn't a valid option. (replace/cancel)";
+							return false;
+						}
+					}
+				}
+				else 
+				{
+					//doesn't exist, we'll add it				
+					oTrans.Command.CommandText = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" +
+						" values ('" + this.ID + "'," +
+							" '" + this.Name + "'," +
+							(string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+							(string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+							(string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") + 
+							")";
+					
+					if (!oTrans.ExecUpdate(ref sErr))
+						return false;
+					
+					//ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
 				}
 				
-				ui.WriteObjectAddLog(acObjectTypes.Ecosystem, this.ID, this.Name, "Ecotemplate created.");
+				//create the actions
+				//actions aren't referenced by id anywhere, so we'll just give them a new guid
+				//to prevent any risk of PK issues.
+				foreach (EcotemplateAction ea in this.Actions.Values) {
+					oTrans.Command.CommandText = "insert into ecotemplate_action" + 
+						" (action_id, ecotemplate_id, action_name, action_desc, category, action_icon, original_task_id, task_version, parameter_defaults)" +
+						" values (" +
+						" uuid()," + 
+						" '" + this.ID + "'," + 
+						" '" + ui.TickSlash(ea.Name) + "'," + 
+						" '" + ui.TickSlash(ea.Description) + "'," + 
+						" '" + ui.TickSlash(ea.Category) + "'," + 
+						" '" + ea.Icon + "'," + 
+						" '" + ea.OriginalTaskID + "'," + 
+						" '" + ea.TaskVersion + "'," + 
+						" '" + ui.TickSlash(ea.ParameterDefaultsXML) + "'" + 
+						")";
+					
+					if (!oTrans.ExecUpdate(ref sErr))
+						return false;
+					
+					//now, does this action contain a <task> section?  If so, we'll branch off and do 
+					//the create task logic.
+					if (ea.Task != null) 
+					{
+						if (!ea.Task.DBSave(ref sErr, oTrans))
+						{
+							//the task 'should' have rolled back on any errors, but in case it didn't.
+							try {
+								oTrans.RollBack();
+								return false;
+							} catch (Exception) {
+							}
+						}
+						else
+						{
+							if (!string.IsNullOrEmpty(sErr))
+							{
+								try {
+									oTrans.RollBack();
+									return false;
+								} catch (Exception) {
+								}
+							}
+									
+							//finally, don't forget to update the action with the new values if any
+							ea.OriginalTaskID = ea.Task.OriginalTaskID;
+							
+							//we don't update the version if the action referenced the default (it was empty)
+							if  (!string.IsNullOrEmpty(ea.TaskVersion))
+								ea.TaskVersion = ea.Task.Version;
+						}
+					}
+				}
 				
 				//yay!
+				oTrans.Commit();
 				return true;
+
 			}
 			catch (Exception ex)
 			{
 				throw new Exception(ex.Message);
-			}		
+			}	
+		}
+
+		public XElement AsXElement()
+		{					
+			XElement xe = new XElement("ecotemplate");
+				
+			//don't think we need id's in this xml - will just create problems with RI down the road.
+			//xe.SetAttributeValue("id", this.ID);
+			xe.SetAttributeValue("name", this.Name);
+			xe.SetAttributeValue("on_conflict", "cancel");
+			xe.SetElementValue("description", this.Description);
+
+			//storm
+			XElement xStorm = new XElement("storm_file");
+			xStorm.SetAttributeValue("storm_file_type", this.StormFileType);
+			xStorm.SetValue(this.StormFile);
+			xe.Add(xStorm);
+
+			//actions
+			XElement xActions = new XElement("actions");
+			foreach (EcotemplateAction ea in this.Actions.Values) {
+				ea.IncludeTask = this.IncludeTasks;
+				string sActionXML = ea.AsXML();
+				if (!string.IsNullOrEmpty(sActionXML))
+				{
+					XElement xAction = XElement.Parse(sActionXML);
+					if (xAction != null) {	
+						xActions.Add(xAction);
+					}
+				}				
+			}
+			xe.Add(xActions);
+			
+			return xe;
+		}
+		public string AsXML()
+		{
+			XElement xe = this.AsXElement();
+			if (xe != null)
+				return xe.ToString();
+			else 
+				return null;
 		}
 	}
 	public class EcotemplateAction
@@ -763,8 +986,13 @@ namespace Globals
 		public string ParameterDefaultsXML;
 		public Ecotemplate Ecotemplate; //pointer to our parent Template.
 		
+		//for export, we might want to tell the action to include the whole referenced task object
+		//pretty rare, since for general use we don't wanna be lugging around a whole task.
+		public bool IncludeTask = false;
+		public Task Task;
+		
 		//static method, given an ID.
-		static public EcotemplateAction GetFromID(string sActionID)
+		static public EcotemplateAction FromID(string sActionID)
 		{
 			if (string.IsNullOrEmpty(sActionID))
 				throw new Exception("Error building Ecotemplate Action object: Action ID is required.");	
@@ -828,6 +1056,78 @@ namespace Globals
 			ParameterDefaultsXML = dr["parameter_defaults"].ToString();
 		}
 
+		//build from an XElement, part of the Ecotemplate XDocument
+		public EcotemplateAction(XElement xAction, Ecotemplate parent, ref string sErr)
+		{
+			if (xAction.Attribute("name") == null) 
+				throw new Exception("Error creating Action from XML - 'name' attribute is required.");
+			if (string.IsNullOrEmpty(xAction.Attribute("name").Value)) 
+				throw new Exception("Error creating Action from XML - 'name' attribute cannot be empty.");
+				
+			//action ALWAYS gets a new id.  There's no reason to bother reading one from the xml.
+			this.ID = Guid.NewGuid().ToString().ToLower();
+
+			//(xAction.Element("description") != null ? xAction.Element("description").Value : "");
+			Ecotemplate = parent;
+			
+			this.Name = xAction.Attribute("name").Value;
+			this.Description = (xAction.Attribute("description") != null ? xAction.Attribute("description").Value : "");
+			
+			this.Category = (xAction.Attribute("category") != null ? xAction.Attribute("category").Value : "");
+			this.Icon = (xAction.Attribute("icon") != null ? xAction.Attribute("icon").Value : "");
+			
+			//whether it has a task bundled inside or not, we'll still set these first from the attributes
+			//and change them later if we need to.
+			this.OriginalTaskID = (xAction.Attribute("original_task_id") != null ? xAction.Attribute("original_task_id").Value : "");
+			this.TaskVersion = (xAction.Attribute("task_version") != null ? xAction.Attribute("task_version").Value : "");
+
+			this.ParameterDefaultsXML = (xAction.Element("parameters") != null ? 
+			                             xAction.Element("parameters").ToString(SaveOptions.DisableFormatting) : 
+			                             "");
+			
+			if (xAction.Element("task") != null) 
+			{
+				this.Task = new Task().FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
+			}
+	}
+
+		public string AsXML()
+		{					
+			XElement xe = new XElement("action");
+				
+			//don't think we need to put id's in this xml
+			//xe.SetAttributeValue("id", this.ID);
+			xe.SetAttributeValue("name", this.Name);
+			xe.SetElementValue("description", this.Description);
+			xe.SetAttributeValue("category", this.Category);
+			xe.SetAttributeValue("icon", this.Icon);
+			
+			if (!string.IsNullOrEmpty(this.ParameterDefaultsXML))
+			{
+				XElement xParameters = XElement.Parse(this.ParameterDefaultsXML);
+				if (xParameters != null) {	
+					xe.Add(xParameters);
+				}
+			}				
+			
+			//we'll always include the original_task_id and version attributes
+			//even if the task is included.
+			xe.SetAttributeValue("original_task_id", this.OriginalTaskID);
+			xe.SetAttributeValue("task_version", this.TaskVersion);
+			if (this.IncludeTask == true)
+			{
+				string sErr = "";
+				Task t = new Task(this.OriginalTaskID, this.TaskVersion, ref sErr);
+				if (t != null) {
+					XElement xTask = t.AsXElement();
+					if (xTask != null) {	
+						xe.Add(xTask);
+					}
+				}
+			}
+			
+			return xe.ToString();
+		}
 	}
 	#endregion
 	
@@ -1208,6 +1508,42 @@ namespace Globals
 		
     }
 	
+	public class Clouds
+	{
+		public DataTable DataTable = new DataTable();
+		
+		public Clouds(string sFilter, ref string sErr)
+		{
+			//builds a list from the db, with the optional filter
+			dataAccess dc = new dataAccess();
+            string sWhereString = "";
+
+            if (!string.IsNullOrEmpty(sFilter))
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (cloud_name like '%" + aSearchTerms[i] + "%' " +
+                            "or provider like '%" + aSearchTerms[i] + "%' " +
+                            "or api_url like '%" + aSearchTerms[i] + "%') ";
+                    }
+                } 
+            }
+
+            string sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" +
+                " from clouds" +
+                " where 1=1 " + sWhereString +
+                " order by provider, cloud_name";
+
+            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+                return;
+		}
+	}
+
 	public class Cloud
     {
         public string ID;
@@ -1391,6 +1727,48 @@ namespace Globals
 			}		
 		}
    }
+	
+	//CloudAccounts contains a DataTable
+	//more efficient to read from the DB as a DataTable than to loop and create a dictionary.
+	//if you want a dictionary, that's an instance method.
+	public class CloudAccounts
+	{
+		public DataTable DataTable = new DataTable();
+		
+		public CloudAccounts(string sFilter, ref string sErr)
+		{
+			//builds a list from the db, with the optional filter
+			dataAccess dc = new dataAccess();
+            string sWhereString = "";
+
+            if (!string.IsNullOrEmpty(sFilter))
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (account_name like '%" + aSearchTerms[i] + "%' " +
+                            "or account_number like '%" + aSearchTerms[i] + "%' " +
+                            "or provider like '%" + aSearchTerms[i] + "%' " +
+                            "or login_id like '%" + aSearchTerms[i] + "%') ";
+                    }
+                } 
+            }
+
+            string sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," +
+                " case is_default when 1 then 'Yes' else 'No' end as is_default," +
+				" (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" +
+                " from cloud_account" +
+                " where 1=1 " + sWhereString +
+                " order by is_default desc, account_name";
+
+            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+                return;
+		}
+	}
 
 	public class CloudAccount
     {
@@ -2128,13 +2506,19 @@ namespace Globals
 			}
 		}
 		
-		public string AsXML()
+		public XElement AsXElement()
 		{					
 			//if there's no function XML we're not doing anything... this step is busted.
 			if (this.FunctionXDoc != null) {
 				XElement xStep = new XElement("step");
 				
-				xStep.SetAttributeValue("id", this.ID);
+				//the ID isn't necessary, unless this step is 'embedded' OR allows embedded.
+				//how do we tell?  easy... the codeblock_name is a guid and the step_order is -1
+				if (this.Codeblock.Length == 36 && this.Order == -1)
+					xStep.SetAttributeValue("id", this.ID);
+				if ("if,loop,exists,while".Contains(this.FunctionName.ToLower()))
+					xStep.SetAttributeValue("id", this.ID);
+				
 				xStep.SetAttributeValue("output_parse_type", this.OutputParseType);
 				xStep.SetAttributeValue("output_column_delimiter", this.OutputColumnDelimiter);
 				xStep.SetAttributeValue("output_row_delimiter", this.OutputRowDelimiter);
@@ -2151,10 +2535,18 @@ namespace Globals
 					xStep.Add(xeVars);
 				}
 				
-				return xStep.ToString();
+				return xStep;
 			}
 			
-			return "";
+			return null;
+		}
+		public string AsXML()
+		{
+			XElement xd = this.AsXElement();
+			if (xd != null)
+				return xd.ToString();
+			else 
+				return null;
 		}
 	}
 	
@@ -2168,6 +2560,94 @@ namespace Globals
 		public Codeblock(string sCodeblockName)
 		{
 			this.Name = sCodeblockName;
+		}
+	}
+	public class Tasks : Dictionary<string, Task>  //Tasks is a shallow collection of Task objects
+	{
+		//NOTE: these are NOT complete tasks... just the key properties.
+		//IF you wanna get a full task from this collection...
+		//do a "new Task(
+		public string ID;
+		public string OriginalTaskID;
+		public string Name;
+		public string Code;
+		public string Version;
+		public string Status;
+		public string Description;
+		public bool IsDefaultVersion;
+
+		public Tasks(string sFilter)
+		{
+            DataTable dt = GetFromDB(sFilter);
+            if (dt != null)
+            {
+				if (dt.Rows.Count > 0)
+	            {
+					foreach(DataRow dr in dt.Rows)
+					{
+						Task t = new Task();
+				        t.ID = dr["task_id"].ToString();
+				        t.OriginalTaskID = dr["original_task_id"].ToString();
+				        t.Name = dr["task_name"].ToString();
+						t.Code = dr["task_code"].ToString();
+				        t.Version = dr["version"].ToString();
+				        t.Status = dr["task_status"].ToString();
+						t.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
+				        t.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
+					
+						this.Add(t.ID, t);
+					}
+				}
+            }
+		}
+		
+		static public DataTable AsDataTable(string sFilter)
+		{
+			DataTable dt = GetFromDB(sFilter);
+			if (dt != null)
+				return dt;
+			
+			return null;
+		}
+		
+		static private DataTable GetFromDB(string sFilter)
+		{
+			dataAccess dc = new dataAccess();
+			string sWhereString = "";
+
+            if (sFilter.Length > 0)
+            {
+                //split on spaces
+                int i = 0;
+                string[] aSearchTerms = sFilter.Split(' ');
+                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+                {
+
+                    //if the value is a guid, it's an existing task.
+                    //otherwise it's a new task.
+                    if (aSearchTerms[i].Length > 0)
+                    {
+                        sWhereString = " and (a.task_name like '%" + aSearchTerms[i] +
+                           "%' or a.task_desc like '%" + aSearchTerms[i] +
+                           "%' or a.task_status like '%" + aSearchTerms[i] +
+                           "%' or a.task_code like '%" + aSearchTerms[i] + "%' ) ";
+                    }
+                } 
+            }
+
+            string sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," +
+                " (select count(*) from task where original_task_id = a.original_task_id) as versions" +   
+					" from task a  " +
+					" where default_version = 1" +
+					sWhereString +
+					" order by task_code";
+
+			string sErr = "";
+            DataTable dt = new DataTable();
+            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				throw new Exception(sErr); 
+			
+			return dt;
 		}
 	}
 	
@@ -2220,66 +2700,78 @@ namespace Globals
 		}
 
 		//Constructor, from an XML document
-		public Task(string sTaskXML)
+		public Task FromXML(string sTaskXML, ref string sErr)
 		{
-			XDocument xTask = XDocument.Parse(sTaskXML);
-			if (xTask != null)
+			try
 			{
-				XElement xeTask = xTask.Element("task");
-				
-				//some of these properties will not be required coming from the XML.
-				
-				//if there's no ID we create one
-				this.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
-				this.Name = xeTask.Attribute("name").Value;
-				this.Code = xeTask.Attribute("code").Value;
-				this.Description = xeTask.Element("description").Value;
-				
-				//if there are conflicts when we try to save this Task, what do we do?
-				this.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
-
-				//this stuff needs discussion for how it would run on a non-local task
-				
-				this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
-				this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
-				//original id becomes the id if it's omitted from the xml
-				this.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : this.ID);
-				this.IsDefaultVersion = true;
-
-				this.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
-				this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
-				//this.UseConnectorSystem = false;
-
-				this.DBExists = _DBExists();
-				
-				//parameters
-				if (xeTask.Element("parameters") != null)
+				XDocument xTask = XDocument.Parse(sTaskXML);
+				if (xTask != null)
 				{
-					this.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
-				}
-
-				//now, codeblocks.
-				foreach (XElement xCodeblock in xeTask.XPathSelectElements("//codeblocks/codeblock")) {
-					if (xCodeblock.Attribute("name") == null) 
-						throw new Exception("Task XML: All Codeblocks must have the 'name' attribute.");
+					XElement xeTask = xTask.Element("task");
 					
-					Codeblock c = new Codeblock(xCodeblock.Attribute("name").Value);
+					//some of these properties will not be required coming from the XML.
+	
+					//if there's no ID we create one
+					this.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
+					this.Name = xeTask.Attribute("name").Value;
+					this.Code = xeTask.Attribute("code").Value;
+					this.Description = xeTask.Element("description").Value;
 					
-					if (c != null)
+					//if there are conflicts when we try to save this Task, what do we do?
+					this.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default
+	
+					//this stuff needs discussion for how it would run on a non-local task
+					
+					this.Version = (xeTask.Attribute("version") != null ? xeTask.Attribute("version").Value : "1.000");
+					this.Status = (xeTask.Attribute("status") != null ? xeTask.Attribute("status").Value : "Development");
+					//original id becomes the id if it's omitted from the xml
+					this.OriginalTaskID = (xeTask.Attribute("original_task_id") != null ? xeTask.Attribute("original_task_id").Value : this.ID);
+					this.IsDefaultVersion = true;
+	
+					this.ConcurrentInstances = (xeTask.Attribute("concurrent_instances") != null ? xeTask.Attribute("concurrent_instances").Value : "");
+					this.QueueDepth = (xeTask.Attribute("queue_depth") != null ? xeTask.Attribute("queue_depth").Value : "");
+					//this.UseConnectorSystem = false;
+	
+					this.DBExists = _DBExists();
+					
+					//parameters
+					if (xeTask.Element("parameters") != null)
 					{
-						//steps.
-						foreach (XElement xStep in xCodeblock.XPathSelectElements("steps/step")) {
-							Step s = new Step(xStep, c, this);
-							
-							if (s != null)
-							{
-								c.Steps.Add(s.ID, s);
-							}
-						}
-
-						this.Codeblocks.Add(c.Name, c);
+						this.ParameterXDoc = XDocument.Parse(xeTask.Element("parameters").ToString(SaveOptions.DisableFormatting));
 					}
+	
+					//now, codeblocks.
+					foreach (XElement xCodeblock in xeTask.XPathSelectElements("//codeblocks/codeblock")) {
+						if (xCodeblock.Attribute("name") == null) 
+						{
+							sErr = ("Task.FromXML: All Codeblocks must have the 'name' attribute.");
+							return null;
+						}
+						Codeblock c = new Codeblock(xCodeblock.Attribute("name").Value);
+						
+						if (c != null)
+						{
+							//steps.
+							foreach (XElement xStep in xCodeblock.XPathSelectElements("steps/step")) {
+								Step s = new Step(xStep, c, this);
+								
+								if (s != null)
+								{
+									c.Steps.Add(s.ID, s);
+								}
+							}
+	
+							this.Codeblocks.Add(c.Name, c);
+						}
+					}
+					
+					return this;
 				}
+				
+				return null;
+			} catch (Exception ex) {
+				sErr = "Task.FromXML: " + ex.Message;
+				return null;
 			}
 		}
 
@@ -2289,7 +2781,6 @@ namespace Globals
 			try
             {
 				dataAccess dc = new dataAccess();
-				acUI.acUI ui = new acUI.acUI();
 				
 				string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
 					" task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" +
@@ -2302,150 +2793,202 @@ namespace Globals
 
                 if (dr != null)
                 {
-					//of course it exists...
-					this.DBExists = true;
-					
-                    this.ID = dr["task_id"].ToString();
-                    this.Name = dr["task_name"].ToString();
-					this.Code = dr["task_code"].ToString();
-                    this.Version = dr["version"].ToString();
-                    this.Status = dr["task_status"].ToString();
-                    this.OriginalTaskID = dr["original_task_id"].ToString();
-
-					this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
-
-                    this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
-
-                    this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
-                    this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
-
-					this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
-
-					/*                    
-                     * ok, this is important.
-                     * there are some rules for the process of 'Approving' a task and other things.
-                     * so, we'll need to know some count information
-                     */
-                    sSQL = "select count(*) from task" +
-                        " where original_task_id = '" + this.OriginalTaskID + "'" +
-                        " and task_status = 'Approved'";
-                    int iCount = 0;
-                    if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-                    {
-                        return;
-                    }
-
-					this.NumberOfApprovedVersions = iCount;
-
-                    sSQL = "select count(*) from task" +
-                        " where original_task_id = '" + this.OriginalTaskID + "'";
-					if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-                    {
-                        return;
-                    }
-
-					this.NumberOfOtherVersions = iCount;
-					
-					
-					//now, the fun stuff
-					//1 get all the codeblocks and populate that dictionary
-					//2 then get all the steps... ALL the steps in one sql
-					//..... and while spinning them put them in the appropriate codeblock
-					
-					//GET THE CODEBLOCKS
-					sSQL = "select codeblock_name" +
-						" from task_codeblock" +
-						" where task_id = '" + sTaskID + "'" +
-						" order by codeblock_name";
-					
-					DataTable dt = new DataTable();
-					if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-					{
-						return;
-					}
-					
-					if (dt.Rows.Count > 0)
-					{
-						foreach (DataRow drCB in dt.Rows)
-						{
-							this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
-						}
-					}
-					else
-					{
-						//uh oh... there are no codeblocks!
-						//since all tasks require a MAIN codeblock... if it's missing,
-						//we can just repair it right here.
-						sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + sTaskID + "', 'MAIN')";
-						if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-						{
-							return;
-						}
-						
-						this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
-					}
-					
-					
-					//GET THE STEPS
-					//we need the userID to get the user settings in some cases
-					if (IncludeUserSettings) {
-						string sUserID = ui.GetSessionUserID();
-						
-						//NOTE: it may seem like sorting will be an issue, but it shouldn't.
-						//sorting ALL the steps by their ID here will ensure they get added to their respective 
-						// codeblocks in the right order.
-						sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-			                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-			                " us.visible, us.breakpoint, us.skip, us.button" +
-			                " from task_step s" +
-			                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-			                " where s.task_id = '" + sTaskID + "'" +
-			                " order by s.step_order";
-					}
-					else
-					{
-						sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-			                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-							" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
-							" from task_step s" +
-			                " where s.task_id = '" + sTaskID + "'" +
-			                " order by s.step_order";
-					}
-
-					DataTable dtSteps = new DataTable();
-		            if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
-		                sErr += "Database Error: " + sErr;
-		
-					if (dtSteps.Rows.Count > 0)
-		            {
-		                foreach (DataRow drSteps in dtSteps.Rows)
-		                {
-							Step oStep = new Step(drSteps, this);
-							if (oStep != null)
-							{
-								//a 'REAL' codeblock will be in this collection
-								// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
-								if (this.Codeblocks.ContainsKey(oStep.Codeblock))
-								{
-									this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
-								}
-								else
-								{
-									//so, what do we do if we found a step that's not in a 'real' codeblock?
-									//nothing!  the gui will take care of drawing those embedded steps! 
-									
-									//maybe one day we'll do the full recusrive loading of all embedded steps here
-									// but not today... it's a big deal and we need to let these changes settle down first.
-								}
-							}
-						}
-		            }
+					PopulateTask(dr, IncludeUserSettings, ref sErr);
 				}
             }
             catch (Exception ex)
             {
 				throw ex;
             }
+		}
+		public Task(string sOriginalTaskID, string sVersion, ref string sErr)
+		{
+			try
+            {
+				dataAccess dc = new dataAccess();
+				
+				string sVersionClause = "";
+				if (string.IsNullOrEmpty(sVersion))
+					sVersionClause = " and default_version = 1";
+				else
+					sVersionClause = " and version = '" + sVersion + "'";
+				
+				string sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," +
+					" task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" +
+					" from task" +
+					" where original_task_id = '" + sOriginalTaskID + "'" +
+					sVersionClause;
+				
+                DataRow dr = null;
+                if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr)) 
+					return;
+
+                if (dr != null)
+                {
+					PopulateTask(dr, false, ref sErr);
+				}
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
+		}
+		
+		private Task PopulateTask(DataRow dr, bool IncludeUserSettings, ref string sErr)
+		{	
+			dataAccess dc = new dataAccess();
+			acUI.acUI ui = new acUI.acUI();
+
+			//of course it exists...
+			this.DBExists = true;
+			
+	        this.ID = dr["task_id"].ToString();
+	        this.Name = dr["task_name"].ToString();
+			this.Code = dr["task_code"].ToString();
+	        this.Version = dr["version"].ToString();
+	        this.Status = dr["task_status"].ToString();
+	        this.OriginalTaskID = dr["original_task_id"].ToString();
+	
+			this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
+	
+	        this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
+	
+	        this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
+	        this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
+	
+			this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
+	
+			//parameters
+			if (!string.IsNullOrEmpty(dr["parameter_xml"].ToString()))
+			{
+				XDocument xParameters = XDocument.Parse(dr["parameter_xml"].ToString());
+				if (xParameters != null) {	
+					this.ParameterXDoc = xParameters;
+				}
+			}				
+
+			/*                    
+	         * ok, this is important.
+	         * there are some rules for the process of 'Approving' a task and other things.
+	         * so, we'll need to know some count information
+	         */
+	        string sSQL = "select count(*) from task" +
+	            " where original_task_id = '" + this.OriginalTaskID + "'" +
+	            " and task_status = 'Approved'";
+	        int iCount = 0;
+	        if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+	            return null;
+	
+			this.NumberOfApprovedVersions = iCount;
+	
+	        sSQL = "select count(*) from task" +
+	            " where original_task_id = '" + this.OriginalTaskID + "'";
+			if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+	            return null;
+	
+			this.NumberOfOtherVersions = iCount;
+			
+			
+			//now, the fun stuff
+			//1 get all the codeblocks and populate that dictionary
+			//2 then get all the steps... ALL the steps in one sql
+			//..... and while spinning them put them in the appropriate codeblock
+			
+			//GET THE CODEBLOCKS
+			sSQL = "select codeblock_name" +
+				" from task_codeblock" +
+				" where task_id = '" + this.ID + "'" +
+				" order by codeblock_name";
+			
+			DataTable dt = new DataTable();
+			if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+				return null;
+			
+			if (dt.Rows.Count > 0)
+			{
+				foreach (DataRow drCB in dt.Rows)
+				{
+					this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
+				}
+			}
+			else
+			{
+				//uh oh... there are no codeblocks!
+				//since all tasks require a MAIN codeblock... if it's missing,
+				//we can just repair it right here.
+				sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + this.ID + "', 'MAIN')";
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					return null;
+				
+				this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
+			}
+			
+			
+			//GET THE STEPS
+			//we need the userID to get the user settings in some cases
+			if (IncludeUserSettings) {
+				string sUserID = ui.GetSessionUserID();
+				
+				//NOTE: it may seem like sorting will be an issue, but it shouldn't.
+				//sorting ALL the steps by their ID here will ensure they get added to their respective 
+				// codeblocks in the right order.
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+	                " us.visible, us.breakpoint, us.skip, us.button" +
+	                " from task_step s" +
+	                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
+	                " where s.task_id = '" + this.ID + "'" +
+	                " order by s.step_order";
+			}
+			else
+			{
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+					" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
+					" from task_step s" +
+	                " where s.task_id = '" + this.ID + "'" +
+	                " order by s.step_order";
+			}
+	
+			DataTable dtSteps = new DataTable();
+	        if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
+	            sErr += "Database Error: " + sErr;
+	
+			if (dtSteps.Rows.Count > 0)
+	        {
+	            foreach (DataRow drSteps in dtSteps.Rows)
+	            {
+					Step oStep = new Step(drSteps, this);
+					if (oStep != null)
+					{
+						//a 'REAL' codeblock will be in this collection
+						// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+						if (this.Codeblocks.ContainsKey(oStep.Codeblock))
+						{
+							this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+						}
+						else
+						{
+							//so, what do we do if we found a step that's not in a 'real' codeblock?
+							//well, the gui will take care of drawing those embedded steps...
+							
+							//but we have a problem with export, version up, etc.
+							
+							//these steps can't be orphans!
+							//so, we'll go ahead and create codeblocks for them.
+							//this is terrible, but part of the problem with this embedded stuff.
+							//we'll tweak the gui so GUID named codeblocks don't show.
+							this.Codeblocks.Add(oStep.Codeblock, new Codeblock(oStep.Codeblock));
+							this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+
+							//maybe one day we'll do the full recusrive loading of all embedded steps here
+							// but not today... it's a big deal and we need to let these changes settle down first.
+						}
+					}
+				}
+	        }
+			
+			return this;
 		}
 
 		private bool _DBExists()
@@ -2533,19 +3076,34 @@ namespace Globals
 		}
 		
 		//Try to save the existing object, resolving conflicts as directed.
-		public bool DBSave(ref string sErr)
+		public bool DBSave(ref string sErr, dataAccess.acTransaction oTrans)
 		{
 			try
 			{
 				acUI.acUI ui = new acUI.acUI();
-				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				bool bLocalTransaction = true;
+				//if we weren't given a transaction, create one
+				if (oTrans != null)
+					bLocalTransaction = false;
+				else
+					oTrans = new dataAccess.acTransaction(ref sErr);
+				
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+				{
+					sErr = "ID and Name are required Task properties.";
+					if (bLocalTransaction) oTrans.RollBack();
+					return false;
+				}
 				
 				if (this.DBExists)
 				{
 					//uh oh... this task exists.  unless told to do so, we stop here.
 					if (this.OnConflict == "cancel") {
-						sErr = "Another Task with that ID or Name/Version exists.  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
-						oTrans.RollBack();
+						sErr = "Another Task with that ID or Name/Version exists." +
+							"[" + this.ID + "/" + this.Name + "/" + this.Version + "]" +
+								"  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)";
+						if (bLocalTransaction) oTrans.RollBack();
 						return false;
 					}
 					else {
@@ -2565,15 +3123,15 @@ namespace Globals
 		                        " where step_id in" +
 		                        " (select step_id from task_step where task_id = '" + this.ID + "')";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 		                    oTrans.Command.CommandText = "delete from task_step where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 		                    oTrans.Command.CommandText = "delete from task_codeblock where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 							//update the task row
 		                    oTrans.Command.CommandText = "update task set" +
@@ -2589,7 +3147,7 @@ namespace Globals
 								" parameter_xml = " + (this.ParameterXDoc != null ? "'" + ui.TickSlash(this.ParameterXDoc.ToString(SaveOptions.DisableFormatting)) + "'" : "null") +
 								" where task_id = '" + this.ID + "'";
 		                    if (!oTrans.ExecUpdate(ref sErr))
-		                        throw new Exception(sErr);
+		                        return false;
 		
 		                    //need to update this to work without session
 							//ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, this.ID, this.Name, "Task Updated");
@@ -2599,7 +3157,7 @@ namespace Globals
 							this.IncrementMinorVersion();
 							
 							this.DBExists = false;
-							this.ID = Guid.NewGuid().ToString().ToLower();
+							this.ID = ui.NewGUID();
 							this.IsDefaultVersion = false;
 
 							//insert the new version
@@ -2607,10 +3165,15 @@ namespace Globals
 								" (task_id, original_task_id, version, default_version," +
 									" task_name, task_code, task_desc, task_status, created_dt)" +
 									" values " +
-									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
-									(this.IsDefaultVersion ? 1 : 0) + ", '" +
-									ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
-									"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
+									" ('" + this.ID + "'," +
+									" '" + this.OriginalTaskID + "'," +
+									" " + this.Version + "," +
+									" " + (this.IsDefaultVersion ? 1 : 0) + "," +
+									" '" + ui.TickSlash(this.Name) + "'," +
+									" '" + ui.TickSlash(this.Code) + "'," +
+									" '" + ui.TickSlash(this.Description) + "'," +
+									" '" + this.Status + "'," +
+									" now())";
 							if (!oTrans.ExecUpdate(ref sErr))
 								return false;
 
@@ -2619,7 +3182,7 @@ namespace Globals
 							this.IncrementMajorVersion();
 											
 							this.DBExists = false;
-							this.ID = Guid.NewGuid().ToString().ToLower();
+							this.ID = ui.NewGUID();
 							this.IsDefaultVersion = false;
 
 							//insert the new version
@@ -2627,10 +3190,15 @@ namespace Globals
 								" (task_id, original_task_id, version, default_version," +
 									" task_name, task_code, task_desc, task_status, created_dt)" +
 									" values " +
-									"('" + this.ID + "', '" + this.OriginalTaskID + "', " + this.Version + ", " + 
-									(this.IsDefaultVersion ? 1 : 0) + ", '" +
-									ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
-									"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
+									" ('" + this.ID + "'," +
+									" '" + this.OriginalTaskID + "'," +
+									" " + this.Version + "," +
+									" " + (this.IsDefaultVersion ? 1 : 0) + "," +
+									" '" + ui.TickSlash(this.Name) + "'," +
+									" '" + ui.TickSlash(this.Code) + "'," +
+									" '" + ui.TickSlash(this.Description) + "'," +
+									" '" + this.Status + "'," +
+									" now())";
 							if (!oTrans.ExecUpdate(ref sErr))
 								return false;
 
@@ -2649,9 +3217,15 @@ namespace Globals
 						" (task_id, original_task_id, version, default_version," +
 							" task_name, task_code, task_desc, task_status, created_dt)" +
 							" values " +
-							"('" + this.ID + "', '" + this.ID + "', " + this.Version + ", 1, '" +
-							ui.TickSlash(this.Name) + "', '" + ui.TickSlash(this.Code) + "'," +
-							"'" + ui.TickSlash(this.Description) + "','" + this.Status + "', now())";
+							" ('" + this.ID + "'," +
+							"'" + this.ID + "'," +
+							" " + this.Version + "," +
+							" 1," +
+							" '" + ui.TickSlash(this.Name) + "'," +
+							" '" + ui.TickSlash(this.Code) + "'," +
+							" '" + ui.TickSlash(this.Description) + "'," +
+							" '" + this.Status + "'," +
+							" now())";
 					if (!oTrans.ExecUpdate(ref sErr))
 						return false;
 					
@@ -2663,14 +3237,30 @@ namespace Globals
 				//by the time we get here, there should for sure be a task row, either new or updated.				
 				//now, codeblocks
 				foreach (Codeblock c in this.Codeblocks.Values) {
-					oTrans.Command.CommandText = "insert task_codeblock (task_id, codeblock_name)" +
-						" values ('" + this.ID + "', '" + c.Name + "')";
-					if (!oTrans.ExecUpdate(ref sErr))
-						return false;
-									
+					//PAY ATTENTION to crazy stuff here.
+					//for exportability, embedded steps are held in codeblocks that don't really exist in the database
+					// they are created on the task object when it's created from the db or xml.
+					//BUT, when actually saving it, we don't wanna save these dummy codeblocks.
+					//(having real dummy codeblocks in the db would freak out the command engine)
+					
+					//so ... if the codeblock name is a guid, we:
+					//a) DO NOT insert it
+					//b) any steps inside it are set to step_order=-1
+					bool bIsBogusCodeblock = (ui.IsGUID(c.Name));
+					
+					if (!bIsBogusCodeblock)
+					{
+						oTrans.Command.CommandText = "insert task_codeblock (task_id, codeblock_name)" +
+							" values ('" + this.ID + "', '" + c.Name + "')";
+						if (!oTrans.ExecUpdate(ref sErr))
+							return false;
+					}
+					
 					//and steps
 					int iStepOrder = 1;
 					foreach (Step s in c.Steps.Values) {
+						iStepOrder = (bIsBogusCodeblock ? -1 : iStepOrder);
+						
 						oTrans.Command.CommandText = "insert into task_step (step_id, task_id, codeblock_name, step_order," +
 							" commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," +
 								" function_name, function_xml)" +
@@ -2684,7 +3274,7 @@ namespace Globals
 								s.OutputRowDelimiter.ToString() + "," + 
 								s.OutputColumnDelimiter.ToString() + "," +
 								"'" + s.FunctionName + "'," +
-								"'" + s.FunctionXML + "'" +
+								"'" + ui.TickSlash(s.FunctionXML) + "'" +
 								")";
 						if (!oTrans.ExecUpdate(ref sErr))
 							return false;
@@ -2693,7 +3283,7 @@ namespace Globals
 					}
 				}
 				
-				oTrans.Commit();
+				if (bLocalTransaction) oTrans.Commit();
 			
 			}
 			catch (Exception ex)
@@ -2861,7 +3451,7 @@ namespace Globals
             {
                 oTrans.Command.CommandText = "update _copy_task_step" +
                     " set function_xml = replace(lower(function_xml), '" + drStepIDs["step_id"].ToString().ToLower() + "', '" + drStepIDs["newstep_id"].ToString() + "')" +
-                    " where function_name in ('if','loop','exists')";
+                    " where function_name in ('if','loop','exists','while')";
                 if (!oTrans.ExecUpdate(ref sErr))
                     throw new Exception(sErr);
             }
@@ -2902,14 +3492,11 @@ namespace Globals
 
 		
 		//INSTANCE METHOD - returns the object as XML
-		public string AsXML()
+		public XElement AsXElement()
 		{
-			XDocument xd = new XDocument();
+			XElement xTask = new XElement("task");
 			
-			xd.Add(new XElement("task"));
-			XElement xTask = xd.Element("task");
-			
-			xTask.SetAttributeValue("id", this.ID);
+			//xTask.SetAttributeValue("id", this.ID);
 			xTask.SetAttributeValue("original_id", this.OriginalTaskID);
 			xTask.SetAttributeValue("name", this.Name);
 			xTask.SetAttributeValue("code", this.Code);
@@ -2917,6 +3504,7 @@ namespace Globals
 			xTask.SetAttributeValue("version", this.Version);
 			xTask.SetAttributeValue("concurrent_instances", this.ConcurrentInstances);
 			xTask.SetAttributeValue("queue_depth", this.QueueDepth);
+			xTask.SetAttributeValue("on_conflict", "cancel");
 			
 			xTask.SetElementValue("description", this.Description);
 			
@@ -2947,12 +3535,20 @@ namespace Globals
 				xCodeblocks.Add(xCodeblock);
 			}
 			
-			
-			//parameters should already be an XDocument
-			xd.Add(this.ParameterXDoc);
+			//parameters, if defined
+			if (this.ParameterXDoc != null)
+				if (this.ParameterXDoc.Root != null)
+					xTask.Add(this.ParameterXDoc.Root);
 
-					
-			return xd.ToString();
+			return xTask;
+		}
+		public string AsXML()
+		{
+			XElement xe = this.AsXElement();
+			if (xe != null)
+				return xe.ToString();
+			else 
+				return null;
 		}
 
 	}

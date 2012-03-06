@@ -74,6 +74,7 @@ $(document).ready(function () {
         //wipe the fields
         $("#keypair_id").val("");
         $("#keypair_name").val("");
+        $("#keypair_private_key").val("");
         $("#keypair_passphrase").val("");
 
         $("#keypair_dialog").dialog('open');

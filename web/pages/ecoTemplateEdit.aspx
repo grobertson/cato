@@ -193,4 +193,11 @@
 		<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
 		<pre id="json_parse_msg"></pre>
 	</div>
+    <div id="action_icon_dialog" title="Action Icon" class="hidden">
+		<div id="action_icons">
+			<asp:Literal id="ltActionPickerIcons" runat="server"></asp:Literal>
+		</div>
+		<input type="text" id="selected_action_id" class="hidden" />
+		<input type="text" id="selected_action_icon" class="hidden" />
+	</div>
 </asp:Content>

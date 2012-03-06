@@ -89,8 +89,7 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xObjectType = xd.XPathSelectElement("//object_type");
-            string sObjectType = (xObjectType == null ? "" : xObjectType.Value);
-			
+            string sObjectType = (xObjectType == null ? "" : xObjectType.Value);			
             string sHTML = "";
 
             sHTML += "Select Object Type:" + Environment.NewLine;
@@ -98,7 +97,6 @@ namespace FunctionTemplates
             sHTML += "  <option " + SetOption("", sObjectType) + " value=\"\"></option>" + Environment.NewLine;
 
             
-			//temporary, waiting on issue #111/#128
 			CloudProviders cp = ui.GetCloudProviders();
 			if (cp != null)
 			{
@@ -138,16 +136,16 @@ namespace FunctionTemplates
 			XDocument xd = oStep.FunctionXDoc;
 
             XElement xObjectType = xd.XPathSelectElement("//object_type");
-            string sObjectType = (xObjectType == null ? "" : xObjectType.Value);
+            string sObjectType = (xObjectType == null ? "" : ui.SafeHTML(xObjectType.Value));
 			
 			XElement xCloudFilter = xd.XPathSelectElement("//cloud_filter");
-            string sCloudFilter = (xCloudFilter == null ? "" : xCloudFilter.Value);
+            string sCloudFilter = (xCloudFilter == null ? "" : ui.SafeHTML(xCloudFilter.Value));
 
             XElement xResultName = xd.XPathSelectElement("//result_name");
-            string sResultName = (xResultName == null ? "" : xResultName.Value);
+            string sResultName = (xResultName == null ? "" : ui.SafeHTML(xResultName.Value));
 
             XElement xCloudName = xd.XPathSelectElement("//cloud_name");
-            string sCloudName = (xCloudName == null ? "" : xCloudName.Value);
+            string sCloudName = (xCloudName == null ? "" : ui.SafeHTML(xCloudName.Value));
 			
 			string sHTML = "";
 

@@ -580,7 +580,8 @@ function initSortable() {
             //if this is a new step... add
             //(add will reorder internally)
             var new_step = $(ui.item[0]);
-            if (new_step.attr("id").indexOf("fn_") == 0 || new_step.attr("id").indexOf("clip_") == 0) {
+            var new_step_id = new_step.attr("id");
+            if (new_step_id.indexOf("fn_") == 0 || new_step_id.indexOf("clip_") == 0 || new_step_id.indexOf("cb_") == 0) {
                 doStepAdd(new_step);
             } else {
                 //else just reorder what's here.
@@ -813,7 +814,7 @@ function doStepAdd(new_step) {
 
             //but we will change the sortable if this command has embedded commands.
             //you have to add the embedded command NOW, or click cancel.
-            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists") {
+            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
                 doDropZoneEnable($("#" + new_step_id + " .step_nested_drop_target"));
             }
             else {

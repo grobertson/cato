@@ -13,6 +13,8 @@ namespace Web.pages {
 	
 	public partial class importLoadFile {
 		
+		protected System.Web.UI.WebControls.Content cHead;
+		
 		protected System.Web.UI.WebControls.Content cDetail;
 		
 		protected System.Web.UI.HtmlControls.HtmlInputFile fupFile;

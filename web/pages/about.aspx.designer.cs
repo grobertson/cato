@@ -27,6 +27,8 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.Label lblDatabaseName;
 		
+		protected System.Web.UI.WebControls.Label lblTime;
+		
 		protected System.Web.UI.WebControls.Label lblVersion;
 		
 		protected System.Web.UI.WebControls.HyperLink lnkEmail;

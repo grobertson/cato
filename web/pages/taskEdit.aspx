@@ -31,12 +31,11 @@
                 <span id="tab_schedules" linkto="div_schedules" class="ui-state-default ui-corner-top toolbox_tab">Schedules</span><span id="tab_parameters" 
 					linkto="div_parameters"
                         class="ui-state-default ui-corner-top toolbox_tab">Parameters</span><span id="tab_clipboard"
-                            linkto="div_clipboard" class="ui-state-default ui-corner-top toolbox_tab" runat="server">Clipboard</span><span
-                                id="tab_debug" linkto="div_debug" class="ui-state-default ui-corner-top toolbox_tab">Run</span><br />
+                            linkto="div_clipboard" class="ui-state-default ui-corner-top toolbox_tab" runat="server">Clipboard</span><br />
                 <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">
                     Details</span><span id="tab_versions" linkto="div_versions" class="ui-state-default ui-corner-top toolbox_tab">Versions</span><span
-                        id="tab_codeblocks" linkto="div_codeblocks" class="ui-state-default ui-corner-top toolbox_tab">Codeblocks</span><span
-                            id="tab_commands" linkto="div_commands" class="ui-state-default ui-corner-top toolbox_tab">Commands</span>
+                            id="tab_commands" linkto="div_commands" class="ui-state-default ui-corner-top toolbox_tab">Commands</span><span
+                                id="tab_debug" linkto="div_debug" class="ui-state-default ui-corner-top toolbox_tab">Run</span>
                 <!--<<span
                             id="tab_registry" linkto="div_registry" class="ui-state-default ui-corner-top toolbox_tab"
                             style="padding-left: 7px; padding-right: 7px;" runat="server">Registry</span><span
@@ -88,14 +87,6 @@
                 <ul id="versions">
                 </ul>
                 <input type="button" value="New Version" onclick="ShowVersionAdd();return false;" />
-            </div>
-            <div id="div_codeblocks" class="toolbox_panel hidden">
-                <div>
-                    <span id="codeblock_add_btn">Add New</span>
-                    <hr />
-                    <ul id="codeblocks">
-					</ul>
-                </div>
             </div>
             <div id="div_commands" class="toolbox_panel hidden">
                 <span id="command_help_btn">Help</span>
@@ -204,9 +195,13 @@
                 <div class="step_section_title">
                     <span id="step_toggle_all_btn" class="pointer">
                         <img class="step_toggle_all_btn" src="../images/icons/expand.png" alt="Expand/Collapse All Steps"
-                            title="Expand/Collapse All Steps" />
-                    </span><span id="codeblock_steps_title" class="step_title">
-                        </span>
+                            title="Expand/Collapse All Steps" /></span><span 
+							id="codeblock_steps_title" class="step_title"></span><span id="codeblock_selector_btn"></span>                
+					<div id="codeblock_selector" class="ui-widget-content ui-corner-bottom hidden">
+                    	<ul id="codeblocks">
+						</ul>
+                    	<center><span id="codeblock_add_btn">Add New</span></center>
+                	</div>
                 </div>
                 <div class="step_section_icons">
                     <span id="print_link" class="pointer">

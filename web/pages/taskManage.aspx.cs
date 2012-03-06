@@ -15,21 +15,18 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
+using Globals;
 
 namespace Web.pages
 {
     public partial class taskManage : System.Web.UI.Page
     {
-        dataAccess dc = new dataAccess();
         acUI.acUI ui = new acUI.acUI();
 
         int iPageSize;
 
-        string sSQL = "";
         string sErr = "";
 
         protected void Page_Load(object sender, EventArgs e)
@@ -52,46 +49,14 @@ namespace Web.pages
         }
         private void BindList()
         {
-            string sWhereString = "";
-
-            if (txtSearch.Text.Length > 0)
+            DataTable dt = Tasks.AsDataTable(txtSearch.Text);
+            if (dt != null)
             {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = txtSearch.Text.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-
-                    //if the value is a guid, it's an existing task.
-                    //otherwise it's a new task.
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (a.task_name like '%" + aSearchTerms[i] +
-                           "%' or a.task_desc like '%" + aSearchTerms[i] +
-                           "%' or a.task_status like '%" + aSearchTerms[i] +
-                           "%' or a.task_code like '%" + aSearchTerms[i] + "%' ) ";
-                    }
-                } 
+	            //put the datatable in the session
+				ui.SetSessionObject("TaskList", dt, "SelectorListTables");
+	            //now, actually get the data from the session table and display it
+	            GetTasks();
             }
-
-            sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," +
-                " (select count(*) from task where original_task_id = a.original_task_id) as versions" +   
-					" from task a  " +
-					" where default_version = 1" +
-					sWhereString +
-					" order by task_code";
-
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                ui.RaiseError(Page, sErr, true, "");
-            }
-
-            ui.SetSessionObject("TaskList", dt, "SelectorListTables");
-
-            //now, actually get the data from the session table and display it
-            GetTasks();
         }
         private void GetTasks()
         {
@@ -128,8 +93,6 @@ namespace Web.pages
             }
         }
 
-        #region "Buttons"
-
         protected void btnGetPage_Click(object sender, System.EventArgs e)
         {
             GetTasks();
@@ -140,8 +103,5 @@ namespace Web.pages
             hidPage.Value = "1";
             BindList();
         }
-
-        #endregion
-
     }
 }
