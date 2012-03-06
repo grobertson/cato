@@ -262,7 +262,7 @@ proc aws_Generic {product operation path command} {
 				error_out "Cloud region $aws_region does not exist. Either create a $::CLOUD_TYPE Cloud definition or enter an existing cloud name in the region field" 9999
 			}
 			set endpoint [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 0]
-                        set ::_CLOUD_ENDPOINT [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$region) 2]
+                        set ::_CLOUD_ENDPOINT [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 2]
 			set protocol [string tolower [lindex $::CLOUD_ENDPOINTS($::CLOUD_TYPE,$aws_region) 1]]
 			if {"$endpoint" == ""} {
 				error_out "$::CLOUD_TYPE error: Region $aws_region for $::CLOUD_TYPE cloud not defined. Region name must match a valid cloud name." 9999
