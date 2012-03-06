@@ -333,50 +333,64 @@ namespace Globals
 		
 		public Ecosystems(string sFilter, string sAccountID, ref string sErr)
 		{
-			//buids a list of ecosystems from the db, with the optional filter
-			dataAccess dc = new dataAccess();
-            string sWhereString = "";
-
-            if (!string.IsNullOrEmpty(sFilter))
+			try
+			{
+				//buids a list of ecosystems from the db, with the optional filter
+				dataAccess dc = new dataAccess();
+	            string sWhereString = "";
+	
+	            if (!string.IsNullOrEmpty(sFilter))
+	            {
+	                //split on spaces
+	                int i = 0;
+	                string[] aSearchTerms = sFilter.Split(' ');
+	                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+	                {
+	                    if (aSearchTerms[i].Length > 0)
+	                    {
+	                        sWhereString = " and (e.ecosystem_name like '%" + aSearchTerms[i] +
+	                           "%' or e.ecosystem_desc like '%" + aSearchTerms[i] + "%' or et.ecotemplate_name like '%" + aSearchTerms[i] + "%' ) ";
+	                    }
+	                } 
+	            }
+	
+	            string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name, created_dt, last_update_dt," +
+					" (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" +
+					" from ecosystem e" +
+					" join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
+					" where e.account_id = '" + sAccountID + "'" +
+					sWhereString +
+					" order by e.ecosystem_name";
+	
+	            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+	                return;
+			}
+            catch (Exception ex)
             {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = sFilter.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (e.ecosystem_name like '%" + aSearchTerms[i] +
-                           "%' or e.ecosystem_desc like '%" + aSearchTerms[i] + "%' or et.ecotemplate_name like '%" + aSearchTerms[i] + "%' ) ";
-                    }
-                } 
-            }
-
-            string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name, created_dt, last_update_dt," +
-				" (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" +
-				" from ecosystem e" +
-				" join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
-				" where e.account_id = '" + sAccountID + "'" +
-				sWhereString +
-				" order by e.ecosystem_name";
-
-            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
-                return;
+				throw ex;
+            }			
 		}
 		public Dictionary<string, Ecosystem> AsDictionary()
 		{
-			//spin "this" and turn it into a dictionary
-			Dictionary<string, Ecosystem> dict = new Dictionary<string, Ecosystem>();
-			
-			foreach (DataRow dr in this.DataTable.Rows)
+			try
 			{
-				Ecosystem e = new Ecosystem();
-				e.ID = dr["ecosystem_id"].ToString();
+				//spin "this" and turn it into a dictionary
+				Dictionary<string, Ecosystem> dict = new Dictionary<string, Ecosystem>();
 				
-				dict.Add(e.ID, e);				
+				foreach (DataRow dr in this.DataTable.Rows)
+				{
+					Ecosystem e = new Ecosystem();
+					e.ID = dr["ecosystem_id"].ToString();
+					
+					dict.Add(e.ID, e);				
+				}
+				
+				return dict;
 			}
-			
-			return dict;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 	}
 	public class Ecosystem 
@@ -417,84 +431,97 @@ namespace Globals
 		//the default constructor, given an ID loads it up.
 		public Ecosystem(string sEcosystemID)
 		{
-			if (string.IsNullOrEmpty(sEcosystemID))
-				throw new Exception("Error building Ecosystem object: ID is required.");	
-			
-            dataAccess dc = new dataAccess();
-			
-			string sErr = "";
-                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file, e.storm_status," +
-                    " e.account_id, e.ecotemplate_id, et.ecotemplate_name, e.created_dt, e.last_update_dt," +
-					" (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" +
-                    " from ecosystem e" +
-                    " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
-                    " where e.ecosystem_id = '" + sEcosystemID + "'";
-
-            DataRow dr = null;
-            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                if (dr != null)
-                {
-					this.ID = dr["ecosystem_id"].ToString();;
-					this.Name = dr["ecosystem_name"].ToString();
-					this.AccountID = dr["account_id"].ToString();
-					this.EcotemplateID = dr["ecotemplate_id"].ToString();
-					this.EcotemplateName = dr["ecotemplate_name"].ToString();
-					this.Description = (object.ReferenceEquals(dr["ecosystem_desc"], DBNull.Value) ? "" : dr["ecosystem_desc"].ToString());
-					this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
-					this.StormStatus = (object.ReferenceEquals(dr["storm_status"], DBNull.Value) ? "" : dr["storm_status"].ToString());
-					if (!object.ReferenceEquals(dr["created_dt"], DBNull.Value)) this.CreatedDate = Convert.ToDateTime(dr["created_dt"].ToString());
-					if (!object.ReferenceEquals(dr["last_update_dt"], DBNull.Value)) this.LastUpdate = Convert.ToDateTime(dr["last_update_dt"].ToString());
-					this.NumObjects = Convert.ToInt16(dr["num_objects"].ToString());
+			try
+			{
+				if (string.IsNullOrEmpty(sEcosystemID))
+					throw new Exception("Error building Ecosystem object: ID is required.");	
+				
+	            dataAccess dc = new dataAccess();
+				
+				string sErr = "";
+	                string sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file, e.storm_status," +
+	                    " e.account_id, e.ecotemplate_id, et.ecotemplate_name, e.created_dt, e.last_update_dt," +
+						" (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" +
+	                    " from ecosystem e" +
+	                    " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" +
+	                    " where e.ecosystem_id = '" + sEcosystemID + "'";
+	
+	            DataRow dr = null;
+	            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+	            {
+	                if (dr != null)
+	                {
+						this.ID = dr["ecosystem_id"].ToString();;
+						this.Name = dr["ecosystem_name"].ToString();
+						this.AccountID = dr["account_id"].ToString();
+						this.EcotemplateID = dr["ecotemplate_id"].ToString();
+						this.EcotemplateName = dr["ecotemplate_name"].ToString();
+						this.Description = (object.ReferenceEquals(dr["ecosystem_desc"], DBNull.Value) ? "" : dr["ecosystem_desc"].ToString());
+						this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
+						this.StormStatus = (object.ReferenceEquals(dr["storm_status"], DBNull.Value) ? "" : dr["storm_status"].ToString());
+						if (!object.ReferenceEquals(dr["created_dt"], DBNull.Value)) this.CreatedDate = Convert.ToDateTime(dr["created_dt"].ToString());
+						if (!object.ReferenceEquals(dr["last_update_dt"], DBNull.Value)) this.LastUpdate = Convert.ToDateTime(dr["last_update_dt"].ToString());
+						this.NumObjects = Convert.ToInt16(dr["num_objects"].ToString());
+					}
+				}
+				else 
+				{
+					throw new Exception("Error building Ecosystem object: " + sErr);	
 				}
 			}
-			else 
-			{
-				throw new Exception("Error building Ecosystem object: " + sErr);	
-			}
-			
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		
 		//saves this Ecosystem to the database
 		public bool DBUpdate(ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			
-			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.EcotemplateID) || string.IsNullOrEmpty(this.AccountID)) 
+			try
 			{
-				sErr = "Name, EcotemplateID and Account ID are required Ecosystem properties.";
-				return false;
+				dataAccess dc = new dataAccess();
+				
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.EcotemplateID) || string.IsNullOrEmpty(this.AccountID)) 
+				{
+					sErr = "Name, EcotemplateID and Account ID are required Ecosystem properties.";
+					return false;
+				}
+				
+				string sSQL = "update ecosystem set" + 
+					" ecosystem_name = '" + this.Name + "'," +
+					" ecotemplate_id = '" + this.EcotemplateID + "'," +
+					" account_id = '" + this.AccountID + "'," +
+					" ecosystem_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+					" last_update_dt = now()," +
+					" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
+					" where ecosystem_id = '" + this.ID + "'";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					throw new Exception(sErr);
+	
+				return true;
 			}
-			
-			string sSQL = "update ecosystem set" + 
-				" ecosystem_name = '" + this.Name + "'," +
-				" ecotemplate_id = '" + this.EcotemplateID + "'," +
-				" account_id = '" + this.AccountID + "'," +
-				" ecosystem_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
-				" last_update_dt = now()," +
-				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
-				" where ecosystem_id = '" + this.ID + "'";
-			
-			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-				throw new Exception(sErr);
-
-			return true;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		//saves this Ecosystem as a new one in the db
 		public bool DBCreateNew(ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			string sSQL = "";
-			
-			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
-			{
-				sErr = "ID and Name are required Ecosystem properties.";
-				return false;
-			}
-			
 			try
 			{
+	            dataAccess dc = new dataAccess();
+				string sSQL = "";
+				
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+				{
+					sErr = "ID and Name are required Ecosystem properties.";
+					return false;
+				}
+				
                 sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," +
 					" storm_file, storm_status, storm_parameter_xml, storm_cloud_id, created_dt, last_update_dt)" +
                     " select '" + this.ID + "'," +
@@ -543,48 +570,62 @@ namespace Globals
 		
 		public Ecotemplates(string sFilter, ref string sErr)
 		{
-			//buids a list of ecotemplates from the db, with the optional filter
-			dataAccess dc = new dataAccess();
-            string sWhereString = "";
-
-            if (!string.IsNullOrEmpty(sFilter))
+			try
+			{
+				//builds a list of ecotemplates from the db, with the optional filter
+				dataAccess dc = new dataAccess();
+	            string sWhereString = "";
+	
+	            if (!string.IsNullOrEmpty(sFilter))
+	            {
+	                //split on spaces
+	                int i = 0;
+	                string[] aSearchTerms = sFilter.Split(' ');
+	                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+	                {
+	                    if (aSearchTerms[i].Length > 0)
+	                    {
+	                        sWhereString = " and (a.ecotemplate_name like '%" + aSearchTerms[i] +
+	                           "%' or a.ecotemplate_desc like '%" + aSearchTerms[i] + "%' ) ";
+	                    }
+	                } 
+	            }
+	
+	            string sSQL = "select a.ecotemplate_id, a.ecotemplate_name, a.ecotemplate_desc" +
+	                   " from ecotemplate a" +
+	                   " where 1=1" +
+	                   sWhereString +
+	                   " order by ecotemplate_name";
+	
+	            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+	                return;
+			}
+            catch (Exception ex)
             {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = sFilter.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (a.ecotemplate_name like '%" + aSearchTerms[i] +
-                           "%' or a.ecotemplate_desc like '%" + aSearchTerms[i] + "%' ) ";
-                    }
-                } 
-            }
-
-            string sSQL = "select a.ecotemplate_id, a.ecotemplate_name, a.ecotemplate_desc" +
-                   " from ecotemplate a" +
-                   " where 1=1" +
-                   sWhereString +
-                   " order by ecotemplate_name";
-
-            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
-                return;
+				throw ex;
+            }			
 		}
 		public Dictionary<string, Ecotemplate> AsDictionary()
 		{
-			//spin "this" and turn it into a dictionary
-			Dictionary<string, Ecotemplate> dict = new Dictionary<string, Ecotemplate>();
-			
-			//this will be slow as it does a select for each one.
-			//also, not currently being used
-			foreach (DataRow dr in this.DataTable.Rows)
+			try
 			{
-				Ecotemplate et = new Ecotemplate(dr["ecotemplate_id"].ToString());
-				dict.Add(et.ID, et);
+				//spin "this" and turn it into a dictionary
+				Dictionary<string, Ecotemplate> dict = new Dictionary<string, Ecotemplate>();
+				
+				//this will be slow as it does a select for each one.
+				//also, not currently being used
+				foreach (DataRow dr in this.DataTable.Rows)
+				{
+					Ecotemplate et = new Ecotemplate(dr["ecotemplate_id"].ToString());
+					dict.Add(et.ID, et);
+				}
+				
+				return dict;
 			}
-			
-			return dict;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 	}
 	public class Ecotemplate 
@@ -619,53 +660,59 @@ namespace Globals
 		//the default constructor, given an ID loads it up.
 		public Ecotemplate(string sEcotemplateID)
 		{
-			if (string.IsNullOrEmpty(sEcotemplateID))
-				throw new Exception("Error building Ecotemplate object: ID is required.");	
-			
-            dataAccess dc = new dataAccess();
-			
-			string sErr = "";
-            string sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file" +
-                " from ecotemplate" +
-                " where ecotemplate_id = '" + sEcotemplateID + "'";
-
-            DataRow dr = null;
-            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                if (dr != null)
-                {
-					this.DBExists = true;
-					this.ID = dr["ecotemplate_id"].ToString();;
-					this.Name = dr["ecotemplate_name"].ToString();
-					this.Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
-					this.StormFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
-					this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
-					
-					//get a table of actions and loop the rows
-					sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
-						" from ecotemplate_action" +
-						" where ecotemplate_id = '" + sEcotemplateID + "'";
-
-					DataTable dtActions = new DataTable();
-					if (dc.sqlGetDataTable(ref dtActions, sSQL, ref sErr))
-					{
-						if (dtActions.Rows.Count > 0)
+			try
+			{
+					if (string.IsNullOrEmpty(sEcotemplateID))
+					throw new Exception("Error building Ecotemplate object: ID is required.");	
+				
+	            dataAccess dc = new dataAccess();
+				
+				string sErr = "";
+	            string sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file" +
+	                " from ecotemplate" +
+	                " where ecotemplate_id = '" + sEcotemplateID + "'";
+	
+	            DataRow dr = null;
+	            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+	            {
+	                if (dr != null)
+	                {
+						this.DBExists = true;
+						this.ID = dr["ecotemplate_id"].ToString();;
+						this.Name = dr["ecotemplate_name"].ToString();
+						this.Description = (object.ReferenceEquals(dr["ecotemplate_desc"], DBNull.Value) ? "" : dr["ecotemplate_desc"].ToString());
+						this.StormFileType = (object.ReferenceEquals(dr["storm_file_type"], DBNull.Value) ? "" : dr["storm_file_type"].ToString());
+						this.StormFile = (object.ReferenceEquals(dr["storm_file"], DBNull.Value) ? "" : dr["storm_file"].ToString());
+						
+						//get a table of actions and loop the rows
+						sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
+							" from ecotemplate_action" +
+							" where ecotemplate_id = '" + sEcotemplateID + "'";
+	
+						DataTable dtActions = new DataTable();
+						if (dc.sqlGetDataTable(ref dtActions, sSQL, ref sErr))
 						{
-							foreach(DataRow drAction in dtActions.Rows)
+							if (dtActions.Rows.Count > 0)
 							{
-								EcotemplateAction ea = new EcotemplateAction(drAction, this);
-								if (ea != null)
-									this.Actions.Add(drAction["action_id"].ToString(), ea);
+								foreach(DataRow drAction in dtActions.Rows)
+								{
+									EcotemplateAction ea = new EcotemplateAction(drAction, this);
+									if (ea != null)
+										this.Actions.Add(drAction["action_id"].ToString(), ea);
+								}
 							}
 						}
 					}
 				}
+				else 
+				{
+					throw new Exception("Error building Ecotemplate object: " + sErr);	
+				}
 			}
-			else 
-			{
-				throw new Exception("Error building Ecotemplate object: " + sErr);	
-			}
-			
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		
 		//from an XML document
@@ -722,87 +769,109 @@ namespace Globals
 
 		private bool _DBExists()
 		{	
-			dataAccess dc = new dataAccess();
-			string sErr = "";
-			
-			//task_id is the PK, and task_name+version is a unique index.
-			//so, we check the conflict property, and act accordingly
-			string sSQL = "select ecotemplate_id from ecotemplate" +
-				" where ecotemplate_name = '" + this.Name + "'" +
-				" or ecotemplate_id = '" + this.ID + "'";
-			
-			DataRow dr = null;
-			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+			try
 			{
-				throw new Exception("Ecotemplate Object: Unable to check for existing Name or ID. " + sErr);
-			}
-			
-			if (dr != null)
-			{
-				if (!string.IsNullOrEmpty(dr["ecotemplate_id"].ToString())) {
-					//PAY ATTENTION! 
-					//if the template exists... it might have been by name, so...
-					//we're setting the ids to the same as the database so it's more accurate.
-					
-					this.ID = dr["ecotemplate_id"].ToString();
-					return true;
-				}
-			}
+	
+				dataAccess dc = new dataAccess();
+				string sErr = "";
 				
-			return false;
+				//task_id is the PK, and task_name+version is a unique index.
+				//so, we check the conflict property, and act accordingly
+				string sSQL = "select ecotemplate_id from ecotemplate" +
+					" where ecotemplate_name = '" + this.Name + "'" +
+					" or ecotemplate_id = '" + this.ID + "'";
+				
+				DataRow dr = null;
+				if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+				{
+					throw new Exception("Ecotemplate Object: Unable to check for existing Name or ID. " + sErr);
+				}
+				
+				if (dr != null)
+				{
+					if (!string.IsNullOrEmpty(dr["ecotemplate_id"].ToString())) {
+						//PAY ATTENTION! 
+						//if the template exists... it might have been by name, so...
+						//we're setting the ids to the same as the database so it's more accurate.
+						
+						this.ID = dr["ecotemplate_id"].ToString();
+						return true;
+					}
+				}
+					
+				return false;
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		//makes a copy of this template in the database
 		public bool DBCopy(string sNewName, ref string sErr)
 		{
-			Ecotemplate et = new Ecotemplate();
-			if (et != null)
+			try
 			{
-				//populate it
-				et.ID = Guid.NewGuid().ToString().ToLower();
-				et.Name = sNewName;
-				et.Description = this.Description;
-				et.StormFileType = this.StormFileType;
-				et.StormFile = this.StormFile;
-				et.Actions = this.Actions;
+					Ecotemplate et = new Ecotemplate();
+				if (et != null)
+				{
+					//populate it
+					et.ID = Guid.NewGuid().ToString().ToLower();
+					et.Name = sNewName;
+					et.Description = this.Description;
+					et.StormFileType = this.StormFileType;
+					et.StormFile = this.StormFile;
+					et.Actions = this.Actions;
+					
+					//we gave it a new name and id, recheck if it exists
+					et.DBExists = et._DBExists();
+					
+					et.DBSave(ref sErr);
+					
+					if (!string.IsNullOrEmpty(sErr))
+						return false;
 				
-				//we gave it a new name and id, recheck if it exists
-				et.DBExists = et._DBExists();
+					return true;
+				}
 				
-				et.DBSave(ref sErr);
-				
-				if (!string.IsNullOrEmpty(sErr))
-					return false;
-			
-				return true;
+				return false;
 			}
-			
-			return false;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		//saves this template to the database
 		//DOES NOT include Actions
 		public bool DBUpdate(ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-			
-			if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
-			{
-				sErr = "ID and Name are required Ecotemplate properties.";
-				return false;
+			try
+			{	
+				dataAccess dc = new dataAccess();
+				
+				if (string.IsNullOrEmpty(this.Name) || string.IsNullOrEmpty(this.ID)) 
+				{
+					sErr = "ID and Name are required Ecotemplate properties.";
+					return false;
+				}
+				
+				string sSQL = "update ecotemplate" + 
+					" set ecotemplate_name = '" + ui.TickSlash(this.Name) + "'," +
+					" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
+					" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
+					" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
+					" where ecotemplate_id = '" + this.ID + "'";
+				
+				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					throw new Exception(sErr);
+	
+				return true;
 			}
-			
-			string sSQL = "update ecotemplate" + 
-				" set ecotemplate_name = '" + ui.TickSlash(this.Name) + "'," +
-				" ecotemplate_desc = " + (string.IsNullOrEmpty(this.Description) ? " null" : " '" + ui.TickSlash(this.Description) + "'") + "," +
-				" storm_file_type = " + (string.IsNullOrEmpty(this.StormFileType) ? " null" : " '" + this.StormFileType + "'") + "," +
-				" storm_file = " + (string.IsNullOrEmpty(this.StormFile) ? " null" : " '" + ui.TickSlash(this.StormFile) + "'") +
-				" where ecotemplate_id = '" + this.ID + "'";
-			
-			if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
-				throw new Exception(sErr);
-
-			return true;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		//saves this template as a new template in the db
@@ -945,36 +1014,43 @@ namespace Globals
 
 		public XElement AsXElement()
 		{					
-			XElement xe = new XElement("ecotemplate");
+			try
+			{
+				XElement xe = new XElement("ecotemplate");
+					
+				//don't think we need id's in this xml - will just create problems with RI down the road.
+				//xe.SetAttributeValue("id", this.ID);
+				xe.SetAttributeValue("name", this.Name);
+				xe.SetAttributeValue("on_conflict", "cancel");
+				xe.SetElementValue("description", this.Description);
+	
+				//storm
+				XElement xStorm = new XElement("storm_file");
+				xStorm.SetAttributeValue("storm_file_type", this.StormFileType);
+				xStorm.SetValue(this.StormFile);
+				xe.Add(xStorm);
+	
+				//actions
+				XElement xActions = new XElement("actions");
+				foreach (EcotemplateAction ea in this.Actions.Values) {
+					ea.IncludeTask = this.IncludeTasks;
+					string sActionXML = ea.AsXML();
+					if (!string.IsNullOrEmpty(sActionXML))
+					{
+						XElement xAction = XElement.Parse(sActionXML);
+						if (xAction != null) {	
+							xActions.Add(xAction);
+						}
+					}				
+				}
+				xe.Add(xActions);
 				
-			//don't think we need id's in this xml - will just create problems with RI down the road.
-			//xe.SetAttributeValue("id", this.ID);
-			xe.SetAttributeValue("name", this.Name);
-			xe.SetAttributeValue("on_conflict", "cancel");
-			xe.SetElementValue("description", this.Description);
-
-			//storm
-			XElement xStorm = new XElement("storm_file");
-			xStorm.SetAttributeValue("storm_file_type", this.StormFileType);
-			xStorm.SetValue(this.StormFile);
-			xe.Add(xStorm);
-
-			//actions
-			XElement xActions = new XElement("actions");
-			foreach (EcotemplateAction ea in this.Actions.Values) {
-				ea.IncludeTask = this.IncludeTasks;
-				string sActionXML = ea.AsXML();
-				if (!string.IsNullOrEmpty(sActionXML))
-				{
-					XElement xAction = XElement.Parse(sActionXML);
-					if (xAction != null) {	
-						xActions.Add(xAction);
-					}
-				}				
+				return xe;
 			}
-			xe.Add(xActions);
-			
-			return xe;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		public string AsXML()
 		{
@@ -1005,139 +1081,167 @@ namespace Globals
 		//static method, given an ID.
 		static public EcotemplateAction FromID(string sActionID)
 		{
-			if (string.IsNullOrEmpty(sActionID))
-				throw new Exception("Error building Ecotemplate Action object: Action ID is required.");	
-			
-            dataAccess dc = new dataAccess();
-			
-			string sErr = "";
-            string sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
-                " from ecotemplate_action" +
-                " where action_id = '" + sActionID + "'";
-
-            DataRow dr = null;
-            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                if (dr != null)
-                {
-					Ecotemplate et = new Ecotemplate(dr["ecotemplate_id"].ToString());
-					if (et != null)
-					{
-						EcotemplateAction ea = new EcotemplateAction(dr, et);
-						if (ea != null)
+			try 
+			{
+				if (string.IsNullOrEmpty(sActionID))
+					throw new Exception("Error building Ecotemplate Action object: Action ID is required.");	
+				
+	            dataAccess dc = new dataAccess();
+				
+				string sErr = "";
+	            string sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" +
+	                " from ecotemplate_action" +
+	                " where action_id = '" + sActionID + "'";
+	
+	            DataRow dr = null;
+	            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+	            {
+	                if (dr != null)
+	                {
+						Ecotemplate et = new Ecotemplate(dr["ecotemplate_id"].ToString());
+						if (et != null)
 						{
-							return ea;
+							EcotemplateAction ea = new EcotemplateAction(dr, et);
+							if (ea != null)
+							{
+								return ea;
+							}
+							else
+							{
+								sErr = "Unable to build Action object for ID [" + sActionID + "].";
+								return null;
+							}
 						}
 						else
 						{
-							sErr = "Unable to build Action object for ID [" + sActionID + "].";
+							sErr = "Unable to find Template using ID [" + dr["ecotemplate_id"].ToString() + "] for Action ID [" + sActionID + "].";
 							return null;
 						}
 					}
 					else
 					{
-						sErr = "Unable to find Template using ID [" + dr["ecotemplate_id"].ToString() + "] for Action ID [" + sActionID + "].";
+						sErr = "No Action found using ID [" + sActionID + "].";
 						return null;
 					}
 				}
-				else
+				else 
 				{
-					sErr = "No Action found using ID [" + sActionID + "].";
-					return null;
+					throw new Exception("Error building Ecotemplate Action object from ID: " + sErr);	
 				}
 			}
-			else 
-			{
-				throw new Exception("Error building Ecotemplate Action object from ID: " + sErr);	
-			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		
 		//another constructor, takes a datarow from ecotemplate_action and creates it from that
 		public EcotemplateAction(DataRow dr, Ecotemplate parent)
 		{
-			Ecotemplate = parent;
-			
-			ID = dr["action_id"].ToString();
-			Name = dr["action_name"].ToString();
-			Description = dr["action_desc"].ToString();
-			Category = dr["category"].ToString();
-			OriginalTaskID = dr["original_task_id"].ToString();
-			TaskVersion = dr["task_version"].ToString();
-			Icon = dr["action_icon"].ToString();
-			ParameterDefaultsXML = dr["parameter_defaults"].ToString();
+			try
+			{
+				Ecotemplate = parent;
+				
+				ID = dr["action_id"].ToString();
+				Name = dr["action_name"].ToString();
+				Description = dr["action_desc"].ToString();
+				Category = dr["category"].ToString();
+				OriginalTaskID = dr["original_task_id"].ToString();
+				TaskVersion = dr["task_version"].ToString();
+				Icon = dr["action_icon"].ToString();
+				ParameterDefaultsXML = dr["parameter_defaults"].ToString();
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		//build from an XElement, part of the Ecotemplate XDocument
 		public EcotemplateAction(XElement xAction, Ecotemplate parent, ref string sErr)
 		{
-			if (xAction.Attribute("name") == null) 
-				throw new Exception("Error creating Action from XML - 'name' attribute is required.");
-			if (string.IsNullOrEmpty(xAction.Attribute("name").Value)) 
-				throw new Exception("Error creating Action from XML - 'name' attribute cannot be empty.");
-				
-			//action ALWAYS gets a new id.  There's no reason to bother reading one from the xml.
-			this.ID = Guid.NewGuid().ToString().ToLower();
-
-			//(xAction.Element("description") != null ? xAction.Element("description").Value : "");
-			Ecotemplate = parent;
-			
-			this.Name = xAction.Attribute("name").Value;
-			this.Description = (xAction.Attribute("description") != null ? xAction.Attribute("description").Value : "");
-			
-			this.Category = (xAction.Attribute("category") != null ? xAction.Attribute("category").Value : "");
-			this.Icon = (xAction.Attribute("icon") != null ? xAction.Attribute("icon").Value : "");
-			
-			//whether it has a task bundled inside or not, we'll still set these first from the attributes
-			//and change them later if we need to.
-			this.OriginalTaskID = (xAction.Attribute("original_task_id") != null ? xAction.Attribute("original_task_id").Value : "");
-			this.TaskVersion = (xAction.Attribute("task_version") != null ? xAction.Attribute("task_version").Value : "");
-
-			this.ParameterDefaultsXML = (xAction.Element("parameters") != null ? 
-			                             xAction.Element("parameters").ToString(SaveOptions.DisableFormatting) : 
-			                             "");
-			
-			if (xAction.Element("task") != null) 
+			try
 			{
-				this.Task = new Task().FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
+				if (xAction.Attribute("name") == null) 
+					throw new Exception("Error creating Action from XML - 'name' attribute is required.");
+				if (string.IsNullOrEmpty(xAction.Attribute("name").Value)) 
+					throw new Exception("Error creating Action from XML - 'name' attribute cannot be empty.");
+					
+				//action ALWAYS gets a new id.  There's no reason to bother reading one from the xml.
+				this.ID = Guid.NewGuid().ToString().ToLower();
+	
+				//(xAction.Element("description") != null ? xAction.Element("description").Value : "");
+				Ecotemplate = parent;
+				
+				this.Name = xAction.Attribute("name").Value;
+				this.Description = (xAction.Attribute("description") != null ? xAction.Attribute("description").Value : "");
+				
+				this.Category = (xAction.Attribute("category") != null ? xAction.Attribute("category").Value : "");
+				this.Icon = (xAction.Attribute("icon") != null ? xAction.Attribute("icon").Value : "");
+				
+				//whether it has a task bundled inside or not, we'll still set these first from the attributes
+				//and change them later if we need to.
+				this.OriginalTaskID = (xAction.Attribute("original_task_id") != null ? xAction.Attribute("original_task_id").Value : "");
+				this.TaskVersion = (xAction.Attribute("task_version") != null ? xAction.Attribute("task_version").Value : "");
+	
+				this.ParameterDefaultsXML = (xAction.Element("parameters") != null ? 
+				                             xAction.Element("parameters").ToString(SaveOptions.DisableFormatting) : 
+				                             "");
+				
+				if (xAction.Element("task") != null) 
+				{
+					this.Task = new Task().FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
+				}
 			}
-	}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
+		}
 
 		public string AsXML()
 		{					
-			XElement xe = new XElement("action");
+			try
+			{
+				XElement xe = new XElement("action");
 				
-			//don't think we need to put id's in this xml
-			//xe.SetAttributeValue("id", this.ID);
-			xe.SetAttributeValue("name", this.Name);
-			xe.SetElementValue("description", this.Description);
-			xe.SetAttributeValue("category", this.Category);
-			xe.SetAttributeValue("icon", this.Icon);
-			
-			if (!string.IsNullOrEmpty(this.ParameterDefaultsXML))
-			{
-				XElement xParameters = XElement.Parse(this.ParameterDefaultsXML);
-				if (xParameters != null) {	
-					xe.Add(xParameters);
-				}
-			}				
-			
-			//we'll always include the original_task_id and version attributes
-			//even if the task is included.
-			xe.SetAttributeValue("original_task_id", this.OriginalTaskID);
-			xe.SetAttributeValue("task_version", this.TaskVersion);
-			if (this.IncludeTask == true)
-			{
-				string sErr = "";
-				Task t = new Task(this.OriginalTaskID, this.TaskVersion, ref sErr);
-				if (t != null) {
-					XElement xTask = t.AsXElement();
-					if (xTask != null) {	
-						xe.Add(xTask);
+				//don't think we need to put id's in this xml
+				//xe.SetAttributeValue("id", this.ID);
+				xe.SetAttributeValue("name", this.Name);
+				xe.SetElementValue("description", this.Description);
+				xe.SetAttributeValue("category", this.Category);
+				xe.SetAttributeValue("icon", this.Icon);
+				
+				if (!string.IsNullOrEmpty(this.ParameterDefaultsXML))
+				{
+					XElement xParameters = XElement.Parse(this.ParameterDefaultsXML);
+					if (xParameters != null) {	
+						xe.Add(xParameters);
+					}
+				}				
+				
+				//we'll always include the original_task_id and version attributes
+				//even if the task is included.
+				xe.SetAttributeValue("original_task_id", this.OriginalTaskID);
+				xe.SetAttributeValue("task_version", this.TaskVersion);
+				if (this.IncludeTask == true)
+				{
+					string sErr = "";
+					Task t = new Task(this.OriginalTaskID, this.TaskVersion, ref sErr);
+					if (t != null) {
+						XElement xTask = t.AsXElement();
+						if (xTask != null) {	
+							xe.Add(xTask);
+						}
 					}
 				}
+				
+				return xe.ToString();
 			}
-			
-			return xe.ToString();
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 	}
 	#endregion
@@ -1159,134 +1263,141 @@ namespace Globals
 		//the constructor requires an XDocument
 		public CloudProviders (XDocument xProviders)
 		{
-			dataAccess dc = new dataAccess();
-			
-			if (xProviders == null) {
-				throw new Exception ("Error: Invalid or missing Cloud Providers XML.");
-			} else {
-				foreach (XElement xProvider in xProviders.XPathSelectElements("//providers/provider")) {
-					if (xProvider.Attribute ("name") == null) 
-						throw new Exception ("Cloud Providers XML: All Providers must have the 'name' attribute.");
-					
-					Provider pv = new Provider(xProvider.Attribute ("name").Value, 
-					                           (xProvider.Attribute ("test_product") == null ? "" : xProvider.Attribute ("test_product").Value),
-					                           (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value),
-					                           (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true))
-					                           );
-					
-					IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
-					
-					//if this provider has hardcoded clouds... get them
-					if (xClouds != null) {
-						if (xClouds.Count() > 0) {
-							foreach (XElement xCloud in xProvider.XPathSelectElements("clouds/cloud"))
-			                {
-								if (xCloud.Attribute("id") == null) 
-									throw new Exception("Cloud Providers XML: All Clouds must have the 'id' attribute.");
-								if (xCloud.Attribute("name") == null) 
-									throw new Exception("Cloud Providers XML: All Clouds must have the 'name' attribute.");
-								if (xCloud.Attribute("api_url") == null) 
-									throw new Exception("Cloud Providers XML: All Clouds must have the 'api_url' attribute.");
-								if (xCloud.Attribute("api_protocol") == null) 
-									throw new Exception("Cloud Providers XML: All Clouds must have the 'api_protocol' attribute.");
-								
-								Cloud c = new Cloud(pv, false, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value, xCloud.Attribute("api_protocol").Value);
-								pv.Clouds.Add(c.ID, c);
-							}
-						}
-						
-						//Let's also add any clouds that may be in the database...
-						//IF the "user_defined_clouds" flag is set.
-						if (pv.UserDefinedClouds) {
-							string sErr = "";
-							string sSQL = "select cloud_id, cloud_name, api_url, api_protocol" +
-				                " from clouds" +
-				                " where provider = '" + pv.Name + "'" + 
-								" order by cloud_name";
+			try
+			{
+				dataAccess dc = new dataAccess();
 				
-				            DataTable dt = new DataTable();
-				            if (dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-				            {
-				                foreach (DataRow dr in dt.Rows)
+				if (xProviders == null) {
+					throw new Exception ("Error: Invalid or missing Cloud Providers XML.");
+				} else {
+					foreach (XElement xProvider in xProviders.XPathSelectElements("//providers/provider")) {
+						if (xProvider.Attribute ("name") == null) 
+							throw new Exception ("Cloud Providers XML: All Providers must have the 'name' attribute.");
+						
+						Provider pv = new Provider(xProvider.Attribute ("name").Value, 
+						                           (xProvider.Attribute ("test_product") == null ? "" : xProvider.Attribute ("test_product").Value),
+						                           (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value),
+						                           (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true))
+						                           );
+						
+						IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
+						
+						//if this provider has hardcoded clouds... get them
+						if (xClouds != null) {
+							if (xClouds.Count() > 0) {
+								foreach (XElement xCloud in xProvider.XPathSelectElements("clouds/cloud"))
 				                {
-									Cloud c = new Cloud(pv, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+									if (xCloud.Attribute("id") == null) 
+										throw new Exception("Cloud Providers XML: All Clouds must have the 'id' attribute.");
+									if (xCloud.Attribute("name") == null) 
+										throw new Exception("Cloud Providers XML: All Clouds must have the 'name' attribute.");
+									if (xCloud.Attribute("api_url") == null) 
+										throw new Exception("Cloud Providers XML: All Clouds must have the 'api_url' attribute.");
+									if (xCloud.Attribute("api_protocol") == null) 
+										throw new Exception("Cloud Providers XML: All Clouds must have the 'api_protocol' attribute.");
+									
+									Cloud c = new Cloud(pv, false, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value, xCloud.Attribute("api_protocol").Value);
 									pv.Clouds.Add(c.ID, c);
 								}
 							}
-							else 
-							{
-								throw new Exception("Error building Cloud object: " + sErr);	
+							
+							//Let's also add any clouds that may be in the database...
+							//IF the "user_defined_clouds" flag is set.
+							if (pv.UserDefinedClouds) {
+								string sErr = "";
+								string sSQL = "select cloud_id, cloud_name, api_url, api_protocol" +
+					                " from clouds" +
+					                " where provider = '" + pv.Name + "'" + 
+									" order by cloud_name";
+					
+					            DataTable dt = new DataTable();
+					            if (dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+					            {
+					                foreach (DataRow dr in dt.Rows)
+					                {
+										Cloud c = new Cloud(pv, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+										pv.Clouds.Add(c.ID, c);
+									}
+								}
+								else 
+								{
+									throw new Exception("Error building Cloud object: " + sErr);	
+								}
 							}
 						}
-					}
-					
-					//get the cloudobjecttypes for this provider.					
-					foreach (XElement xProduct in xProvider.XPathSelectElements("products/product"))
-	                {
-						if (xProduct.Attribute("name") == null) 
-							throw new Exception("Cloud Providers XML: All Products must have the 'name' attribute.");
 						
-						Product p = new Product(pv);
-						p.Name = xProduct.Attribute("name").Value;
-						//use the name for the label if it doesn't exist.
-						p.Label = (xProduct.Attribute("label") == null ? p.Name : xProduct.Attribute("label").Value);
-						p.APIUrlPrefix = (xProduct.Attribute("api_url_prefix") == null ? "" : xProduct.Attribute("api_url_prefix").Value);
-						p.APIUri = (xProduct.Attribute("api_uri") == null ? "" : xProduct.Attribute("api_uri").Value);
-						p.APIVersion = (xProduct.Attribute("api_version") == null ? "" : xProduct.Attribute("api_version").Value);
-						
-						//the product contains object type definitions
-						foreach (XElement xType in xProduct.XPathSelectElements("object_types/type"))
+						//get the cloudobjecttypes for this provider.					
+						foreach (XElement xProduct in xProvider.XPathSelectElements("products/product"))
 		                {
-							if (xType.Attribute("id") == null) 
-								throw new Exception("Cloud Providers XML: All Object Types must have the 'id' attribute.");
-							if (xType.Attribute("label") == null) 
-								throw new Exception("Cloud Providers XML: All Object Types must have the 'label' attribute.");
+							if (xProduct.Attribute("name") == null) 
+								throw new Exception("Cloud Providers XML: All Products must have the 'name' attribute.");
 							
-							CloudObjectType cot = new CloudObjectType(p);
-							cot.ID = xType.Attribute("id").Value;
-							cot.Label = xType.Attribute("label").Value;
+							Product p = new Product(pv);
+							p.Name = xProduct.Attribute("name").Value;
+							//use the name for the label if it doesn't exist.
+							p.Label = (xProduct.Attribute("label") == null ? p.Name : xProduct.Attribute("label").Value);
+							p.APIUrlPrefix = (xProduct.Attribute("api_url_prefix") == null ? "" : xProduct.Attribute("api_url_prefix").Value);
+							p.APIUri = (xProduct.Attribute("api_uri") == null ? "" : xProduct.Attribute("api_uri").Value);
+							p.APIVersion = (xProduct.Attribute("api_version") == null ? "" : xProduct.Attribute("api_version").Value);
 							
-							cot.APICall = (xType.Attribute("api_call") == null ? "" : xType.Attribute("api_call").Value);
-							cot.APIRequestGroupFilter = (xType.Attribute("request_group_filter") == null ? "" : xType.Attribute("request_group_filter").Value);
-							cot.APIRequestRecordFilter = (xType.Attribute("request_record_filter") == null ? "" : xType.Attribute("request_record_filter").Value);
-							cot.XMLRecordXPath = (xType.Attribute("xml_record_xpath") == null ? "" : xType.Attribute("xml_record_xpath").Value);
-							
-							//the type contains property definitions
-							foreach (XElement xProperty in xType.XPathSelectElements("property"))
+							//the product contains object type definitions
+							foreach (XElement xType in xProduct.XPathSelectElements("object_types/type"))
 			                {
-								// name="ImageId" label="" xpath="imageId" id_field="1" has_icon="0" short_list="1" sort_order="1"
-								if (xProperty.Attribute("name") == null) 
-									throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'name' attribute.");
-								if (xProperty.Attribute("xpath") == null) 
-									throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'xpath' attribute.");
+								if (xType.Attribute("id") == null) 
+									throw new Exception("Cloud Providers XML: All Object Types must have the 'id' attribute.");
+								if (xType.Attribute("label") == null) 
+									throw new Exception("Cloud Providers XML: All Object Types must have the 'label' attribute.");
 								
-								CloudObjectTypeProperty cotp = new CloudObjectTypeProperty(cot);
-								cotp.Name = xProperty.Attribute("name").Value;
-								cotp.XPath = xProperty.Attribute("xpath").Value;
+								CloudObjectType cot = new CloudObjectType(p);
+								cot.ID = xType.Attribute("id").Value;
+								cot.Label = xType.Attribute("label").Value;
 								
-								cotp.Label = (xProperty.Attribute("label") == null ? "" : xProperty.Attribute("label").Value);
-								cotp.SortOrder = (xProperty.Attribute("sort_order") == null ? "" : xProperty.Attribute("sort_order").Value);
-								cotp.IsID = (xProperty.Attribute("id_field") == null ? false : 
-									(xProperty.Attribute("id_field").Value == "1" ? true : false));
-								cotp.HasIcon = (xProperty.Attribute("has_icon") == null ? false : 
-									(xProperty.Attribute("has_icon").Value == "1" ? true : false));
-								cotp.ShortList = (xProperty.Attribute("short_list") == null ? false : 
-									(xProperty.Attribute("short_list").Value == "1" ? true : false));
-								cotp.ValueIsXML = (xProperty.Attribute("value_is_xml") == null ? false : 
-									(xProperty.Attribute("value_is_xml").Value == "1" ? true : false));
+								cot.APICall = (xType.Attribute("api_call") == null ? "" : xType.Attribute("api_call").Value);
+								cot.APIRequestGroupFilter = (xType.Attribute("request_group_filter") == null ? "" : xType.Attribute("request_group_filter").Value);
+								cot.APIRequestRecordFilter = (xType.Attribute("request_record_filter") == null ? "" : xType.Attribute("request_record_filter").Value);
+								cot.XMLRecordXPath = (xType.Attribute("xml_record_xpath") == null ? "" : xType.Attribute("xml_record_xpath").Value);
 								
-								cot.Properties.Add(cotp);
-							}
-							
-							p.CloudObjectTypes.Add(cot.ID, cot);
-						}						
-							
-						pv.Products.Add(p.Name, p);
+								//the type contains property definitions
+								foreach (XElement xProperty in xType.XPathSelectElements("property"))
+				                {
+									// name="ImageId" label="" xpath="imageId" id_field="1" has_icon="0" short_list="1" sort_order="1"
+									if (xProperty.Attribute("name") == null) 
+										throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'name' attribute.");
+									if (xProperty.Attribute("xpath") == null) 
+										throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'xpath' attribute.");
+									
+									CloudObjectTypeProperty cotp = new CloudObjectTypeProperty(cot);
+									cotp.Name = xProperty.Attribute("name").Value;
+									cotp.XPath = xProperty.Attribute("xpath").Value;
+									
+									cotp.Label = (xProperty.Attribute("label") == null ? "" : xProperty.Attribute("label").Value);
+									cotp.SortOrder = (xProperty.Attribute("sort_order") == null ? "" : xProperty.Attribute("sort_order").Value);
+									cotp.IsID = (xProperty.Attribute("id_field") == null ? false : 
+										(xProperty.Attribute("id_field").Value == "1" ? true : false));
+									cotp.HasIcon = (xProperty.Attribute("has_icon") == null ? false : 
+										(xProperty.Attribute("has_icon").Value == "1" ? true : false));
+									cotp.ShortList = (xProperty.Attribute("short_list") == null ? false : 
+										(xProperty.Attribute("short_list").Value == "1" ? true : false));
+									cotp.ValueIsXML = (xProperty.Attribute("value_is_xml") == null ? false : 
+										(xProperty.Attribute("value_is_xml").Value == "1" ? true : false));
+									
+									cot.Properties.Add(cotp);
+								}
+								
+								p.CloudObjectTypes.Add(cot.ID, cot);
+							}						
+								
+							pv.Products.Add(p.Name, p);
+						}
+	
+						this.Add(pv.Name, pv);
 					}
-
-					this.Add(pv.Name, pv);
 				}
 			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
         }
 	}
 	public class Provider
@@ -1313,18 +1424,25 @@ namespace Globals
 		//get it by ID from the session
 		static public Provider GetFromSession(string sProvider)
 		{
-            acUI.acUI ui = new acUI.acUI();
-
-			//get the provider record from the CloudProviders object in the session
-			CloudProviders cp = ui.GetCloudProviders();
-			if (cp == null) {
-				throw new Exception("Error building Provider object: Unable to GetCloudProviders.");	
+			try
+			{
+				acUI.acUI ui = new acUI.acUI();
+				
+				//get the provider record from the CloudProviders object in the session
+				CloudProviders cp = ui.GetCloudProviders();
+				if (cp == null) {
+					throw new Exception("Error building Provider object: Unable to GetCloudProviders.");	
+				}
+				
+				if (cp.ContainsKey(sProvider))
+					return cp[sProvider];
+				else
+					throw new Exception("Provider [" + sProvider + "] does not exist in the cloud_providers.xml file.");
 			}
-			
-			if (cp.ContainsKey(sProvider))
-				return cp[sProvider];
-			else
-				throw new Exception("Provider [" + sProvider + "] does not exist in the cloud_providers.xml file.");
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		
 		//Provider CONTAINS a named dictionary of Clouds;
@@ -1352,96 +1470,124 @@ namespace Globals
 		}
 		public Dictionary<string, CloudObjectType> GetAllObjectTypes()
 		{
-			Dictionary<string, CloudObjectType> cots = new Dictionary<string, CloudObjectType>();
-			
-	        foreach (Product p in this.Products.Values)
-	        {
-		        foreach (CloudObjectType cot in p.CloudObjectTypes.Values)
-		        {
-					if (cot != null)
-						cots.Add(cot.ID, cot);
+			try
+			{
+				Dictionary<string, CloudObjectType> cots = new Dictionary<string, CloudObjectType>();
+				
+				foreach (Product p in this.Products.Values)
+				{
+					foreach (CloudObjectType cot in p.CloudObjectTypes.Values)
+					{
+						if (cot != null)
+							cots.Add(cot.ID, cot);
+					}
 				}
+				return cots;
 			}
-			return cots;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		public DataTable GetAllCloudsAsDataTable()
 		{
-			DataTable dt = new DataTable();
-	        dt.Columns.Add("cloud_id");
-		    dt.Columns.Add("cloud_name");
-		    dt.Columns.Add("api_url");
-		    dt.Columns.Add("provider", typeof(Provider));
-			
-			foreach (Cloud c in this.Clouds.Values)
-	        {
-				dt.Rows.Add(c.ID, c.Name, c.APIUrl, this);
+			try
+			{
+				DataTable dt = new DataTable();
+				dt.Columns.Add("cloud_id");
+				dt.Columns.Add("cloud_name");
+				dt.Columns.Add("api_url");
+				dt.Columns.Add("provider", typeof(Provider));
+				
+				foreach (Cloud c in this.Clouds.Values)
+				{
+					dt.Rows.Add(c.ID, c.Name, c.APIUrl, this);
+				}
+				
+				return dt;
 			}
-			
-			return dt;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 				
 		//INSTANCE METHOD - returns the object as JSON
 		public string AsJSON()
 		{
-			StringBuilder sb = new StringBuilder();
-			
-			sb.Append("{");
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "TestProduct", this.TestProduct);
-			sb.AppendFormat("\"{0}\" : {1},", "UserDefinedClouds", this.UserDefinedClouds.ToString().ToLower()); //boolean has no quotes!
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "TestObject", this.TestObject);
-
-			//clouds
-			StringBuilder sbClouds = new StringBuilder();
-			sbClouds.Append("{");
-			
-			int i = 1;
-			foreach (Cloud c in this.Clouds.Values)
+			try
 			{
-				sbClouds.AppendFormat("\"{0}\" : {1}", c.ID, c.AsJSON());
+				StringBuilder sb = new StringBuilder();
 				
-				//the last one doesn't get a trailing comma
-				if (i < this.Clouds.Count)
-					sbClouds.Append(",");
+				sb.Append("{");
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "TestProduct", this.TestProduct);
+				sb.AppendFormat("\"{0}\" : {1},", "UserDefinedClouds", this.UserDefinedClouds.ToString().ToLower()); //boolean has no quotes!
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "TestObject", this.TestObject);
+	
+				//clouds
+				StringBuilder sbClouds = new StringBuilder();
+				sbClouds.Append("{");
 				
-				i++;
+				int i = 1;
+				foreach (Cloud c in this.Clouds.Values)
+				{
+					sbClouds.AppendFormat("\"{0}\" : {1}", c.ID, c.AsJSON());
+					
+					//the last one doesn't get a trailing comma
+					if (i < this.Clouds.Count)
+						sbClouds.Append(",");
+					
+					i++;
+				}
+				
+				sbClouds.Append("}");
+				
+				sb.AppendFormat("\"{0}\" : {1}", "Clouds", sbClouds);
+				
+				sb.Append("}");
+				
+				return sb.ToString();
 			}
-			
-			sbClouds.Append("}");
-			
-			sb.AppendFormat("\"{0}\" : {1}", "Clouds", sbClouds);
-			
-			sb.Append("}");
-			
-			return sb.ToString();
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		public void RefreshClouds() {
-			this.Clouds.Clear();
-			
-			dataAccess dc = new dataAccess();
-			
-			string sErr = "";
-			string sSQL = "select cloud_id, cloud_name, api_url, api_protocol" +
-                " from clouds" +
-                " where provider = '" + this.Name + "'" + 
-				" order by cloud_name";
-
-            DataTable dt = new DataTable();
-            if (dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                foreach (DataRow dr in dt.Rows)
-                {
-					Cloud c = new Cloud(this, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
-					this.Clouds.Add(c.ID, c);
-				}
-			}
-			else 
+			try
 			{
-				throw new Exception("Error building Cloud object: " + sErr);	
+				this.Clouds.Clear();
+				
+				dataAccess dc = new dataAccess();
+				
+				string sErr = "";
+				string sSQL = "select cloud_id, cloud_name, api_url, api_protocol" +
+	                " from clouds" +
+	                " where provider = '" + this.Name + "'" + 
+					" order by cloud_name";
+	
+	            DataTable dt = new DataTable();
+	            if (dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+	            {
+	                foreach (DataRow dr in dt.Rows)
+	                {
+						Cloud c = new Cloud(this, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+						this.Clouds.Add(c.ID, c);
+					}
+				}
+				else 
+				{
+					throw new Exception("Error building Cloud object: " + sErr);	
+				}
+				
+				return;
 			}
-			
-			return;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 	}
 
@@ -1525,33 +1671,40 @@ namespace Globals
 		
 		public Clouds(string sFilter, ref string sErr)
 		{
-			//builds a list from the db, with the optional filter
-			dataAccess dc = new dataAccess();
-            string sWhereString = "";
-
-            if (!string.IsNullOrEmpty(sFilter))
+			try
+			{
+				//builds a list from the db, with the optional filter
+				dataAccess dc = new dataAccess();
+	            string sWhereString = "";
+	
+	            if (!string.IsNullOrEmpty(sFilter))
+	            {
+	                //split on spaces
+	                int i = 0;
+	                string[] aSearchTerms = sFilter.Split(' ');
+	                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+	                {
+	                    if (aSearchTerms[i].Length > 0)
+	                    {
+	                        sWhereString = " and (cloud_name like '%" + aSearchTerms[i] + "%' " +
+	                            "or provider like '%" + aSearchTerms[i] + "%' " +
+	                            "or api_url like '%" + aSearchTerms[i] + "%') ";
+	                    }
+	                } 
+	            }
+	
+	            string sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" +
+	                " from clouds" +
+	                " where 1=1 " + sWhereString +
+	                " order by provider, cloud_name";
+	
+	            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+	                return;
+			}
+            catch (Exception ex)
             {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = sFilter.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (cloud_name like '%" + aSearchTerms[i] + "%' " +
-                            "or provider like '%" + aSearchTerms[i] + "%' " +
-                            "or api_url like '%" + aSearchTerms[i] + "%') ";
-                    }
-                } 
-            }
-
-            string sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" +
-                " from clouds" +
-                " where 1=1 " + sWhereString +
-                " order by provider, cloud_name";
-
-            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
-                return;
+				throw ex;
+            }			
 		}
 	}
 
@@ -1567,37 +1720,43 @@ namespace Globals
 		//the default constructor
 		public Cloud(string sCloudID)
         {
-			if (string.IsNullOrEmpty(sCloudID))
-				throw new Exception("Error building Cloud object: Cloud ID is required.");	
-			
-			acUI.acUI ui = new acUI.acUI();
-			
-            //search for the sCloudID in the CloudProvider Class -AND- the database
-			CloudProviders cp = ui.GetCloudProviders();
-			if (cp == null) {
-				throw new Exception("Error building Cloud object: Unable to GetCloudProviders.");	
-			}
-			
-			//check the CloudProvider class first ... it *should be there unless something is wrong.
-			foreach (Provider p in cp.Values) {
-				Dictionary<string, Cloud> cs = p.Clouds;
-				foreach (Cloud c in cs.Values) {
-					if (c.ID == sCloudID) {
-						IsUserDefined = c.IsUserDefined;
-						ID = c.ID;
-						Name = c.Name;
-						APIUrl = c.APIUrl;
-						APIProtocol = c.APIProtocol;
-						Provider = c.Provider;
-						return;
-					}				
+			try
+			{
+				if (string.IsNullOrEmpty(sCloudID))
+					throw new Exception("Error building Cloud object: Cloud ID is required.");	
+				
+				acUI.acUI ui = new acUI.acUI();
+				
+	            //search for the sCloudID in the CloudProvider Class -AND- the database
+				CloudProviders cp = ui.GetCloudProviders();
+				if (cp == null) {
+					throw new Exception("Error building Cloud object: Unable to GetCloudProviders.");	
 				}
+				
+				//check the CloudProvider class first ... it *should be there unless something is wrong.
+				foreach (Provider p in cp.Values) {
+					Dictionary<string, Cloud> cs = p.Clouds;
+					foreach (Cloud c in cs.Values) {
+						if (c.ID == sCloudID) {
+							IsUserDefined = c.IsUserDefined;
+							ID = c.ID;
+							Name = c.Name;
+							APIUrl = c.APIUrl;
+							APIProtocol = c.APIProtocol;
+							Provider = c.Provider;
+							return;
+						}				
+					}
+				}
+				
+				//well, if we got here we have a problem... the ID provided wasn't found anywhere.
+				//this should never happen, so bark about it.
+				throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
 			}
-			
-			//well, if we got here we have a problem... the ID provided wasn't found anywhere.
-			//this should never happen, so bark about it.
-			throw new Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");	
-
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
         }
 
 		//an override constructor (manual creation)
@@ -1620,17 +1779,24 @@ namespace Globals
 		
 		public string AsJSON()
 		{
-			StringBuilder sb = new StringBuilder();
-			
-			sb.Append("{");
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", this.ID);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
-			sb.AppendFormat("\"{0}\" : \"{1}\"", "APIProtocol", this.APIProtocol);
-			sb.Append("}");
-			
-			return sb.ToString();
+			try
+			{
+				StringBuilder sb = new StringBuilder();
+				
+				sb.Append("{");
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", this.ID);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
+				sb.AppendFormat("\"{0}\" : \"{1}\"", "APIProtocol", this.APIProtocol);
+				sb.Append("}");
+				
+				return sb.ToString();
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		
 		
@@ -1639,12 +1805,12 @@ namespace Globals
 		//and returns the object
 		static public Cloud DBCreateNew(string sCloudName, string sProvider, string sAPIUrl, string sAPIProtocol, ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-            acUI.acUI ui = new acUI.acUI();
-			string sSQL = "";
-			
 			try
 			{
+	            dataAccess dc = new dataAccess();
+	            acUI.acUI ui = new acUI.acUI();
+				string sSQL = "";
+				
 				string sNewID = ui.NewGUID();
 				
 				sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" +
@@ -1688,12 +1854,12 @@ namespace Globals
 		//updates the current Cloud object to the db
 		public bool DBUpdate(ref string sErr)
 		{
-			acUI.acUI ui = new acUI.acUI();
-            dataAccess dc = new dataAccess();
-			string sSQL = "";
-			
 			try
 			{
+				acUI.acUI ui = new acUI.acUI();
+	            dataAccess dc = new dataAccess();
+				string sSQL = "";
+				
 				//of course we do nothing if this cloud was hardcoded in the xml
 				//just return success, which should never happen since the user can't get to edit a hardcoded Cloud anyway.
 				if (!this.IsUserDefined)
@@ -1748,36 +1914,43 @@ namespace Globals
 		
 		public CloudAccounts(string sFilter, ref string sErr)
 		{
-			//builds a list from the db, with the optional filter
-			dataAccess dc = new dataAccess();
-            string sWhereString = "";
-
-            if (!string.IsNullOrEmpty(sFilter))
+			try
+			{
+				//builds a list from the db, with the optional filter
+				dataAccess dc = new dataAccess();
+	            string sWhereString = "";
+	
+	            if (!string.IsNullOrEmpty(sFilter))
+	            {
+	                //split on spaces
+	                int i = 0;
+	                string[] aSearchTerms = sFilter.Split(' ');
+	                for (i = 0; i <= aSearchTerms.Length - 1; i++)
+	                {
+	                    if (aSearchTerms[i].Length > 0)
+	                    {
+	                        sWhereString = " and (account_name like '%" + aSearchTerms[i] + "%' " +
+	                            "or account_number like '%" + aSearchTerms[i] + "%' " +
+	                            "or provider like '%" + aSearchTerms[i] + "%' " +
+	                            "or login_id like '%" + aSearchTerms[i] + "%') ";
+	                    }
+	                } 
+	            }
+	
+	            string sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," +
+	                " case is_default when 1 then 'Yes' else 'No' end as is_default," +
+					" (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" +
+	                " from cloud_account" +
+	                " where 1=1 " + sWhereString +
+	                " order by is_default desc, account_name";
+	
+	            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
+	                return;
+			}
+            catch (Exception ex)
             {
-                //split on spaces
-                int i = 0;
-                string[] aSearchTerms = sFilter.Split(' ');
-                for (i = 0; i <= aSearchTerms.Length - 1; i++)
-                {
-                    if (aSearchTerms[i].Length > 0)
-                    {
-                        sWhereString = " and (account_name like '%" + aSearchTerms[i] + "%' " +
-                            "or account_number like '%" + aSearchTerms[i] + "%' " +
-                            "or provider like '%" + aSearchTerms[i] + "%' " +
-                            "or login_id like '%" + aSearchTerms[i] + "%') ";
-                    }
-                } 
-            }
-
-            string sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," +
-                " case is_default when 1 then 'Yes' else 'No' end as is_default," +
-				" (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" +
-                " from cloud_account" +
-                " where 1=1 " + sWhereString +
-                " order by is_default desc, account_name";
-
-            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
-                return;
+				throw ex;
+            }			
 		}
 	}
 
@@ -1795,45 +1968,52 @@ namespace Globals
 		//the default constructor
 		public CloudAccount(string sAccountID)
         {
-			if (string.IsNullOrEmpty(sAccountID))
-				throw new Exception("Error building Cloud Account object: Cloud Account ID is required.");	
-			
-            dataAccess dc = new dataAccess();
-			
-            string sErr = "";
-
-            string sSQL = "select account_name, account_number, provider, login_id, login_password, is_default" +
-                " from cloud_account" +
-                " where account_id = '" + sAccountID + "'";
-
-            DataRow dr = null;
-            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                if (dr != null)
-                {
-					ID = sAccountID;
-					Name = dr["account_name"].ToString();
-					AccountNumber = (string.IsNullOrEmpty(dr["account_number"].ToString()) ? "" : dr["account_number"].ToString());
-					LoginID = (string.IsNullOrEmpty (dr["login_id"].ToString()) ? "" : dr["login_id"].ToString());
-					LoginPassword = (string.IsNullOrEmpty (dr["login_password"].ToString()) ? "" : dc.DeCrypt(dr["login_password"].ToString()));
-					IsDefault = (dr["is_default"].ToString() == "1" ? true : false);
-					
-					Provider p = Provider.GetFromSession(dr["provider"].ToString());
-					if (p == null) {
-						throw new Exception("Error building CloudAccount object: No Provider for name [" + dr["provider"].ToString() + "] defined in session.");	
+			try
+			{
+				if (string.IsNullOrEmpty(sAccountID))
+					throw new Exception("Error building Cloud Account object: Cloud Account ID is required.");	
+				
+	            dataAccess dc = new dataAccess();
+				
+	            string sErr = "";
+	
+	            string sSQL = "select account_name, account_number, provider, login_id, login_password, is_default" +
+	                " from cloud_account" +
+	                " where account_id = '" + sAccountID + "'";
+	
+	            DataRow dr = null;
+	            if (dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+	            {
+	                if (dr != null)
+	                {
+						ID = sAccountID;
+						Name = dr["account_name"].ToString();
+						AccountNumber = (string.IsNullOrEmpty(dr["account_number"].ToString()) ? "" : dr["account_number"].ToString());
+						LoginID = (string.IsNullOrEmpty (dr["login_id"].ToString()) ? "" : dr["login_id"].ToString());
+						LoginPassword = (string.IsNullOrEmpty (dr["login_password"].ToString()) ? "" : dc.DeCrypt(dr["login_password"].ToString()));
+						IsDefault = (dr["is_default"].ToString() == "1" ? true : false);
+						
+						Provider p = Provider.GetFromSession(dr["provider"].ToString());
+						if (p == null) {
+							throw new Exception("Error building CloudAccount object: No Provider for name [" + dr["provider"].ToString() + "] defined in session.");	
+						}
+						
+						Provider = p;
 					}
-					
-					Provider = p;
+					else 
+					{
+						throw new Exception("Unable to build Cloud Account object. Either no Cloud Accounts are defined, or no Account with ID [" + sAccountID + "] could be found.");	
+					}
 				}
 				else 
 				{
-					throw new Exception("Unable to build Cloud Account object. Either no Cloud Accounts are defined, or no Account with ID [" + sAccountID + "] could be found.");	
+					throw new Exception("Error building Cloud Account object: " + sErr);	
 				}
 			}
-			else 
-			{
-				throw new Exception("Error building Cloud Account object: " + sErr);	
-			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
         }
 		
         public bool IsValidForConnections()
@@ -1850,40 +2030,47 @@ namespace Globals
 		//INSTANCE METHOD - returns the object as JSON
 		public string AsJSON()
 		{
-			StringBuilder sb = new StringBuilder();
-			
-			sb.Append("{");
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", this.ID);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "AccountNumber", this.AccountNumber);
-			sb.AppendFormat("\"{0}\" : {1},", "IsDefault", this.IsDefault.ToString().ToLower()); //boolean has no quotes!
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "LoginID", this.LoginID);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "LoginPassword", this.LoginPassword);
-			sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
-
-			//providers clouds for this account
-			StringBuilder sbClouds = new StringBuilder();
-			sbClouds.Append("{");
-			
-			int i = 1;
-			foreach (Cloud c in this.Provider.Clouds.Values)
+			try
 			{
-				sbClouds.AppendFormat("\"{0}\" : {1}", c.ID, c.AsJSON());
+				StringBuilder sb = new StringBuilder();
 				
-				//the last one doesn't get a trailing comma
-				if (i < this.Provider.Clouds.Count)
-					sbClouds.Append(",");
+				sb.Append("{");
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", this.ID);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "AccountNumber", this.AccountNumber);
+				sb.AppendFormat("\"{0}\" : {1},", "IsDefault", this.IsDefault.ToString().ToLower()); //boolean has no quotes!
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "LoginID", this.LoginID);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "LoginPassword", this.LoginPassword);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
+	
+				//providers clouds for this account
+				StringBuilder sbClouds = new StringBuilder();
+				sbClouds.Append("{");
 				
-				i++;
+				int i = 1;
+				foreach (Cloud c in this.Provider.Clouds.Values)
+				{
+					sbClouds.AppendFormat("\"{0}\" : {1}", c.ID, c.AsJSON());
+					
+					//the last one doesn't get a trailing comma
+					if (i < this.Provider.Clouds.Count)
+						sbClouds.Append(",");
+					
+					i++;
+				}
+				
+				sbClouds.Append("}");
+				
+				sb.AppendFormat("\"{0}\" : {1}", "Clouds", sbClouds);
+				
+				sb.Append("}");
+				
+				return sb.ToString();
 			}
-			
-			sbClouds.Append("}");
-			
-			sb.AppendFormat("\"{0}\" : {1}", "Clouds", sbClouds);
-			
-			sb.Append("}");
-			
-			return sb.ToString();
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 		
 		//CLASS METHOD
@@ -1892,11 +2079,11 @@ namespace Globals
 		static public CloudAccount DBCreateNew(string sAccountName, string sAccountNumber, string sProvider, 
 		                                       string sLoginID, string sLoginPassword, string sIsDefault, ref string sErr)
 		{
-            dataAccess dc = new dataAccess();
-            acUI.acUI ui = new acUI.acUI();
-
 			try
 			{
+	            dataAccess dc = new dataAccess();
+	            acUI.acUI ui = new acUI.acUI();
+	
 				dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
 				
 				//if there are no rows yet, make this one the default even if the box isn't checked.
@@ -1970,12 +2157,12 @@ namespace Globals
 		//updates the current Cloud object to the db
 		public bool DBUpdate(ref string sErr)
 		{
-			acUI.acUI ui = new acUI.acUI();
-            dataAccess dc = new dataAccess();
-			string sSQL = "";
-			
 			try
 			{
+				acUI.acUI ui = new acUI.acUI();
+	            dataAccess dc = new dataAccess();
+				string sSQL = "";
+				
 				//what's the original name?
 				string sOriginalName = "";
 				sSQL = "select account_name from cloud_account where account_id = '" + this.ID + "'";
@@ -2042,66 +2229,73 @@ namespace Globals
 		//class method to load from the disk
 		static public FunctionCategories Load(string sFileName)
 		{
-			XDocument xCategories = XDocument.Load(sFileName);
-			if (xCategories == null) {
-				//crash... we can't do anything if the XML is busted
-				throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
-			} else {
-				
-				FunctionCategories fc = new FunctionCategories();
-				
-				foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
-				{
-					//not crashing... just skipping
-					if (xCategory.Attribute ("name") == null) 
-						continue;
+			try 
+			{
+				XDocument xCategories = XDocument.Load(sFileName);
+				if (xCategories == null) {
+					//crash... we can't do anything if the XML is busted
+					throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
+				} else {
 					
-					//not crashing... just skipping
-					if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
-						continue;
+					FunctionCategories fc = new FunctionCategories();
 					
-					//ok, minimal data is intact... proceed...
-					Category cat = new Category();
-					cat.Name = xCategory.Attribute("name").Value;
-					cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
-					cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
-					cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
-				
-					
-					//load up this category with it's functions
-					foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
+					foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
 					{
 						//not crashing... just skipping
-						if (xFunction.Attribute ("name") == null) 
+						if (xCategory.Attribute ("name") == null) 
 							continue;
 						
 						//not crashing... just skipping
-						if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
+						if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
 							continue;
 						
 						//ok, minimal data is intact... proceed...
-						Function fn = new Function(cat);
-						fn.Name = xFunction.Attribute("name").Value;
-						fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
-						fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
-						fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
-						fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
+						Category cat = new Category();
+						cat.Name = xCategory.Attribute("name").Value;
+						cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
+						cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
+						cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
+					
 						
-						if (xFunction.Element("function") != null)
+						//load up this category with it's functions
+						foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
 						{
-							if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
+							//not crashing... just skipping
+							if (xFunction.Attribute ("name") == null) 
+								continue;
+							
+							//not crashing... just skipping
+							if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
+								continue;
+							
+							//ok, minimal data is intact... proceed...
+							Function fn = new Function(cat);
+							fn.Name = xFunction.Attribute("name").Value;
+							fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
+							fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
+							fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
+							fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
+							
+							if (xFunction.Element("function") != null)
 							{
-								fn.TemplateXML = xFunction.Element("function").ToString();
-								fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
-							}
-						}						
-						cat.Functions.Add(fn.Name, fn);
+								if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
+								{
+									fn.TemplateXML = xFunction.Element("function").ToString();
+									fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
+								}
+							}						
+							cat.Functions.Add(fn.Name, fn);
+						}
+					
+						fc.Add(cat.Name, cat);
 					}
-				
-					fc.Add(cat.Name, cat);
+					return fc;
 				}
-				return fc;
 			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
         }
 	}
 	
@@ -2115,18 +2309,25 @@ namespace Globals
 		//but searching this dictionary will be faster because it's flat
 		public Functions (FunctionCategories fc)
 		{
-			if (fc == null) {
-				//crash... we can't do anything if the XML is busted
-				throw new Exception ("Error: (Functions Class) Invalid or missing FunctionCategories Class.");
-			} else {
-				foreach (Category cat in fc.Values)
-				{
-					foreach (Function fn in cat.Functions.Values)
+			try
+			{
+				if (fc == null) {
+					//crash... we can't do anything if the XML is busted
+					throw new Exception ("Error: (Functions Class) Invalid or missing FunctionCategories Class.");
+				} else {
+					foreach (Category cat in fc.Values)
 					{
-						this.Add(fn.Name, fn);
+						foreach (Function fn in cat.Functions.Values)
+						{
+							this.Add(fn.Name, fn);
+						}
 					}
 				}
 			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
         }
 		
 		//this default constructor
@@ -2170,37 +2371,50 @@ namespace Globals
 		//class method - get Function by function name !! requires session
 		public static Function GetFunctionByName(string sFunctionName)
 		{
-			acUI.acUI ui = new acUI.acUI();
-			Function fn = ui.GetTaskFunction(sFunctionName);
-			if (fn != null)
-				return fn;
-			
-			return null;
+			try
+			{
+				acUI.acUI ui = new acUI.acUI();
+				Function fn = ui.GetTaskFunction(sFunctionName);
+				if (fn != null)
+					return fn;
+				
+				return null;
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 
 		//class method - get Function from step_id
 		public static Function GetFunctionForStep(string sStepID)
 		{
-			dataAccess dc = new dataAccess();
-			string sErr = "";
-			
-			string sFunctionName = "";
-			string sSQL = "select function_name from task_step where step_id = '" + sStepID + "'";
-			if (!dc.sqlGetSingleString(ref sFunctionName, sSQL, ref sErr))
-				throw new Exception(sErr);
-			
-			if (sFunctionName.Length > 0)
+			try
 			{
-				Function func = GetFunctionByName(sFunctionName);
-				if (func == null)
-					throw new Exception("Unable to look up [" + sFunctionName + "] in Function class.");
+				dataAccess dc = new dataAccess();
+				string sErr = "";
 				
-				return func;
+				string sFunctionName = "";
+				string sSQL = "select function_name from task_step where step_id = '" + sStepID + "'";
+				if (!dc.sqlGetSingleString(ref sFunctionName, sSQL, ref sErr))
+					throw new Exception(sErr);
+				
+				if (sFunctionName.Length > 0)
+				{
+					Function func = GetFunctionByName(sFunctionName);
+					if (func == null)
+						throw new Exception("Unable to look up [" + sFunctionName + "] in Function class.");
+					
+					return func;
+				}
+				
+				return null;
 			}
-			
-			return null;
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
-
 	}
 	
 	//ClipboardSteps is a dictionary of clipboardStep objects
@@ -2208,34 +2422,41 @@ namespace Globals
 	{
 		public ClipboardSteps(string sUserID)
 		{
-			dataAccess dc = new dataAccess();
-			string sErr = "";
-			
-			//note: some literal values are selected here.  That's because DrawReadOnlyStep
-            //requires a more detailed record, but the snip doesn't have some of those values
-            //so we hardcode them.
-            string sSQL = "select s.clip_dt, s.step_id, s.step_desc, s.function_name, s.function_xml," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
-                " from task_step_clipboard s" +
-                " where s.user_id = '" + sUserID + "'" +
-                " and s.codeblock_name is null" +
-                " order by s.clip_dt desc";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                throw new Exception("Unable to get clipboard data for user [" + sUserID + "].<br />" + sErr);
-            }
-
-			if (dt.Rows.Count > 0)
-            {
-				foreach(DataRow dr in dt.Rows)
-				{
-					ClipboardStep cs = new ClipboardStep(dr);
-					if (cs != null)
-						this.Add(cs.ID, cs);
+			try
+			{
+				dataAccess dc = new dataAccess();
+				string sErr = "";
+				
+				//note: some literal values are selected here.  That's because DrawReadOnlyStep
+	            //requires a more detailed record, but the snip doesn't have some of those values
+	            //so we hardcode them.
+	            string sSQL = "select s.clip_dt, s.step_id, s.step_desc, s.function_name, s.function_xml," +
+	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
+	                " from task_step_clipboard s" +
+	                " where s.user_id = '" + sUserID + "'" +
+	                " and s.codeblock_name is null" +
+	                " order by s.clip_dt desc";
+	
+	            DataTable dt = new DataTable();
+	            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+	            {
+	                throw new Exception("Unable to get clipboard data for user [" + sUserID + "].<br />" + sErr);
+	            }
+	
+				if (dt.Rows.Count > 0)
+	            {
+					foreach(DataRow dr in dt.Rows)
+					{
+						ClipboardStep cs = new ClipboardStep(dr);
+						if (cs != null)
+							this.Add(cs.ID, cs);
+					}
 				}
 			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 	}
 	public class ClipboardStep
@@ -2256,25 +2477,32 @@ namespace Globals
 
 		public ClipboardStep(DataRow dr)
 		{
-			this.ID = dr["step_id"].ToString();
-			this.ClipDT = dr["clip_dt"].ToString();
-			this.Order = -1;
-			this.Description = (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString());
-		
-			this.OutputParseType = (int)dr["output_parse_type"];
-			this.OutputRowDelimiter = (int)dr["output_row_delimiter"];
-			this.OutputColumnDelimiter = (int)dr["output_column_delimiter"];
-
-			this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
-			this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
+			try
+			{
+				this.ID = dr["step_id"].ToString();
+				this.ClipDT = dr["clip_dt"].ToString();
+				this.Order = -1;
+				this.Description = (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString());
 			
-			if (!string.IsNullOrEmpty(this.FunctionXML)) 
-				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-			if (!string.IsNullOrEmpty(this.VariableXML)) 
-				this.VariableXDoc = XDocument.Parse(this.VariableXML);
-			
-			//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
-			this.FunctionName = dr["function_name"].ToString();
+				this.OutputParseType = (int)dr["output_parse_type"];
+				this.OutputRowDelimiter = (int)dr["output_row_delimiter"];
+				this.OutputColumnDelimiter = (int)dr["output_column_delimiter"];
+	
+				this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
+				this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
+				
+				if (!string.IsNullOrEmpty(this.FunctionXML)) 
+					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+				if (!string.IsNullOrEmpty(this.VariableXML)) 
+					this.VariableXDoc = XDocument.Parse(this.VariableXML);
+				
+				//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+				this.FunctionName = dr["function_name"].ToString();
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
 		}
 	}
 	
@@ -2307,66 +2535,73 @@ namespace Globals
 		//constructor from an xElement
 		public Step(XElement xStep, Codeblock c, Task t)
 		{
-			if (xStep != null)
-			{
-				this.ID = Guid.NewGuid().ToString().ToLower();
-				this.Codeblock = c.Name;
-				this.Task = t;
-				
-				//stuff that shouldn't matter from the XML and we need to work out if it's required.
-				this.Order = 0;
-				this.Locked = false;
-	
-				this.Description = (xStep.Element("description") != null ? xStep.Element("description").Value : "");
-	
-				this.Commented = (xStep.Attribute("commented") != null ? (xStep.Attribute("commented").Value == "1" ? true : false) : false);
-				
-				int i = 0;
-	
-				if (xStep.Attribute("output_parse_type") != null)
+			try 
+			{	
+				if (xStep != null)
 				{
-					int.TryParse(xStep.Attribute("output_parse_type").Value, out i);
-					this.OutputParseType = i;
-				}
-				if (xStep.Attribute("output_row_delimiter") != null)
-				{
-					int.TryParse(xStep.Attribute("output_row_delimiter").Value, out i);
-					this.OutputRowDelimiter = i;
-				}
-				if (xStep.Attribute("output_column_delimiter") != null)
-				{
-					int.TryParse(xStep.Attribute("output_column_delimiter").Value, out i);
-					this.OutputColumnDelimiter = i;
-				}
-	
-				if (xStep.Element("function") != null)
-				{
-					this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
-	
-					//once parsed, it's cleaner.  update the object with the cleaner xml
-					if (!string.IsNullOrEmpty(this.FunctionXML))
+					this.ID = Guid.NewGuid().ToString().ToLower();
+					this.Codeblock = c.Name;
+					this.Task = t;
+					
+					//stuff that shouldn't matter from the XML and we need to work out if it's required.
+					this.Order = 0;
+					this.Locked = false;
+		
+					this.Description = (xStep.Element("description") != null ? xStep.Element("description").Value : "");
+		
+					this.Commented = (xStep.Attribute("commented") != null ? (xStep.Attribute("commented").Value == "1" ? true : false) : false);
+					
+					int i = 0;
+		
+					if (xStep.Attribute("output_parse_type") != null)
 					{
-						this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-						this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+						int.TryParse(xStep.Attribute("output_parse_type").Value, out i);
+						this.OutputParseType = i;
 					}
-				}
-				
-				if (xStep.Element("variable_xml") != null)
-				{
-					this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
-	
-					//once parsed, it's cleaner.  update the object with the cleaner xml
-					if (!string.IsNullOrEmpty(this.VariableXML)) 
+					if (xStep.Attribute("output_row_delimiter") != null)
 					{
-						this.VariableXDoc = XDocument.Parse(this.VariableXML);
-						this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+						int.TryParse(xStep.Attribute("output_row_delimiter").Value, out i);
+						this.OutputRowDelimiter = i;
 					}
+					if (xStep.Attribute("output_column_delimiter") != null)
+					{
+						int.TryParse(xStep.Attribute("output_column_delimiter").Value, out i);
+						this.OutputColumnDelimiter = i;
+					}
+		
+					if (xStep.Element("function") != null)
+					{
+						this.FunctionXML = (string.IsNullOrEmpty(xStep.Element("function").ToString()) ? "" : xStep.Element("function").ToString());
+		
+						//once parsed, it's cleaner.  update the object with the cleaner xml
+						if (!string.IsNullOrEmpty(this.FunctionXML))
+						{
+							this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+							this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+						}
+					}
+					
+					if (xStep.Element("variable_xml") != null)
+					{
+						this.VariableXML = (string.IsNullOrEmpty(xStep.Element("variable_xml").ToString()) ? "" : xStep.Element("variable_xml").ToString());
+		
+						//once parsed, it's cleaner.  update the object with the cleaner xml
+						if (!string.IsNullOrEmpty(this.VariableXML)) 
+						{
+							this.VariableXDoc = XDocument.Parse(this.VariableXML);
+							this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+						}
+					}
+					
+					//well for now this method is for the API and xml based task creation, not the gui.
+					//so, the full function object is not required.
+					this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
 				}
-				
-				//well for now this method is for the API and xml based task creation, not the gui.
-				//so, the full function object is not required.
-				this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
-			}
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 		
 		//constructor from a DataRow
@@ -2376,180 +2611,214 @@ namespace Globals
 		}
 		private Step PopulateStep(DataRow dr, Task oTask)
 		{
-			this.ID = dr["step_id"].ToString();
-			this.Codeblock = (string.IsNullOrEmpty(dr["codeblock_name"].ToString()) ? "" : dr["codeblock_name"].ToString());
-			this.Order = (int)dr["step_order"];
-			this.Description = (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString());
-
-			this.Commented = (dr["commented"].ToString() == "0" ? false : true);
-			this.Locked = (dr["locked"].ToString() == "0" ? false : true);
-			
-			this.OutputParseType = (int)dr["output_parse_type"];
-			this.OutputRowDelimiter = (int)dr["output_row_delimiter"];
-			this.OutputColumnDelimiter = (int)dr["output_column_delimiter"];
-
-			this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
-			this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
-			
-			//once parsed, it's cleaner.  update the object with the cleaner xml
-			if (!string.IsNullOrEmpty(this.FunctionXML)) 
-			{
-				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-				this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
-			}
-			if (!string.IsNullOrEmpty(this.VariableXML)) 
-			{
-				this.VariableXDoc = XDocument.Parse(this.VariableXML);
-				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
-			}
-
-			//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
-			this.FunctionName = dr["function_name"].ToString();
-			
-			
-			//NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
-			//if it's null, it will not populate the parent object.
-			//this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task
-			//object being created hundreds of times.
-			
-			if (oTask != null)
-			{
-				this.Task = oTask;
-			}
-			else 
-			{
-				//NOTE HACK TODO - this is bad and wrong
-				//we shouldn't assume the datarow was a join to the task table... but in a few places it was.
-				//so we're populating some stuff here.
-				
-				//the right approach is to create a full Task object from the ID, but we need to analyze
-				//how it's working, so we don't create a bunch more database hits.
-				
-				//I THINK THIS is only happening on taskStepVarsEdit, but double check.
-				this.Task = new Task();
-				this.Task.ID = dr["task_id"].ToString();
+			try
+			{	
+				this.ID = dr["step_id"].ToString();
+				this.Codeblock = (string.IsNullOrEmpty(dr["codeblock_name"].ToString()) ? "" : dr["codeblock_name"].ToString());
+				this.Order = (int)dr["step_order"];
+				this.Description = (string.IsNullOrEmpty(dr["step_desc"].ToString()) ? "" : dr["step_desc"].ToString());
 	
-				if (dr["task_name"] != null)
-					this.Task.Name = dr["task_name"].ToString();
-				if (dr["version"] != null)
-					this.Task.Version = dr["version"].ToString();
-			}
-			
-			return this;
+				this.Commented = (dr["commented"].ToString() == "0" ? false : true);
+				this.Locked = (dr["locked"].ToString() == "0" ? false : true);
+				
+				this.OutputParseType = (int)dr["output_parse_type"];
+				this.OutputRowDelimiter = (int)dr["output_row_delimiter"];
+				this.OutputColumnDelimiter = (int)dr["output_column_delimiter"];
+	
+				this.FunctionXML = (string.IsNullOrEmpty(dr["function_xml"].ToString()) ? "" : dr["function_xml"].ToString());
+				this.VariableXML = (string.IsNullOrEmpty(dr["variable_xml"].ToString()) ? "" : dr["variable_xml"].ToString());
+				
+				//once parsed, it's cleaner.  update the object with the cleaner xml
+				if (!string.IsNullOrEmpty(this.FunctionXML)) 
+				{
+					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+					this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+				}
+				if (!string.IsNullOrEmpty(this.VariableXML)) 
+				{
+					this.VariableXDoc = XDocument.Parse(this.VariableXML);
+					this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+				}
+	
+				//this.Function = Function.GetFunctionByName(dr["function_name"].ToString());
+				this.FunctionName = dr["function_name"].ToString();
+				
+				
+				//NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
+				//if it's null, it will not populate the parent object.
+				//this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task
+				//object being created hundreds of times.
+				
+				if (oTask != null)
+				{
+					this.Task = oTask;
+				}
+				else 
+				{
+					//NOTE HACK TODO - this is bad and wrong
+					//we shouldn't assume the datarow was a join to the task table... but in a few places it was.
+					//so we're populating some stuff here.
+					
+					//the right approach is to create a full Task object from the ID, but we need to analyze
+					//how it's working, so we don't create a bunch more database hits.
+					
+					//I THINK THIS is only happening on taskStepVarsEdit, but double check.
+					this.Task = new Task();
+					this.Task.ID = dr["task_id"].ToString();
+		
+					if (dr["task_name"] != null)
+						this.Task.Name = dr["task_name"].ToString();
+					if (dr["version"] != null)
+						this.Task.Version = dr["version"].ToString();
+				}
+				
+				return this;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 		
 		//constructor from a step_id AND user_id ... will include settings
 		public Step(string sStepID, string sUserID, ref string sErr)
 		{
-			dataAccess dc = new dataAccess();
-
-            string sSQL = "select t.task_name, t.version," +
-                " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
-                " from task_step s" +
-                " join task t on s.task_id = t.task_id" +
-                " where s.step_id = '" + sStepID + "' limit 1";
-
-            DataTable dt = new DataTable();
-            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-            {
-                throw new Exception("Unable to get data row for step_id [" + sStepID + "].<br />" + sErr);
+			try
+			{
+					dataAccess dc = new dataAccess();
+	
+	            string sSQL = "select t.task_name, t.version," +
+	                " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
+	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
+	                " from task_step s" +
+	                " join task t on s.task_id = t.task_id" +
+	                " where s.step_id = '" + sStepID + "' limit 1";
+	
+	            DataTable dt = new DataTable();
+	            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+	            {
+	                throw new Exception("Unable to get data row for step_id [" + sStepID + "].<br />" + sErr);
+	            }
+	
+				if (dt.Rows.Count == 1)
+	            {
+					PopulateStep(dt.Rows[0], null);
+					GetUserSettings(sUserID);
+				}
             }
-
-			if (dt.Rows.Count == 1)
+            catch (Exception ex)
             {
-				PopulateStep(dt.Rows[0], null);
-				GetUserSettings(sUserID);
-			}
+				throw ex;
+            }
 		}
 
 		//constructor from a clipboard step!
 		public Step(ClipboardStep cs)
 		{
-			this.ID = cs.ID;
-			this.Order = cs.Order;
-			this.Description = cs.Description;
-		
-			this.OutputParseType = cs.OutputParseType;
-			this.OutputRowDelimiter = cs.OutputRowDelimiter;
-			this.OutputColumnDelimiter = cs.OutputColumnDelimiter;
-
-			this.FunctionXML = cs.FunctionXML;
-			this.VariableXML = cs.VariableXML;
-			
-			//once parsed, it's cleaner.  update the object with the cleaner xml
-			if (!string.IsNullOrEmpty(this.FunctionXML)) 
+			try
 			{
-				this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-				this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
-			}
-			if (!string.IsNullOrEmpty(this.VariableXML)) 
-			{
-				this.VariableXDoc = XDocument.Parse(this.VariableXML);
-				this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
-			}
-
+				this.ID = cs.ID;
+				this.Order = cs.Order;
+				this.Description = cs.Description;
 			
-			this.FunctionName = cs.FunctionName;
+				this.OutputParseType = cs.OutputParseType;
+				this.OutputRowDelimiter = cs.OutputRowDelimiter;
+				this.OutputColumnDelimiter = cs.OutputColumnDelimiter;
+	
+				this.FunctionXML = cs.FunctionXML;
+				this.VariableXML = cs.VariableXML;
+				
+				//once parsed, it's cleaner.  update the object with the cleaner xml
+				if (!string.IsNullOrEmpty(this.FunctionXML)) 
+				{
+					this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
+					this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+				}
+				if (!string.IsNullOrEmpty(this.VariableXML)) 
+				{
+					this.VariableXDoc = XDocument.Parse(this.VariableXML);
+					this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
+				}
+	
+				this.FunctionName = cs.FunctionName;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 
 		public void GetUserSettings(string sUserID)
 		{
-			dataAccess dc = new dataAccess();
-			string sErr = "";
-            string sSQL = "select visible, breakpoint, skip, button" +
-                " from task_step_user_settings" +
-				" where user_id = '" + sUserID + "'" +
-                " and step_id = '" + this.ID + "' limit 1";
-
-            DataRow dr = null;
-            if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
-            {
-                throw new Exception("Unable to get data row for step_id [" + this.ID + "].<br />" + sErr);
+			try
+			{
+				dataAccess dc = new dataAccess();
+				string sErr = "";
+				string sSQL = "select visible, breakpoint, skip, button" +
+					" from task_step_user_settings" +
+						" where user_id = '" + sUserID + "'" +
+						" and step_id = '" + this.ID + "' limit 1";
+				
+				DataRow dr = null;
+				if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+				{
+					throw new Exception("Unable to get data row for step_id [" + this.ID + "].<br />" + sErr);
+				}
+				
+				if (dr != null)
+				{
+					this.UserSettings.Visible = (string.IsNullOrEmpty(dr["visible"].ToString()) ? true : (dr["visible"].ToString() == "0" ? false : true));
+					this.UserSettings.Breakpoint = (string.IsNullOrEmpty(dr["breakpoint"].ToString()) ? true : (dr["breakpoint"].ToString() == "0" ? false : true));
+					this.UserSettings.Skip = (string.IsNullOrEmpty(dr["skip"].ToString()) ? true : (dr["skip"].ToString() == "0" ? false : true));
+					this.UserSettings.Button = (string.IsNullOrEmpty(dr["button"].ToString()) ? "" : dr["button"].ToString());
+				}
             }
-
-			if (dr != null)
+            catch (Exception ex)
             {
-				this.UserSettings.Visible = (string.IsNullOrEmpty(dr["visible"].ToString()) ? true : (dr["visible"].ToString() == "0" ? false : true));
-				this.UserSettings.Breakpoint = (string.IsNullOrEmpty(dr["breakpoint"].ToString()) ? true : (dr["breakpoint"].ToString() == "0" ? false : true));
-				this.UserSettings.Skip = (string.IsNullOrEmpty(dr["skip"].ToString()) ? true : (dr["skip"].ToString() == "0" ? false : true));
-				this.UserSettings.Button = (string.IsNullOrEmpty(dr["button"].ToString()) ? "" : dr["button"].ToString());
-			}
+				throw ex;
+            }
 		}
 		
 		public XElement AsXElement()
 		{					
-			//if there's no function XML we're not doing anything... this step is busted.
-			if (this.FunctionXDoc != null) {
-				XElement xStep = new XElement("step");
-				
-				//the ID isn't necessary, unless this step is 'embedded' OR allows embedded.
-				//how do we tell?  easy... the codeblock_name is a guid and the step_order is -1
-				if (this.Codeblock.Length == 36 && this.Order == -1)
-					xStep.SetAttributeValue("id", this.ID);
-				if ("if,loop,exists,while".Contains(this.FunctionName.ToLower()))
-					xStep.SetAttributeValue("id", this.ID);
-				
-				xStep.SetAttributeValue("output_parse_type", this.OutputParseType);
-				xStep.SetAttributeValue("output_column_delimiter", this.OutputColumnDelimiter);
-				xStep.SetAttributeValue("output_row_delimiter", this.OutputRowDelimiter);
-				xStep.SetAttributeValue("commented", this.Commented);
-				
-				xStep.SetElementValue("description", this.Description);
-				
-				XElement xeFunc = XElement.Parse(this.FunctionXDoc.ToString(SaveOptions.DisableFormatting));
-				xStep.Add(xeFunc);
-				
-				//variables aren't required but might be here.
-				if (this.VariableXDoc != null) {	
-					XElement xeVars = XElement.Parse(this.VariableXDoc.ToString(SaveOptions.DisableFormatting));
-					xStep.Add(xeVars);
+			try 
+			{
+				//if there's no function XML we're not doing anything... this step is busted.
+				if (this.FunctionXDoc != null) {
+					XElement xStep = new XElement("step");
+					
+					//the ID isn't necessary, unless this step is 'embedded' OR allows embedded.
+					//how do we tell?  easy... the codeblock_name is a guid and the step_order is -1
+					if (this.Codeblock.Length == 36 && this.Order == -1)
+						xStep.SetAttributeValue("id", this.ID);
+					if ("if,loop,exists,while".Contains(this.FunctionName.ToLower()))
+						xStep.SetAttributeValue("id", this.ID);
+					
+					xStep.SetAttributeValue("output_parse_type", this.OutputParseType);
+					xStep.SetAttributeValue("output_column_delimiter", this.OutputColumnDelimiter);
+					xStep.SetAttributeValue("output_row_delimiter", this.OutputRowDelimiter);
+					xStep.SetAttributeValue("commented", this.Commented);
+					
+					xStep.SetElementValue("description", this.Description);
+					
+					XElement xeFunc = XElement.Parse(this.FunctionXDoc.ToString(SaveOptions.DisableFormatting));
+					xStep.Add(xeFunc);
+					
+					//variables aren't required but might be here.
+					if (this.VariableXDoc != null) {	
+						XElement xeVars = XElement.Parse(this.VariableXDoc.ToString(SaveOptions.DisableFormatting));
+						xStep.Add(xeVars);
+					}
+					
+					return xStep;
 				}
 				
-				return xStep;
-			}
-			
-			return null;
+				return null;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 		public string AsXML()
 		{
@@ -2847,199 +3116,213 @@ namespace Globals
 		
 		private Task PopulateTask(DataRow dr, bool IncludeUserSettings, ref string sErr)
 		{	
-			dataAccess dc = new dataAccess();
-			acUI.acUI ui = new acUI.acUI();
-
-			//of course it exists...
-			this.DBExists = true;
-			
-	        this.ID = dr["task_id"].ToString();
-	        this.Name = dr["task_name"].ToString();
-			this.Code = dr["task_code"].ToString();
-	        this.Version = dr["version"].ToString();
-	        this.Status = dr["task_status"].ToString();
-	        this.OriginalTaskID = dr["original_task_id"].ToString();
+			try
+            {
+				dataAccess dc = new dataAccess();
+				acUI.acUI ui = new acUI.acUI();
 	
-			this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
-	
-	        this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
-	
-	        this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
-	        this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
-	
-			this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
-	
-			//parameters
-			if (!string.IsNullOrEmpty(dr["parameter_xml"].ToString()))
-			{
-				XDocument xParameters = XDocument.Parse(dr["parameter_xml"].ToString());
-				if (xParameters != null) {	
-					this.ParameterXDoc = xParameters;
-				}
-			}				
-
-			/*                    
-	         * ok, this is important.
-	         * there are some rules for the process of 'Approving' a task and other things.
-	         * so, we'll need to know some count information
-	         */
-	        string sSQL = "select count(*) from task" +
-	            " where original_task_id = '" + this.OriginalTaskID + "'" +
-	            " and task_status = 'Approved'";
-	        int iCount = 0;
-	        if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-	            return null;
-	
-			this.NumberOfApprovedVersions = iCount;
-	
-	        sSQL = "select count(*) from task" +
-	            " where original_task_id = '" + this.OriginalTaskID + "'";
-			if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
-	            return null;
-	
-			this.NumberOfOtherVersions = iCount;
-			
-			
-			//now, the fun stuff
-			//1 get all the codeblocks and populate that dictionary
-			//2 then get all the steps... ALL the steps in one sql
-			//..... and while spinning them put them in the appropriate codeblock
-			
-			//GET THE CODEBLOCKS
-			sSQL = "select codeblock_name" +
-				" from task_codeblock" +
-				" where task_id = '" + this.ID + "'" +
-				" order by codeblock_name";
-			
-			DataTable dt = new DataTable();
-			if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
-				return null;
-			
-			if (dt.Rows.Count > 0)
-			{
-				foreach (DataRow drCB in dt.Rows)
+				//of course it exists...
+				this.DBExists = true;
+				
+		        this.ID = dr["task_id"].ToString();
+		        this.Name = dr["task_name"].ToString();
+				this.Code = dr["task_code"].ToString();
+		        this.Version = dr["version"].ToString();
+		        this.Status = dr["task_status"].ToString();
+		        this.OriginalTaskID = dr["original_task_id"].ToString();
+		
+				this.IsDefaultVersion = (dr["default_version"].ToString() == "1" ? true : false);
+		
+		        this.Description = ((!object.ReferenceEquals(dr["task_desc"], DBNull.Value)) ? dr["task_desc"].ToString() : "");
+		
+		        this.ConcurrentInstances = ((!object.ReferenceEquals(dr["concurrent_instances"], DBNull.Value)) ? dr["concurrent_instances"].ToString() : "");
+		        this.QueueDepth = ((!object.ReferenceEquals(dr["queue_depth"], DBNull.Value)) ? dr["queue_depth"].ToString() : "");
+		
+				this.UseConnectorSystem = ((int)dr["use_connector_system"] == 1 ? true : false);
+		
+				//parameters
+				if (!string.IsNullOrEmpty(dr["parameter_xml"].ToString()))
 				{
-					this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
-				}
-			}
-			else
-			{
-				//uh oh... there are no codeblocks!
-				//since all tasks require a MAIN codeblock... if it's missing,
-				//we can just repair it right here.
-				sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + this.ID + "', 'MAIN')";
-				if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+					XDocument xParameters = XDocument.Parse(dr["parameter_xml"].ToString());
+					if (xParameters != null) {	
+						this.ParameterXDoc = xParameters;
+					}
+				}				
+	
+				/*                    
+		         * ok, this is important.
+		         * there are some rules for the process of 'Approving' a task and other things.
+		         * so, we'll need to know some count information
+		         */
+		        string sSQL = "select count(*) from task" +
+		            " where original_task_id = '" + this.OriginalTaskID + "'" +
+		            " and task_status = 'Approved'";
+		        int iCount = 0;
+		        if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+		            return null;
+		
+				this.NumberOfApprovedVersions = iCount;
+		
+		        sSQL = "select count(*) from task" +
+		            " where original_task_id = '" + this.OriginalTaskID + "'";
+				if (!dc.sqlGetSingleInteger(ref iCount, sSQL, ref sErr))
+		            return null;
+		
+				this.NumberOfOtherVersions = iCount;
+				
+				
+				//now, the fun stuff
+				//1 get all the codeblocks and populate that dictionary
+				//2 then get all the steps... ALL the steps in one sql
+				//..... and while spinning them put them in the appropriate codeblock
+				
+				//GET THE CODEBLOCKS
+				sSQL = "select codeblock_name" +
+					" from task_codeblock" +
+					" where task_id = '" + this.ID + "'" +
+					" order by codeblock_name";
+				
+				DataTable dt = new DataTable();
+				if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
 					return null;
 				
-				this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
-			}
-			
-			
-			//GET THE STEPS
-			//we need the userID to get the user settings in some cases
-			if (IncludeUserSettings) {
-				string sUserID = ui.GetSessionUserID();
-				
-				//NOTE: it may seem like sorting will be an issue, but it shouldn't.
-				//sorting ALL the steps by their ID here will ensure they get added to their respective 
-				// codeblocks in the right order.
-				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-	                " us.visible, us.breakpoint, us.skip, us.button" +
-	                " from task_step s" +
-	                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
-	                " where s.task_id = '" + this.ID + "'" +
-	                " order by s.step_order";
-			}
-			else
-			{
-				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
-	                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
-					" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
-					" from task_step s" +
-	                " where s.task_id = '" + this.ID + "'" +
-	                " order by s.step_order";
-			}
-	
-			DataTable dtSteps = new DataTable();
-	        if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
-	            sErr += "Database Error: " + sErr;
-	
-			if (dtSteps.Rows.Count > 0)
-	        {
-	            foreach (DataRow drSteps in dtSteps.Rows)
-	            {
-					Step oStep = new Step(drSteps, this);
-					if (oStep != null)
+				if (dt.Rows.Count > 0)
+				{
+					foreach (DataRow drCB in dt.Rows)
 					{
-						//a 'REAL' codeblock will be in this collection
-						// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
-						if (this.Codeblocks.ContainsKey(oStep.Codeblock))
-						{
-							this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
-						}
-						else
-						{
-							//so, what do we do if we found a step that's not in a 'real' codeblock?
-							//well, the gui will take care of drawing those embedded steps...
-							
-							//but we have a problem with export, version up, etc.
-							
-							//these steps can't be orphans!
-							//so, we'll go ahead and create codeblocks for them.
-							//this is terrible, but part of the problem with this embedded stuff.
-							//we'll tweak the gui so GUID named codeblocks don't show.
-							this.Codeblocks.Add(oStep.Codeblock, new Codeblock(oStep.Codeblock));
-							this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
-
-							//maybe one day we'll do the full recusrive loading of all embedded steps here
-							// but not today... it's a big deal and we need to let these changes settle down first.
-						}
+						this.Codeblocks.Add(drCB["codeblock_name"].ToString(), new Codeblock(drCB["codeblock_name"].ToString()));
 					}
 				}
-	        }
+				else
+				{
+					//uh oh... there are no codeblocks!
+					//since all tasks require a MAIN codeblock... if it's missing,
+					//we can just repair it right here.
+					sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + this.ID + "', 'MAIN')";
+					if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
+						return null;
+					
+					this.Codeblocks.Add("MAIN", new Codeblock("MAIN"));
+				}
+				
+				
+				//GET THE STEPS
+				//we need the userID to get the user settings in some cases
+				if (IncludeUserSettings) {
+					string sUserID = ui.GetSessionUserID();
+					
+					//NOTE: it may seem like sorting will be an issue, but it shouldn't.
+					//sorting ALL the steps by their ID here will ensure they get added to their respective 
+					// codeblocks in the right order.
+					sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+		                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+		                " us.visible, us.breakpoint, us.skip, us.button" +
+		                " from task_step s" +
+		                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" +
+		                " where s.task_id = '" + this.ID + "'" +
+		                " order by s.step_order";
+				}
+				else
+				{
+					sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," +
+		                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," +
+						" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" +
+						" from task_step s" +
+		                " where s.task_id = '" + this.ID + "'" +
+		                " order by s.step_order";
+				}
+		
+				DataTable dtSteps = new DataTable();
+		        if (!dc.sqlGetDataTable(ref dtSteps, sSQL, ref sErr))
+		            sErr += "Database Error: " + sErr;
+		
+				if (dtSteps.Rows.Count > 0)
+		        {
+		            foreach (DataRow drSteps in dtSteps.Rows)
+		            {
+						Step oStep = new Step(drSteps, this);
+						if (oStep != null)
+						{
+							//a 'REAL' codeblock will be in this collection
+							// (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+							if (this.Codeblocks.ContainsKey(oStep.Codeblock))
+							{
+								this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+							}
+							else
+							{
+								//so, what do we do if we found a step that's not in a 'real' codeblock?
+								//well, the gui will take care of drawing those embedded steps...
+								
+								//but we have a problem with export, version up, etc.
+								
+								//these steps can't be orphans!
+								//so, we'll go ahead and create codeblocks for them.
+								//this is terrible, but part of the problem with this embedded stuff.
+								//we'll tweak the gui so GUID named codeblocks don't show.
+								this.Codeblocks.Add(oStep.Codeblock, new Codeblock(oStep.Codeblock));
+								this.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep);
+	
+								//maybe one day we'll do the full recusrive loading of all embedded steps here
+								// but not today... it's a big deal and we need to let these changes settle down first.
+							}
+						}
+					}
+		        }
 			
-			return this;
+				return this;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 
 		private bool _DBExists()
 		{	
-			dataAccess dc = new dataAccess();
-			string sErr = "";
-			
-			//task_id is the PK, and task_name+version is a unique index.
-			//so, we check the conflict property, and act accordingly
-			string sSQL = "select task_id, original_task_id from task" +
-				" where (task_name = '" + this.Name + "' and version = '" + this.Version + "')" +
-				" or task_id = '" + this.ID + "'";
-			
-			DataRow dr = null;
-			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+			try
 			{
-				throw new Exception("Task Object: Unable to check for existing Name/Version or ID. " + sErr);
-			}
-			
-			if (dr != null)
-			{
-				if (!string.IsNullOrEmpty(dr["task_id"].ToString())) {
-					//PAY ATTENTION! 
-					//if the task exists... it might have been by name/version, so...
-					//we're setting the ids to the same as the database so it's more accurate.
-					
-					this.ID = dr["task_id"].ToString();
-					this.OriginalTaskID = dr["original_task_id"].ToString();
-					return true;
-				}
-			}
+				dataAccess dc = new dataAccess();
+				string sErr = "";
 				
-			return false;
+				//task_id is the PK, and task_name+version is a unique index.
+				//so, we check the conflict property, and act accordingly
+				string sSQL = "select task_id, original_task_id from task" +
+					" where (task_name = '" + this.Name + "' and version = '" + this.Version + "')" +
+					" or task_id = '" + this.ID + "'";
+				
+				DataRow dr = null;
+				if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
+				{
+					throw new Exception("Task Object: Unable to check for existing Name/Version or ID. " + sErr);
+				}
+				
+				if (dr != null)
+				{
+					if (!string.IsNullOrEmpty(dr["task_id"].ToString())) {
+						//PAY ATTENTION! 
+						//if the task exists... it might have been by name/version, so...
+						//we're setting the ids to the same as the database so it's more accurate.
+						
+						this.ID = dr["task_id"].ToString();
+						this.OriginalTaskID = dr["original_task_id"].ToString();
+						return true;
+					}
+				}
+					
+				return false;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 		//what's the max version allowed for this task?
 		public string MaxVersion()
 		{
-			dataAccess dc = new dataAccess();
             try
             {
+				dataAccess dc = new dataAccess();
 				//if the task is in the db, get it's max
 				//if it's not, the max is 1.000
                 string sMax = "";
@@ -3309,249 +3592,263 @@ namespace Globals
 		public string Copy(int iMode, string sNewTaskName, string sNewTaskCode)
         {
 			//iMode 0=new task, 1=new major version, 2=new minor version
-			
-			//NOTE: this routine is not very object-aware.  It works and was copied in here
-			//so it can live with other relevant code.
-			//may update it later to be more object friendly
-			acUI.acUI ui = new acUI.acUI();
-			dataAccess dc = new dataAccess();
-			
-            string sErr = "";
-            string sSQL = "";
-
-            string sNewTaskID = ui.NewGUID();
-
-			int iIsDefault = 0;
-            string sTaskName = "";
-            string sOTID = "";
-
-            //do it all in a transaction
-            dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
-
-            //figure out the new name and selected version
-            sTaskName = this.Name;
-            sOTID = this.OriginalTaskID;
-
-            //figure out the new version
-            switch (iMode)
-            {
-                case 0:
-		            //figure out the new name and selected version
-					int iExists = 0;
-					oTrans.Command.CommandText = "select count(*) from task where task_name = '" + sNewTaskName + "'";
-		            if (!oTrans.ExecGetSingleInteger(ref iExists, ref sErr))
-		                throw new Exception("Unable to check name conflicts for  [" + sNewTaskName + "]." + sErr);
+			try
+			{
+					
+				//NOTE: this routine is not very object-aware.  It works and was copied in here
+				//so it can live with other relevant code.
+				//may update it later to be more object friendly
+				acUI.acUI ui = new acUI.acUI();
+				dataAccess dc = new dataAccess();
+				
+	            string sErr = "";
+	            string sSQL = "";
 	
-					sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now.ToString() + ")" : sNewTaskName);
-                    iIsDefault = 1;
-                    this.Version = "1.000";
-                    sOTID = sNewTaskID;
-
-                    break;
-                case 1:
-                    this.IncrementMajorVersion();
-                    break;
-                case 2:
-                    this.IncrementMinorVersion();
-                    break;
-                default: //a iMode is required
-                    throw new Exception("A mode required for this copy operation." + sErr);
+	            string sNewTaskID = ui.NewGUID();
+	
+				int iIsDefault = 0;
+	            string sTaskName = "";
+	            string sOTID = "";
+	
+	            //do it all in a transaction
+	            dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+	
+	            //figure out the new name and selected version
+	            sTaskName = this.Name;
+	            sOTID = this.OriginalTaskID;
+	
+	            //figure out the new version
+	            switch (iMode)
+	            {
+	                case 0:
+			            //figure out the new name and selected version
+						int iExists = 0;
+						oTrans.Command.CommandText = "select count(*) from task where task_name = '" + sNewTaskName + "'";
+			            if (!oTrans.ExecGetSingleInteger(ref iExists, ref sErr))
+			                throw new Exception("Unable to check name conflicts for  [" + sNewTaskName + "]." + sErr);
+		
+						sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now.ToString() + ")" : sNewTaskName);
+	                    iIsDefault = 1;
+	                    this.Version = "1.000";
+	                    sOTID = sNewTaskID;
+	
+	                    break;
+	                case 1:
+	                    this.IncrementMajorVersion();
+	                    break;
+	                case 2:
+	                    this.IncrementMinorVersion();
+	                    break;
+	                default: //a iMode is required
+	                    throw new Exception("A mode required for this copy operation." + sErr);
+	            }
+	
+	            //if we are versioning, AND there are not yet any 'Approved' versions,
+	            //we set this new version to be the default
+	            //(that way it's the one that you get taken to when you pick it from a list)
+	            if (iMode > 0)
+	            {
+	                sSQL = "select case when count(*) = 0 then 1 else 0 end" +
+	                    " from task where original_task_id = '" + sOTID + "'" +
+	                    " and task_status = 'Approved'";
+	                dc.sqlGetSingleInteger(ref iIsDefault, sSQL, ref sErr);
+	                if (sErr != "")
+	                {
+	                    oTrans.RollBack();
+	                    throw new Exception(sErr);
+	                }
+	            }
+	
+	            //string sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now.ToString() + ")" : sNewTaskName);
+	
+	
+				//drop the temp tables.
+				oTrans.Command.CommandText = "drop temporary table if exists _copy_task";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            oTrans.Command.CommandText = "drop temporary table if exists _step_ids";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            oTrans.Command.CommandText = "drop temporary table if exists _copy_task_codeblock";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            oTrans.Command.CommandText = "drop temporary table if exists _copy_task_step";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+				//start copying
+	            oTrans.Command.CommandText = "create temporary table _copy_task" +
+	                " select * from task where task_id = '" + this.ID + "'";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            //update the task_id
+	            oTrans.Command.CommandText = "update _copy_task set" +
+	                " task_id = '" + sNewTaskID + "'," +
+	                " original_task_id = '" + sOTID + "'," +
+	                " version = '" + this.Version + "'," +
+	                " task_name = '" + sTaskName + "'," +
+	                " task_code = '" + sNewTaskCode + "'," +
+	                " default_version = " + iIsDefault.ToString() + "," +
+	                " task_status = 'Development'," +
+	                " created_dt = now()";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            //codeblocks
+	            oTrans.Command.CommandText = "create temporary table _copy_task_codeblock" +
+	                " select '" + sNewTaskID + "' as task_id, codeblock_name" +
+	                " from task_codeblock where task_id = '" + this.ID + "'";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	
+	            //USING TEMPORARY TABLES... need a place to hold step ids while we manipulate them
+	            oTrans.Command.CommandText = "create temporary table _step_ids" +
+	                " select distinct step_id, uuid() as newstep_id" +
+	                " from task_step where task_id = '" + this.ID + "'";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            //steps temp table
+	            oTrans.Command.CommandText = "create temporary table _copy_task_step" +
+	                " select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," +
+	                " locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," +
+	                " output_column_delimiter, variable_xml" +
+	                " from task_step where task_id = '" + this.ID + "'";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            //update the step id
+	            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
+	                " set a.step_id = b.newstep_id" +
+	                " where a.step_id = b.step_id";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            //update steps with codeblocks that reference a step (embedded steps)
+	            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
+	                " set a.codeblock_name = b.newstep_id" +
+	                " where b.step_id = a.codeblock_name";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	
+	            //spin the steps and update any embedded step id's in the commands
+	            oTrans.Command.CommandText = "select step_id, newstep_id from _step_ids";
+	            DataTable dtStepIDs = new DataTable();
+	            if (!oTrans.ExecGetDataTable(ref dtStepIDs, ref sErr))
+	                throw new Exception("Unable to get step ids." + sErr);
+	
+	            foreach (DataRow drStepIDs in dtStepIDs.Rows)
+	            {
+	                oTrans.Command.CommandText = "update _copy_task_step" +
+	                    " set function_xml = replace(lower(function_xml), '" + drStepIDs["step_id"].ToString().ToLower() + "', '" + drStepIDs["newstep_id"].ToString() + "')" +
+	                    " where function_name in ('if','loop','exists','while')";
+	                if (!oTrans.ExecUpdate(ref sErr))
+	                    throw new Exception(sErr);
+	            }
+	
+	
+	            //finally, put the temp steps table in the real steps table
+	            oTrans.Command.CommandText = "insert into task select * from _copy_task";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            oTrans.Command.CommandText = "insert into task_codeblock select * from _copy_task_codeblock";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	            oTrans.Command.CommandText = "insert into task_step select * from _copy_task_step";
+	            if (!oTrans.ExecUpdate(ref sErr))
+	                throw new Exception(sErr);
+	
+	
+				
+	            //finally, if we versioned up and we set this one as the new default_version,
+	            //we need to unset the other row
+	            if (iMode > 0 && iIsDefault == 1)
+	            {
+	                oTrans.Command.CommandText = "update task" +
+	                    " set default_version = 0" +
+	                    " where original_task_id = '" + sOTID + "'" +
+	                    " and task_id <> '" + sNewTaskID + "'";
+	                if (!oTrans.ExecUpdate(ref sErr))
+	                    throw new Exception(sErr);
+	            }
+	
+	
+				oTrans.Commit();
+	
+	            return sNewTaskID;
             }
-
-            //if we are versioning, AND there are not yet any 'Approved' versions,
-            //we set this new version to be the default
-            //(that way it's the one that you get taken to when you pick it from a list)
-            if (iMode > 0)
+            catch (Exception ex)
             {
-                sSQL = "select case when count(*) = 0 then 1 else 0 end" +
-                    " from task where original_task_id = '" + sOTID + "'" +
-                    " and task_status = 'Approved'";
-                dc.sqlGetSingleInteger(ref iIsDefault, sSQL, ref sErr);
-                if (sErr != "")
-                {
-                    oTrans.RollBack();
-                    throw new Exception(sErr);
-                }
+				throw ex;
             }
-
-            //string sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now.ToString() + ")" : sNewTaskName);
-
-
-			//drop the temp tables.
-			oTrans.Command.CommandText = "drop temporary table if exists _copy_task";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "drop temporary table if exists _step_ids";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "drop temporary table if exists _copy_task_codeblock";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "drop temporary table if exists _copy_task_step";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-			//start copying
-            oTrans.Command.CommandText = "create temporary table _copy_task" +
-                " select * from task where task_id = '" + this.ID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update the task_id
-            oTrans.Command.CommandText = "update _copy_task set" +
-                " task_id = '" + sNewTaskID + "'," +
-                " original_task_id = '" + sOTID + "'," +
-                " version = '" + this.Version + "'," +
-                " task_name = '" + sTaskName + "'," +
-                " task_code = '" + sNewTaskCode + "'," +
-                " default_version = " + iIsDefault.ToString() + "," +
-                " task_status = 'Development'," +
-                " created_dt = now()";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //codeblocks
-            oTrans.Command.CommandText = "create temporary table _copy_task_codeblock" +
-                " select '" + sNewTaskID + "' as task_id, codeblock_name" +
-                " from task_codeblock where task_id = '" + this.ID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-
-            //USING TEMPORARY TABLES... need a place to hold step ids while we manipulate them
-            oTrans.Command.CommandText = "create temporary table _step_ids" +
-                " select distinct step_id, uuid() as newstep_id" +
-                " from task_step where task_id = '" + this.ID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //steps temp table
-            oTrans.Command.CommandText = "create temporary table _copy_task_step" +
-                " select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," +
-                " locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," +
-                " output_column_delimiter, variable_xml" +
-                " from task_step where task_id = '" + this.ID + "'";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update the step id
-            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
-                " set a.step_id = b.newstep_id" +
-                " where a.step_id = b.step_id";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            //update steps with codeblocks that reference a step (embedded steps)
-            oTrans.Command.CommandText = "update _copy_task_step a, _step_ids b" +
-                " set a.codeblock_name = b.newstep_id" +
-                " where b.step_id = a.codeblock_name";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-
-            //spin the steps and update any embedded step id's in the commands
-            oTrans.Command.CommandText = "select step_id, newstep_id from _step_ids";
-            DataTable dtStepIDs = new DataTable();
-            if (!oTrans.ExecGetDataTable(ref dtStepIDs, ref sErr))
-                throw new Exception("Unable to get step ids." + sErr);
-
-            foreach (DataRow drStepIDs in dtStepIDs.Rows)
-            {
-                oTrans.Command.CommandText = "update _copy_task_step" +
-                    " set function_xml = replace(lower(function_xml), '" + drStepIDs["step_id"].ToString().ToLower() + "', '" + drStepIDs["newstep_id"].ToString() + "')" +
-                    " where function_name in ('if','loop','exists','while')";
-                if (!oTrans.ExecUpdate(ref sErr))
-                    throw new Exception(sErr);
-            }
-
-
-            //finally, put the temp steps table in the real steps table
-            oTrans.Command.CommandText = "insert into task select * from _copy_task";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "insert into task_codeblock select * from _copy_task_codeblock";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-            oTrans.Command.CommandText = "insert into task_step select * from _copy_task_step";
-            if (!oTrans.ExecUpdate(ref sErr))
-                throw new Exception(sErr);
-
-
-			
-            //finally, if we versioned up and we set this one as the new default_version,
-            //we need to unset the other row
-            if (iMode > 0 && iIsDefault == 1)
-            {
-                oTrans.Command.CommandText = "update task" +
-                    " set default_version = 0" +
-                    " where original_task_id = '" + sOTID + "'" +
-                    " and task_id <> '" + sNewTaskID + "'";
-                if (!oTrans.ExecUpdate(ref sErr))
-                    throw new Exception(sErr);
-            }
-
-
-			oTrans.Commit();
-
-            return sNewTaskID;
         }
 
 		
 		//INSTANCE METHOD - returns the object as XML
 		public XElement AsXElement()
 		{
-			XElement xTask = new XElement("task");
+			try
+			{
+				XElement xTask = new XElement("task");
 			
-			//xTask.SetAttributeValue("id", this.ID);
-			xTask.SetAttributeValue("original_id", this.OriginalTaskID);
-			xTask.SetAttributeValue("name", this.Name);
-			xTask.SetAttributeValue("code", this.Code);
-			xTask.SetAttributeValue("status", this.Status);
-			xTask.SetAttributeValue("version", this.Version);
-			xTask.SetAttributeValue("concurrent_instances", this.ConcurrentInstances);
-			xTask.SetAttributeValue("queue_depth", this.QueueDepth);
-			xTask.SetAttributeValue("on_conflict", "cancel");
-			
-			xTask.SetElementValue("description", this.Description);
-			
-			
-			//codeblocks
-			xTask.Add(new XElement("codeblocks"));
-			XElement xCodeblocks = xTask.Element("codeblocks");
-			
-			foreach (Codeblock c in this.Codeblocks.Values) {
-				XElement xCodeblock = new XElement("codeblock");
-				xCodeblock.SetAttributeValue("name", c.Name);
+				//xTask.SetAttributeValue("id", this.ID);
+				xTask.SetAttributeValue("original_id", this.OriginalTaskID);
+				xTask.SetAttributeValue("name", this.Name);
+				xTask.SetAttributeValue("code", this.Code);
+				xTask.SetAttributeValue("status", this.Status);
+				xTask.SetAttributeValue("version", this.Version);
+				xTask.SetAttributeValue("concurrent_instances", this.ConcurrentInstances);
+				xTask.SetAttributeValue("queue_depth", this.QueueDepth);
+				xTask.SetAttributeValue("on_conflict", "cancel");
 				
-				//steps
-				xCodeblock.Add(new XElement("steps"));
-				XElement xSteps = xCodeblock.Element("steps");
+				xTask.SetElementValue("description", this.Description);
 				
-				foreach (Step s in c.Steps.Values) {
-					string sStepXML = s.AsXML();
-					if (!string.IsNullOrEmpty(sStepXML))
-					{
-						XElement xStep = XElement.Parse(sStepXML);
-						if (xStep != null) {	
-							xSteps.Add(xStep);
+				
+				//codeblocks
+				xTask.Add(new XElement("codeblocks"));
+				XElement xCodeblocks = xTask.Element("codeblocks");
+				
+				foreach (Codeblock c in this.Codeblocks.Values) {
+					XElement xCodeblock = new XElement("codeblock");
+					xCodeblock.SetAttributeValue("name", c.Name);
+					
+					//steps
+					xCodeblock.Add(new XElement("steps"));
+					XElement xSteps = xCodeblock.Element("steps");
+					
+					foreach (Step s in c.Steps.Values) {
+						string sStepXML = s.AsXML();
+						if (!string.IsNullOrEmpty(sStepXML))
+						{
+							XElement xStep = XElement.Parse(sStepXML);
+							if (xStep != null) {	
+								xSteps.Add(xStep);
+							}
 						}
 					}
+					
+					xCodeblocks.Add(xCodeblock);
 				}
 				
-				xCodeblocks.Add(xCodeblock);
-			}
-			
-			//parameters, if defined
-			if (this.ParameterXDoc != null)
-				if (this.ParameterXDoc.Root != null)
-					xTask.Add(this.ParameterXDoc.Root);
-
-			return xTask;
+				//parameters, if defined
+				if (this.ParameterXDoc != null)
+					if (this.ParameterXDoc.Root != null)
+						xTask.Add(this.ParameterXDoc.Root);
+	
+				return xTask;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+            }
 		}
 		public string AsXML()
 		{
