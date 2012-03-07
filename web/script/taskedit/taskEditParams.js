@@ -170,6 +170,14 @@ function doSaveParam() {
         return false;
     }
 
+    var minlength = $("#param_edit_minlength").val();
+    var maxlength = $("#param_edit_maxlength").val();
+    var minvalue = $("#param_edit_minvalue").val();
+    var maxvalue = $("#param_edit_maxvalue").val();
+    var constraint = packJSON($("#param_edit_constraint").val());
+    var constraint_msg = packJSON($("#param_edit_constraint_msg").val());
+
+
     //is this parameter required?
     var is_required = ($("#param_edit_required").is(':checked') ? true : false);
     //should we prompt the user for it?
@@ -219,6 +227,9 @@ function doSaveParam() {
         data: '{"sType":"' + type + '","sID":"' + id +
             '","sParamID":"' + param_id + '","sName":"' + name + '","sDesc":"' + desc +
             '","sRequired":"' + is_required + '","sPrompt":"' + should_prompt + '","sEncrypt":"' + encrypt +
+            '","sMinLength":"' + minlength + '","sMaxLength":"' + maxlength + 
+            '","sMinValue":"' + minvalue + '","sMaxValue":"' + maxvalue + 
+            '","sConstraint":"' + constraint + '","sConstraintMsg":"' + constraint_msg + 
             '","sPresentAs":"' + present_as + '","sValues":"' + vals + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",

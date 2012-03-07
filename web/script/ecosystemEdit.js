@@ -43,15 +43,13 @@ $(document).ready(function () {
         var url = "securityLogView.aspx?type=41&id=" + g_eco_id;
         openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
-    $("#view_ecotemplate_btn").click(function () {
+
+    $("#goto_ecotemplate_btn").button({ icons: { primary: "ui-icon-arrowthick-1-ne"}, text: false });
+    $("#goto_ecotemplate_btn").click(function () {
         showPleaseWait();
         location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + g_ecotemplate_id;
     });
 
-    $(".reload_storm_btn").button({ icons: { primary: "ui-icon-refresh"}, text: false }).css({ height:12, width:12});
-    $(".reload_storm_btn").click(function () {
-		getEcosystemLog();
-    });
     $("#show_stopstorm_btn").button({ icons: { primary: "ui-icon-stop"} });
     $("#show_stopstorm_btn").click(function () {
         if (typeof(ShowStopStormDialog) != 'undefined') {
@@ -117,6 +115,23 @@ $(document).ready(function () {
             ShowTaskLaunchDialog(args);
         }, 250); //end timeout
     });
+    
+    
+    //a little more detail for the storm tabs --- clicking one refreshes the content
+    $(".storm_tab").click(function () {
+    	var href = $(this).attr("href");
+        if (href == "#storm_status_tab" || 
+        	href == "#storm_events_tab" || 
+    		href == "#storm_output_tab" || 
+    		href == "#storm_params_tab") {
+            getEcosystemLog();
+        }
+        
+        if (href == "#storm_file_tab") {
+        	//the storm file isn't part of the get_status response.
+        }
+    });
+
 
     //let's turn the "buttons" to behave like buttons
     //persist the "active" state on a category only! (actions pop back out)
@@ -283,8 +298,6 @@ function getEcosystemLog() {
         success: function (msg) {
             var log = jQuery.parseJSON(msg.d);
             
-            $("#storm_status").text(log.storm_status);
-            
             //if this ecosystem doesn't have a storm_status, it's not a storm ecosystem, so hide the storm tabs
             if (log.storm_status == '') {
             	$(".storm").hide();
@@ -299,6 +312,9 @@ function getEcosystemLog() {
             	$("#show_stopstorm_btn").hide();
         	}
 			
+            $("#storm_status").text(log.storm_status);
+            $("#last_update_dt").text(log.last_update_dt);
+            
 			var html = "";
 			//write the log table
 			$.each(log.ecosystem_log, function(rowidx) {

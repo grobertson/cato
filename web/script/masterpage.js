@@ -105,7 +105,9 @@ function showAlert(msg, info) {
     $("#error_dialog").dialog('open');
 
     //send this message via email
-    var msgtogo = escape(msg + '\n' + info + '\n' + trace);
+    info = (info === undefined ? "" : info);
+    trace = (trace === undefined ? "" : trace);
+    var msgtogo = packJSON(msg + '\n' + info + '\n' + trace);
     var pagedetails = window.location.pathname;
 
     $.post("uiMethods.asmx/wmSendErrorReport", { "sMessage": msgtogo, "sPageDetails": pagedetails });

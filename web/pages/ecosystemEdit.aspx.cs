@@ -72,6 +72,7 @@ namespace Web.pages
 
                     //the header
                     lblEcosystemNameHeader.Text = e.Name;
+                    lblCreated.Text = e.CreatedDate.ToString();
 
 					//storm file
 					txtStormFile.Text = e.StormFile;

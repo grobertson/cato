@@ -28,7 +28,7 @@
                     <span class="detail_label">Template:</span><br />
                     <asp:Label ID="lblEcotemplateName" runat="server" CssClass="code"></asp:Label><span
                         id="view_ecotemplate_btn" class="pointer">
-                        <img alt="" src="../images/icons/edit_16.png" />
+                        <span id="goto_ecotemplate_btn"></span>
                     </span>
                     <br />
                     <span class="detail_label">Name:</span><br />
@@ -38,6 +38,8 @@
                     <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="10" runat="server" te_group="detail_fields"
                         column="Description" CssClass="task_details code">
                     </asp:TextBox>
+                    <span class="detail_label">Created:</span><br />
+					<asp:Label ID="lblCreated" runat="server" CssClass="code"></asp:Label>
                     <hr />
 					<center>
 						<span id="show_log_link">View Change Log</span>						
@@ -128,14 +130,15 @@
             <hr />
 	        <div id="storm_detail_tabs" class="storm" style="height: 400px;">
 	            <ul>
-	                <li><a href="#storm_status_tab"><span><img src="../images/icons/storm_32.png" style="height: 16px; width: 16px; vertical-align: middle; padding-right: 6px;"/>Storm</span></a></li>
-	                <li><a href="#storm_file_tab"><span>Template</span></a></li>
-	                <li><a href="#storm_events_tab"><span>Events</span></a></li>
-	                <li><a href="#storm_output_tab"><span>Output</span></a></li>
-	                <li><a href="#storm_params_tab"><span>Parameters</span></a></li>
+	                <li><a class="storm_tab" href="#storm_status_tab"><span><img src="../images/icons/storm_32.png" style="height: 16px; width: 16px; vertical-align: middle; padding-right: 6px;"/>Storm</span></a></li>
+	                <li><a class="storm_tab" href="#storm_file_tab"><span>Template</span></a></li>
+	                <li><a class="storm_tab" href="#storm_events_tab"><span>Events</span></a></li>
+	                <li><a class="storm_tab" href="#storm_output_tab"><span>Output</span></a></li>
+	                <li><a class="storm_tab" href="#storm_params_tab"><span>Parameters</span></a></li>
 	            </ul>
 		        <div id="storm_status_tab">
-                    <div class="detail_label">Status: <span id="storm_status"></span><span class="reload_storm_btn"></span></div>
+                    <div><span class="detail_label">Status:</span> <span id="storm_status"></span></div>
+                    <div><span class="detail_label">Last Update:</span> <span id="last_update_dt"></span></div>
 					<br /><br /><br />
 					<span id="show_stopstorm_btn">Stop Storm</span>
 		        </div>
@@ -144,12 +147,7 @@
 		        </div>
 		        <div id="storm_events_tab">
 		            <div class="ui-widget-header">
-	                    <div class="floatleft">
-	                    </div>
-	                    <div class="floatright">
-	                        <span class="reload_storm_btn"></span>
-	                    </div>
-	                        <span>Storm Events</span>
+                        <span>Storm Events</span>
 					</div>
 					<div style="height: 330px; overflow: auto;">	
 			            <table id="ecosystem_log"  class="jtable" cellspacing="1" cellpadding="1" width="100%">
@@ -166,12 +164,7 @@
 		        </div>
 		        <div id="storm_output_tab">
 		            <div class="ui-widget-header">
-	                    <div class="floatleft">
-	                    </div>
-	                    <div class="floatright">
-	                        <span class="reload_storm_btn"></span>
-	                    </div>
-	                        <span>Storm Output</span>
+                        <span>Storm Output</span>
 					</div>
 					<div>	
 			            <table id="storm_output"  class="jtable" cellspacing="1" cellpadding="1" width="100%">

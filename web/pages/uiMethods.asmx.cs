@@ -100,8 +100,13 @@ namespace ACWebMethods
             if (!string.IsNullOrEmpty(sTo) && !string.IsNullOrEmpty(sMessage))
             {
                 string sFrom = "ui@" + Server.MachineName.ToString();
-
-                sMessage = ui.unpackJSON(sMessage);
+				
+				//the message *might be packed
+				try {
+					sMessage = ui.unpackJSON(sMessage);
+				} catch (Exception ex) {
+					//not failing, just assuming if it couldn't unpack then it wasn't actually packed.
+				}
 
                 ui.SendEmailMessage(sTo, sFrom, "UI Error Report", sMessage + Environment.NewLine + Environment.NewLine + sPageDetails, ref sErr);
             }
@@ -1640,7 +1645,7 @@ namespace ACWebMethods
             {
                 if (sValue != "")
                     sIcon = "<img class=\"custom_icon\" src=\"../images/custom/" + 
-						sPropertyName.Replace(" ", "") + "_" + 
+						sPropertyName.Replace(" ", "").ToLower() + "_" + 
 						sValue.Replace(" ", "") + ".png\" alt=\"\" />".ToLower();
             }
 
@@ -4094,6 +4099,19 @@ namespace ACWebMethods
 		}
 
 		[WebMethod(EnableSession = true)]
+        public string wmGetStormFileFromURL(string sURL)
+        {
+			acUI.acUI ui = new acUI.acUI();
+			try {
+				sURL = ui.unpackJSON(sURL);
+				string sStormFileJSON = ui.HTTPGetNoFail(sURL);
+				return ui.packJSON(sStormFileJSON);
+			} catch (Exception ex) {
+				throw new Exception ("Error getting Storm from URL [" + ui.unpackJSON(sURL) + "]. " + ex.Message);
+			}
+        }
+
+		[WebMethod(EnableSession = true)]
         public string wmUpdateEcotemplateStorm(string sEcoTemplateID, string sStormFileSource, string sStormFile)
         {
             acUI.acUI ui = new acUI.acUI();
@@ -4334,13 +4352,14 @@ namespace ACWebMethods
 			string sErr = "";
 			
 			//status and parameters
-			string sSQL = "select storm_status, storm_parameter_xml from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
+			string sSQL = "select storm_status, storm_parameter_xml, last_update_dt from ecosystem where ecosystem_id = '" + sEcosystemID + "'";
 			DataRow dr = null;
 			if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))
 				throw new Exception(sErr);
 
 			string sStormStatus = (string.IsNullOrEmpty(dr["storm_status"].ToString()) ? "" : dr["storm_status"].ToString());
 			string sStormParameterXML = (string.IsNullOrEmpty(dr["storm_parameter_xml"].ToString()) ? "" : dr["storm_parameter_xml"].ToString());
+			string sLastUpdateDT = (string.IsNullOrEmpty(dr["last_update_dt"].ToString()) ? "" : dr["last_update_dt"].ToString());
 
 			//log
 			sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, convert(update_dt, CHAR(20))" +
@@ -4365,6 +4384,7 @@ namespace ACWebMethods
 			
 			//build the json
 			sb.Append("{ \"storm_status\" : \"" + (string.IsNullOrEmpty(sStormStatus) ? "" : sStormStatus) + "\",");
+			sb.Append("\"last_update_dt\" : \"" + (string.IsNullOrEmpty(sLastUpdateDT) ? "" : sLastUpdateDT) + "\",");
 			
 			//log
 			sb.Append(" \"ecosystem_log\" : [");

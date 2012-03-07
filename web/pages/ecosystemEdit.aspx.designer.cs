@@ -23,6 +23,8 @@ namespace Web.pages {
 		
 		protected System.Web.UI.WebControls.TextBox txtDescription;
 		
+		protected System.Web.UI.WebControls.Label lblCreated;
+		
 		protected System.Web.UI.WebControls.Label lblEcosystemNameHeader;
 		
 		protected System.Web.UI.WebControls.Literal ltItems;
