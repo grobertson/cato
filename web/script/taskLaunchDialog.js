@@ -498,7 +498,8 @@ function CloseTaskLaunchDialog() {
             this.selectedIndex = 0;
     });
 
-
+	//NOTE: the debug drop down actually should have item #2 selected by default.
+	$('#task_launch_dialog_debug_level option[value="2"]').attr('selected', 'selected');	
     return false;
 }
 
