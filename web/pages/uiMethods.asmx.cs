@@ -100,8 +100,13 @@ namespace ACWebMethods
             if (!string.IsNullOrEmpty(sTo) && !string.IsNullOrEmpty(sMessage))
             {
                 string sFrom = "ui@" + Server.MachineName.ToString();
-
-                sMessage = ui.unpackJSON(sMessage);
+				
+				//the message *might be packed
+				try {
+					sMessage = ui.unpackJSON(sMessage);
+				} catch (Exception ex) {
+					//not failing, just assuming if it couldn't unpack then it wasn't actually packed.
+				}
 
                 ui.SendEmailMessage(sTo, sFrom, "UI Error Report", sMessage + Environment.NewLine + Environment.NewLine + sPageDetails, ref sErr);
             }
@@ -4092,6 +4097,19 @@ namespace ACWebMethods
 			
 			return true;
 		}
+
+		[WebMethod(EnableSession = true)]
+        public string wmGetStormFileFromURL(string sURL)
+        {
+			acUI.acUI ui = new acUI.acUI();
+			try {
+				sURL = ui.unpackJSON(sURL);
+				string sStormFileJSON = ui.HTTPGetNoFail(sURL);
+				return ui.packJSON(sStormFileJSON);
+			} catch (Exception ex) {
+				throw new Exception ("Error getting Storm from URL [" + ui.unpackJSON(sURL) + "]. " + ex.Message);
+			}
+        }
 
 		[WebMethod(EnableSession = true)]
         public string wmUpdateEcotemplateStorm(string sEcoTemplateID, string sStormFileSource, string sStormFile)
