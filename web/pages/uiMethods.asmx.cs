@@ -1633,7 +1633,7 @@ namespace ACWebMethods
             {
                 if (sValue != "")
                     sIcon = "<img class=\"custom_icon\" src=\"../images/custom/" + 
-						sPropertyName.Replace(" ", "") + "_" + 
+						sPropertyName.Replace(" ", "").ToLower() + "_" + 
 						sValue.Replace(" ", "") + ".png\" alt=\"\" />".ToLower();
             }
 
