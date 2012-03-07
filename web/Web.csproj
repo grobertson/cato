@@ -540,5 +540,6 @@
     <Content Include="script\jsonlint\c\js\jsl.interactions.js" />
     <Content Include="script\jsonlint\c\js\jsl.parser.js" />
     <Content Include="script\jsonlint\c\js\json2.js" />
+    <Content Include="script\stormEcotemplateManage.js" />
   </ItemGroup>
 </Project>

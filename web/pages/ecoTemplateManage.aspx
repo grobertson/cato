@@ -4,6 +4,7 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
     <script type="text/javascript" src="../script/managePageCommon.js"></script>
     <script type="text/javascript" src="../script/ecoTemplateManage.js"></script>
+    <script type="text/javascript" src="../script/stormEcotemplateManage.js"></script>
     <script type="text/javascript" src="../script/storm.js"></script>
 	<!--for jsonlint-->
 	<script type="text/javascript" src="../script/jsonlint/c/js/json2.js"></script>
@@ -138,6 +139,7 @@
 							<option value="URL">URL</option>
 							<option value="File">File</option>
 						</select>
+						<span id="url_to_text_btn" class="hidden">Convert to Text</span>
                     </td>
                 </tr>
                 <tr class="stormfileimport hidden">

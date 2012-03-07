@@ -16,7 +16,7 @@
 //This is all the functions to support Storm on the ecoTemplateEdit page.
 $(document).ready(function () {
     //Storm buttons
-    $("#url_to_text_btn").button({ icons: { primary: "ui-icon-shuffle"} });
+    $("#").button({ icons: { primary: "ui-icon-shuffle"} });
     $("#url_to_text_btn").click(function () {
 		var storm = GetStorm();
 	    if (storm != null) {
