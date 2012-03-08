@@ -1279,7 +1279,11 @@ namespace Globals
 						                           (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value),
 						                           (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true))
 						                           );
-						
+													//temporary
+
+						pv.IdentityServer = (xProvider.Attribute("identity_server") == null ? "" : xProvider.Attribute("identity_server").Value);
+
+
 						IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
 						
 						//if this provider has hardcoded clouds... get them
@@ -1363,12 +1367,10 @@ namespace Globals
 									// name="ImageId" label="" xpath="imageId" id_field="1" has_icon="0" short_list="1" sort_order="1"
 									if (xProperty.Attribute("name") == null) 
 										throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'name' attribute.");
-									if (xProperty.Attribute("xpath") == null) 
-										throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'xpath' attribute.");
 									
 									CloudObjectTypeProperty cotp = new CloudObjectTypeProperty(cot);
 									cotp.Name = xProperty.Attribute("name").Value;
-									cotp.XPath = xProperty.Attribute("xpath").Value;
+									cotp.XPath = (xProperty.Attribute("xpath") == null ? "" : xProperty.Attribute("xpath").Value);
 									
 									cotp.Label = (xProperty.Attribute("label") == null ? "" : xProperty.Attribute("label").Value);
 									cotp.SortOrder = (xProperty.Attribute("sort_order") == null ? "" : xProperty.Attribute("sort_order").Value);
@@ -1411,6 +1413,9 @@ namespace Globals
 		public string TestProduct { get { return _TestProduct; } }
 		public string TestObject { get { return _TestObject; } }
 		public bool UserDefinedClouds { get { return _UserDefinedClouds; } }
+		
+		//temporary
+		public string IdentityServer;
 		
 		//default empty constructor
 		public Provider(string sName, string sTestProduct, string sTestObject, bool bUserDefinedClouds)

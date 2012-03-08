@@ -26,6 +26,7 @@ using Globals;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Collections.Specialized;
 
 namespace acUI
 {
@@ -971,7 +972,7 @@ namespace acUI
 		}
 		
 		//Get data via HTTP
-		public string HTTPGet(string sURL, int iTimeout, ref string sErr)
+		public string HTTPGet(string sURL, int iTimeout, NameValueCollection nvcHeaders, ref string sErr)
 		{
 			string sResult = "";
 			try {
@@ -980,6 +981,23 @@ namespace acUI
 				HttpWebRequest request = WebRequest.Create (sURL) as HttpWebRequest;
 				request.Method = "GET";
 				request.Timeout = iTimeout;
+				
+				if (nvcHeaders != null) {
+					foreach (string key in nvcHeaders.Keys)
+					{
+						switch (key.ToLower()) {
+						case "content-type":
+							request.ContentType = nvcHeaders[key];
+							break;
+						case "accept":
+							request.Accept = nvcHeaders[key];
+							break;
+						default:
+							request.Headers.Add(key, nvcHeaders[key]);
+							break;
+						}
+					}
+				}
 				
 				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 				
@@ -1054,6 +1072,87 @@ namespace acUI
 			} catch (WebException) {
 				return "";
 			} catch (Exception) {
+				return "";
+			}
+		}
+		
+		public string HTTPPost(string sURL, string sData, int iTimeout, NameValueCollection nvcHeaders, ref string sErr)
+		{
+			string sResult = "";
+			try {
+				// Create a request for the URL. 
+				//WebRequest request = WebRequest.Create(sAPICall);
+				HttpWebRequest request = WebRequest.Create (sURL) as HttpWebRequest;
+				request.Method = "POST";
+				request.Timeout = iTimeout;
+				
+				//any additional headers?
+				if (nvcHeaders != null) {
+					foreach (string key in nvcHeaders.Keys)
+					{
+						switch (key.ToLower()) {
+						case "content-type":
+							request.ContentType = nvcHeaders[key];
+							break;
+						case "accept":
+							request.Accept = nvcHeaders[key];
+							break;
+						default:
+							request.Headers.Add(key, nvcHeaders[key]);
+							break;
+						}
+					}
+				}
+				
+				//pack up the data for the post
+				byte[] byteArray = Encoding.UTF8.GetBytes (sData);
+				// Set the ContentLength property of the WebRequest.
+				request.ContentLength = byteArray.Length;
+				// Get the request stream.
+				Stream postDataStream = request.GetRequestStream ();
+				// Write the data to the request stream.
+				postDataStream.Write (byteArray, 0, byteArray.Length);
+				// Close the Stream object.
+				postDataStream.Close ();
+				
+				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+				
+				if (response.StatusCode == HttpStatusCode.OK) {
+					// Get the stream containing content returned by the server.
+					Stream dataStream = response.GetResponseStream();
+					// Open the stream using a StreamReader for easy access.
+					StreamReader sr = new StreamReader (dataStream);
+					// Read the content.
+					sResult = sr.ReadToEnd();
+					// Clean up the streams and the response.
+					sr.Close();
+					response.Close();
+
+					return sResult;
+				}
+				else
+				{
+					sErr = "<code>" + response.StatusCode.ToString() + "</code>";
+					return "";
+				}
+				
+				
+			} catch (WebException ex) {
+				using (WebResponse response = ex.Response) {
+					if (response != null) {
+						HttpWebResponse httpResponse = (HttpWebResponse)response;
+						sErr = "HTTP Status Code:<br /><code>" + httpResponse.StatusCode.ToString();
+						using (Stream data = response.GetResponseStream()) {
+							string text = new StreamReader (data).ReadToEnd();
+							sErr += text;
+						}
+						sErr += "</code>";
+					} else
+						sErr = "<code>" + ex.Message + "</code>";
+				}
+				return "";
+			} catch (Exception ex) {
+				sErr = "<code>" + ex.Message + "</code>";
 				return "";
 			}
 		}
@@ -1262,11 +1361,12 @@ namespace acUI
                 }
             }
         }
-        public string RemoveNamespacesFromXML(string sXML)
+        public string RemoveDefaultNamespacesFromXML(string sXML)
         {
 			if (!string.IsNullOrEmpty(sXML)) 
 			{
-	            Regex r = new Regex(" xmlns=\"(.)*\"");
+				//this removes default namespaces, but leaves prefixed ones.
+	            Regex r = new Regex("xmlns=*[\"\"][^\"\"]*[\"\"]");
 	            Match match = r.Match(sXML);
 	
 	            while (match.Success == true)
