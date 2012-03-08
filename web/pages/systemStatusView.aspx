@@ -133,5 +133,58 @@
 		        </table>
 			</div>
         </div>
+        <br />
+        <div class="ui-widget-content ui-corner-all">
+            <div class="ui-widget-header">
+                <span>Messenger Queue</span>
+			</div>
+			<div style="padding: 10px;">	
+				<table class="jtable" cellspacing="1" cellpadding="1" width="95%">
+		            <thead>
+		                <tr>
+		                    <th align="left">
+		                        To
+		                    </th>
+		                    <th align="left">
+		                        Subject
+		                    </th>
+		                    <th align="left">
+		                        Status
+		                    </th>
+		                    <th align="left">
+		                        Error
+		                    </th>
+		                    <th align="left">
+		                        Timing
+		                    </th>
+		                </tr>
+		            </thead>
+		            <tbody>
+		                <asp:Repeater ID="rptMessages" runat="server">
+		                    <ItemTemplate>
+		                        <tr style="font-size: .8em;" >
+		                            <td>
+		                                <%# (((System.Data.DataRowView)Container.DataItem)["msg_to"]) %>
+		                            </td>
+		                            <td>
+		                                <%# (((System.Data.DataRowView)Container.DataItem)["msg_subject"]) %>
+		                            </td>
+		                            <td>
+		                                <%# (((System.Data.DataRowView)Container.DataItem)["status"]) %>
+		                            </td>
+		                            <td>
+		                                <%# (((System.Data.DataRowView)Container.DataItem)["error_message"]) %>
+		                            </td>
+		                            <td>
+	                                    <%# (((System.Data.DataRowView)Container.DataItem)["entered_dt"])%><br />
+	                                    <%# (((System.Data.DataRowView)Container.DataItem)["completed_dt"]) %><br />
+		                            </td>
+		                        </tr>
+		                    </ItemTemplate>
+		                </asp:Repeater>
+		            </tbody>
+		        </table>
+			</div>
+        </div>
     </div>
 </asp:Content>
