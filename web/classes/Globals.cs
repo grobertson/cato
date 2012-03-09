@@ -1633,6 +1633,14 @@ namespace Globals
 				
 				ui.WriteObjectChangeLog(Globals.acObjectTypes.CloudAccount, this.ID, this.Name, sOriginalName, this.Name);
 
+                //if "default" was selected, unset all the others
+                if (this.IsDefault)
+				{
+					sSQL = "update cloud_account set is_default = 0 where account_id <> '" + this.ID + "'";
+					//not worth failing... we'll just end up with two defaults.
+					dc.sqlExecuteUpdate(sSQL, ref sErr);
+                }
+
 				//refresh the cloud account list in the session
 	            if (!ui.PutCloudAccountsInSession(ref sErr))
 					throw new Exception("Error refreshing Cloud Accounts in session: " + sErr);
