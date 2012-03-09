@@ -31,6 +31,11 @@ namespace ACWebMethods
     /// taskMethods: web methods specifically for Task related operations.
     /// Just to keep uiMethods from becoming so huge.
     /// </summary>
+    [WebService(Namespace = "ACWebMethods")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    [System.ComponentModel.ToolboxItem(false)]
+    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+    [System.Web.Script.Services.ScriptService]
 
 	public class taskMethods : System.Web.Services.WebService
     {

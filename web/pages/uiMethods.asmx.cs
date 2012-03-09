@@ -33,11 +33,6 @@ namespace ACWebMethods
     /// <summary>
     /// There are at least four files using this same namespace, but the namespace details are defined here!
     /// </summary>
-    [WebService(Namespace = "ACWebMethods")]
-    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
-    [System.ComponentModel.ToolboxItem(false)]
-    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
-    [System.Web.Script.Services.ScriptService]
 
 	//class used to create canonical lists.
     class ParamComparer : IComparer<string>
@@ -47,6 +42,12 @@ namespace ACWebMethods
             return string.CompareOrdinal(p1, p2);
         }
     }
+
+	[WebService(Namespace = "ACWebMethods")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    [System.ComponentModel.ToolboxItem(false)]
+    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+    [System.Web.Script.Services.ScriptService]
 
     public class uiMethods : System.Web.Services.WebService
     {

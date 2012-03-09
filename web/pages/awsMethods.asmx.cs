@@ -36,6 +36,11 @@ namespace ACWebMethods
     /// <summary>
     /// awsMethods: for interacting with Amazon AWS, Eucalyptus, and other AWS style REST API's.
     /// </summary>
+    [WebService(Namespace = "ACWebMethods")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    [System.ComponentModel.ToolboxItem(false)]
+    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+    [System.Web.Script.Services.ScriptService]
 
     public class awsMethods : System.Web.Services.WebService
     {

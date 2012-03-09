@@ -37,6 +37,11 @@ namespace ACWebMethods
     /// <summary>
     /// openstackMethods: for interacting with the OpenStack REST API.
     /// </summary>
+    [WebService(Namespace = "ACWebMethods")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    [System.ComponentModel.ToolboxItem(false)]
+    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+    [System.Web.Script.Services.ScriptService]
 
     public class openstackMethods : System.Web.Services.WebService
     {
