@@ -4,7 +4,7 @@
 			<command name="new_connection" label="New Connection" description="Creates a new connection to an Asset." help="&lt;b&gt;New Connection&lt;/b&gt;&lt;br&gt;New Connection will create a named connection to an Asset.&lt;br /&gt; Select the connection type, pick the Asset and Name the connection to be used in the task." icon="icons/connect_creating_32.png">
 				<function command_type="new_connection">
 					<conn_type input_type="select" />
-					<cloud_name input_type="text" />
+					<cloud_name input_type="dropdown" style="combo" />
 					<asset input_type="text" />
 					<conn_name input_type="text">CONN1</conn_name>
 				</function>

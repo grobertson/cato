@@ -592,7 +592,13 @@ function initSortable() {
 
 	//this turns on the "combobox" controls on steps.
 	$(function () {
-		$("#steps select:.combo").ufd({submitFreeText: true});
+		$("#steps select:.combo").ufd({submitFreeText: true,
+			css: {
+				input: "ui-widget-content code",
+				li: "code",
+				listWrapper: "list-wrapper code"
+			}
+		});
 
 		
 		//NOTE: we are using the ufd plugin, but in this case we need more.

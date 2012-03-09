@@ -1907,11 +1907,32 @@ namespace FunctionTemplates
 	                + Environment.NewLine;
 
 	            sHTML += " in Cloud " + Environment.NewLine;
-	            sHTML += "<input type=\"text\" " +
-	                CommonAttribs(sStepID, sFunction, false, "cloud_name", "") +
-	                " class=\"code w400px\"" +
-	                " value=\"" + sCloudName + "\"" + " />"
-	                + Environment.NewLine;
+	            
+				sHTML += "<select " + CommonAttribs(sStepID, sFunction, false, "cloud_name", "combo") + ">" + Environment.NewLine;
+				//empty one
+                sHTML += "<option " + SetOption("", sCloudName) + " value=\"\"></option>" + Environment.NewLine;
+				
+				bool bValueWasInData = false;
+				Dictionary<string, string> data = ddDataSource_GetAWSClouds();
+				
+				if (data != null)
+				{
+					foreach (KeyValuePair<string, string> pair in data)
+					{
+						sHTML += "<option " + SetOption(pair.Key, sCloudName) + " value=\"" + pair.Key + "\">" + pair.Value + "</option>" + Environment.NewLine;
+
+						if (pair.Key.Equals(sCloudName)) bValueWasInData = true;
+					}
+				}
+				
+				//NOTE: we're allowing the user to enter a value that may not be 
+				//in the dataset.  If that's the case, we must add the actual saved value to the list too. 
+				if (!bValueWasInData) //we didn't find it in the data ...
+					if (!string.IsNullOrEmpty(sCloudName))  //and it's a combo and not empty 
+						sHTML += "<option " + SetOption(sCloudName, sCloudName) + " value=\"" + sCloudName + "\">" + sCloudName + "</option>" + Environment.NewLine;			
+				
+				sHTML += "</select>";
+
 
 				break;
 			default:
