@@ -242,41 +242,38 @@
 				</product>
 			</products>
 		</provider>
-		<provider name="OpenStack" test_product="compute" test_object="" user_defined_clouds="true" identity_server="https://region-a.geo-1.identity.hpcloudsvc.com:35357/v2.0/tokens">
+		<!--<provider name="OpenStack" test_product="compute" test_object="" user_defined_clouds="true">
 			<products>
-				<product name="compute" label="Compute" api_version="v1.1" api_url_prefix="" api_uri="">
+				<product name="compute" label="Compute" api_version="v1.1" api_url_prefix="az-1." api_uri="/">
 					<object_types>
-						<type id="os_servers" label="Servers" api_call="{tenant}/servers/detail" xml_record_xpath="servers/server">
+						<type id="os_servers" label="Servers" api_call="/{tenant}/servers/detail" xml_record_xpath="servers/server">
 							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
 							<property name="name" label="Name" short_list="1" sort_order="2" />
 							<property name="status" label="Status" short_list="1" sort_order="2" />
 						</type>
-					</object_types>
-				</product>
-				<product name="nova" label="Nova" api_version="v1.1" api_url_prefix="" api_uri="">
-					<object_types>
-						<type id="os_flavors" label="Flavors" api_call="/flavors" xml_record_xpath="flavors/flavor">
+						<type id="os_images" label="Images" api_call="/{tenant}/images" xml_record_xpath="images/image">
 							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
 							<property name="name" label="Name" short_list="1" sort_order="2" />
 						</type>
-					</object_types>
-				</product>
-				<product name="image" label="Image" api_version="v1" api_url_prefix="" api_uri="">
-					<object_types>
-						<type id="os_images" label="Images" api_call="images" xml_record_xpath="images">
+						<type id="os_flavors" label="Flavors" api_call="/{tenant}/flavors/detail" xml_record_xpath="flavors/flavor">
+							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
+							<property name="name" label="Name" short_list="1" sort_order="2" />
+							<property name="disk" label="Disk" short_list="1" sort_order="3" />
+							<property name="ram" label="Ram" short_list="1" sort_order="4" />
+							<property name="vcpus" label="CPU" short_list="1" sort_order="5" />
 						</type>
 					</object_types>
 				</product>
-				<product name="identity" label="Identity" api_version="v2.0" api_url_prefix="" api_uri="">
+				<product name="identity" label="Identity" api_version="v2.0" api_url_prefix="" api_uri=":35357/">
 					<object_types>
-						<type id="os_tenants" label="Tenants" api_call="tenants" xml_record_xpath="images">
-							<property name="ID" label="ID" xpath="image[id]" id_field="1" short_list="1" sort_order="1" />
-							<property name="name" label="Name" xpath="image[name]" short_list="1" sort_order="2" />
-							<property name="ServerLabel" label="" xpath="metadata/meta[key='Image Type']/value" short_list="1" sort_order="3" />
+						<type id="os_tenants" label="Tenants" api_call="/tenants" xml_record_xpath="tenants/tenant">
+							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
+							<property name="name" label="Name" short_list="1" sort_order="2" />
+							<property name="enabled" label="Enabled?" short_list="1" sort_order="3" />
 						</type>
 					</object_types>
 				</product>
 			</products>
-		</provider>
+		</provider>-->
 </providers>
 </root>

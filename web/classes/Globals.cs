@@ -1279,10 +1279,6 @@ namespace Globals
 						                           (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value),
 						                           (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true))
 						                           );
-													//temporary
-
-						pv.IdentityServer = (xProvider.Attribute("identity_server") == null ? "" : xProvider.Attribute("identity_server").Value);
-
 
 						IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
 						
@@ -1413,9 +1409,6 @@ namespace Globals
 		public string TestProduct { get { return _TestProduct; } }
 		public string TestObject { get { return _TestObject; } }
 		public bool UserDefinedClouds { get { return _UserDefinedClouds; } }
-		
-		//temporary
-		public string IdentityServer;
 		
 		//default empty constructor
 		public Provider(string sName, string sTestProduct, string sTestObject, bool bUserDefinedClouds)

@@ -133,30 +133,13 @@ namespace ACWebMethods
         }
 		private string GetURL(CloudAccount ca, Cloud c, CloudObjectType cot, ref string sAuthToken, ref string sErr)
 		{
-			string sHostName = "";
-		
 			Product prod = cot.ParentProduct;
 		
-			if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
-				sHostName = prod.APIUrlPrefix + c.APIUrl;
-			else if (string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
-				sHostName = c.APIUrl;
-			else if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && string.IsNullOrEmpty(c.APIUrl))
-				sHostName = prod.APIUrlPrefix;
-		
-
-			if (string.IsNullOrEmpty(sHostName)) {
-				sErr = "Unable to reconcile an endpoint from the Cloud [" + c.Name + "] or Cloud Object [" + cot.ID + "] definitions." + sErr;
-				return null;
-			}
-			
-			
 			//for openstack, the url has "region" information at the beginning, 
 			//THEN it has the "product"...
 			//THEN the host name.
 			//https://az-1.region-a.geo-1.compute.hpcloudsvc.com/v1/70599487453338/servers
 			
-						
 			//NOTE: we will use the Identity product to get this token...
 			//so make sure the identity product is configured correctly.
 			
@@ -182,11 +165,10 @@ namespace ACWebMethods
 			//but all these pieces of the URL are just goofy and I'm not sure other openstack instances
 			//will be the same.
 			
-			//string sIdentityHost = sHostName.Replace("{product}", idProd.Name);	
-			//string sIdentityURL = c.APIProtocol.ToLower() + "://" + sIdentityHost + "/" + idProd.APIVersion + "/tokens";;
+			string sIdentityHost = c.APIUrl.Replace("{product}", idProd.Name);	
+			string sIdentityURL = c.APIProtocol.ToLower() + "://" + sIdentityHost + idProd.APIUri + idProd.APIVersion + "/tokens";;
 			
-			string sIdentityURL = ca.Provider.IdentityServer;
-			//Console.Write("IDURL:" + sIdentityURL + ":IDURL\n");
+			Console.Write("IDURL:" + sIdentityURL + ":IDURL\n");
 			
 			string sData = "{\"auth\":{\"apiAccessKeyCredentials\":{" +
 				"\"accessKey\": \"" + sAccessKeyID + "\", \"secretKey\":\"" + sSecretAccessKeyID + "\"" +
@@ -216,14 +198,29 @@ namespace ACWebMethods
 
 			
 			
+			string sHostName = "";
+		
+			if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
+				sHostName = prod.APIUrlPrefix + c.APIUrl;
+			else if (string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
+				sHostName = c.APIUrl;
+			else if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && string.IsNullOrEmpty(c.APIUrl))
+				sHostName = prod.APIUrlPrefix;
+		
+			if (string.IsNullOrEmpty(sHostName)) {
+				sErr = "Unable to reconcile an endpoint from the Cloud [" + c.Name + "] or Cloud Object [" + cot.ID + "] definitions." + sErr;
+				return null;
+			}
+
+			
 			//so, we allow the user to put the variable {product} in the url, and we replace it here.
 			sHostName = sHostName.Replace("{product}", prod.Name);
 			//and some api calls require a tenant_id, also replaced here
 			string sAPICall = cot.APICall.Replace("{tenant}", sTenantID);
 			
-			string sHostURL = c.APIProtocol.ToLower() + "://" + sHostName + "/" + prod.APIVersion + "/" + sAPICall;
+			string sHostURL = c.APIProtocol.ToLower() + "://" + sHostName + prod.APIUri + prod.APIVersion + sAPICall;
 						
-			//Console.Write("URL:" + sHostURL + ":URL\n");
+			Console.Write("URL:" + sHostURL + ":URL\n");
 
 			return sHostURL;
 		}
