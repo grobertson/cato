@@ -135,7 +135,7 @@
 		</provider>
 		<provider name="Eucalyptus" test_product="eucalyptus" test_object="aws_ec2_security_group" user_defined_clouds="true">
 			<products>
-				<product name="eucalyptus" label="Eucalyptus" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Eucalyptus/">
+				<product name="eucalyptus" label="Eucalyptus" type="compute" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>
 						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
@@ -182,7 +182,7 @@
 					</object_types>
 				</product>
 				<!-- NOTE: the api_uri for walrus is required, unlike S3.  Walrus uses this as a required path component when calculating the signature.-->
-				<product name="walrus" label="Walrus" api_url_prefix="" api_version="2006-03-01" api_uri="/services/Walrus/">
+				<product name="walrus" label="Walrus" type="storage" api_url_prefix="" api_version="2006-03-01" api_uri="/services/Walrus/">
 					<object_types>
 						<type id="aws_s3_bucket" label="Walrus Bucket" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
@@ -194,7 +194,7 @@
 		</provider>
 		<provider name="OpenStackAws" test_product="openstackaws" test_object="aws_ec2_security_group" user_defined_clouds="true">
 			<products>
-				<product name="openstackaws" label="OpenStackAwsEucalyptus" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Cloud">
+				<product name="compute" label="Compute" type="compute" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Cloud">
 					<object_types>
 						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
