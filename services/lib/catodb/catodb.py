@@ -30,6 +30,9 @@ class Db(object):
 		except Exception, e:
 			raise Exception(e)
 	
+	def ping_db(self):
+		self.conn.ping(True)
+	
 	def select_all(self, sql, params=()):
 		"""Gets a row set for a provided query."""
 		if sql == "":
