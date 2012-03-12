@@ -19,6 +19,7 @@ import sys
 from catocryptpy import catocryptpy
 import pymysql
 import time
+import threading
 from catodb import catodb
 
 def read_config():
@@ -38,6 +39,7 @@ def read_config():
 	
 	key_vals = {}
 	contents = fp.read().splitlines()
+	fp.close
 	enc_key = ""
 	enc_pass = ""
 	for line in contents:
@@ -150,6 +152,13 @@ class CatoService(CatoProcess):
 		self.db.exec_db(sql)
 		self.output("Application registered.")
 
+	def heartbeat_loop(self, event):
+		while True:
+			event.wait(self.loop)
+			if event.isSet():
+				break
+			self.update_heartbeat()
+
 	def update_heartbeat(self):
 		sql = "update application_registry set heartbeat = now() where id = %s"
 		self.db.exec_db(sql,(self.instance_id))
@@ -158,6 +167,16 @@ class CatoService(CatoProcess):
 		CatoProcess.startup(self)
 		self.check_registration()
 		self.update_heartbeat()
+		self.heartbeat_event = threading.Event()
+		self.heartbeat_thread = threading.Thread(target=self.heartbeat_loop, args=(self.heartbeat_event,))
+		self.heartbeat_thread.daemon = True
+		self.heartbeat_thread.start()
+
+	def end(self):
+		self.heartbeat_event.set()
+		self.heartbeat_thread.join()
+		self.db.close()
+
 	
 
 
