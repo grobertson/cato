@@ -56,11 +56,8 @@ proc http_get {url xml_encoded} {
 	} else {
 		if {"[::http::status $token]" != "ok" || [::http::ncode $token] != 200} {
 			set output_buffer "<error>HTTP Error: [::http::status $token] [::http::code $token] [::http::data $token]</error>"
-			error $output_buffer 2011
-		
 		} else {
 			set output_buffer [::http::data $token]
-			#output $output_buffer 1
 		}
 		
 	}

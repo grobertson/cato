@@ -50,7 +50,7 @@
 			</item>
 			<item roles="developer user" label="Manage Ecosystems" icon="../images/icons/ecosystems_24.png" onclick="showPleaseWait();" href="../pages/ecosystemManage.aspx">
 			</item>
-			<item roles="developer user" label="Cloud Discovery" icon="../images/icons/cloud_discovery_24.png" onclick="showPleaseWait();" href="../pages/awsDiscovery.aspx">
+			<item roles="developer user" label="Cloud Discovery" icon="../images/icons/cloud_discovery_24.png" onclick="showPleaseWait();" href="../pages/cloudDiscovery.aspx">
 			</item>
 		</menu>
 		<menu roles="developer" label="Configuration" icon="../images/config_24.png">
@@ -96,7 +96,7 @@
 		<Developer>
 			<allowedpages>
 				<page>about.aspx</page>
-				<page>awsDiscovery.aspx</page>
+				<page>cloudDiscovery.aspx</page>
 				<page>ecosystemEdit.aspx</page>
 				<page>ecosystemManage.aspx</page>
 				<page>ecoTemplateEdit.aspx</page>
@@ -124,7 +124,7 @@
 				<page>about.aspx</page>
 				<page>ecosystemEdit.aspx</page>
 				<page>ecosystemManage.aspx</page>
-				<page>awsDiscovery.aspx</page>
+				<page>cloudDiscovery.aspx</page>
 				<page>home.aspx</page>
 				<page>taskActivityLog.aspx</page>
 				<page>taskRunLog.aspx</page>

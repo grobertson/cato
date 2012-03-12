@@ -87,7 +87,6 @@ namespace Web.pages
         public static string wmGetCloudObjectList(string sCloudID, string sObjectType)
         {
             acUI.acUI ui = new acUI.acUI();
-            ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
 
             string sXML = "";
             string sErr = "";
@@ -108,7 +107,16 @@ namespace Web.pages
             }
 			
 			
-            sXML = acAWS.GetCloudObjectsAsXML(sCloudID, cot, ref sErr, null);
+			switch (p.Name.ToLower()) {
+			case "openstack":
+				ACWebMethods.openstackMethods acOS = new ACWebMethods.openstackMethods();
+				sXML = acOS.GetCloudObjectsAsXML(sCloudID, cot, ref sErr, null);
+				break;
+			default: //Amazon aws, Eucalyptus, and OpenStackAws
+				ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
+				sXML = acAWS.GetCloudObjectsAsXML(sCloudID, cot, ref sErr, null);
+				break;
+			}
 			if (!string.IsNullOrEmpty(sErr))
 			{
 				return sErr;
@@ -183,7 +191,7 @@ namespace Web.pages
                 //we have a complete enough object type to make a call.
                 //can it be parsed?
 
-                sXML = ui.RemoveNamespacesFromXML(sXML);
+                sXML = ui.RemoveDefaultNamespacesFromXML(sXML);
                 XDocument xDoc = XDocument.Parse(sXML);
                 if (xDoc == null)
                     sHTML += "<span class=\"ui-widget-content ui-state-error\">Cloud Response XML document is invalid.</span>.";

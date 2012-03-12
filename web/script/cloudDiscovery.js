@@ -113,7 +113,7 @@ $(document).ready(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "awsDiscovery.aspx/wmGetAWSObjectList",
+                url: "cloudDiscovery.aspx/wmGetCloudObjectList",
                 data: '{"sCloudID":"' + cloud_id + '", "sObjectType":"' + object_type + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",

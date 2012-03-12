@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="awsDiscovery.aspx.cs" Inherits="Web.pages.awsDiscovery"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="cloudDiscovery.aspx.cs" Inherits="Web.pages.cloudDiscovery"
     MasterPageFile="~/pages/site.master" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="phHead" runat="server">
@@ -12,7 +12,7 @@
             padding: 20px 0px 0px 0px;
         }
     </style>
-    <script type="text/javascript" src="../script/awsDiscovery.js"></script>
+    <script type="text/javascript" src="../script/cloudDiscovery.js"></script>
 </asp:Content>
 <asp:Content ID="cDetail" ContentPlaceHolderID="phDetail" runat="server">
     <div style="display: none;">

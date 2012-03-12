@@ -33,7 +33,7 @@ namespace Web.pages
             {
                 LoadSystemComponents();
                 LoadCurrentUsers();
-
+				LoadMessages();
             }
 
         }
@@ -78,6 +78,25 @@ namespace Web.pages
             {
                 rptUsers.DataSource = dt;
                 rptUsers.DataBind();
+            }
+        }
+        private void LoadMessages()
+        {
+
+            DataTable dt = new DataTable();
+            sSQL = "select error_message, msg_to, msg_subject," +
+                " case status when 0 then 'Queued' when 1 then 'Error' when 2 then 'Success' end as status," +
+                " convert(date_time_entered, CHAR(20)) as entered_dt, convert(date_time_completed, CHAR(20)) as completed_dt" +
+                " from message" +
+                " order by msg_id desc limit 100";
+            if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))
+            {
+                ui.RaiseError(Page, sErr, true, "");
+            }
+            else
+            {
+                rptMessages.DataSource = dt;
+                rptMessages.DataBind();
             }
         }
 

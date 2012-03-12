@@ -31,13 +31,24 @@ using System.Reflection;
 namespace ACWebMethods
 {
     /// <summary>
-    /// Summary description for taskMethods
+    /// There are at least four files using this same namespace, but the namespace details are defined here!
     /// </summary>
-    [WebService(Namespace = "ACWebMethods")]
+
+	//class used to create canonical lists.
+    class ParamComparer : IComparer<string>
+    {
+        public int Compare(string p1, string p2)
+        {
+            return string.CompareOrdinal(p1, p2);
+        }
+    }
+
+	[WebService(Namespace = "ACWebMethods")]
     [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
     [System.ComponentModel.ToolboxItem(false)]
     // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
     [System.Web.Script.Services.ScriptService]
+
     public class uiMethods : System.Web.Services.WebService
     {
 		#region "General"
@@ -104,7 +115,7 @@ namespace ACWebMethods
 				//the message *might be packed
 				try {
 					sMessage = ui.unpackJSON(sMessage);
-				} catch (Exception ex) {
+				} catch (Exception) {
 					//not failing, just assuming if it couldn't unpack then it wasn't actually packed.
 				}
 
@@ -1421,7 +1432,6 @@ namespace ACWebMethods
         {
 			
             dataAccess dc = new dataAccess();
-            ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
 			acUI.acUI ui = new acUI.acUI();
 			
             try
@@ -1483,7 +1493,7 @@ namespace ACWebMethods
 		                {
 							//we only need to hit the API once... this result will contain all the objects
 		                    //and our DrawProperties will filter the DataTable on the ID.
-		                    DataTable dtAPIResults = acAWS.GetCloudObjectsAsDataTable(sCloudID, sType, ref sErr);
+		                    DataTable dtAPIResults = GetCloudObjectsAsDataTable(sCloudID, sType, ref sErr);
 							
 		                    foreach (DataRow drObject in dtObjects.Rows)
 		                    {
@@ -1652,6 +1662,165 @@ namespace ACWebMethods
             sHTML += (sValue == "" ? "" : "<div class=\"ecosystem_item_property\">" + dr.Table.Columns[sPropertyName].Caption + ": <span class=\"ecosystem_item_property_value\">" + sIcon + sValue + "</span></div>");
 
             return sHTML;
+        }
+        //this method looks up a cloud object in our database, and executes a call based on CloudObjectType parameters.
+        //the columns created as part of the object are defined as CloudObjectTypeProperty.
+        public DataTable GetCloudObjectsAsDataTable(string sCloudID, string sObjectType, ref string sErr)
+        {
+            try
+            {
+				acUI.acUI ui = new acUI.acUI();
+				
+				//first, get the cloud
+				Cloud c = new Cloud(sCloudID);
+				if (c == null)
+				{ sErr = "Unable to get Cloud for ID [" + sCloudID + "]"; return null; }
+				
+                //get the cloud object type from the session
+				Provider p = ui.GetSelectedCloudProvider();
+				CloudObjectType cot = ui.GetCloudObjectType(p, sObjectType);
+                if (cot != null)
+                {
+                    if (string.IsNullOrEmpty(cot.ID))
+                    { sErr = "Cannot find definition for requested object type [" + sObjectType + "]"; return null; }
+                }
+                else
+                {
+                    sErr = "GetCloudObjectType failed for [" + sObjectType + "]";
+                    return null;
+                }
+
+				string sXML = "";
+				
+				switch (c.Provider.Name.ToLower()) {
+				case "openstack":
+					ACWebMethods.openstackMethods acOS = new ACWebMethods.openstackMethods();
+					sXML = acOS.GetCloudObjectsAsXML(c.ID, cot, ref sErr, null);
+					break;
+				default: //Amazon aws, Eucalyptus, and OpenStackAws
+					ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
+					sXML = acAWS.GetCloudObjectsAsXML(c.ID, cot, ref sErr, null);			
+					break;
+				}
+				if (sErr != "") return null;
+				
+				if (string.IsNullOrEmpty(sXML))
+				{ sErr = "GetCloudObjectsAsXML returned an empty document."; return null; }
+
+                //OK look, all this namespace nonsense is annoying.  Every AWS result I've witnessed HAS a namespace
+                // (which messes up all our xpaths)
+                // but I've yet to see a result that actually has two namespaces 
+                // which is the only scenario I know of where you'd need them at all.
+
+                //So... to eliminate all namespace madness
+                //brute force... parse this text and remove anything that looks like [ xmlns="<crud>"] and it's contents.
+                sXML = ui.RemoveDefaultNamespacesFromXML(sXML);
+
+                XDocument xDoc = XDocument.Parse(sXML);
+                if (xDoc == null) { sErr = "API Response XML document is invalid."; return null; }
+
+
+				DataTable dt = new DataTable();
+
+				//what columns go in the DataTable?
+                if (cot.Properties.Count > 0)
+                {
+					//this is for the hardcoded properties in the cloud_providers.xml file.
+					//if we want to show ALL object tags from the xml tagSet,
+					//perhaps that whole xml snip should go in a column on this datatable.
+					
+                    foreach (CloudObjectTypeProperty prop in cot.Properties)
+                    {
+                        //the column on the data table *becomes* the property.
+                        //we'll load it up with all the goodness we need anywhere else
+                        DataColumn dc = new DataColumn();
+
+                        dc.ColumnName = prop.Name;
+
+                        //This is important!  Places in the GUI expect the first column to be the ID column.
+                        //hoping to stop doing that in favor of this property.
+                        dc.ExtendedProperties.Add("IsID", prop.IsID.ToString());
+                        //will we try to draw an icon?
+                        dc.ExtendedProperties.Add("HasIcon", prop.HasIcon.ToString());
+                        //a "short list" property is one that will always show up... it's a shortcut in some places.
+                        dc.ExtendedProperties.Add("ShortList", prop.ShortList.ToString());
+						//what was the xpath for this property?
+                        dc.ExtendedProperties.Add("XPath", prop.XPath.ToString());
+						//do we grab the "value" for this property, or the xml?
+                        dc.ExtendedProperties.Add("ValueIsXML", prop.ValueIsXML.ToString());
+                        
+						//it might have a custom caption
+                        if (!string.IsNullOrEmpty(prop.Label)) dc.Caption = prop.Label;
+
+                        //add the column
+                        dt.Columns.Add(dc);
+                    }
+                }
+                else
+                {
+                    sErr = "No properties defined for type [" + sObjectType + "]";
+                    //if this is a power user, write out the XML of the response as a debugging aid.
+                    if (ui.UserIsInRole("Developer") || ui.UserIsInRole("Administrator"))
+                    {
+                        sErr += "<br />RESPONSE:<br /><pre>" + ui.SafeHTML(sXML) + "</pre>";
+                    }
+                    return null;
+                }
+				
+                //ok, columns are added.  Parse the XML and add rows.
+				
+                foreach (XElement xeRecord in xDoc.XPathSelectElements(cot.XMLRecordXPath))
+                {
+                    DataRow drNewRow = dt.NewRow();
+
+                    //we could just loop the Cloud Type Properties again, but doing the DataColumn collection
+                    //ensures all the info we need got added
+                    foreach (DataColumn dc in dt.Columns)
+                    {
+						//ok look, the property may be an xml attribute, or it might be an element.
+						//if there is an XPath value on the column, that means it's an element.
+						//the absence of an XPath means we'll look for an attribute.
+						//NOTE: the attribute we're looking for is the 'name' of this property
+						//which is the DataColumn.name.
+						
+						if (string.IsNullOrEmpty(dc.ExtendedProperties["XPath"].ToString()))
+						{
+							XAttribute xa = xeRecord.Attribute(dc.ColumnName);
+							if (xa != null)
+							{
+								drNewRow[dc.ColumnName] = xa.Value;
+							}
+						}
+						else
+						{
+							//if it's a tagset column put the tagset xml in it
+							// for all other columns, they get a lookup
+	                        XElement xeProp = xeRecord.XPathSelectElement(dc.ExtendedProperties["XPath"].ToString());
+	                        if (xeProp != null) {
+								//does this column have the extended property "ValueIsXML"?
+								bool bAsXML = (dc.ExtendedProperties["ValueIsXML"] != null ? 
+								               (dc.ExtendedProperties["ValueIsXML"].ToString() == "True" ? true : false): false);
+								
+								if (bAsXML)
+									drNewRow[dc.ColumnName] = xeProp.ToString(SaveOptions.DisableFormatting);
+								else
+									drNewRow[dc.ColumnName] = xeProp.Value;
+							}
+						}
+					}
+
+                    //build the row
+                    dt.Rows.Add(drNewRow);
+                }
+
+                //all done
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                sErr = ex.Message;
+                return null;
+            }
         }
 
 
@@ -4516,7 +4685,7 @@ namespace ACWebMethods
 					
 			string sXML = "";
 			try {
-				sXML = ui.HTTPGet(sURL, 15000, ref sErr);
+				sXML = ui.HTTPGet(sURL, 15000, null, ref sErr);
 			} catch (Exception ex) {
 				throw new Exception("Error calling Storm service." + ex.Message);
 			}

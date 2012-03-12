@@ -18,5 +18,7 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.Repeater rpSystemComponents;
 		
 		protected System.Web.UI.WebControls.Repeater rptUsers;
+		
+		protected System.Web.UI.WebControls.Repeater rptMessages;
 	}
 }

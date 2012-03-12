@@ -28,7 +28,7 @@ using System.Xml.Linq;
 
 namespace Web.pages
 {
-    public partial class awsDiscovery : System.Web.UI.Page
+    public partial class cloudDiscovery : System.Web.UI.Page
     {
         acUI.acUI ui = new acUI.acUI();
         dataAccess dc = new dataAccess();
@@ -77,8 +77,9 @@ namespace Web.pages
                 //we'll add a column to the output data table
                 dt.Columns.Add("Ecosystems");
 
-                //ok, we have some results from AWS.  Let's see if any of them are tied to a ecosystem and if so... note it...
-                //spin the AWS results
+                //ok, we have some results from the cloud provider...
+				//Let's see if any of them are tied to a ecosystem and if so... note it...
+                //spin the results
 
                 //what's in the ecosystem_object table already?
                 //get all the ecosystem objects into a table so we can merge it as needed...
@@ -171,14 +172,13 @@ namespace Web.pages
         }
 
         [WebMethod(EnableSession = true)]
-        public static string wmGetAWSObjectList(string sCloudID, string sObjectType)
+        public static string wmGetCloudObjectList(string sCloudID, string sObjectType)
         {
-            ACWebMethods.awsMethods acAWS = new ACWebMethods.awsMethods();
-
-            string sHTML = "";
             string sErr = "";
+            string sHTML = "";
 
-            DataTable dt = acAWS.GetCloudObjectsAsDataTable(sCloudID, sObjectType, ref sErr);
+			ACWebMethods.uiMethods uiM = new ACWebMethods.uiMethods();
+			DataTable dt = uiM.GetCloudObjectsAsDataTable(sCloudID, sObjectType, ref sErr);
             if (dt != null)
             {
                 if (dt.Rows.Count > 0)

@@ -42,13 +42,7 @@ proc output {args} {
 	}
 }
 
-# this proc does an HTTP POST to the specified URL, and sends the encoded task xml as form data
 proc http_get {url} {
-	# if you wanted to do a GET instead it would look like this, get is a lot pickier about what's in the querystring... specifically newlines.
-	# catch {set token [::http::geturl $url -timeout [expr 10 * 1000]]} error_code
-	
-	#but this is big data and it has newlines... so we're using POST
-	set query ""
 	catch {set token [::http::geturl $url -timeout [expr 60 * 1000]]} error_code
 	
 	if {[string match "::http::*" $error_code] == 0} {
@@ -57,11 +51,8 @@ proc http_get {url} {
 	} else {
 		if {"[::http::status $token]" != "ok" || [::http::ncode $token] != 200} {
 			set output_buffer "<error>HTTP Error: [::http::status $token] [::http::code $token] [::http::data $token]</error>"
-			error $output_buffer 2011
-		
 		} else {
 			set output_buffer [::http::data $token]
-			#output $output_buffer 1
 		}
 		
 	}

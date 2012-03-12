@@ -95,12 +95,6 @@
     <Compile Include="pages\about.aspx.cs">
       <DependentUpon>about.aspx</DependentUpon>
     </Compile>
-    <Compile Include="pages\awsDiscovery.aspx.designer.cs">
-      <DependentUpon>awsDiscovery.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="pages\awsDiscovery.aspx.cs">
-      <DependentUpon>awsDiscovery.aspx</DependentUpon>
-    </Compile>
     <Compile Include="pages\awsMethods.asmx.cs">
       <DependentUpon>awsMethods.asmx</DependentUpon>
     </Compile>
@@ -347,6 +341,15 @@
     <None Include="script\jquery\jquery.ui.ufd-0.6\MIT-LICENSE.txt" />
     <None Include="script\jquery\jquery.ui.ufd-0.6\README.txt" />
     <None Include="script\jsonlint\LICENSE" />
+    <Compile Include="pages\openstackMethods.asmx.cs">
+      <DependentUpon>openstackMethods.asmx</DependentUpon>
+    </Compile>
+    <Compile Include="pages\cloudDiscovery.aspx.cs">
+      <DependentUpon>cloudDiscovery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="pages\cloudDiscovery.aspx.designer.cs">
+      <DependentUpon>cloudDiscovery.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -452,7 +455,6 @@
     <Content Include="script\taskedit\taskStepVarsEdit.js" />
     <Content Include="script\taskedit\taskVersions.js" />
     <Content Include="script\taskedit\taskView.js" />
-    <Content Include="script\awsDiscovery.js" />
     <Content Include="script\cloudAccountEdit.js" />
     <Content Include="script\ecosystemEdit.js" />
     <Content Include="script\ecosystemManage.js" />
@@ -480,7 +482,6 @@
     <Content Include="script\userEdit.js" />
     <Content Include="script\validation.js" />
     <Content Include="pages\about.aspx" />
-    <Content Include="pages\awsDiscovery.aspx" />
     <Content Include="pages\awsMethods.asmx" />
     <Content Include="pages\cloudAccountEdit.aspx" />
     <Content Include="pages\cloudAPITester.aspx" />
@@ -542,5 +543,8 @@
     <Content Include="script\jsonlint\c\js\json2.js" />
     <Content Include="pages\fileDownload.ashx" />
     <Content Include="script\stormEcotemplateManage.js" />
+    <Content Include="pages\openstackMethods.asmx" />
+    <Content Include="script\cloudDiscovery.js" />
+    <Content Include="pages\cloudDiscovery.aspx" />
   </ItemGroup>
 </Project>

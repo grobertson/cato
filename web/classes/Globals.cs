@@ -1279,7 +1279,7 @@ namespace Globals
 						                           (xProvider.Attribute ("test_object") == null ? "" : xProvider.Attribute ("test_object").Value),
 						                           (xProvider.Attribute ("user_defined_clouds") == null ? true : (xProvider.Attribute ("user_defined_clouds").Value == "false" ? false : true))
 						                           );
-						
+
 						IEnumerable<XElement> xClouds = xProvider.XPathSelectElements("clouds/cloud");
 						
 						//if this provider has hardcoded clouds... get them
@@ -1363,12 +1363,10 @@ namespace Globals
 									// name="ImageId" label="" xpath="imageId" id_field="1" has_icon="0" short_list="1" sort_order="1"
 									if (xProperty.Attribute("name") == null) 
 										throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'name' attribute.");
-									if (xProperty.Attribute("xpath") == null) 
-										throw new Exception("Cloud Providers XML: All Object Type Properties must have the 'xpath' attribute.");
 									
 									CloudObjectTypeProperty cotp = new CloudObjectTypeProperty(cot);
 									cotp.Name = xProperty.Attribute("name").Value;
-									cotp.XPath = xProperty.Attribute("xpath").Value;
+									cotp.XPath = (xProperty.Attribute("xpath") == null ? "" : xProperty.Attribute("xpath").Value);
 									
 									cotp.Label = (xProperty.Attribute("label") == null ? "" : xProperty.Attribute("label").Value);
 									cotp.SortOrder = (xProperty.Attribute("sort_order") == null ? "" : xProperty.Attribute("sort_order").Value);
@@ -2198,6 +2196,14 @@ namespace Globals
 				}
 				
 				ui.WriteObjectChangeLog(Globals.acObjectTypes.CloudAccount, this.ID, this.Name, sOriginalName, this.Name);
+
+                //if "default" was selected, unset all the others
+                if (this.IsDefault)
+				{
+					sSQL = "update cloud_account set is_default = 0 where account_id <> '" + this.ID + "'";
+					//not worth failing... we'll just end up with two defaults.
+					dc.sqlExecuteUpdate(sSQL, ref sErr);
+                }
 
 				//refresh the cloud account list in the session
 	            if (!ui.PutCloudAccountsInSession(ref sErr))

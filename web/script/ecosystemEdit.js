@@ -59,7 +59,7 @@ $(document).ready(function () {
 
 	//the Discovery button looks like an action category for consistency, but its' just a redirect.
     $("#discovery_btn").live("click", function () {
-		location.href="awsDiscovery.aspx?ecosystem_id=" + g_eco_id;
+		location.href="cloudDiscovery.aspx?ecosystem_id=" + g_eco_id;
 	});
 	
     //enabling the 'change' event for the Details tab

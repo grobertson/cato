@@ -71,9 +71,21 @@ $(document).ready(function () {
     });
     $(".action_icon").live("click", function () {
         $("#selected_action_id").val($(this).parents("li").attr('id').replace(/ac_/, ""));
+        
+        //look at the src of this icon, and highlight that same one in the dialog
+        var src = $(this).attr("src");
+        
+    	//remove the selected class from all and add to this one.
+    	$(".action_picker_icon").removeClass("action_picker_icon_selected");
+    	$(".action_picker_icon[src='" + src + "']").addClass("action_picker_icon_selected");
+
         $("#action_icon_dialog").dialog('open');
     });
     $(".action_picker_icon").live("click", function () {
+    	//remove the selected class from all and add to this one.
+    	$(".action_picker_icon").removeClass("action_picker_icon_selected");
+    	$(this).addClass("action_picker_icon_selected");
+        
         $("#selected_action_icon").val($(this).attr("icon_name"));
     });
 

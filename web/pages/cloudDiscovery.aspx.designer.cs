@@ -11,7 +11,7 @@
 namespace Web.pages {
 	
 	
-	public partial class awsDiscovery {
+	public partial class cloudDiscovery {
 		
 		protected System.Web.UI.WebControls.Content cHead;
 		

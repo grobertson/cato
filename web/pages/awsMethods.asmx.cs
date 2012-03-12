@@ -34,22 +34,14 @@ using Globals;
 namespace ACWebMethods
 {
     /// <summary>
-    /// Summary description for awsMethods
+    /// awsMethods: for interacting with Amazon AWS, Eucalyptus, and other AWS style REST API's.
     /// </summary>
-    [WebService(Namespace = "ACAWSMethods")]
+    [WebService(Namespace = "ACWebMethods")]
     [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
     [System.ComponentModel.ToolboxItem(false)]
     // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
     [System.Web.Script.Services.ScriptService]
 
-    //class used to create our canonical list.
-    class ParamComparer : IComparer<string>
-    {
-        public int Compare(string p1, string p2)
-        {
-            return string.CompareOrdinal(p1, p2);
-        }
-    }
     public class awsMethods : System.Web.Services.WebService
     {
 
@@ -85,7 +77,7 @@ namespace ACWebMethods
 			if (!string.IsNullOrEmpty(sErr))
 				return "{\"result\":\"fail\",\"error\":\"" + ui.packJSON(sErr) +"\"}";
 			
-			string sResult = ui.HTTPGet(sURL, 15000, ref sErr);
+			string sResult = ui.HTTPGet(sURL, 15000, null, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 				return "{\"result\":\"fail\",\"error\":\"" + ui.packJSON(sErr) + "\"}";
 
@@ -93,133 +85,6 @@ namespace ACWebMethods
 		}
 
         #region "Request Building Methods"
-        //this method looks up a cloud object in our database, and executes a call based on CloudObjectType parameters.
-        //the columns created as part of the object are defined as CloudObjectTypeProperty.
-        public DataTable GetCloudObjectsAsDataTable(string sCloudID, string sObjectType, ref string sErr)
-        {
-            try
-            {
-                //build the DataTable
-                DataTable dt = new DataTable();
-
-                //get the cloud object type from the session
-				Provider p = ui.GetSelectedCloudProvider();
-				CloudObjectType cot = ui.GetCloudObjectType(p, sObjectType);
-                if (cot != null)
-                {
-                    if (string.IsNullOrEmpty(cot.ID))
-                    { sErr = "Cannot find definition for requested object type [" + sObjectType + "]"; return null; }
-                }
-                else
-                {
-                    sErr = "GetCloudObjectType failed for [" + sObjectType + "]";
-                    return null;
-                }
-
-                string sXML = GetCloudObjectsAsXML(sCloudID, cot, ref sErr, null);
-                if (sErr != "") return null;
-				
-				if (string.IsNullOrEmpty(sXML))
-				{
-					sErr = "GetCloudObjectsAsXML returned an empty document.";
-					return null;
-				}
-
-                //OK look, all this namespace nonsense is annoying.  Every AWS result I've witnessed HAS a namespace
-                // (which messes up all our xpaths)
-                // but I've yet to see a result that actually has two namespaces 
-                // which is the only scenario I know of where you'd need them at all.
-
-                //So... to eliminate all namespace madness
-                //brute force... parse this text and remove anything that looks like [ xmlns="<crud>"] and it's contents.
-                sXML = ui.RemoveNamespacesFromXML(sXML);
-
-                XDocument xDoc = XDocument.Parse(sXML);
-                if (xDoc == null) { sErr = "API Response XML document is invalid."; return null; }
-
-
-                //what columns go in the DataTable?
-                if (cot.Properties.Count > 0)
-                {
-					//this is for the hardcoded properties in the cloud_providers.xml file.
-					//if we want to show ALL object tags from the xml tagSet,
-					//perhaps that whole xml snip should go in a column on this datatable.
-					
-                    foreach (CloudObjectTypeProperty prop in cot.Properties)
-                    {
-                        //the column on the data table *becomes* the property.
-                        //we'll load it up with all the goodness we need anywhere else
-                        DataColumn dc = new DataColumn();
-
-                        dc.ColumnName = prop.Name;
-
-                        //This is important!  Places in the GUI expect the first column to be the ID column.
-                        //hoping to stop doing that in favor of this property.
-                        dc.ExtendedProperties.Add("IsID", prop.IsID.ToString());
-                        //will we try to draw an icon?
-                        dc.ExtendedProperties.Add("HasIcon", prop.HasIcon.ToString());
-                        //a "short list" property is one that will always show up... it's a shortcut in some places.
-                        dc.ExtendedProperties.Add("ShortList", prop.ShortList.ToString());
-						//what was the xpath for this property?
-                        dc.ExtendedProperties.Add("XPath", prop.XPath.ToString());
-						//do we grab the "value" for this property, or the xml?
-                        dc.ExtendedProperties.Add("ValueIsXML", prop.ValueIsXML.ToString());
-                        
-						//it might have a custom caption
-                        if (!string.IsNullOrEmpty(prop.Label)) dc.Caption = prop.Label;
-
-                        //add the column
-                        dt.Columns.Add(dc);
-                    }
-                }
-                else
-                {
-                    sErr = "No properties defined for type [" + sObjectType + "]";
-                    //if this is a power user, write out the XML of the response as a debugging aid.
-                    if (ui.UserIsInRole("Developer") || ui.UserIsInRole("Administrator"))
-                    {
-                        sErr += "<br />RESPONSE:<br /><pre>" + ui.SafeHTML(sXML) + "</pre>";
-                    }
-                    return null;
-                }
-				
-                //ok, columns are added.  Parse the XML and add rows.
-                foreach (XElement xeRecord in xDoc.XPathSelectElements(cot.XMLRecordXPath))
-                {
-                    DataRow drNewRow = dt.NewRow();
-
-                    //we could just loop the Cloud Type Properties again, but doing the DataColumn collection
-                    //ensures all the info we need got added
-                    foreach (DataColumn dc in dt.Columns)
-                    {
-						//if it's a tagset column put the tagset xml in it
-						// for all other columns, they get a lookup
-                        XElement xeProp = xeRecord.XPathSelectElement(dc.ExtendedProperties["XPath"].ToString());
-                        if (xeProp != null) {
-							//does this column have the extended property "ValueIsXML"?
-							bool bAsXML = (dc.ExtendedProperties["ValueIsXML"] != null ? 
-							               (dc.ExtendedProperties["ValueIsXML"].ToString() == "True" ? true : false): false);
-							
-							if (bAsXML)
-								drNewRow[dc.ColumnName] = xeProp.ToString(SaveOptions.DisableFormatting);
-							else
-								drNewRow[dc.ColumnName] = xeProp.Value;
-						}
-					}
-
-                    //build the row
-                    dt.Rows.Add(drNewRow);
-                }
-
-                //all done
-                return dt;
-            }
-            catch (Exception ex)
-            {
-                sErr = ex.Message;
-                return null;
-            }
-        }
         public string GetCloudObjectsAsXML(string sCloudID, CloudObjectType cot, ref string sErr, Dictionary<string, string> AdditionalArguments)
         {
             string sXML = "";
@@ -259,7 +124,7 @@ namespace ACWebMethods
 			if (!string.IsNullOrEmpty(sErr))
 				return null;
 			
-			sXML = ui.HTTPGet(sURL, 15000, ref sErr);
+			sXML = ui.HTTPGet(sURL, 15000, null, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 				return null;
 

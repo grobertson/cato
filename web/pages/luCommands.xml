@@ -4,7 +4,7 @@
 			<command name="new_connection" label="New Connection" description="Creates a new connection to an Asset." help="&lt;b&gt;New Connection&lt;/b&gt;&lt;br&gt;New Connection will create a named connection to an Asset.&lt;br /&gt; Select the connection type, pick the Asset and Name the connection to be used in the task." icon="icons/connect_creating_32.png">
 				<function command_type="new_connection">
 					<conn_type input_type="select" />
-					<cloud_name input_type="text" />
+					<cloud_name input_type="dropdown" style="combo" />
 					<asset input_type="text" />
 					<conn_name input_type="text">CONN1</conn_name>
 				</function>
@@ -249,11 +249,61 @@
 			<command name="store_private_key" label="Store Private Key" description="Stores the private portion of a keypair for later use.." help="" icon="icons/set_asset_registry_32.png">
 				<function command_type="store_private_key">
 					<name label="Keypair Name" input_type="text" />
-					<private_key label="Private Key" input_type="textarea" rows="1" class="w50pct" style="height:18px;vertical-aligh:bottom;" />
+					<private_key label="Private Key" input_type="textarea" rows="1" class="w50pct" style="height:18px;vertical-align:bottom;" />
 				</function>
 			</command>
 		</commands>
 	</category>
+	<!--<category name="os_compute" label="OS Compute" description="" icon="icons/openstack_32.png">
+		<commands>
+			<command name="os_compute_ListServers" label="List Servers" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_ListServers">
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_GetServer" label="Get Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_GetServer">
+					<id label="Server ID" input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_CreateServer" label="Create Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_CreateServer">
+					<request input_type="textarea" rows="3" label="Request" class="w95pct" style="display: block;">
+{
+    "server" : {
+        "name" : "",
+        "imageRef" : "",
+        "flavorRef" : "",
+        "metadata" : {
+            "" : "" 
+        },
+        "personality" : [
+            {
+                "path" : "",
+                "contents" : "" 
+            } 
+        ] 
+    }
+}
+					</request>
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_UpdateServer" label="Update Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_UpdateServer">
+					<request input_type="textarea" rows="3" label="Request" class="w95pct" style="display: block;" />
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_DeleteServer" label="Delete Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_DeleteServer">
+					<id input_type="text" label="Server ID" />
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+		</commands>
+	</category>-->
 	<category name="aws_as" label="AWS AS" description="" icon="icons/aws_32.png">
 		<commands>
 			<command name="aws_as_CreateAutoScalingGroup" label="CreateAutoScalingGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_CreateAutoScalingGroup.html' target='_blank'&gt;AWS documentation for CreateAutoScalingGroup&lt;/a&gt;" icon="icons/aws_16.png">
