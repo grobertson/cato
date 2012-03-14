@@ -329,7 +329,7 @@
 					<MinSize input_type="text" />
 					<PlacementGroup input_type="text" />
 					<VPCZoneIdentifier input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_CreateLaunchConfiguration" label="CreateLaunchConfiguration" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_CreateLaunchConfiguration.html' target='_blank'&gt;AWS documentation for CreateLaunchConfiguration&lt;/a&gt;" icon="icons/aws_16.png">
@@ -353,21 +353,21 @@
 						</member.N>
 					</SecurityGroups>
 					<UserData input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DeleteAutoScalingGroup" label="DeleteAutoScalingGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DeleteAutoScalingGroup.html' target='_blank'&gt;AWS documentation for DeleteAutoScalingGroup&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_as_DeleteAutoScalingGroup">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AutoScalingGroupName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DeleteLaunchConfiguration" label="DeleteLaunchConfiguration" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DeleteLaunchConfiguration.html' target='_blank'&gt;AWS documentation for DeleteLaunchConfiguration&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_as_DeleteLaunchConfiguration">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<LaunchConfigurationName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DeletePolicy" label="DeletePolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DeletePolicy.html' target='_blank'&gt;AWS documentation for DeletePolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -375,7 +375,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AutoScalingGroupName input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DeleteScheduledAction" label="DeleteScheduledAction" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DeleteScheduledAction.html' target='_blank'&gt;AWS documentation for DeleteScheduledAction&lt;/a&gt;" icon="icons/aws_16.png">
@@ -383,13 +383,13 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AutoScalingGroupName input_type="text" />
 					<ScheduledActionName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeAdjustmentTypes" label="DescribeAdjustmentTypes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeAdjustmentTypes.html' target='_blank'&gt;AWS documentation for DescribeAdjustmentTypes&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_as_DescribeAdjustmentTypes">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeAutoScalingGroups" label="DescribeAutoScalingGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeAutoScalingGroups.html' target='_blank'&gt;AWS documentation for DescribeAutoScalingGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -402,7 +402,7 @@
 					</AutoScalingGroupNames>
 					<MaxRecords input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeAutoScalingInstances" label="DescribeAutoScalingInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeAutoScalingInstances.html' target='_blank'&gt;AWS documentation for DescribeAutoScalingInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -415,7 +415,7 @@
 					</InstanceIds>
 					<MaxRecords input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeLaunchConfigurations" label="DescribeLaunchConfigurations" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeLaunchConfigurations.html' target='_blank'&gt;AWS documentation for DescribeLaunchConfigurations&lt;/a&gt;" icon="icons/aws_16.png">
@@ -428,13 +428,13 @@
 					</LaunchConfigurationNames>
 					<MaxRecords input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeMetricCollectionTypes" label="DescribeMetricCollectionTypes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeMetricCollectionTypes.html' target='_blank'&gt;AWS documentation for DescribeMetricCollectionTypes&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_as_DescribeMetricCollectionTypes">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribePolicies" label="DescribePolicies" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribePolicies.html' target='_blank'&gt;AWS documentation for DescribePolicies&lt;/a&gt;" icon="icons/aws_16.png">
@@ -448,7 +448,7 @@
 							<member input_type="text" />
 						</member.N>
 					</PolicyNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeScalingActivities" label="DescribeScalingActivities" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeScalingActivities.html' target='_blank'&gt;AWS documentation for DescribeScalingActivities&lt;/a&gt;" icon="icons/aws_16.png">
@@ -462,13 +462,13 @@
 					<AutoScalingGroupName input_type="text" />
 					<MaxRecords input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeScalingProcessTypes" label="DescribeScalingProcessTypes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeScalingProcessTypes.html' target='_blank'&gt;AWS documentation for DescribeScalingProcessTypes&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_as_DescribeScalingProcessTypes">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DescribeScheduledActions" label="DescribeScheduledActions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DescribeScheduledActions.html' target='_blank'&gt;AWS documentation for DescribeScheduledActions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -484,7 +484,7 @@
 						</member.N>
 					</ScheduledActionNames>
 					<StartTime input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_DisableMetricsCollection" label="DisableMetricsCollection" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_DisableMetricsCollection.html' target='_blank'&gt;AWS documentation for DisableMetricsCollection&lt;/a&gt;" icon="icons/aws_16.png">
@@ -496,7 +496,7 @@
 							<member input_type="text" />
 						</member.N>
 					</Metrics>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_EnableMetricsCollection" label="EnableMetricsCollection" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_EnableMetricsCollection.html' target='_blank'&gt;AWS documentation for EnableMetricsCollection&lt;/a&gt;" icon="icons/aws_16.png">
@@ -509,7 +509,7 @@
 							<member input_type="text" />
 						</member.N>
 					</Metrics>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_ExecutePolicy" label="ExecutePolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_ExecutePolicy.html' target='_blank'&gt;AWS documentation for ExecutePolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -518,7 +518,7 @@
 					<AutoScalingGroupName input_type="text" />
 					<HonorCooldown input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_PutScalingPolicy" label="PutScalingPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_PutScalingPolicy.html' target='_blank'&gt;AWS documentation for PutScalingPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -529,7 +529,7 @@
 					<Cooldown input_type="text" />
 					<PolicyName input_type="text" />
 					<ScalingAdjustment input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_PutScheduledUpdateGroupAction" label="PutScheduledUpdateGroupAction" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_PutScheduledUpdateGroupAction.html' target='_blank'&gt;AWS documentation for PutScheduledUpdateGroupAction&lt;/a&gt;" icon="icons/aws_16.png">
@@ -541,7 +541,7 @@
 					<MinSize input_type="text" />
 					<ScheduledActionName input_type="text" />
 					<Time input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_ResumeProcesses" label="ResumeProcesses" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_ResumeProcesses.html' target='_blank'&gt;AWS documentation for ResumeProcesses&lt;/a&gt;" icon="icons/aws_16.png">
@@ -553,7 +553,7 @@
 							<member input_type="text" />
 						</member.N>
 					</ScalingProcesses>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_SetDesiredCapacity" label="SetDesiredCapacity" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_SetDesiredCapacity.html' target='_blank'&gt;AWS documentation for SetDesiredCapacity&lt;/a&gt;" icon="icons/aws_16.png">
@@ -562,7 +562,7 @@
 					<AutoScalingGroupName input_type="text" />
 					<DesiredCapacity input_type="text" />
 					<HonorCooldown input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_SetInstanceHealth" label="SetInstanceHealth" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_SetInstanceHealth.html' target='_blank'&gt;AWS documentation for SetInstanceHealth&lt;/a&gt;" icon="icons/aws_16.png">
@@ -571,7 +571,7 @@
 					<HealthStatus input_type="text" />
 					<InstanceId input_type="text" />
 					<ShouldRespectGracePeriod input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_SuspendProcesses" label="SuspendProcesses" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_SuspendProcesses.html' target='_blank'&gt;AWS documentation for SuspendProcesses&lt;/a&gt;" icon="icons/aws_16.png">
@@ -583,7 +583,7 @@
 							<member input_type="text" />
 						</member.N>
 					</ScalingProcesses>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_TerminateInstanceInAutoScalingGroup" label="TerminateInstanceInAutoScalingGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_TerminateInstanceInAutoScalingGroup.html' target='_blank'&gt;AWS documentation for TerminateInstanceInAutoScalingGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -591,7 +591,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InstanceId input_type="text" />
 					<ShouldDecrementDesiredCapacity input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_as_UpdateAutoScalingGroup" label="UpdateAutoScalingGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AutoScaling/latest/APIReference/API_UpdateAutoScalingGroup.html' target='_blank'&gt;AWS documentation for UpdateAutoScalingGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -612,7 +612,7 @@
 					<MinSize input_type="text" />
 					<PlacementGroup input_type="text" />
 					<VPCZoneIdentifier input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -637,14 +637,14 @@
 					<TemplateBody input_type="text" />
 					<TemplateURL input_type="text" />
 					<TimeoutInMinutes input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cfn_DeleteStack" label="DeleteStack" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSCloudFormation/latest/APIReference/API_DeleteStack.html' target='_blank'&gt;AWS documentation for DeleteStack&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_cfn_DeleteStack">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<StackName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cfn_DescribeStackEvents" label="DescribeStackEvents" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSCloudFormation/latest/APIReference/API_DescribeStackEvents.html' target='_blank'&gt;AWS documentation for DescribeStackEvents&lt;/a&gt;" icon="icons/aws_16.png">
@@ -652,7 +652,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<NextToken input_type="text" />
 					<StackName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cfn_DescribeStackResources" label="DescribeStackResources" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSCloudFormation/latest/APIReference/API_DescribeStackResources.html' target='_blank'&gt;AWS documentation for DescribeStackResources&lt;/a&gt;" icon="icons/aws_16.png">
@@ -661,21 +661,21 @@
 					<LogicalResourceId input_type="text" />
 					<PhysicalResourceId input_type="text" />
 					<StackName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cfn_DescribeStacks" label="DescribeStacks" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSCloudFormation/latest/APIReference/API_DescribeStacks.html' target='_blank'&gt;AWS documentation for DescribeStacks&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_cfn_DescribeStacks">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<StackName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cfn_GetTemplate" label="GetTemplate" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSCloudFormation/latest/APIReference/API_GetTemplate.html' target='_blank'&gt;AWS documentation for GetTemplate&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_cfn_GetTemplate">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<StackName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cfn_ValidateTemplate" label="ValidateTemplate" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSCloudFormation/latest/APIReference/API_ValidateTemplate.html' target='_blank'&gt;AWS documentation for ValidateTemplate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -683,7 +683,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<TemplateBody input_type="text" />
 					<TemplateURL input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -698,7 +698,7 @@
 							<member input_type="text" />
 						</member.N>
 					</AlarmNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_DescribeAlarmHistory" label="DescribeAlarmHistory" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarmHistory.html' target='_blank'&gt;AWS documentation for DescribeAlarmHistory&lt;/a&gt;" icon="icons/aws_16.png">
@@ -710,7 +710,7 @@
 					<MaxRecords input_type="text" />
 					<NextToken input_type="text" />
 					<StartDate input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_DescribeAlarms" label="DescribeAlarms" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarms.html' target='_blank'&gt;AWS documentation for DescribeAlarms&lt;/a&gt;" icon="icons/aws_16.png">
@@ -726,7 +726,7 @@
 					<MaxRecords input_type="text" />
 					<NextToken input_type="text" />
 					<StateValue input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_DescribeAlarmsForMetric" label="DescribeAlarmsForMetric" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarmsForMetric.html' target='_blank'&gt;AWS documentation for DescribeAlarmsForMetric&lt;/a&gt;" icon="icons/aws_16.png">
@@ -742,7 +742,7 @@
 					<Period input_type="text" />
 					<Statistic input_type="text" />
 					<Unit input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_DisableAlarmActions" label="DisableAlarmActions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_DisableAlarmActions.html' target='_blank'&gt;AWS documentation for DisableAlarmActions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -753,7 +753,7 @@
 							<member input_type="text" />
 						</member.N>
 					</AlarmNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_EnableAlarmActions" label="EnableAlarmActions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_EnableAlarmActions.html' target='_blank'&gt;AWS documentation for EnableAlarmActions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -764,7 +764,7 @@
 							<member input_type="text" />
 						</member.N>
 					</AlarmNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_GetMetricStatistics" label="GetMetricStatistics" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_GetMetricStatistics.html' target='_blank'&gt;AWS documentation for GetMetricStatistics&lt;/a&gt;" icon="icons/aws_16.png">
@@ -786,7 +786,7 @@
 						</member.N>
 					</Statistics>
 					<Unit input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_ListMetrics" label="ListMetrics" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html' target='_blank'&gt;AWS documentation for ListMetrics&lt;/a&gt;" icon="icons/aws_16.png">
@@ -800,7 +800,7 @@
 					<MetricName input_type="text" />
 					<Namespace input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_PutMetricAlarm" label="PutMetricAlarm" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_PutMetricAlarm.html' target='_blank'&gt;AWS documentation for PutMetricAlarm&lt;/a&gt;" icon="icons/aws_16.png">
@@ -837,7 +837,7 @@
 					<Statistic input_type="text" />
 					<Threshold input_type="text" />
 					<Unit input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_cw_SetAlarmState" label="SetAlarmState" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonCloudWatch/latest/APIReference/API_SetAlarmState.html' target='_blank'&gt;AWS documentation for SetAlarmState&lt;/a&gt;" icon="icons/aws_16.png">
@@ -847,7 +847,7 @@
 					<StateReason input_type="text" />
 					<StateReasonData input_type="text" />
 					<StateValue input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -858,7 +858,7 @@
 				<function command_type="aws_ebs_CheckDNSAvailability">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<CNAMEPrefix input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_CreateApplication" label="CreateApplication" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_CreateApplication.html' target='_blank'&gt;AWS documentation for CreateApplication&lt;/a&gt;" icon="icons/aws_16.png">
@@ -866,7 +866,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ApplicationName input_type="text" />
 					<Description input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_CreateApplicationVersion" label="CreateApplicationVersion" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_CreateApplicationVersion.html' target='_blank'&gt;AWS documentation for CreateApplicationVersion&lt;/a&gt;" icon="icons/aws_16.png">
@@ -877,7 +877,7 @@
 					<Description input_type="text" />
 					<SourceBundle input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_CreateConfigurationTemplate" label="CreateConfigurationTemplate" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_CreateConfigurationTemplate.html' target='_blank'&gt;AWS documentation for CreateConfigurationTemplate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -894,7 +894,7 @@
 					<SolutionStackName input_type="text" />
 					<SourceConfiguration input_type="text" />
 					<TemplateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_CreateEnvironment" label="CreateEnvironment" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_CreateEnvironment.html' target='_blank'&gt;AWS documentation for CreateEnvironment&lt;/a&gt;" icon="icons/aws_16.png">
@@ -917,20 +917,20 @@
 					<SolutionStackName input_type="text" />
 					<TemplateName input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_CreateStorageLocation" label="CreateStorageLocation" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_CreateStorageLocation.html' target='_blank'&gt;AWS documentation for CreateStorageLocation&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ebs_CreateStorageLocation">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DeleteApplication" label="DeleteApplication" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DeleteApplication.html' target='_blank'&gt;AWS documentation for DeleteApplication&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ebs_DeleteApplication">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ApplicationName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DeleteApplicationVersion" label="DeleteApplicationVersion" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DeleteApplicationVersion.html' target='_blank'&gt;AWS documentation for DeleteApplicationVersion&lt;/a&gt;" icon="icons/aws_16.png">
@@ -939,7 +939,7 @@
 					<ApplicationName input_type="text" />
 					<DeleteSourceBundle input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DeleteConfigurationTemplate" label="DeleteConfigurationTemplate" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DeleteConfigurationTemplate.html' target='_blank'&gt;AWS documentation for DeleteConfigurationTemplate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -947,7 +947,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ApplicationName input_type="text" />
 					<TemplateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DeleteEnvironmentConfiguration" label="DeleteEnvironmentConfiguration" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DeleteEnvironmentConfiguration.html' target='_blank'&gt;AWS documentation for DeleteEnvironmentConfiguration&lt;/a&gt;" icon="icons/aws_16.png">
@@ -955,7 +955,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ApplicationName input_type="text" />
 					<EnvironmentName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeApplicationVersions" label="DescribeApplicationVersions" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeApplicationVersions.html' target='_blank'&gt;AWS documentation for DescribeApplicationVersions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -967,7 +967,7 @@
 							<member input_type="text" />
 						</member.N>
 					</VersionLabels>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeApplications" label="DescribeApplications" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeApplications.html' target='_blank'&gt;AWS documentation for DescribeApplications&lt;/a&gt;" icon="icons/aws_16.png">
@@ -978,7 +978,7 @@
 							<member input_type="text" />
 						</member.N>
 					</ApplicationNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeConfigurationOptions" label="DescribeConfigurationOptions" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeConfigurationOptions.html' target='_blank'&gt;AWS documentation for DescribeConfigurationOptions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -993,7 +993,7 @@
 					</Options>
 					<SolutionStackName input_type="text" />
 					<TemplateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeConfigurationSettings" label="DescribeConfigurationSettings" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeConfigurationSettings.html' target='_blank'&gt;AWS documentation for DescribeConfigurationSettings&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1002,7 +1002,7 @@
 					<ApplicationName input_type="text" />
 					<EnvironmentName input_type="text" />
 					<TemplateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeEnvironmentResources" label="DescribeEnvironmentResources" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeEnvironmentResources.html' target='_blank'&gt;AWS documentation for DescribeEnvironmentResources&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1010,7 +1010,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<EnvironmentId input_type="text" />
 					<EnvironmentName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeEnvironments" label="DescribeEnvironments" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeEnvironments.html' target='_blank'&gt;AWS documentation for DescribeEnvironments&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1030,7 +1030,7 @@
 					<IncludeDeleted input_type="text" />
 					<IncludedDeletedBackTo input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_DescribeEvents" label="DescribeEvents" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_DescribeEvents.html' target='_blank'&gt;AWS documentation for DescribeEvents&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1046,13 +1046,13 @@
 					<StartTime input_type="text" />
 					<TemplateName input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_ListAvailableSolutionStacks" label="ListAvailableSolutionStacks" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_ListAvailableSolutionStacks.html' target='_blank'&gt;AWS documentation for ListAvailableSolutionStacks&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ebs_ListAvailableSolutionStacks">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_RebuildEnvironment" label="RebuildEnvironment" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_RebuildEnvironment.html' target='_blank'&gt;AWS documentation for RebuildEnvironment&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1060,7 +1060,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<EnvironmentId input_type="text" />
 					<EnvironmentName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_RequestEnvironmentInfo" label="RequestEnvironmentInfo" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_RequestEnvironmentInfo.html' target='_blank'&gt;AWS documentation for RequestEnvironmentInfo&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1069,7 +1069,7 @@
 					<EnvironmentId input_type="text" />
 					<EnvironmentName input_type="text" />
 					<InfoType input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_RestartAppServer" label="RestartAppServer" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_RestartAppServer.html' target='_blank'&gt;AWS documentation for RestartAppServer&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1077,7 +1077,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<EnvironmentId input_type="text" />
 					<EnvironmentName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_RetrieveEnvironmentInfo" label="RetrieveEnvironmentInfo" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_RetrieveEnvironmentInfo.html' target='_blank'&gt;AWS documentation for RetrieveEnvironmentInfo&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1086,7 +1086,7 @@
 					<EnvironmentId input_type="text" />
 					<EnvironmentName input_type="text" />
 					<InfoType input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_TerminateEnvironment" label="TerminateEnvironment" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_TerminateEnvironment.html' target='_blank'&gt;AWS documentation for TerminateEnvironment&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1095,7 +1095,7 @@
 					<EnvironmentId input_type="text" />
 					<EnvironmentName input_type="text" />
 					<TerminateResources input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_UpdateApplication" label="UpdateApplication" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_UpdateApplication.html' target='_blank'&gt;AWS documentation for UpdateApplication&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1103,7 +1103,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ApplicationName input_type="text" />
 					<Description input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_UpdateApplicationVersion" label="UpdateApplicationVersion" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_UpdateApplicationVersion.html' target='_blank'&gt;AWS documentation for UpdateApplicationVersion&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1112,7 +1112,7 @@
 					<ApplicationName input_type="text" />
 					<Description input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_UpdateConfigurationTemplate" label="UpdateConfigurationTemplate" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_UpdateConfigurationTemplate.html' target='_blank'&gt;AWS documentation for UpdateConfigurationTemplate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1131,7 +1131,7 @@
 						</member.N>
 					</OptionsToRemove>
 					<TemplateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_UpdateEnvironment" label="UpdateEnvironment" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_UpdateEnvironment.html' target='_blank'&gt;AWS documentation for UpdateEnvironment&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1152,7 +1152,7 @@
 					</OptionsToRemove>
 					<TemplateName input_type="text" />
 					<VersionLabel input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ebs_ValidateConfigurationSettings" label="ValidateConfigurationSettings" description="" help="&lt;a href='http://docs.amazonwebservices.com/elasticbeanstalk/latest/api/API_ValidateConfigurationSettings.html' target='_blank'&gt;AWS documentation for ValidateConfigurationSettings&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1166,7 +1166,7 @@
 						</member.N>
 					</OptionSettings>
 					<TemplateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -1177,7 +1177,7 @@
 				<function command_type="aws_ec2_AllocateAddress">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Domain input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_AssociateAddress" label="AssociateAddress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AssociateAddress.html' target='_blank'&gt;AWS documentation for AssociateAddress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1186,7 +1186,7 @@
 					<PublicIp input_type="text" />
 					<InstanceId input_type="text" />
 					<AllocationId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_AttachVolume" label="AttachVolume" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AttachVolume.html' target='_blank'&gt;AWS documentation for AttachVolume&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1195,7 +1195,7 @@
 					<VolumeId input_type="text" />
 					<InstanceId input_type="text" />
 					<Device input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_AuthorizeSecurityGroupIngress" label="AuthorizeSecurityGroupIngress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AuthorizeSecurityGroupIngress.html' target='_blank'&gt;AWS documentation for AuthorizeSecurityGroupIngress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1223,7 +1223,7 @@
 							</IpRanges.m>
 						</IpPermissions>
 					</IpPermissions.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_BundleInstance" label="BundleInstance" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-BundleInstance.html' target='_blank'&gt;AWS documentation for BundleInstance&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1239,21 +1239,21 @@
 							<UploadPolicySignature input_type="text" />
 						</S3>
 					</Storage>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CancelBundleTask" label="CancelBundleTask" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CancelBundleTask.html' target='_blank'&gt;AWS documentation for CancelBundleTask&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_CancelBundleTask">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<BundleId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CancelConversionTask" label="CancelConversionTask" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CancelConversionTask.html' target='_blank'&gt;AWS documentation for CancelConversionTask&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_CancelConversionTask">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ConversionTaskId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CancelSpotInstanceRequests" label="CancelSpotInstanceRequests" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CancelSpotInstanceRequests.html' target='_blank'&gt;AWS documentation for CancelSpotInstanceRequests&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1262,7 +1262,7 @@
 					<SpotInstanceRequestId.n is_array="true">
 						<SpotInstanceRequestId input_type="text" />
 					</SpotInstanceRequestId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateImage" label="CreateImage" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateImage.html' target='_blank'&gt;AWS documentation for CreateImage&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1272,14 +1272,14 @@
 					<Name input_type="text" />
 					<Description input_type="text" />
 					<NoReboot input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateKeyPair" label="CreateKeyPair" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateKeyPair.html' target='_blank'&gt;AWS documentation for CreateKeyPair&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_CreateKeyPair">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<KeyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreatePlacementGroup" label="CreatePlacementGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreatePlacementGroup.html' target='_blank'&gt;AWS documentation for CreatePlacementGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1287,7 +1287,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<Strategy input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateSecurityGroup" label="CreateSecurityGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateSecurityGroup.html' target='_blank'&gt;AWS documentation for CreateSecurityGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1296,7 +1296,7 @@
 					<GroupName input_type="text" />
 					<GroupDescription input_type="text" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateSnapshot" label="CreateSnapshot" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateSnapshot.html' target='_blank'&gt;AWS documentation for CreateSnapshot&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1304,7 +1304,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VolumeId input_type="text" />
 					<Description input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateSpotDatafeedSubscription" label="CreateSpotDatafeedSubscription" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateSpotDatafeedSubscription.html' target='_blank'&gt;AWS documentation for CreateSpotDatafeedSubscription&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1312,7 +1312,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Bucket input_type="text" />
 					<Prefix input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateTags" label="CreateTags" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateTags.html' target='_blank'&gt;AWS documentation for CreateTags&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1327,7 +1327,7 @@
 							<Value input_type="text" />
 						</Tag>
 					</Tag.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_CreateVolume" label="CreateVolume" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVolume.html' target='_blank'&gt;AWS documentation for CreateVolume&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1336,21 +1336,21 @@
 					<Size input_type="text" />
 					<SnapshotId input_type="text" />
 					<AvailabilityZone input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeleteKeyPair" label="DeleteKeyPair" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteKeyPair.html' target='_blank'&gt;AWS documentation for DeleteKeyPair&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DeleteKeyPair">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<KeyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeletePlacementGroup" label="DeletePlacementGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeletePlacementGroup.html' target='_blank'&gt;AWS documentation for DeletePlacementGroup&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DeletePlacementGroup">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeleteSecurityGroup" label="DeleteSecurityGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteSecurityGroup.html' target='_blank'&gt;AWS documentation for DeleteSecurityGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1358,20 +1358,20 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<GroupId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeleteSnapshot" label="DeleteSnapshot" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteSnapshot.html' target='_blank'&gt;AWS documentation for DeleteSnapshot&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DeleteSnapshot">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<SnapshotId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeleteSpotDatafeedSubscription" label="DeleteSpotDatafeedSubscription" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteSpotDatafeedSubscription.html' target='_blank'&gt;AWS documentation for DeleteSpotDatafeedSubscription&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DeleteSpotDatafeedSubscription">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeleteTags" label="DeleteTags" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteTags.html' target='_blank'&gt;AWS documentation for DeleteTags&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1386,21 +1386,21 @@
 							<Value input_type="text" />
 						</Tag>
 					</Tag.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeleteVolume" label="DeleteVolume" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteVolume.html' target='_blank'&gt;AWS documentation for DeleteVolume&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DeleteVolume">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VolumeId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DeregisterImage" label="DeregisterImage" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeregisterImage.html' target='_blank'&gt;AWS documentation for DeregisterImage&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DeregisterImage">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ImageId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeAddresses" label="DescribeAddresses" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeAddresses.html' target='_blank'&gt;AWS documentation for DescribeAddresses&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1420,7 +1420,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeAvailabilityZones" label="DescribeAvailabilityZones" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeAvailabilityZones.html' target='_blank'&gt;AWS documentation for DescribeAvailabilityZones&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1437,7 +1437,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeBundleTasks" label="DescribeBundleTasks" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeBundleTasks.html' target='_blank'&gt;AWS documentation for DescribeBundleTasks&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1454,7 +1454,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeConversionTasks" label="DescribeConversionTasks" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeConversionTasks.html' target='_blank'&gt;AWS documentation for DescribeConversionTasks&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1463,7 +1463,7 @@
 					<ConversionTaskId.n is_array="true">
 						<ConversionTaskId input_type="text" />
 					</ConversionTaskId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeImageAttribute" label="DescribeImageAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeImageAttribute.html' target='_blank'&gt;AWS documentation for DescribeImageAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1471,7 +1471,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ImageId input_type="text" />
 					<Attribute input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeImages" label="DescribeImages" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeImages.html' target='_blank'&gt;AWS documentation for DescribeImages&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1494,7 +1494,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeInstanceAttribute" label="DescribeInstanceAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeInstanceAttribute.html' target='_blank'&gt;AWS documentation for DescribeInstanceAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1502,7 +1502,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InstanceId input_type="text" />
 					<Attribute input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeInstances" label="DescribeInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeInstances.html' target='_blank'&gt;AWS documentation for DescribeInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1519,7 +1519,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeKeyPairs" label="DescribeKeyPairs" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeKeyPairs.html' target='_blank'&gt;AWS documentation for DescribeKeyPairs&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1536,7 +1536,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribePlacementGroups" label="DescribePlacementGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribePlacementGroups.html' target='_blank'&gt;AWS documentation for DescribePlacementGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1553,7 +1553,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeRegions" label="DescribeRegions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeRegions.html' target='_blank'&gt;AWS documentation for DescribeRegions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1570,7 +1570,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeReservedInstances" label="DescribeReservedInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeReservedInstances.html' target='_blank'&gt;AWS documentation for DescribeReservedInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1587,7 +1587,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeReservedInstancesOfferings" label="DescribeReservedInstancesOfferings" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeReservedInstancesOfferings.html' target='_blank'&gt;AWS documentation for DescribeReservedInstancesOfferings&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1608,7 +1608,7 @@
 						</Filter>
 					</Filter.n>
 					<instanceTenancy input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeSecurityGroups" label="DescribeSecurityGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSecurityGroups.html' target='_blank'&gt;AWS documentation for DescribeSecurityGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1628,7 +1628,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeSnapshotAttribute" label="DescribeSnapshotAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSnapshotAttribute.html' target='_blank'&gt;AWS documentation for DescribeSnapshotAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1636,7 +1636,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<SnapshotId input_type="text" />
 					<Attribute input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeSnapshots" label="DescribeSnapshots" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSnapshots.html' target='_blank'&gt;AWS documentation for DescribeSnapshots&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1659,13 +1659,13 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeSpotDatafeedSubscription" label="DescribeSpotDatafeedSubscription" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSpotDatafeedSubscription.html' target='_blank'&gt;AWS documentation for DescribeSpotDatafeedSubscription&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_DescribeSpotDatafeedSubscription">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeSpotInstanceRequests" label="DescribeSpotInstanceRequests" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSpotInstanceRequests.html' target='_blank'&gt;AWS documentation for DescribeSpotInstanceRequests&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1682,7 +1682,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeSpotPriceHistory" label="DescribeSpotPriceHistory" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSpotPriceHistory.html' target='_blank'&gt;AWS documentation for DescribeSpotPriceHistory&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1707,7 +1707,7 @@
 					<AvailabilityZone input_type="text" />
 					<MaxResults input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeTags" label="DescribeTags" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeTags.html' target='_blank'&gt;AWS documentation for DescribeTags&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1721,7 +1721,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DescribeVolumes" label="DescribeVolumes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeVolumes.html' target='_blank'&gt;AWS documentation for DescribeVolumes&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1738,7 +1738,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DetachVolume" label="DetachVolume" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DetachVolume.html' target='_blank'&gt;AWS documentation for DetachVolume&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1748,7 +1748,7 @@
 					<InstanceId input_type="text" />
 					<Device input_type="text" />
 					<Force input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_DisassociateAddress" label="DisassociateAddress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DisassociateAddress.html' target='_blank'&gt;AWS documentation for DisassociateAddress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1756,14 +1756,14 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<PublicIp input_type="text" />
 					<AssociationId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_GetPasswordData" label="GetPasswordData" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-GetPasswordData.html' target='_blank'&gt;AWS documentation for GetPasswordData&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ec2_GetPasswordData">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InstanceId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ImportInstance" label="ImportInstance" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ImportInstance.html' target='_blank'&gt;AWS documentation for ImportInstance&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1799,7 +1799,7 @@
 						</DiskImage>
 					</DiskImage.n>
 					<Platform input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ImportKeyPair" label="ImportKeyPair" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ImportKeyPair.html' target='_blank'&gt;AWS documentation for ImportKeyPair&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1807,7 +1807,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<KeyName input_type="text" />
 					<PublicKeyMaterial input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ImportVolume" label="ImportVolume" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ImportVolume.html' target='_blank'&gt;AWS documentation for ImportVolume&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1823,7 +1823,7 @@
 					<Volume>
 						<Size input_type="text" />
 					</Volume>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ModifyImageAttribute" label="ModifyImageAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ModifyImageAttribute.html' target='_blank'&gt;AWS documentation for ModifyImageAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1850,7 +1850,7 @@
 					<Description>
 						<Value input_type="text" />
 					</Description>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ModifyInstanceAttribute" label="ModifyInstanceAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ModifyInstanceAttribute.html' target='_blank'&gt;AWS documentation for ModifyInstanceAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1881,7 +1881,7 @@
 					<GroupId.n is_array="true">
 						<GroupId input_type="text" />
 					</GroupId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ModifySnapshotAttribute" label="ModifySnapshotAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ModifySnapshotAttribute.html' target='_blank'&gt;AWS documentation for ModifySnapshotAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1902,7 +1902,7 @@
 							</Remove>
 						</Remove.n>
 					</CreateVolumePermission>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_MonitorInstances" label="MonitorInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-MonitorInstances.html' target='_blank'&gt;AWS documentation for MonitorInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1911,7 +1911,7 @@
 					<InstanceId.n is_array="true">
 						<InstanceId input_type="text" />
 					</InstanceId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_PurchaseReservedInstancesOffering" label="PurchaseReservedInstancesOffering" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-PurchaseReservedInstancesOffering.html' target='_blank'&gt;AWS documentation for PurchaseReservedInstancesOffering&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1919,7 +1919,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ReservedInstancesOfferingId input_type="text" />
 					<InstanceCount input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_RebootInstances" label="RebootInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-RebootInstances.html' target='_blank'&gt;AWS documentation for RebootInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1928,7 +1928,7 @@
 					<InstanceId.n is_array="true">
 						<InstanceId input_type="text" />
 					</InstanceId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_RegisterImage" label="RegisterImage" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-RegisterImage.html' target='_blank'&gt;AWS documentation for RegisterImage&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1953,7 +1953,7 @@
 							</Ebs>
 						</BlockDeviceMapping>
 					</BlockDeviceMapping.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ReleaseAddress" label="ReleaseAddress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ReleaseAddress.html' target='_blank'&gt;AWS documentation for ReleaseAddress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -1961,7 +1961,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<PublicIp input_type="text" />
 					<AllocationId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_RequestSpotInstances" label="RequestSpotInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-RequestSpotInstances.html' target='_blank'&gt;AWS documentation for RequestSpotInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2007,7 +2007,7 @@
 							<Enabled input_type="text" />
 						</Monitoring>
 					</LaunchSpecification>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ResetImageAttribute" label="ResetImageAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ResetImageAttribute.html' target='_blank'&gt;AWS documentation for ResetImageAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2015,7 +2015,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ImageId input_type="text" />
 					<Attribute input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ResetInstanceAttribute" label="ResetInstanceAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ResetInstanceAttribute.html' target='_blank'&gt;AWS documentation for ResetInstanceAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2023,7 +2023,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InstanceId input_type="text" />
 					<Attribute input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_ResetSnapshotAttribute" label="ResetSnapshotAttribute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ResetSnapshotAttribute.html' target='_blank'&gt;AWS documentation for ResetSnapshotAttribute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2031,7 +2031,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<SnapshotId input_type="text" />
 					<Attribute input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_RevokeSecurityGroupIngress" label="RevokeSecurityGroupIngress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-RevokeSecurityGroupIngress.html' target='_blank'&gt;AWS documentation for RevokeSecurityGroupIngress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2059,7 +2059,7 @@
 							</IpRanges.m>
 						</IpPermissions>
 					</IpPermissions.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_RunInstances" label="RunInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-RunInstances.html' target='_blank'&gt;AWS documentation for RunInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2106,7 +2106,7 @@
 					<PrivateIpAddress input_type="text" />
 					<ClientToken input_type="text" />
 					<instance_role input_type="text" label="Server Role" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_StartInstances" label="StartInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-StartInstances.html' target='_blank'&gt;AWS documentation for StartInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2115,7 +2115,7 @@
 					<InstanceId.n is_array="true">
 						<InstanceId input_type="text" />
 					</InstanceId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_StopInstances" label="StopInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-StopInstances.html' target='_blank'&gt;AWS documentation for StopInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2125,7 +2125,7 @@
 						<InstanceId input_type="text" />
 					</InstanceId.n>
 					<Force input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_TerminateInstances" label="TerminateInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-TerminateInstances.html' target='_blank'&gt;AWS documentation for TerminateInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2134,7 +2134,7 @@
 					<InstanceId.n is_array="true">
 						<InstanceId input_type="text" />
 					</InstanceId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ec2_UnmonitorInstances" label="UnmonitorInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-UnmonitorInstances.html' target='_blank'&gt;AWS documentation for UnmonitorInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2143,7 +2143,7 @@
 					<InstanceId.n is_array="true">
 						<InstanceId input_type="text" />
 					</InstanceId.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -2161,7 +2161,7 @@
 						<UnhealthyThreshold input_type="text" />
 					</HealthCheck>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_CreateAppCookieStickinessPolicy" label="CreateAppCookieStickinessPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_CreateAppCookieStickinessPolicy.html' target='_blank'&gt;AWS documentation for CreateAppCookieStickinessPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2170,7 +2170,7 @@
 					<CookieName input_type="text" />
 					<LoadBalancerName input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_CreateLBCookieStickinessPolicy" label="CreateLBCookieStickinessPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_CreateLBCookieStickinessPolicy.html' target='_blank'&gt;AWS documentation for CreateLBCookieStickinessPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2179,7 +2179,7 @@
 					<CookieExpirationPeriod input_type="text" />
 					<LoadBalancerName input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_CreateLoadBalancer" label="CreateLoadBalancer" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_CreateLoadBalancer.html' target='_blank'&gt;AWS documentation for CreateLoadBalancer&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2201,7 +2201,7 @@
 						</member.N>
 					</Listeners>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_CreateLoadBalancerListeners" label="CreateLoadBalancerListeners" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_CreateLoadBalancerListeners.html' target='_blank'&gt;AWS documentation for CreateLoadBalancerListeners&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2217,14 +2217,14 @@
 						</member.N>
 					</Listeners>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DeleteLoadBalancer" label="DeleteLoadBalancer" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DeleteLoadBalancer.html' target='_blank'&gt;AWS documentation for DeleteLoadBalancer&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_elb_DeleteLoadBalancer">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DeleteLoadBalancerListeners" label="DeleteLoadBalancerListeners" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DeleteLoadBalancerListeners.html' target='_blank'&gt;AWS documentation for DeleteLoadBalancerListeners&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2236,7 +2236,7 @@
 							<member input_type="text" />
 						</member.N>
 					</LoadBalancerPorts>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DeleteLoadBalancerPolicy" label="DeleteLoadBalancerPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DeleteLoadBalancerPolicy.html' target='_blank'&gt;AWS documentation for DeleteLoadBalancerPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2244,7 +2244,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<LoadBalancerName input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DeregisterInstancesFromLoadBalancer" label="DeregisterInstancesFromLoadBalancer" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DeregisterInstancesFromLoadBalancer.html' target='_blank'&gt;AWS documentation for DeregisterInstancesFromLoadBalancer&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2258,7 +2258,7 @@
 						</member.N>
 					</Instances>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DescribeInstanceHealth" label="DescribeInstanceHealth" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DescribeInstanceHealth.html' target='_blank'&gt;AWS documentation for DescribeInstanceHealth&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2272,7 +2272,7 @@
 						</member.N>
 					</Instances>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DescribeLoadBalancers" label="DescribeLoadBalancers" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DescribeLoadBalancers.html' target='_blank'&gt;AWS documentation for DescribeLoadBalancers&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2283,7 +2283,7 @@
 							<member input_type="text" />
 						</member.N>
 					</LoadBalancerNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_DisableAvailabilityZonesForLoadBalancer" label="DisableAvailabilityZonesForLoadBalancer" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_DisableAvailabilityZonesForLoadBalancer.html' target='_blank'&gt;AWS documentation for DisableAvailabilityZonesForLoadBalancer&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2295,7 +2295,7 @@
 						</member.N>
 					</AvailabilityZones>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_EnableAvailabilityZonesForLoadBalancer" label="EnableAvailabilityZonesForLoadBalancer" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_EnableAvailabilityZonesForLoadBalancer.html' target='_blank'&gt;AWS documentation for EnableAvailabilityZonesForLoadBalancer&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2307,7 +2307,7 @@
 						</member.N>
 					</AvailabilityZones>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_RegisterInstancesWithLoadBalancer" label="RegisterInstancesWithLoadBalancer" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_RegisterInstancesWithLoadBalancer.html' target='_blank'&gt;AWS documentation for RegisterInstancesWithLoadBalancer&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2321,7 +2321,7 @@
 						</member.N>
 					</Instances>
 					<LoadBalancerName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_SetLoadBalancerListenerSSLCertificate" label="SetLoadBalancerListenerSSLCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_SetLoadBalancerListenerSSLCertificate.html' target='_blank'&gt;AWS documentation for SetLoadBalancerListenerSSLCertificate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2330,7 +2330,7 @@
 					<LoadBalancerName input_type="text" />
 					<LoadBalancerPort input_type="text" />
 					<SSLCertificateId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_elb_SetLoadBalancerPoliciesOfListener" label="SetLoadBalancerPoliciesOfListener" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticLoadBalancing/latest/APIReference/API_SetLoadBalancerPoliciesOfListener.html' target='_blank'&gt;AWS documentation for SetLoadBalancerPoliciesOfListener&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2343,7 +2343,7 @@
 							<member input_type="text" />
 						</member.N>
 					</PolicyNames>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -2366,7 +2366,7 @@
 						</InstanceGroups>
 					</Instances>
 					<JobFlowId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_emr_AddJobFlowSteps" label="AddJobFlowSteps" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticMapReduce/latest/API/API_AddJobFlowSteps.html' target='_blank'&gt;AWS documentation for AddJobFlowSteps&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2397,7 +2397,7 @@
 							</member>
 						</member.N>
 					</Steps>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_emr_DescribeJobFlows" label="DescribeJobFlows" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticMapReduce/latest/API/API_DescribeJobFlows.html' target='_blank'&gt;AWS documentation for DescribeJobFlows&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2415,7 +2415,7 @@
 							<member input_type="text" />
 						</member.N>
 					</JobFlowStates>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_emr_ModifyInstanceGroups" label="ModifyInstanceGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticMapReduce/latest/API/API_ModifyInstanceGroups.html' target='_blank'&gt;AWS documentation for ModifyInstanceGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2426,7 +2426,7 @@
 							<member input_type="text" />
 						</member.N>
 					</InstanceGroups>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_emr_RunJobFlow" label="RunJobFlow" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticMapReduce/latest/API/API_RunJobFlow.html' target='_blank'&gt;AWS documentation for RunJobFlow&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2492,7 +2492,7 @@
 							</member>
 						</member.N>
 					</Steps>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_emr_SetTerminationProtection" label="SetTerminationProtection" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticMapReduce/latest/API/API_SetTerminationProtection.html' target='_blank'&gt;AWS documentation for SetTerminationProtection&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2504,7 +2504,7 @@
 						</member.N>
 					</JobFlowIds>
 					<TerminationProtected input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_emr_TerminateJobFlows" label="TerminateJobFlows" description="" help="&lt;a href='http://docs.amazonwebservices.com/ElasticMapReduce/latest/API/API_TerminateJobFlows.html' target='_blank'&gt;AWS documentation for TerminateJobFlows&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2515,7 +2515,7 @@
 							<member input_type="text" />
 						</member.N>
 					</JobFlowIds>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -2527,21 +2527,21 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_CreateAccessKey" label="CreateAccessKey" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_CreateAccessKey.html' target='_blank'&gt;AWS documentation for CreateAccessKey&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_CreateAccessKey">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_CreateAccountAlias" label="CreateAccountAlias" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_CreateAccountAlias.html' target='_blank'&gt;AWS documentation for CreateAccountAlias&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_CreateAccountAlias">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AccountAlias input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_CreateGroup" label="CreateGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_CreateGroup.html' target='_blank'&gt;AWS documentation for CreateGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2549,7 +2549,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<Path input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_CreateLoginProfile" label="CreateLoginProfile" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_CreateLoginProfile.html' target='_blank'&gt;AWS documentation for CreateLoginProfile&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2557,7 +2557,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Password input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_CreateUser" label="CreateUser" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_CreateUser.html' target='_blank'&gt;AWS documentation for CreateUser&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2565,7 +2565,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Path input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeactivateMFADevice" label="DeactivateMFADevice" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeactivateMFADevice.html' target='_blank'&gt;AWS documentation for DeactivateMFADevice&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2573,7 +2573,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<SerialNumber input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteAccessKey" label="DeleteAccessKey" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteAccessKey.html' target='_blank'&gt;AWS documentation for DeleteAccessKey&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2581,21 +2581,21 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AccessKeyId input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteAccountAlias" label="DeleteAccountAlias" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteAccountAlias.html' target='_blank'&gt;AWS documentation for DeleteAccountAlias&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_DeleteAccountAlias">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AccountAlias input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteGroup" label="DeleteGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteGroup.html' target='_blank'&gt;AWS documentation for DeleteGroup&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_DeleteGroup">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteGroupPolicy" label="DeleteGroupPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteGroupPolicy.html' target='_blank'&gt;AWS documentation for DeleteGroupPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2603,21 +2603,21 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteLoginProfile" label="DeleteLoginProfile" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteLoginProfile.html' target='_blank'&gt;AWS documentation for DeleteLoginProfile&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_DeleteLoginProfile">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteServerCertificate" label="DeleteServerCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteServerCertificate.html' target='_blank'&gt;AWS documentation for DeleteServerCertificate&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_DeleteServerCertificate">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ServerCertificateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteSigningCertificate" label="DeleteSigningCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteSigningCertificate.html' target='_blank'&gt;AWS documentation for DeleteSigningCertificate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2625,14 +2625,14 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<CertificateId input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteUser" label="DeleteUser" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteUser.html' target='_blank'&gt;AWS documentation for DeleteUser&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_DeleteUser">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_DeleteUserPolicy" label="DeleteUserPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_DeleteUserPolicy.html' target='_blank'&gt;AWS documentation for DeleteUserPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2640,7 +2640,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<PolicyName input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_EnableMFADevice" label="EnableMFADevice" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_EnableMFADevice.html' target='_blank'&gt;AWS documentation for EnableMFADevice&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2650,13 +2650,13 @@
 					<AuthenticationCode2 input_type="text" />
 					<SerialNumber input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetAccountSummary" label="GetAccountSummary" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetAccountSummary.html' target='_blank'&gt;AWS documentation for GetAccountSummary&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_GetAccountSummary">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetGroup" label="GetGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetGroup.html' target='_blank'&gt;AWS documentation for GetGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2665,7 +2665,7 @@
 					<GroupName input_type="text" />
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetGroupPolicy" label="GetGroupPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetGroupPolicy.html' target='_blank'&gt;AWS documentation for GetGroupPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2673,28 +2673,28 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetLoginProfile" label="GetLoginProfile" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetLoginProfile.html' target='_blank'&gt;AWS documentation for GetLoginProfile&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_GetLoginProfile">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetServerCertificate" label="GetServerCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetServerCertificate.html' target='_blank'&gt;AWS documentation for GetServerCertificate&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_GetServerCertificate">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<ServerCertificateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetUser" label="GetUser" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetUser.html' target='_blank'&gt;AWS documentation for GetUser&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_iam_GetUser">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_GetUserPolicy" label="GetUserPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_GetUserPolicy.html' target='_blank'&gt;AWS documentation for GetUserPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2702,7 +2702,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<PolicyName input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListAccessKeys" label="ListAccessKeys" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListAccessKeys.html' target='_blank'&gt;AWS documentation for ListAccessKeys&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2711,7 +2711,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListAccountAliases" label="ListAccountAliases" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListAccountAliases.html' target='_blank'&gt;AWS documentation for ListAccountAliases&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2719,7 +2719,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListGroupPolicies" label="ListGroupPolicies" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListGroupPolicies.html' target='_blank'&gt;AWS documentation for ListGroupPolicies&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2728,7 +2728,7 @@
 					<GroupName input_type="text" />
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListGroups" label="ListGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListGroups.html' target='_blank'&gt;AWS documentation for ListGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2737,7 +2737,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<PathPrefix input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListGroupsForUser" label="ListGroupsForUser" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListGroupsForUser.html' target='_blank'&gt;AWS documentation for ListGroupsForUser&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2746,7 +2746,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListMFADevices" label="ListMFADevices" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListMFADevices.html' target='_blank'&gt;AWS documentation for ListMFADevices&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2755,7 +2755,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListServerCertificates" label="ListServerCertificates" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListServerCertificates.html' target='_blank'&gt;AWS documentation for ListServerCertificates&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2764,7 +2764,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<PathPrefix input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListSigningCertificates" label="ListSigningCertificates" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListSigningCertificates.html' target='_blank'&gt;AWS documentation for ListSigningCertificates&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2773,7 +2773,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListUserPolicies" label="ListUserPolicies" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListUserPolicies.html' target='_blank'&gt;AWS documentation for ListUserPolicies&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2782,7 +2782,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ListUsers" label="ListUsers" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ListUsers.html' target='_blank'&gt;AWS documentation for ListUsers&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2791,7 +2791,7 @@
 					<Marker input_type="text" />
 					<MaxItems input_type="text" />
 					<PathPrefix input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_PutGroupPolicy" label="PutGroupPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_PutGroupPolicy.html' target='_blank'&gt;AWS documentation for PutGroupPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2800,7 +2800,7 @@
 					<GroupName input_type="text" />
 					<PolicyDocument input_type="text" />
 					<PolicyName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_PutUserPolicy" label="PutUserPolicy" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_PutUserPolicy.html' target='_blank'&gt;AWS documentation for PutUserPolicy&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2809,7 +2809,7 @@
 					<PolicyDocument input_type="text" />
 					<PolicyName input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_RemoveUserFromGroup" label="RemoveUserFromGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_RemoveUserFromGroup.html' target='_blank'&gt;AWS documentation for RemoveUserFromGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2817,7 +2817,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<GroupName input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_ResyncMFADevice" label="ResyncMFADevice" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_ResyncMFADevice.html' target='_blank'&gt;AWS documentation for ResyncMFADevice&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2827,7 +2827,7 @@
 					<AuthenticationCode2 input_type="text" />
 					<SerialNumber input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UpdateAccessKey" label="UpdateAccessKey" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UpdateAccessKey.html' target='_blank'&gt;AWS documentation for UpdateAccessKey&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2836,7 +2836,7 @@
 					<AccessKeyId input_type="text" />
 					<Status input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UpdateGroup" label="UpdateGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UpdateGroup.html' target='_blank'&gt;AWS documentation for UpdateGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2845,7 +2845,7 @@
 					<GroupName input_type="text" />
 					<NewGroupName input_type="text" />
 					<NewPath input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UpdateLoginProfile" label="UpdateLoginProfile" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UpdateLoginProfile.html' target='_blank'&gt;AWS documentation for UpdateLoginProfile&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2853,7 +2853,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Password input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UpdateServerCertificate" label="UpdateServerCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UpdateServerCertificate.html' target='_blank'&gt;AWS documentation for UpdateServerCertificate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2862,7 +2862,7 @@
 					<NewPath input_type="text" />
 					<NewServerCertificateName input_type="text" />
 					<ServerCertificateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UpdateSigningCertificate" label="UpdateSigningCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UpdateSigningCertificate.html' target='_blank'&gt;AWS documentation for UpdateSigningCertificate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2871,7 +2871,7 @@
 					<CertificateId input_type="text" />
 					<Status input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UpdateUser" label="UpdateUser" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UpdateUser.html' target='_blank'&gt;AWS documentation for UpdateUser&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2880,7 +2880,7 @@
 					<NewPath input_type="text" />
 					<NewUserName input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UploadServerCertificate" label="UploadServerCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UploadServerCertificate.html' target='_blank'&gt;AWS documentation for UploadServerCertificate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2891,7 +2891,7 @@
 					<Path input_type="text" />
 					<PrivateKey input_type="text" />
 					<ServerCertificateName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_iam_UploadSigningCertificate" label="UploadSigningCertificate" description="" help="&lt;a href='http://docs.amazonwebservices.com/IAM/latest/APIReference/API_UploadSigningCertificate.html' target='_blank'&gt;AWS documentation for UploadSigningCertificate&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2899,7 +2899,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<CertificateBody input_type="text" />
 					<UserName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -2913,7 +2913,7 @@
 					<DBSecurityGroupName input_type="text" />
 					<EC2SecurityGroupName input_type="text" />
 					<EC2SecurityGroupOwnerId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_CreateDBInstance" label="CreateDBInstance" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_CreateDBInstance.html' target='_blank'&gt;AWS documentation for CreateDBInstance&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2941,7 +2941,7 @@
 					<Port input_type="text" />
 					<PreferredBackupWindow input_type="text" />
 					<PreferredMaintenanceWindow input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_CreateDBInstanceReadReplica" label="CreateDBInstanceReadReplica" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_CreateDBInstanceReadReplica.html' target='_blank'&gt;AWS documentation for CreateDBInstanceReadReplica&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2953,7 +2953,7 @@
 					<DBInstanceIdentifier input_type="text" />
 					<Port input_type="text" />
 					<SourceDBInstanceIdentifier input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_CreateDBParameterGroup" label="CreateDBParameterGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_CreateDBParameterGroup.html' target='_blank'&gt;AWS documentation for CreateDBParameterGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2962,7 +2962,7 @@
 					<DBParameterGroupFamily input_type="text" />
 					<DBParameterGroupName input_type="text" />
 					<Description input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_CreateDBSecurityGroup" label="CreateDBSecurityGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_CreateDBSecurityGroup.html' target='_blank'&gt;AWS documentation for CreateDBSecurityGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2970,7 +2970,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DBSecurityGroupDescription input_type="text" />
 					<DBSecurityGroupName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_CreateDBSnapshot" label="CreateDBSnapshot" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_CreateDBSnapshot.html' target='_blank'&gt;AWS documentation for CreateDBSnapshot&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2978,7 +2978,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DBInstanceIdentifier input_type="text" />
 					<DBSnapshotIdentifier input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DeleteDBInstance" label="DeleteDBInstance" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DeleteDBInstance.html' target='_blank'&gt;AWS documentation for DeleteDBInstance&lt;/a&gt;" icon="icons/aws_16.png">
@@ -2987,28 +2987,28 @@
 					<DBInstanceIdentifier input_type="text" />
 					<FinalDBSnapshotIdentifier input_type="text" />
 					<SkipFinalSnapshot input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DeleteDBParameterGroup" label="DeleteDBParameterGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DeleteDBParameterGroup.html' target='_blank'&gt;AWS documentation for DeleteDBParameterGroup&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_rds_DeleteDBParameterGroup">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DBParameterGroupName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DeleteDBSecurityGroup" label="DeleteDBSecurityGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DeleteDBSecurityGroup.html' target='_blank'&gt;AWS documentation for DeleteDBSecurityGroup&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_rds_DeleteDBSecurityGroup">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DBSecurityGroupName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DeleteDBSnapshot" label="DeleteDBSnapshot" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DeleteDBSnapshot.html' target='_blank'&gt;AWS documentation for DeleteDBSnapshot&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_rds_DeleteDBSnapshot">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DBSnapshotIdentifier input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeDBEngineVersions" label="DescribeDBEngineVersions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeDBEngineVersions.html' target='_blank'&gt;AWS documentation for DescribeDBEngineVersions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3020,7 +3020,7 @@
 					<EngineVersion input_type="text" />
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeDBInstances" label="DescribeDBInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeDBInstances.html' target='_blank'&gt;AWS documentation for DescribeDBInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3029,7 +3029,7 @@
 					<DBInstanceIdentifier input_type="text" />
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeDBParameterGroups" label="DescribeDBParameterGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeDBParameterGroups.html' target='_blank'&gt;AWS documentation for DescribeDBParameterGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3038,7 +3038,7 @@
 					<DBParameterGroupName input_type="text" />
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeDBParameters" label="DescribeDBParameters" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeDBParameters.html' target='_blank'&gt;AWS documentation for DescribeDBParameters&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3048,7 +3048,7 @@
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
 					<Source input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeDBSecurityGroups" label="DescribeDBSecurityGroups" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeDBSecurityGroups.html' target='_blank'&gt;AWS documentation for DescribeDBSecurityGroups&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3057,7 +3057,7 @@
 					<DBSecurityGroupName input_type="text" />
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeDBSnapshots" label="DescribeDBSnapshots" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeDBSnapshots.html' target='_blank'&gt;AWS documentation for DescribeDBSnapshots&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3067,7 +3067,7 @@
 					<DBSnapshotIdentifier input_type="text" />
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeEngineDefaultParameters" label="DescribeEngineDefaultParameters" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeEngineDefaultParameters.html' target='_blank'&gt;AWS documentation for DescribeEngineDefaultParameters&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3076,7 +3076,7 @@
 					<DBParameterGroupFamily input_type="text" />
 					<Marker input_type="text" />
 					<MaxRecords input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeEvents" label="DescribeEvents" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeEvents.html' target='_blank'&gt;AWS documentation for DescribeEvents&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3089,7 +3089,7 @@
 					<SourceIdentifier input_type="text" />
 					<SourceType input_type="text" />
 					<StartTime input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeReservedDBInstances" label="DescribeReservedDBInstances" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeReservedDBInstances.html' target='_blank'&gt;AWS documentation for DescribeReservedDBInstances&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3103,7 +3103,7 @@
 					<ProductDescription input_type="text" />
 					<ReservedDBInstanceId input_type="text" />
 					<ReservedDBInstancesOfferingId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_DescribeReservedDBInstancesOfferings" label="DescribeReservedDBInstancesOfferings" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_DescribeReservedDBInstancesOfferings.html' target='_blank'&gt;AWS documentation for DescribeReservedDBInstancesOfferings&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3116,7 +3116,7 @@
 					<MultiAZ input_type="text" />
 					<ProductDescription input_type="text" />
 					<ReservedDBInstancesOfferingId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_ModifyDBInstance" label="ModifyDBInstance" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_ModifyDBInstance.html' target='_blank'&gt;AWS documentation for ModifyDBInstance&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3140,7 +3140,7 @@
 					<MultiAZ input_type="text" />
 					<PreferredBackupWindow input_type="text" />
 					<PreferredMaintenanceWindow input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_ModifyDBParameterGroup" label="ModifyDBParameterGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_ModifyDBParameterGroup.html' target='_blank'&gt;AWS documentation for ModifyDBParameterGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3152,7 +3152,7 @@
 							<member input_type="text" />
 						</member.N>
 					</Parameters>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_PurchaseReservedDBInstancesOffering" label="PurchaseReservedDBInstancesOffering" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_PurchaseReservedDBInstancesOffering.html' target='_blank'&gt;AWS documentation for PurchaseReservedDBInstancesOffering&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3161,14 +3161,14 @@
 					<DBInstanceCount input_type="text" />
 					<ReservedDBInstanceId input_type="text" />
 					<ReservedDBInstancesOfferingId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_RebootDBInstance" label="RebootDBInstance" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_RebootDBInstance.html' target='_blank'&gt;AWS documentation for RebootDBInstance&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_rds_RebootDBInstance">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DBInstanceIdentifier input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_ResetDBParameterGroup" label="ResetDBParameterGroup" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_ResetDBParameterGroup.html' target='_blank'&gt;AWS documentation for ResetDBParameterGroup&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3181,7 +3181,7 @@
 						</member.N>
 					</Parameters>
 					<ResetAllParameters input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_RestoreDBInstanceFromDBSnapshot" label="RestoreDBInstanceFromDBSnapshot" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_RestoreDBInstanceFromDBSnapshot.html' target='_blank'&gt;AWS documentation for RestoreDBInstanceFromDBSnapshot&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3197,7 +3197,7 @@
 					<LicenseModel input_type="text" />
 					<MultiAZ input_type="text" />
 					<Port input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_RestoreDBInstanceToPointInTime" label="RestoreDBInstanceToPointInTime" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_RestoreDBInstanceToPointInTime.html' target='_blank'&gt;AWS documentation for RestoreDBInstanceToPointInTime&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3215,7 +3215,7 @@
 					<SourceDBInstanceIdentifier input_type="text" />
 					<TargetDBInstanceIdentifier input_type="text" />
 					<UseLatestRestorableTime input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_rds_RevokeDBSecurityGroupIngress" label="RevokeDBSecurityGroupIngress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonRDS/latest/APIReference/API_RevokeDBSecurityGroupIngress.html' target='_blank'&gt;AWS documentation for RevokeDBSecurityGroupIngress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3225,7 +3225,7 @@
 					<DBSecurityGroupName input_type="text" />
 					<EC2SecurityGroupName input_type="text" />
 					<EC2SecurityGroupOwnerId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -3247,7 +3247,7 @@
 							</Attribute.X>
 						</Item>
 					</Item.Y>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_BatchPutAttributes" label="BatchPutAttributes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_BatchPutAttributes.html' target='_blank'&gt;AWS documentation for BatchPutAttributes&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3266,14 +3266,14 @@
 							</Attribute.X>
 						</Item>
 					</Item.Y>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_CreateDomain" label="CreateDomain" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_CreateDomain.html' target='_blank'&gt;AWS documentation for CreateDomain&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sdb_CreateDomain">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DomainName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_DeleteAttributes" label="DeleteAttributes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_DeleteAttributes.html' target='_blank'&gt;AWS documentation for DeleteAttributes&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3294,21 +3294,21 @@
 							<Exists input_type="text" />
 						</Expected>
 					</Expected.X>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_DeleteDomain" label="DeleteDomain" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_DeleteDomain.html' target='_blank'&gt;AWS documentation for DeleteDomain&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sdb_DeleteDomain">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DomainName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_DomainMetadata" label="DomainMetadata" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_DomainMetadata.html' target='_blank'&gt;AWS documentation for DomainMetadata&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sdb_DomainMetadata">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DomainName input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_GetAttributes" label="GetAttributes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_GetAttributes.html' target='_blank'&gt;AWS documentation for GetAttributes&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3318,7 +3318,7 @@
 					<ItemName input_type="text" />
 					<AttributeName input_type="text" />
 					<ConsistentRead input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_ListDomains" label="ListDomains" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_ListDomains.html' target='_blank'&gt;AWS documentation for ListDomains&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3326,7 +3326,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<MaxNumberOfDomains input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_PutAttributes" label="PutAttributes" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_PutAttributes.html' target='_blank'&gt;AWS documentation for PutAttributes&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3348,7 +3348,7 @@
 							<Exists input_type="text" />
 						</Expected>
 					</Expected.X>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sdb_Select" label="Select" description="" help="&lt;a href='http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API_Select.html' target='_blank'&gt;AWS documentation for Select&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3357,7 +3357,7 @@
 					<SelectExpression input_type="text" />
 					<ConsistentRead input_type="text" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -3368,25 +3368,25 @@
 				<function command_type="aws_ses_DeleteVerifiedEmailAddress">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<EmailAddress input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ses_GetSendQuota" label="GetSendQuota" description="" help="&lt;a href='http://docs.amazonwebservices.com/ses/latest/APIReference/API_GetSendQuota.html' target='_blank'&gt;AWS documentation for GetSendQuota&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ses_GetSendQuota">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ses_GetSendStatistics" label="GetSendStatistics" description="" help="&lt;a href='http://docs.amazonwebservices.com/ses/latest/APIReference/API_GetSendStatistics.html' target='_blank'&gt;AWS documentation for GetSendStatistics&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ses_GetSendStatistics">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ses_ListVerifiedEmailAddresses" label="ListVerifiedEmailAddresses" description="" help="&lt;a href='http://docs.amazonwebservices.com/ses/latest/APIReference/API_ListVerifiedEmailAddresses.html' target='_blank'&gt;AWS documentation for ListVerifiedEmailAddresses&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ses_ListVerifiedEmailAddresses">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ses_SendEmail" label="SendEmail" description="" help="&lt;a href='http://docs.amazonwebservices.com/ses/latest/APIReference/API_SendEmail.html' target='_blank'&gt;AWS documentation for SendEmail&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3401,7 +3401,7 @@
 					</ReplyToAddresses>
 					<ReturnPath input_type="text" />
 					<Source input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ses_SendRawEmail" label="SendRawEmail" description="" help="&lt;a href='http://docs.amazonwebservices.com/ses/latest/APIReference/API_SendRawEmail.html' target='_blank'&gt;AWS documentation for SendRawEmail&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3414,14 +3414,14 @@
 					</Destinations>
 					<RawMessage input_type="text" />
 					<Source input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_ses_VerifyEmailAddress" label="VerifyEmailAddress" description="" help="&lt;a href='http://docs.amazonwebservices.com/ses/latest/APIReference/API_VerifyEmailAddress.html' target='_blank'&gt;AWS documentation for VerifyEmailAddress&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_ses_VerifyEmailAddress">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<EmailAddress input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -3443,7 +3443,7 @@
 					</ActionName>
 					<Label input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_ConfirmSubscription" label="ConfirmSubscription" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_ConfirmSubscription.html' target='_blank'&gt;AWS documentation for ConfirmSubscription&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3452,35 +3452,35 @@
 					<AuthenticateOnUnsubscribe input_type="text" />
 					<Token input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_CreateTopic" label="CreateTopic" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_CreateTopic.html' target='_blank'&gt;AWS documentation for CreateTopic&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sns_CreateTopic">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Name input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_DeleteTopic" label="DeleteTopic" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_DeleteTopic.html' target='_blank'&gt;AWS documentation for DeleteTopic&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sns_DeleteTopic">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_GetTopicAttributes" label="GetTopicAttributes" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_GetTopicAttributes.html' target='_blank'&gt;AWS documentation for GetTopicAttributes&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sns_GetTopicAttributes">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_ListSubscriptions" label="ListSubscriptions" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_ListSubscriptions.html' target='_blank'&gt;AWS documentation for ListSubscriptions&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sns_ListSubscriptions">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_ListSubscriptionsByTopic" label="ListSubscriptionsByTopic" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_ListSubscriptionsByTopic.html' target='_blank'&gt;AWS documentation for ListSubscriptionsByTopic&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3488,14 +3488,14 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<NextToken input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_ListTopics" label="ListTopics" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_ListTopics.html' target='_blank'&gt;AWS documentation for ListTopics&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sns_ListTopics">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<NextToken input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_Publish" label="Publish" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_Publish.html' target='_blank'&gt;AWS documentation for Publish&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3505,7 +3505,7 @@
 					<MessageStructure input_type="text" />
 					<Subject input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_RemovePermission" label="RemovePermission" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_RemovePermission.html' target='_blank'&gt;AWS documentation for RemovePermission&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3513,7 +3513,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Label input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_SetTopicAttributes" label="SetTopicAttributes" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_SetTopicAttributes.html' target='_blank'&gt;AWS documentation for SetTopicAttributes&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3522,7 +3522,7 @@
 					<AttributeName input_type="text" />
 					<AttributeValue input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_Subscribe" label="Subscribe" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_Subscribe.html' target='_blank'&gt;AWS documentation for Subscribe&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3531,14 +3531,14 @@
 					<Endpoint input_type="text" />
 					<Protocol input_type="text" />
 					<TopicArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sns_Unsubscribe" label="Unsubscribe" description="" help="&lt;a href='http://docs.amazonwebservices.com/sns/latest/api/API_Unsubscribe.html' target='_blank'&gt;AWS documentation for Unsubscribe&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sns_Unsubscribe">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<SubscriptionArn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -3550,14 +3550,14 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<QueueName input_type="text" />
 					<DefaultVisibilityTimeout input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_sqs_ListQueues" label="ListQueues" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSSimpleQueueService/latest/APIReference/Query_QueryListQueues.html' target='_blank'&gt;AWS documentation for ListQueues&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_sqs_ListQueues">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<QueueNamePrefix input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
@@ -3569,7 +3569,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DhcpOptionsId input_type="text" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_AssociateRouteTable" label="AssociateRouteTable" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AssociateRouteTable.html' target='_blank'&gt;AWS documentation for AssociateRouteTable&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3577,7 +3577,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<RouteTableId input_type="text" />
 					<SubnetId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_AttachInternetGateway" label="AttachInternetGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AttachInternetGateway.html' target='_blank'&gt;AWS documentation for AttachInternetGateway&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3585,7 +3585,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InternetGatewayId input_type="text" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_AttachVpnGateway" label="AttachVpnGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AttachVpnGateway.html' target='_blank'&gt;AWS documentation for AttachVpnGateway&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3593,7 +3593,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpnGatewayId input_type="text" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_AuthorizeSecurityGroupEgress" label="AuthorizeSecurityGroupEgress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-AuthorizeSecurityGroupEgress.html' target='_blank'&gt;AWS documentation for AuthorizeSecurityGroupEgress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3617,7 +3617,7 @@
 							</IpRanges.m>
 						</IpPermissions>
 					</IpPermissions.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateCustomerGateway" label="CreateCustomerGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateCustomerGateway.html' target='_blank'&gt;AWS documentation for CreateCustomerGateway&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3626,7 +3626,7 @@
 					<Type input_type="text" />
 					<IpAddress input_type="text" />
 					<BgpAsn input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateDhcpOptions" label="CreateDhcpOptions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateDhcpOptions.html' target='_blank'&gt;AWS documentation for CreateDhcpOptions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3640,20 +3640,20 @@
 							</Value.m>
 						</DhcpConfiguration>
 					</DhcpConfiguration.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateInternetGateway" label="CreateInternetGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateInternetGateway.html' target='_blank'&gt;AWS documentation for CreateInternetGateway&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_CreateInternetGateway">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateNetworkAcl" label="CreateNetworkAcl" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateNetworkAcl.html' target='_blank'&gt;AWS documentation for CreateNetworkAcl&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_CreateNetworkAcl">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateNetworkAclEntry" label="CreateNetworkAclEntry" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateNetworkAclEntry.html' target='_blank'&gt;AWS documentation for CreateNetworkAclEntry&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3673,7 +3673,7 @@
 						<From input_type="text" />
 						<To input_type="text" />
 					</PortRange>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateRoute" label="CreateRoute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateRoute.html' target='_blank'&gt;AWS documentation for CreateRoute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3683,14 +3683,14 @@
 					<DestinationCidrBlock input_type="text" />
 					<GatewayId input_type="text" />
 					<InstanceId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateRouteTable" label="CreateRouteTable" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateRouteTable.html' target='_blank'&gt;AWS documentation for CreateRouteTable&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_CreateRouteTable">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateSubnet" label="CreateSubnet" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateSubnet.html' target='_blank'&gt;AWS documentation for CreateSubnet&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3699,7 +3699,7 @@
 					<VpcId input_type="text" />
 					<CidrBlock input_type="text" />
 					<AvailabilityZone input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateVpc" label="CreateVpc" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpc.html' target='_blank'&gt;AWS documentation for CreateVpc&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3707,7 +3707,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<CidrBlock input_type="text" />
 					<instanceTenancy input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateVpnConnection" label="CreateVpnConnection" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnConnection.html' target='_blank'&gt;AWS documentation for CreateVpnConnection&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3716,7 +3716,7 @@
 					<Type input_type="text" />
 					<CustomerGatewayId input_type="text" />
 					<VpnGatewayId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_CreateVpnGateway" label="CreateVpnGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnGateway.html' target='_blank'&gt;AWS documentation for CreateVpnGateway&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3724,35 +3724,35 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<Type input_type="text" />
 					<AvailabilityZone input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteCustomerGateway" label="DeleteCustomerGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteCustomerGateway.html' target='_blank'&gt;AWS documentation for DeleteCustomerGateway&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteCustomerGateway">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<CustomerGatewayId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteDhcpOptions" label="DeleteDhcpOptions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteDhcpOptions.html' target='_blank'&gt;AWS documentation for DeleteDhcpOptions&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteDhcpOptions">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<DhcpOptionsId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteInternetGateway" label="DeleteInternetGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteInternetGateway.html' target='_blank'&gt;AWS documentation for DeleteInternetGateway&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteInternetGateway">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InternetGatewayId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteNetworkAcl" label="DeleteNetworkAcl" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteNetworkAcl.html' target='_blank'&gt;AWS documentation for DeleteNetworkAcl&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteNetworkAcl">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<NetworkAclId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteNetworkAclEntry" label="DeleteNetworkAclEntry" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteNetworkAclEntry.html' target='_blank'&gt;AWS documentation for DeleteNetworkAclEntry&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3761,7 +3761,7 @@
 					<NetworkAclId input_type="text" />
 					<RuleNumber input_type="text" />
 					<Egress input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteRoute" label="DeleteRoute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteRoute.html' target='_blank'&gt;AWS documentation for DeleteRoute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3769,42 +3769,42 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<RouteTableId input_type="text" />
 					<DestinationCidrBlock input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteRouteTable" label="DeleteRouteTable" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteRouteTable.html' target='_blank'&gt;AWS documentation for DeleteRouteTable&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteRouteTable">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<RouteTableId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteSubnet" label="DeleteSubnet" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteSubnet.html' target='_blank'&gt;AWS documentation for DeleteSubnet&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteSubnet">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<SubnetId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteVpc" label="DeleteVpc" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteVpc.html' target='_blank'&gt;AWS documentation for DeleteVpc&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteVpc">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteVpnConnection" label="DeleteVpnConnection" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteVpnConnection.html' target='_blank'&gt;AWS documentation for DeleteVpnConnection&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteVpnConnection">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpnConnectionId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DeleteVpnGateway" label="DeleteVpnGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteVpnGateway.html' target='_blank'&gt;AWS documentation for DeleteVpnGateway&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DeleteVpnGateway">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpnGatewayId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeCustomerGateways" label="DescribeCustomerGateways" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeCustomerGateways.html' target='_blank'&gt;AWS documentation for DescribeCustomerGateways&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3821,7 +3821,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeDhcpOptions" label="DescribeDhcpOptions" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeDhcpOptions.html' target='_blank'&gt;AWS documentation for DescribeDhcpOptions&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3838,7 +3838,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeInternetGateways" label="DescribeInternetGateways" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeInternetGateways.html' target='_blank'&gt;AWS documentation for DescribeInternetGateways&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3855,7 +3855,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeNetworkAcls" label="DescribeNetworkAcls" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeNetworkAcls.html' target='_blank'&gt;AWS documentation for DescribeNetworkAcls&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3872,7 +3872,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeRouteTables" label="DescribeRouteTables" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeRouteTables.html' target='_blank'&gt;AWS documentation for DescribeRouteTables&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3889,7 +3889,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeSubnets" label="DescribeSubnets" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeSubnets.html' target='_blank'&gt;AWS documentation for DescribeSubnets&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3906,7 +3906,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeVpcs" label="DescribeVpcs" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeVpcs.html' target='_blank'&gt;AWS documentation for DescribeVpcs&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3923,7 +3923,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeVpnConnections" label="DescribeVpnConnections" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeVpnConnections.html' target='_blank'&gt;AWS documentation for DescribeVpnConnections&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3940,7 +3940,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DescribeVpnGateways" label="DescribeVpnGateways" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeVpnGateways.html' target='_blank'&gt;AWS documentation for DescribeVpnGateways&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3957,7 +3957,7 @@
 							</Value.m>
 						</Filter>
 					</Filter.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DetachInternetGateway" label="DetachInternetGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DetachInternetGateway.html' target='_blank'&gt;AWS documentation for DetachInternetGateway&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3965,7 +3965,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<InternetGatewayId input_type="text" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DetachVpnGateway" label="DetachVpnGateway" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DetachVpnGateway.html' target='_blank'&gt;AWS documentation for DetachVpnGateway&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3973,14 +3973,14 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<VpnGatewayId input_type="text" />
 					<VpcId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_DisassociateRouteTable" label="DisassociateRouteTable" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DisassociateRouteTable.html' target='_blank'&gt;AWS documentation for DisassociateRouteTable&lt;/a&gt;" icon="icons/aws_16.png">
 				<function command_type="aws_vpc_DisassociateRouteTable">
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AssociationId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_ReplaceNetworkAclAssociation" label="ReplaceNetworkAclAssociation" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ReplaceNetworkAclAssociation.html' target='_blank'&gt;AWS documentation for ReplaceNetworkAclAssociation&lt;/a&gt;" icon="icons/aws_16.png">
@@ -3988,7 +3988,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AssociationId input_type="text" />
 					<NetworkAclId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_ReplaceNetworkAclEntry" label="ReplaceNetworkAclEntry" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ReplaceNetworkAclEntry.html' target='_blank'&gt;AWS documentation for ReplaceNetworkAclEntry&lt;/a&gt;" icon="icons/aws_16.png">
@@ -4008,7 +4008,7 @@
 						<From input_type="text" />
 						<To input_type="text" />
 					</PortRange>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_ReplaceRoute" label="ReplaceRoute" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ReplaceRoute.html' target='_blank'&gt;AWS documentation for ReplaceRoute&lt;/a&gt;" icon="icons/aws_16.png">
@@ -4018,7 +4018,7 @@
 					<DestinationCidrBlock input_type="text" />
 					<GatewayId input_type="text" />
 					<InstanceId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_ReplaceRouteTableAssociation" label="ReplaceRouteTableAssociation" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-ReplaceRouteTableAssociation.html' target='_blank'&gt;AWS documentation for ReplaceRouteTableAssociation&lt;/a&gt;" icon="icons/aws_16.png">
@@ -4026,7 +4026,7 @@
 					<aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
 					<AssociationId input_type="text" />
 					<RouteTableId input_type="text" />
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 			<command name="aws_vpc_RevokeSecurityGroupEgress" label="RevokeSecurityGroupEgress" description="" help="&lt;a href='http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-RevokeSecurityGroupEgress.html' target='_blank'&gt;AWS documentation for RevokeSecurityGroupEgress&lt;/a&gt;" icon="icons/aws_16.png">
@@ -4050,7 +4050,7 @@
 							</IpRanges.m>
 						</IpPermissions>
 					</IpPermissions.n>
-					<result_name input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
 				</function>
 			</command>
 		</commands>
