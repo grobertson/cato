@@ -16,7 +16,18 @@
 $(document).ready(function () {
 	//use storm?
     $("#use_storm_btn").click(function () {
-		$(".stormfields").toggle();
+		if ($(this).is(':checked')) {
+    		$(".stormfields").show();
+			//create button hidden until a valid source file/url is set
+			$("#edit_dialog_create_btn").hide();
+				//clear previous errors
+			$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
+			$("#txtStormFile").empty().removeClass("redBorder").removeClass("greenBorder");
+		} else {
+    		$(".stormfields").hide();
+			$("#edit_dialog_create_btn").show();
+		}
+
 		$("#edit_dialog").dialog('option','position','center');
     });
     
@@ -127,16 +138,31 @@ function fileWasSaved(filename) {
 }
 
 function validateStormFileJSON() {
-	if ($("#ddlStormFileSource").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
-		$("#txtStormFile").empty().removeClass("redBorder").removeClass("greenBorder");
-		$("#validate").hide();	
+	//clear previous errors
+	$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
+	$("#txtStormFile").empty().removeClass("redBorder").removeClass("greenBorder");
+
+	//no create button yet...
+	$("#edit_dialog_create_btn").hide();
+
+	//each source type has a slightly different behavior
+	if ($("#ddlStormFileSource").val() == "URL") {
+		$(".validation").hide();
+		$("#edit_dialog_create_btn").show();
 		return;
-	} else {
-		$("#validate").show();
+	} else if ($("#ddlStormFileSource").val() == "File") {
+		$(".validation").hide();
+		return;
+	} else {	
+		//call the validate function
+		var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+	    jsl.interactions.validate($("#txtStormFile"), $("#json_parse_msg"), reformat, false);
+	    
+	    //if the validation failed (the box has the error class), disable the create button
+	    if ($("#json_parse_msg").hasClass("ui-state-happy")) {
+	    	$("#edit_dialog_create_btn").show();
+	    }
+	    
+		$(".validation").show();
 	}
-	
-	//call the validate function
-	var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
-    jsl.interactions.validate($("#txtStormFile"), $("#json_parse_msg"), reformat, false);
 }

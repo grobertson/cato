@@ -4026,7 +4026,7 @@ namespace ACWebMethods
 			
 			sb.Append("{");
             sb.AppendFormat("\"{0}\" : \"{1}\",", "IsValid", bIsValid.ToString());
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "Error", sErr);
+            sb.AppendFormat("\"{0}\" : \"{1}\",", "Error", ui.packJSON(sErr));
             sb.AppendFormat("\"{0}\" : \"{1}\",", "FileType", sFileType);
             sb.AppendFormat("\"{0}\" : \"{1}\",", "URL", ui.packJSON(sURL));
             sb.AppendFormat("\"{0}\" : \"{1}\",", "Description", ui.packJSON(sFileDesc));

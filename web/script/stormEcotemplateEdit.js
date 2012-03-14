@@ -200,6 +200,9 @@ function GetStorm() {
 }
 
 function ShowEditStormDialog() {
+	//hide the OK button, it'll get enabled if the json is valid.
+	$("#storm_edit_dialog_ok_btn").hide();
+	
 	//get the details of the Storm and populate the edit dialog.
 	var storm = GetStorm();
     if (storm != null) {
@@ -252,16 +255,31 @@ function SaveStormFile() {
 }
 
 function validateStormFileJSON() {
-	if ($("#storm_edit_dialog_type").val() != "Text") {
-		$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
-		$("#storm_edit_dialog_text").empty().removeClass("redBorder").removeClass("greenBorder");
-		$("#validate").hide();	
+	//clear previous errors
+	$("#json_parse_msg").empty().removeClass("ui-state-error").removeClass("ui-state-happy");			
+	$("#storm_edit_dialog_text").empty().removeClass("redBorder").removeClass("greenBorder");
+
+	//no create button yet...
+	$("#storm_edit_dialog_ok_btn").hide();
+
+	//each source type has a slightly different behavior
+	if ($("#storm_edit_dialog_type").val() == "URL") {
+		$(".validation").hide();
+		$("#storm_edit_dialog_ok_btn").show();
 		return;
-	} else {
-		$("#validate").show();
+	} else if ($("#storm_edit_dialog_type").val() == "File") {
+		$(".validation").hide();
+		return;
+	} else {	
+		//call the validate function
+		var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
+	    jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), reformat, false);
+	    
+	    //if the validation failed (the box has the error class), disable the create button
+	    if ($("#json_parse_msg").hasClass("ui-state-happy")) {
+	    	$("#storm_edit_dialog_ok_btn").show();
+	    }
+	    
+		$(".validation").show();
 	}
-	
-	//call the validate function
-	var reformat = ($('#chk_reformat').attr('checked') == "checked" ? true : false);
-    jsl.interactions.validate($("#storm_edit_dialog_text"), $("#json_parse_msg"), reformat, false);
 }
