@@ -641,8 +641,10 @@ namespace FunctionTemplates
             }
 
 
-            if (sHTML == "")
-                sHTML = "Error: unable to render input form for function type: [" + sFunction + "].";
+			//3-14-2012 NSC: It's OK for a custom command to not have any fields.
+			//it might not take any arguments.
+            //if (sHTML == "")
+            //    sHTML = "Error: unable to render input form for function type: [" + sFunction + "].";
 
             return sHTML;
         }
@@ -2795,9 +2797,10 @@ namespace FunctionTemplates
                     break;
             }
 
-
-            if (sHTML == "")
-                sHTML = "Error: unable to render view form for function type: [" + sFunction + "].";
+			//3-14-2012 NSC: It's OK for a custom command to not have any fields.
+			//it might not take any arguments.
+            //if (sHTML == "")
+            //    sHTML = "Error: unable to render view form for function type: [" + sFunction + "].";
 
             return sHTML;
         }
@@ -4464,8 +4467,10 @@ namespace FunctionTemplates
                 }
             }
 
-            if (sHTML.Length == 0)
-                sHTML = "Error: Unable to identify any input fields in the XML for this command.";
+			//3-14-2012 NSC: It's OK for a custom command to not have any fields.
+			//it might not take any arguments.
+            //if (sHTML.Length == 0)
+            //    sHTML = "Error: Unable to identify any input fields in the XML for this command.";
             return sHTML;
         }
 
@@ -4493,9 +4498,11 @@ namespace FunctionTemplates
                     sHTML += DrawNode(xe, xe.Name.ToString(), sStepID, sFunction);
                 }
             }
-
-            if (sHTML.Length == 0)
-                sHTML = "Error: Unable to identify any input fields in the XML for this command.";
+			
+			//3-14-2012 NSC: It's OK for a custom command to not have any fields.
+			//it might not take any arguments.
+            //if (sHTML.Length == 0)
+            //    sHTML = "Error: Unable to identify any input fields in the XML for this command.";
             return sHTML;
         }
         private string DrawNode(XElement xeNode, string sXPath, string sStepID, string sFunction)
