@@ -548,7 +548,16 @@ namespace ACWebMethods
 							if (xe != null) {
 								//get the OPM
 								sOPM = (xe.Attribute("parse_method") == null ? "0" : xe.Attribute("parse_method").Value);
-
+								//it's possible that variables=true and parse_method=0..
+								//(don't know why you'd do that on purpose, but whatever.)
+								//but if there's NO parse method attribute, and yet there is a 'variables=true' attribute
+								//well, we can't let the absence of a parse_method negate it,
+								//so the default is "2".
+								if (xe.Attribute("variables") != null)
+									if (dc.IsTrue(xe.Attribute("variables").Value) && sOPM == "0")
+										sOPM = "2";
+								
+								
 								//there may be some provided values ... so alter the func.TemplateXML accordingly
 								foreach (string sXPath in dValues.Keys) {
 									XElement xNode = xe.XPathSelectElement(sXPath);
