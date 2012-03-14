@@ -154,9 +154,10 @@
                 <tr class="stormfields hidden">
                     <td colspan="2">
                         <textarea class="w600px" id="txtStormFile" rows="10"></textarea>
-						<br />
-						<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
-						<pre id="json_parse_msg"></pre>
+						<div class="validation">
+							<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
+							<pre id="json_parse_msg"></pre>
+						</div>
                     </td>
                 </tr>
                 <tr class="stormfields hidden">

@@ -190,8 +190,10 @@
             <iframe src="fileUpload.aspx?ref_id=new_template" style="width: 100%; height: 28px;"></iframe>
 		</div>
 		<textarea id="storm_edit_dialog_text" class="code w100pct" rows="25"></textarea>
-		<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
-		<pre id="json_parse_msg"></pre>
+		<div class="validation">
+			<span id="validate">Validate</span><input type="checkbox" id="chk_reformat" checked="checked" /><label for="chk_format">Format?</label>
+			<pre id="json_parse_msg"></pre>
+		</div>
 	</div>
     <div id="action_icon_dialog" title="Action Icon" class="hidden">
 		<div id="action_icons">
