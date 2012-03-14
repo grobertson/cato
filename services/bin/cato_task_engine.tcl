@@ -3655,6 +3655,8 @@ proc process_step {step_id task_name} {
 		}
 		"scriptlet" {
 		}
+		"comment" {
+		}
 		"transfer" {
 			transfer $command
 		}

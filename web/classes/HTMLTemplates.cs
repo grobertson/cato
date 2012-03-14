@@ -168,7 +168,10 @@ namespace FunctionTemplates
                 " class=\"ui-widget-content ui-corner-bottom step_detail " + sExpandedClass + "\" >";
 
             sMainHTML += GetStepTemplate(oStep, ref sOptionHTML, ref sVariableHTML);
-            sMainHTML += DrawStepCommon(oStep, sOptionHTML, sVariableHTML);
+			
+			//comment steps don't have a common section - all others do
+			if (oStep.FunctionName != "comment")
+				sMainHTML += DrawStepCommon(oStep, sOptionHTML, sVariableHTML);
 
             sMainHTML += "    </div>";
 
@@ -626,6 +629,9 @@ namespace FunctionTemplates
                     break;
                 case "exists":
                     sHTML = Exists(oStep);
+                    break;
+                case "comment":
+                    sHTML = Comment(oStep);
                     break;
 
                 default:
@@ -2563,6 +2569,25 @@ namespace FunctionTemplates
 
             return sHTML;
         }
+        public string Comment(Step oStep)
+        {
+			string sStepID = oStep.ID;
+			string sFunction = oStep.FunctionName;
+			XDocument xd = oStep.FunctionXDoc;
+
+            XElement xComment = xd.XPathSelectElement("//comment");
+            string sComment = (xComment == null ? "" : xComment.Value);
+            string sHTML = "";
+
+            // we gotta get the field id first, but don't show the textarea until after
+            string sCommonAttribs = CommonAttribs(sStepID, sFunction, false, "comment", "comment_step");
+
+            sHTML += "<textarea rows=\"2\" " + sCommonAttribs +
+                " help=\"Enter a comment.\"" +
+                ">" + sComment + "</textarea>" + Environment.NewLine;
+
+            return sHTML;
+        }
         public string LogMessage(Step oStep)
         {
 			string sStepID = oStep.ID;
@@ -2759,6 +2784,9 @@ namespace FunctionTemplates
                     break;
                 case "while":
                     sHTML = While_View(oStep);
+                    break;
+                case "comment":
+                    sHTML = Comment_View(oStep);
                     break;
 
                 default:
@@ -3794,6 +3822,13 @@ namespace FunctionTemplates
             }
 
             return sHTML;
+        }
+        public string Comment_View(Step oStep)
+        {
+			XDocument xd = oStep.FunctionXDoc;
+            XElement xComment = xd.XPathSelectElement("//comment");
+            string sComment = (xComment == null ? "" : ui.SafeHTML(xComment.Value));
+            return "<div class=\"codebox comment_step\">" + sComment + "</div>" + Environment.NewLine;
         }
         public string LogMessage_View(Step oStep)
         {

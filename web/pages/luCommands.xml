@@ -110,6 +110,11 @@
 					<action input_type="text" />
 				</function>
 			</command>
+			<command name="comment" label="Comment" description="A comment block." help="&lt;b&gt;Commentn&lt;/b&gt;&lt;br&gt;Comment is simply an inline comment box within a codeblock.  It is ignored by the Task Engine." icon="icons/comment_32.png">
+				<function command_type="comment">
+					<comment input_type="textarea" rows="3" label="Comment" class="w95pct" style="display: block;" />
+				</function>
+			</command>
 		</commands>
 	</category>
 	<category name="interact" label="Interact" description="Commands for interacting with any connected Asset." icon="icons/exec_32.png">
