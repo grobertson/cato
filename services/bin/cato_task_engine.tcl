@@ -4087,7 +4087,51 @@ proc process_step {step_id task_name} {
 			unset conn_name
 		}
 		default {
-			error_out "The command $function_name is not a valid command" 3000
+			output "Function '$function_name' not a Cato command.  Checking extensions..." 2
+
+			# not fount?  Look for an "extension".
+			# extensions are additional files that handle user-defined functions
+			# the extension attribute of the function in the command is the subdirectory and filename of the extension.
+			# the extension must be TCL (it can call anything it wants)
+			# and an internal proc in that file must match each $function_name that's pointed to it.
+			
+			#output $command 4
+			get_xml_root $command
+			if {[$::ROOT hasAttribute extension]} {
+				set extension_file [replace_variables_all [$::ROOT getAttribute extension]]
+			} else {
+				error_out "Command '$function_name' does not contain an 'extension' handler defined." 5150
+			}
+			del_xml_root
+
+			if {[info exists extension_file]} {
+				#see if we can source the extension file...
+				if { [catch {source [file dirname [info script]]/extensions/$extension_file} fid] } {
+					error_out "Could not find extension '$extension_file'.\nMake sure the file exists in the extensions directory.\n$fid" 5150
+				}
+				
+				#todo: should probably enforce some prefix for the proc names, 
+				# to be sure an extension builder doesn't stomp our internal functions.
+				
+				#does the proc we need exist?  this will return "" if it doesn't.
+				set function_name [info procs $function_name]
+				if {$function_name != ""} {
+					output "Found extension 'extension_file'.  Calling '$function_name' ..." 2
+					#try to call it
+					
+					set retval [eval $function_name {$command}]
+					output $retval
+					
+					#this was working, but couldn't figure out how to get the internal error message to print here.
+					#if { [catch { eval $function_name {$command} } fid] } {
+					#	error_out "Error in extension '$function_name'." 5151
+					#}
+				} else {
+					error_out "The extension command '$function_name' is not a valid function in $extension_file." 5152
+				}
+			} else {
+			    error_out "Function XML does not define an extension handler for '$extension_file'.\n$fid" 5150
+			}
 		}
 	}
 	
