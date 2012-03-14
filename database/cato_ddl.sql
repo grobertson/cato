@@ -577,7 +577,7 @@ CREATE TABLE `task_step_clipboard` (
   `output_column_delimiter` int(11) NOT NULL,
   `variable_xml` text,
   `codeblock_name` varchar(36) DEFAULT NULL,
-  PRIMARY KEY (`user_id`,`clip_dt`)
+  KEY `user_id` (`user_id`,`clip_dt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
