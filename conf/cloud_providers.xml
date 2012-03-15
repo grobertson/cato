@@ -181,6 +181,14 @@
 						</type>
 					</object_types>
 				</product>
+				<product name="iam" label="IAM" type="identity" api_url_prefix="" api_version="2010-05-08" api_uri="/services/Euare/">
+					<object_types>
+						<type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
+							<property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
+							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+						</type>
+					</object_types>
+				</product>
 				<!-- NOTE: the api_uri for walrus is required, unlike S3.  Walrus uses this as a required path component when calculating the signature.-->
 				<product name="walrus" label="Walrus" type="storage" api_url_prefix="" api_version="2006-03-01" api_uri="/services/Walrus/">
 					<object_types>
