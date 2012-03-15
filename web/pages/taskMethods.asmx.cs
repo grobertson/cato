@@ -935,18 +935,9 @@ namespace ACWebMethods
                 if (!dc.sqlExecuteUpdate(sSQL, ref sErr))
                     throw new Exception("Unable to clean embedded steps of [" + sSourceStepID + "]." + sErr);
 				
-				//TODO: BUG #
-				//right now the table has a datetime as part of the pk.  This is because you can legally copy 
-				//either a "complex" step (like IF) including it's embedded steps
-				// - OR - 
-				//you can just copy out the embedded step itself.
-				//this causes problems, since the "source" ids are the same... copying first a parent then a child will wreck 
-				//the copy of the parent.
-				
-				//THE PROPER SOLUTION lies in ticket #194 - make embedded steps become a part of the 
-				//definition of the parent step... NOT a step of their own.
-				//at which point the following line will be removed, as will the clip_dt PK on the table.
-				System.Threading.Thread.Sleep(1000);
+				//3-14-2011 NSC - removed the PK from the table, replaced with an index.
+				//The only downside to this approach is - first copying an embedded step, then the parent, will remove the 
+				//embedded step from the clipboard.
 				
                 sSQL = " insert into task_step_clipboard" +
                 " (user_id, clip_dt, src_step_id, root_step_id, step_id, function_name, function_xml, step_desc," +
