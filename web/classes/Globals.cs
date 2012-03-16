@@ -2232,70 +2232,24 @@ namespace Globals
 		{
 		}
 		
-		//class method to load from the disk
-		static public FunctionCategories Load(string sFileName)
+		//method to load from the disk
+		public bool Load(string sFileName)
 		{
 			try 
 			{
 				XDocument xCategories = XDocument.Load(sFileName);
 				if (xCategories == null) {
 					//crash... we can't do anything if the XML is busted
-					throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
-				} else {
-					
-					FunctionCategories fc = new FunctionCategories();
-					
+					return false;
+					//throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
+				} else {		
 					foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
 					{
-						//not crashing... just skipping
-						if (xCategory.Attribute ("name") == null) 
-							continue;
-						
-						//not crashing... just skipping
-						if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
-							continue;
-						
-						//ok, minimal data is intact... proceed...
-						Category cat = new Category();
-						cat.Name = xCategory.Attribute("name").Value;
-						cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
-						cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
-						cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
-					
-						
-						//load up this category with it's functions
-						foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
-						{
-							//not crashing... just skipping
-							if (xFunction.Attribute ("name") == null) 
-								continue;
-							
-							//not crashing... just skipping
-							if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
-								continue;
-							
-							//ok, minimal data is intact... proceed...
-							Function fn = new Function(cat);
-							fn.Name = xFunction.Attribute("name").Value;
-							fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
-							fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
-							fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
-							fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
-							
-							if (xFunction.Element("function") != null)
-							{
-								if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
-								{
-									fn.TemplateXML = xFunction.Element("function").ToString();
-									fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
-								}
-							}						
-							cat.Functions.Add(fn.Name, fn);
-						}
-					
-						fc.Add(cat.Name, cat);
+						Category cat = BuildCategory(xCategory);
+						if (cat != null)
+							this.Add(cat.Name, cat);
 					}
-					return fc;
+					return true;
 				}
 			}
             catch (Exception ex)
@@ -2303,6 +2257,82 @@ namespace Globals
 				throw ex;
             }			
         }
+		
+		//method to append from the disk
+		//nearly identical to Load, but doesn't crash if the file is malformed, just skips it.
+		public bool Append(string sFileName)
+		{
+			try 
+			{
+				XDocument xCategories = XDocument.Load(sFileName);
+				if (xCategories == null) {
+					return false;
+				} else {
+					foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
+					{
+						Category cat = BuildCategory(xCategory);
+						if (cat != null)
+							this.Add(cat.Name, cat);
+					}
+				}
+				return true;
+			}
+            catch (Exception ex)
+            {
+				return false;
+            }			
+        }
+		
+		private Category BuildCategory(XElement xCategory)
+		{
+			//not crashing... just skipping
+			if (xCategory.Attribute ("name") == null) 
+				return null;
+			
+			//not crashing... just skipping
+			if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
+				return null;
+			
+			//ok, minimal data is intact... proceed...
+			Category cat = new Category();
+			cat.Name = xCategory.Attribute("name").Value;
+			cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
+			cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
+			cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
+		
+			
+			//load up this category with it's functions
+			foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
+			{
+				//not crashing... just skipping
+				if (xFunction.Attribute ("name") == null) 
+					continue;
+				
+				//not crashing... just skipping
+				if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
+					continue;
+				
+				//ok, minimal data is intact... proceed...
+				Function fn = new Function(cat);
+				fn.Name = xFunction.Attribute("name").Value;
+				fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
+				fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
+				fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
+				fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
+				
+				if (xFunction.Element("function") != null)
+				{
+					if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
+					{
+						fn.TemplateXML = xFunction.Element("function").ToString();
+						fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
+					}
+				}						
+				cat.Functions.Add(fn.Name, fn);
+			}
+			
+			return cat;
+		}
 	}
 	
 	//Functions IS a named dictionary of ALL Function objects
