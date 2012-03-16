@@ -956,12 +956,12 @@ namespace Globals
 						" uuid()," + 
 						" '" + this.ID + "'," + 
 						" '" + ui.TickSlash(ea.Name) + "'," + 
-						" '" + ui.TickSlash(ea.Description) + "'," + 
-						" '" + ui.TickSlash(ea.Category) + "'," + 
+						(string.IsNullOrEmpty(ea.Description) ? "null" : " '" + ui.TickSlash(ea.Description) + "'") + "," + 
+						(string.IsNullOrEmpty(ea.Category) ? "null" : " '" + ui.TickSlash(ea.Category) + "'") + "," + 
 						" '" + ea.Icon + "'," + 
 						" '" + ea.OriginalTaskID + "'," + 
-						" '" + ea.TaskVersion + "'," + 
-						" '" + ui.TickSlash(ea.ParameterDefaultsXML) + "'" + 
+						(string.IsNullOrEmpty(ea.TaskVersion) ? "null" : " '" + ea.TaskVersion + "'") + "," + 
+						(string.IsNullOrEmpty(ea.ParameterDefaultsXML) ? "null" : " '" + ui.TickSlash(ea.ParameterDefaultsXML) + "'") +
 						")";
 					
 					if (!oTrans.ExecUpdate(ref sErr))
@@ -1191,6 +1191,11 @@ namespace Globals
 				if (xAction.Element("task") != null) 
 				{
 					this.Task = new Task().FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
+					
+					//if the task we just imported got a new originalID (it was renamed in the xml) ???
+					//we have to update the action!
+					if (this.Task.OriginalTaskID != this.OriginalTaskID)
+						this.OriginalTaskID = this.Task.OriginalTaskID;
 				}
 			}
             catch (Exception ex)
@@ -2637,7 +2642,17 @@ namespace Globals
 						if (!string.IsNullOrEmpty(this.FunctionXML))
 						{
 							this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-							this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+							if (this.FunctionXDoc != null) 
+							{
+								//well for now this method is for the API and xml based task creation, not the gui.
+								//so, the full function object is not required.
+								if (this.FunctionXDoc.Element("function").Attribute("command_type") != null)
+									this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
+								else
+									throw new Exception("Step from XElement: Function attribute 'command_type' is required and missing.");
+								
+								this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+							}
 						}
 					}
 					
@@ -2652,10 +2667,6 @@ namespace Globals
 							this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
 						}
 					}
-					
-					//well for now this method is for the API and xml based task creation, not the gui.
-					//so, the full function object is not required.
-					this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
 				}
             }
             catch (Exception ex)
@@ -3073,6 +3084,10 @@ namespace Globals
 					//this.UseConnectorSystem = false;
 	
 					this.DBExists = _DBExists();
+					//if it doesn't exist, here's the place where we reset the original_task_id.
+					//it doesn't exist, therefore it's new.
+					if (!this.DBExists)
+						this.OriginalTaskID = this.ID;
 					
 					//parameters
 					if (xeTask.Element("parameters") != null)
@@ -3572,7 +3587,7 @@ namespace Globals
 							" task_name, task_code, task_desc, task_status, created_dt)" +
 							" values " +
 							" ('" + this.ID + "'," +
-							"'" + this.ID + "'," +
+							"'" + this.OriginalTaskID + "'," +
 							" " + this.Version + "," +
 							" 1," +
 							" '" + ui.TickSlash(this.Name) + "'," +
@@ -3860,7 +3875,7 @@ namespace Globals
 				XElement xTask = new XElement("task");
 			
 				//xTask.SetAttributeValue("id", this.ID);
-				xTask.SetAttributeValue("original_id", this.OriginalTaskID);
+				xTask.SetAttributeValue("original_task_id", this.OriginalTaskID);
 				xTask.SetAttributeValue("name", this.Name);
 				xTask.SetAttributeValue("code", this.Code);
 				xTask.SetAttributeValue("status", this.Status);
