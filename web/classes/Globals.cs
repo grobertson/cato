@@ -1295,8 +1295,18 @@ namespace Globals
 										throw new Exception("Cloud Providers XML: All Clouds must have the 'api_url' attribute.");
 									if (xCloud.Attribute("api_protocol") == null) 
 										throw new Exception("Cloud Providers XML: All Clouds must have the 'api_protocol' attribute.");
-									
-									Cloud c = new Cloud(pv, false, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value, xCloud.Attribute("api_protocol").Value);
+
+									//region is an optional attribute
+									string sRegion = "";
+									if (xCloud.Attribute("region") != null) 
+										sRegion = xCloud.Attribute("region").Value;
+
+									Cloud c = new Cloud(pv, false, 
+									                    xCloud.Attribute("id").Value, 
+									                    xCloud.Attribute("name").Value, 
+									                    xCloud.Attribute("api_url").Value, 
+									                    xCloud.Attribute("api_protocol").Value, 
+									                    sRegion);
 									pv.Clouds.Add(c.ID, c);
 								}
 							}
@@ -1315,7 +1325,12 @@ namespace Globals
 					            {
 					                foreach (DataRow dr in dt.Rows)
 					                {
-										Cloud c = new Cloud(pv, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+										Cloud c = new Cloud(pv, true, 
+										                    dr["cloud_id"].ToString(), 
+										                    dr["cloud_name"].ToString(), 
+										                    dr["api_url"].ToString(), 
+										                    dr["api_protocol"].ToString(),
+										                    "");
 										pv.Clouds.Add(c.ID, c);
 									}
 								}
@@ -1571,7 +1586,12 @@ namespace Globals
 	            {
 	                foreach (DataRow dr in dt.Rows)
 	                {
-						Cloud c = new Cloud(this, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+						Cloud c = new Cloud(this, true, 
+						                    dr["cloud_id"].ToString(), 
+						                    dr["cloud_name"].ToString(), 
+						                    dr["api_url"].ToString(), 
+						                    dr["api_protocol"].ToString(),
+						                    "");
 						this.Clouds.Add(c.ID, c);
 					}
 				}
@@ -1713,6 +1733,7 @@ namespace Globals
 		public Provider Provider;
         public string APIUrl;
 		public string APIProtocol;
+		public string Region;
 		public bool IsUserDefined;
 		
 		//the default constructor
@@ -1741,6 +1762,7 @@ namespace Globals
 							Name = c.Name;
 							APIUrl = c.APIUrl;
 							APIProtocol = c.APIProtocol;
+							Region = c.Region;
 							Provider = c.Provider;
 							return;
 						}				
@@ -1758,12 +1780,13 @@ namespace Globals
         }
 
 		//an override constructor (manual creation)
-		public Cloud(Provider p, bool bUserDefined, string sID, string sName, string sAPIUrl, string sAPIProtocol) {
+		public Cloud(Provider p, bool bUserDefined, string sID, string sName, string sAPIUrl, string sAPIProtocol, string sRegion) {
 			IsUserDefined = bUserDefined;
 			ID = sID;
 			Name = sName;
 			APIUrl = sAPIUrl;
 			APIProtocol = sAPIProtocol;
+			Region = sRegion;
 			Provider = p;
 		}
 		
@@ -1787,6 +1810,7 @@ namespace Globals
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
 				sb.AppendFormat("\"{0}\" : \"{1}\"", "APIProtocol", this.APIProtocol);
+				sb.AppendFormat("\"{0}\" : \"{1}\"", "Region", this.Region);
 				sb.Append("}");
 				
 				return sb.ToString();
@@ -2277,7 +2301,7 @@ namespace Globals
 				}
 				return true;
 			}
-            catch (Exception ex)
+            catch (Exception)
             {
 				return false;
             }			
