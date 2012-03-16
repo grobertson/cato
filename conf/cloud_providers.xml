@@ -11,7 +11,7 @@
 				<cloud id="54d17fl3-fhs8-9xj4-dj6h-2j678vh572h5" name="sa-east-1" region="sa-east-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
 			</clouds>
 			<products>
-				<product name="ec2" label="EC2" api_version="2011-12-01" api_url_prefix="{product}.{region}.">
+				<product name="ec2" label="EC2" api_version="2011-12-01" api_url_prefix="ec2.">
 					<object_types>
 						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="//addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
@@ -69,7 +69,21 @@
 						</type>
 					</object_types>
 				</product>
-				<product name="autoscaling" label="Auto Scaling" api_url_prefix="{product}.{region}." api_version="2010-08-01">
+				<product name="iam" label="IAM" type="identity" api_url_prefix="iam." api_version="2010-05-08">
+					   <object_types>
+							   <type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
+									   <property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
+									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
+							   </type>
+							   <type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
+									   <property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
+									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
+							   </type>
+					   </object_types>
+			   </product>
+			   <product name="autoscaling" label="Auto Scaling" api_url_prefix="autoscaling." api_version="2010-08-01">
 					<object_types>
 						<type id="aws_as_group" label="Auto Scaling Groups" api_call="DescribeAutoScalingGroups" xml_record_xpath="//AutoScalingGroups/member">
 							<property name="GroupName" label="" xpath="AutoScalingGroupName" id_field="1" short_list="1" sort_order="1" />
@@ -78,7 +92,7 @@
 						</type>
 					</object_types>
 				</product>
-				<product name="elasticloadbalancing" label="ELB" api_url_prefix="{product}.{region}." api_version="2011-04-05">
+				<product name="elasticloadbalancing" label="ELB" api_url_prefix="elasticloadbalancing." api_version="2011-04-05">
 					<object_types>
 						<type id="aws_elb_balancer" label="Elastic Load Balancers" api_call="DescribeLoadBalancers" xml_record_xpath="//LoadBalancerDescriptions/member">
 							<property name="Name" label="" xpath="LoadBalancerName" id_field="1" short_list="1" sort_order="1" />
@@ -87,7 +101,7 @@
 						</type>
 					</object_types>
 				</product>
-				<product name="elasticmapreduce" label="EMR" api_url_prefix="{product}.{region}." api_version="2009-03-31">
+				<product name="elasticmapreduce" label="EMR" api_url_prefix="elasticmapreduce." api_version="2009-03-31">
 					<object_types>
 						<type id="aws_emr_jobflow" label="Elastic MapReduce Jobflow" api_call="DescribeJobFlows" xml_record_xpath="//jobFlows/member">
 							<property name="JobFlowId" label="" xpath="JobFlowId" id_field="1" short_list="1" sort_order="1" />
@@ -96,7 +110,7 @@
 						</type>
 					</object_types>
 				</product>
-				<product name="rds" label="RDS" api_url_prefix="{product}.{region}." api_version="2011-04-01">
+				<product name="rds" label="RDS" api_url_prefix="rds." api_version="2011-04-01">
 					<object_types>
 						<type id="aws_rds_instance" label="RDS Instances" api_call="DescribeDBInstances" xml_record_xpath="//DBInstances/DBInstance">
 							<property name="ID" label="" xpath="DBInstanceIdentifier" id_field="1" short_list="1" sort_order="1" />
@@ -116,14 +130,14 @@
 						</type>
 					</object_types>
 				</product>
-				<product name="sdb" label="SDB" api_url_prefix="{product}.{region}." api_version="2009-04-14">
+				<product name="sdb" label="SDB" api_url_prefix="sdb." api_version="2009-04-14">
 					<object_types>
 						<type id="aws_sdb_domain" label="SDB Domains" api_call="ListDomains" xml_record_xpath="//ListDomainsResult">
 							<property name="DomainName" label="" xpath="DomainName" id_field="1" short_list="1" sort_order="1" />
 						</type>
 					</object_types>
 				</product>
-				<product name="s3" label="S3" api_url_prefix="{product}-{region}." api_version="2006-03-01" api_uri="/">
+				<product name="s3" label="S3" api_url_prefix="s3-" api_version="2006-03-01" api_uri="/">
 					<object_types>
 						<type id="aws_s3_bucket" label="S3 Bucket" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
