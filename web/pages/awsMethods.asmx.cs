@@ -159,6 +159,11 @@ namespace ACWebMethods
 			else if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && string.IsNullOrEmpty(c.APIUrl))
 				sHostName = prod.APIUrlPrefix;
 		
+			//so, there may be variables {xxx} in the url, and we replace them here.
+			//most any property of the product, or cloud, or object could be a variable.
+			//but no goofy looping or being dynamic, just check each one explicitly
+			sHostName = sHostName.Replace("{product}", prod.Name);
+			sHostName = sHostName.Replace("{region}", c.Region);
 
 			if (string.IsNullOrEmpty(sHostName)) {
 				sErr = "Unable to reconcile an endpoint from the Cloud [" + c.Name + "] or Cloud Object [" + cot.ID + "] definitions." + sErr;
