@@ -65,6 +65,7 @@ then
 	rsync -aq web/images/* $DEPLOY_DIR/web/images
 	rsync -aq web/script/* $DEPLOY_DIR/web/script
 	rsync -aq web/style/* $DEPLOY_DIR/web/style
+	rsync -aq web/extensions/* $DEPLOY_DIR/web/extensions
 
 	#just the dll's not the extras
 	rsync -q web/bin/*.dll $DEPLOY_DIR/web/bin/
