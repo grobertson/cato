@@ -1814,7 +1814,7 @@ namespace Globals
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
-				sb.AppendFormat("\"{0}\" : \"{1}\"", "APIProtocol", this.APIProtocol);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "APIProtocol", this.APIProtocol);
 				sb.AppendFormat("\"{0}\" : \"{1}\"", "Region", this.Region);
 				sb.Append("}");
 				
@@ -1973,6 +1973,39 @@ namespace Globals
 	
 	            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
 	                return;
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
+		}
+
+		public string AsJSON()
+		{
+			try
+			{
+				StringBuilder sb = new StringBuilder();
+
+				sb.Append("[");
+
+				int i = 1;
+				foreach (DataRow dr in this.DataTable.Rows)
+				{
+					sb.Append("{");
+					sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", dr["account_id"].ToString());
+					sb.AppendFormat("\"{0}\" : \"{1}\"", "Name", dr["account_name"].ToString());
+					sb.Append("}");
+					
+					//the last one doesn't get a trailing comma
+					if (i < dr.Table.Rows.Count)
+						sb.Append(",");
+
+					i++;
+				}
+
+				sb.Append("]");
+				
+				return sb.ToString();
 			}
             catch (Exception ex)
             {

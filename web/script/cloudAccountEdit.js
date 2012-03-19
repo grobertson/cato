@@ -65,7 +65,46 @@ $(document).ready(function () {
 		GetProviderClouds();
 	});
 
+    $("#jumpto_cloud_btn").button({ icons: { primary: "ui-icon-pencil"}, text: false });
+	$("#jumpto_cloud_btn").click(function () {
+        var cld_id = $("#ddlTestCloud").val();
+        var prv = $("#ddlProvider option:selected").text();
 
+	    if (prv != "Amazon AWS") {
+	    	var saved = SaveItem(0);
+	    	if (saved) {
+			    if (cld_id) {
+					location.href="cloudEdit.aspx?cloud_id=" + cld_id;
+				} else {
+					location.href="cloudEdit.aspx";
+				}
+			}
+		}
+    });
+    $("#add_cloud_btn").button({ icons: { primary: "ui-icon-plus"}, text: false });
+	$("#add_cloud_btn").click(function () {
+        var prv = $("#ddlProvider option:selected").text();
+	    if (prv != "Amazon AWS") {
+	    	var saved = SaveItem(0);
+	    	if (saved) {
+				location.href="cloudEdit.aspx?add=true&provider=" + prv;
+			}
+		}
+    });
+
+
+	//if there was an account_id querystring, we'll pop the edit dialog.
+	var acct_id = getQuerystringVariable("account_id");
+    if (acct_id) {
+        LoadEditDialog(acct_id);
+    }
+	//if there was an add querystring, we'll pop the add dialog.
+	var add = getQuerystringVariable("add");
+    if (add == "true") {
+		var prv = getQuerystringVariable("provider");
+		ShowItemAdd();
+	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
+    }
 
 
     //keypair add button
@@ -221,8 +260,7 @@ function TestConnection() {
 							$("#conn_test_result").css("color","red");
 							$("#conn_test_result").text("Connection Failed.");
 							$("#conn_test_error").text(unpackJSON(oResultData.error));
-						}			
-					
+						}
 					}
 				}
 				catch(err)
@@ -367,6 +405,7 @@ function SaveItem(close_after_save) {
 	//used for changing the global dropdown if needed
 	var old_label = $('#ctl00_ddlCloudAccounts option:selected').text();
     
+    var bSaved = false;
     var bSave = true;
     var strValidationError = '';
 
@@ -376,7 +415,7 @@ function SaveItem(close_after_save) {
     var sAccountName = $("#txtAccountName").val();
     if (sAccountName == '') {
         bSave = false;
-        strValidationError += 'Account Name required.';
+        strValidationError += 'Account Name required.<br />';
     };
 
     if ($("#txtLoginPassword").val() != $("#txtLoginPasswordConfirm").val()) {
@@ -444,8 +483,9 @@ function SaveItem(close_after_save) {
 			            	//we aren't closing? fine, we're now in 'edit' mode.
 			            	$("#hidMode").val("edit");
 		            		$("#hidCurrentEditID").val(account.ID);
-		            		$("#edit_dialog").dialog("option", "title", "Modify Cloud Account");	
+		            		$("#edit_dialog").dialog("option", "title", "Modify Account");	
 		            	}
+		            	bSaved = true;
 	          		}
 		        } else {
 		            showAlert(response.d);
@@ -458,6 +498,8 @@ function SaveItem(close_after_save) {
             showAlert(response.responseText);
         }
     });
+    
+    return bSaved;
 }
 
 function ShowItemAdd() {
