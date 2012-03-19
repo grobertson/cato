@@ -244,12 +244,16 @@ namespace Web
 			}
 			
 			//set up the cloud providers xml
-			ui.SetTaskCommands(ref sErr);
-			if (!string.IsNullOrEmpty(sErr)) {
+			bool bCommandSuccess = ui.SetTaskCommands(ref sErr);
+			if (!bCommandSuccess) {
 				lblErrorMessage.Text = "Error: Unable to load Task Command XML." + sErr;
 				btnLogin.Visible = false;
 				return;
 			}
+			if (!string.IsNullOrEmpty(sErr)) {
+				lblErrorMessage.Text = "Warning: " + sErr;
+			}
+
 			
             //***SECURITY COLLECTION
             sSQL = "select full_name, user_role, email, last_login_dt from users where user_id = '" + sUserID + "'";

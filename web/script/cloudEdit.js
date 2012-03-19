@@ -32,7 +32,7 @@ $(document).ready(function () {
         bgiframe: true,
         buttons: {
             "Save": function () {
-                SaveItem();
+                SaveItem(1);
             },
             Cancel: function () {
                 $("#edit_dialog").dialog('close');
@@ -42,7 +42,32 @@ $(document).ready(function () {
 
     $("#edit_dialog_tabs").tabs();
 
+    //the test connection buttton
+    $("#test_connection_btn").button({ icons: { primary: "ui-icon-link"} });
+	$("#test_connection_btn").live("click", function () {
+        TestConnection();
+    });
 
+    $("#jumpto_account_btn").button({ icons: { primary: "ui-icon-pencil"}, text: false });
+	$("#jumpto_account_btn").click(function () {
+        var acct_id = $("#ddlTestAccount").val();
+    	var saved = SaveItem(0);
+    	if (saved) {
+		    if (acct_id) {
+				location.href="cloudAccountEdit.aspx?account_id=" + acct_id;
+			} else {
+				location.href="cloudAccountEdit.aspx";
+			}
+		}
+    });
+    $("#add_account_btn").button({ icons: { primary: "ui-icon-plus"}, text: false });
+	$("#add_account_btn").click(function () {
+        var prv = $("#ddlProvider option:selected").text();
+    	var saved = SaveItem(0);
+    	if (saved) {
+			location.href="cloudAccountEdit.aspx?add=true&provider=" + prv;
+		}
+    });
 
 	//override the search click button as defined on managepagecommon.js, because this page is now ajax!
 	$("#item_search_btn").die();
@@ -50,12 +75,112 @@ $(document).ready(function () {
 	$("#item_search_btn").live("click", function () {
         GetClouds();
     });
+
+	//the Provider ddl changes a few things
+	$('#ddlProvider').change(function () {
+		GetProviderAccounts();
+	});
+
+	//if there was an cloud_id querystring, we'll pop the edit dialog.
+	var cld_id = getQuerystringVariable("cloud_id");
+    if (cld_id) {
+        LoadEditDialog(cld_id);
+    }
+	//if there was an add querystring, we'll pop the add dialog.
+	var add = getQuerystringVariable("add");
+    if (add == "true") {
+		var prv = getQuerystringVariable("provider");
+        ShowItemAdd();
+	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
+    }
 });
 
 function pageLoad() {
     ManagePageLoad();
 }
 
+function GetProviderAccounts() {
+	var provider = $("#ddlProvider").val();
+
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "uiMethods.asmx/wmGetCloudAccounts",
+        data: '{"sProvider":"' + provider + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+            var accounts = jQuery.parseJSON(response.d);
+
+            // all we want here is to loop the clouds
+            $("#ddlTestAccount").empty();
+            $.each(accounts, function(index, account){
+            	$("#ddlTestAccount").append("<option value=\"" + account.ID + "\">" + account.Name + "</option>");
+			});
+			
+			//we can't allow testing the connection if there are no clouds
+			if ($("#ddlTestAccount option").length == 0)
+				$("#test_connection_btn").hide();
+            else
+				$("#test_connection_btn").show();
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
+function TestConnection() {
+	SaveItem(0);
+
+    var cloud_id = $("#hidCurrentEditID").val();
+    var account_id = $("#ddlTestAccount").val();
+
+    if (cloud_id.length == 36 && account_id.length == 36)
+    {    
+		ClearTestResult();
+		$("#conn_test_result").text("Testing...");
+	    
+	    $.ajax({
+	        type: "POST",
+	        async: false,
+	        url: "awsMethods.asmx/wmTestCloudConnection",
+	        data: '{"sAccountID":"' + account_id + '","sCloudID":"' + cloud_id + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function (response) {
+				try
+				{
+		        	var oResultData = jQuery.parseJSON(response.d);
+					if (oResultData != null)
+					{
+						if (oResultData.result == "success") {
+							$("#conn_test_result").css("color","green");
+							$("#conn_test_result").text("Connection Successful.");
+						}
+						if (oResultData.result == "fail") {
+							$("#conn_test_result").css("color","red");
+							$("#conn_test_result").text("Connection Failed.");
+							$("#conn_test_error").text(unpackJSON(oResultData.error));
+						}
+					}
+				}
+				catch(err)
+				{
+					alert(err);
+					ClearTestResult();
+				}
+	        },
+	        error: function (response) {
+	            showAlert(response.responseText);
+	        }
+	    });
+	} else {
+		ClearTestResult();
+		$("#conn_test_result").css("color","red");
+		$("#conn_test_result").text("Unable to test.  Please try again.");
+	}
+}
 
 function GetClouds() {
     $.ajax({
@@ -88,11 +213,20 @@ function LoadEditDialog(editID) {
 
     FillEditForm(editID);
 
+	//clear out any test results
+	ClearTestResult();
+	
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
     $("#edit_dialog").dialog("option", "title", "Modify Cloud");
     $("#edit_dialog").dialog('open');
 
+}
+
+function ClearTestResult() {
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
 }
 
 function FillEditForm(sEditID) {
@@ -116,6 +250,8 @@ function FillEditForm(sEditID) {
                 $("#ddlProvider").val(cloud.Provider);
                 $("#txtAPIUrl").val(cloud.APIUrl);
                 $("#ddlAPIProtocol").val(cloud.APIProtocol);
+    
+			    GetProviderAccounts();
             }
         },
         error: function (response) {
@@ -124,7 +260,8 @@ function FillEditForm(sEditID) {
     });
 }
 
-function SaveItem() {
+function SaveItem(close_after_save) {
+	var bSaved = false;
     var bSave = true;
     var strValidationError = '';
 
@@ -134,7 +271,7 @@ function SaveItem() {
     var sCloudName = $("#txtCloudName").val();
     if (sCloudName == '') {
         bSave = false;
-        strValidationError += 'Cloud Name required.';
+        strValidationError += 'Cloud Name required.<br />';
     };
 
     var sAPIUrl = $("#txtAPIUrl").val();
@@ -177,8 +314,16 @@ function SaveItem() {
 		                $("[id*='txtSearch']").val("");
 						GetClouds();
 			            
-		            	$("#edit_dialog").dialog('close');
-	            	}
+			            if (close_after_save) {
+			            	$("#edit_dialog").dialog('close');
+		            	} else {
+			            	//we aren't closing? fine, we're now in 'edit' mode.
+			            	$("#hidMode").val("edit");
+		            		$("#hidCurrentEditID").val(cloud.ID);
+		            		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
+		            	}
+		            	bSaved = true;
+					}
 		        } else {
 		            showAlert(response.d);
 		        }
@@ -190,6 +335,7 @@ function SaveItem() {
             showAlert(response.responseText);
         }
     });
+    return bSaved;
 }
 
 function ShowItemAdd() {
@@ -198,8 +344,11 @@ function ShowItemAdd() {
 	$("#conn_test_error").empty();
     $("#hidCurrentEditID").val("");
     
-  
     clearEditDialog();
+	GetProviderAccounts();
+	//clear out any test results
+	ClearTestResult();
+
     $("#hidMode").val("add");
 
     $('#edit_dialog_tabs').tabs('select', 0);

@@ -956,12 +956,12 @@ namespace Globals
 						" uuid()," + 
 						" '" + this.ID + "'," + 
 						" '" + ui.TickSlash(ea.Name) + "'," + 
-						" '" + ui.TickSlash(ea.Description) + "'," + 
-						" '" + ui.TickSlash(ea.Category) + "'," + 
+						(string.IsNullOrEmpty(ea.Description) ? "null" : " '" + ui.TickSlash(ea.Description) + "'") + "," + 
+						(string.IsNullOrEmpty(ea.Category) ? "null" : " '" + ui.TickSlash(ea.Category) + "'") + "," + 
 						" '" + ea.Icon + "'," + 
 						" '" + ea.OriginalTaskID + "'," + 
-						" '" + ea.TaskVersion + "'," + 
-						" '" + ui.TickSlash(ea.ParameterDefaultsXML) + "'" + 
+						(string.IsNullOrEmpty(ea.TaskVersion) ? "null" : " '" + ea.TaskVersion + "'") + "," + 
+						(string.IsNullOrEmpty(ea.ParameterDefaultsXML) ? "null" : " '" + ui.TickSlash(ea.ParameterDefaultsXML) + "'") +
 						")";
 					
 					if (!oTrans.ExecUpdate(ref sErr))
@@ -1191,6 +1191,11 @@ namespace Globals
 				if (xAction.Element("task") != null) 
 				{
 					this.Task = new Task().FromXML(xAction.Element("task").ToString(SaveOptions.DisableFormatting), ref sErr);
+					
+					//if the task we just imported got a new originalID (it was renamed in the xml) ???
+					//we have to update the action!
+					if (this.Task.OriginalTaskID != this.OriginalTaskID)
+						this.OriginalTaskID = this.Task.OriginalTaskID;
 				}
 			}
             catch (Exception ex)
@@ -1295,8 +1300,18 @@ namespace Globals
 										throw new Exception("Cloud Providers XML: All Clouds must have the 'api_url' attribute.");
 									if (xCloud.Attribute("api_protocol") == null) 
 										throw new Exception("Cloud Providers XML: All Clouds must have the 'api_protocol' attribute.");
-									
-									Cloud c = new Cloud(pv, false, xCloud.Attribute("id").Value, xCloud.Attribute("name").Value, xCloud.Attribute("api_url").Value, xCloud.Attribute("api_protocol").Value);
+
+									//region is an optional attribute
+									string sRegion = "";
+									if (xCloud.Attribute("region") != null) 
+										sRegion = xCloud.Attribute("region").Value;
+
+									Cloud c = new Cloud(pv, false, 
+									                    xCloud.Attribute("id").Value, 
+									                    xCloud.Attribute("name").Value, 
+									                    xCloud.Attribute("api_url").Value, 
+									                    xCloud.Attribute("api_protocol").Value, 
+									                    sRegion);
 									pv.Clouds.Add(c.ID, c);
 								}
 							}
@@ -1315,7 +1330,12 @@ namespace Globals
 					            {
 					                foreach (DataRow dr in dt.Rows)
 					                {
-										Cloud c = new Cloud(pv, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+										Cloud c = new Cloud(pv, true, 
+										                    dr["cloud_id"].ToString(), 
+										                    dr["cloud_name"].ToString(), 
+										                    dr["api_url"].ToString(), 
+										                    dr["api_protocol"].ToString(),
+										                    "");
 										pv.Clouds.Add(c.ID, c);
 									}
 								}
@@ -1571,7 +1591,12 @@ namespace Globals
 	            {
 	                foreach (DataRow dr in dt.Rows)
 	                {
-						Cloud c = new Cloud(this, true, dr["cloud_id"].ToString(), dr["cloud_name"].ToString(), dr["api_url"].ToString(), dr["api_protocol"].ToString());
+						Cloud c = new Cloud(this, true, 
+						                    dr["cloud_id"].ToString(), 
+						                    dr["cloud_name"].ToString(), 
+						                    dr["api_url"].ToString(), 
+						                    dr["api_protocol"].ToString(),
+						                    "");
 						this.Clouds.Add(c.ID, c);
 					}
 				}
@@ -1713,6 +1738,7 @@ namespace Globals
 		public Provider Provider;
         public string APIUrl;
 		public string APIProtocol;
+		public string Region;
 		public bool IsUserDefined;
 		
 		//the default constructor
@@ -1741,6 +1767,7 @@ namespace Globals
 							Name = c.Name;
 							APIUrl = c.APIUrl;
 							APIProtocol = c.APIProtocol;
+							Region = c.Region;
 							Provider = c.Provider;
 							return;
 						}				
@@ -1758,12 +1785,13 @@ namespace Globals
         }
 
 		//an override constructor (manual creation)
-		public Cloud(Provider p, bool bUserDefined, string sID, string sName, string sAPIUrl, string sAPIProtocol) {
+		public Cloud(Provider p, bool bUserDefined, string sID, string sName, string sAPIUrl, string sAPIProtocol, string sRegion) {
 			IsUserDefined = bUserDefined;
 			ID = sID;
 			Name = sName;
 			APIUrl = sAPIUrl;
 			APIProtocol = sAPIProtocol;
+			Region = sRegion;
 			Provider = p;
 		}
 		
@@ -1786,7 +1814,8 @@ namespace Globals
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", this.Name);
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", this.Provider.Name);
 				sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", this.APIUrl);
-				sb.AppendFormat("\"{0}\" : \"{1}\"", "APIProtocol", this.APIProtocol);
+				sb.AppendFormat("\"{0}\" : \"{1}\",", "APIProtocol", this.APIProtocol);
+				sb.AppendFormat("\"{0}\" : \"{1}\"", "Region", this.Region);
 				sb.Append("}");
 				
 				return sb.ToString();
@@ -1944,6 +1973,39 @@ namespace Globals
 	
 	            if (!dc.sqlGetDataTable(ref this.DataTable, sSQL, ref sErr))
 	                return;
+			}
+            catch (Exception ex)
+            {
+				throw ex;
+            }			
+		}
+
+		public string AsJSON()
+		{
+			try
+			{
+				StringBuilder sb = new StringBuilder();
+
+				sb.Append("[");
+
+				int i = 1;
+				foreach (DataRow dr in this.DataTable.Rows)
+				{
+					sb.Append("{");
+					sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", dr["account_id"].ToString());
+					sb.AppendFormat("\"{0}\" : \"{1}\"", "Name", dr["account_name"].ToString());
+					sb.Append("}");
+					
+					//the last one doesn't get a trailing comma
+					if (i < dr.Table.Rows.Count)
+						sb.Append(",");
+
+					i++;
+				}
+
+				sb.Append("]");
+				
+				return sb.ToString();
 			}
             catch (Exception ex)
             {
@@ -2232,70 +2294,24 @@ namespace Globals
 		{
 		}
 		
-		//class method to load from the disk
-		static public FunctionCategories Load(string sFileName)
+		//method to load from the disk
+		public bool Load(string sFileName)
 		{
 			try 
 			{
 				XDocument xCategories = XDocument.Load(sFileName);
 				if (xCategories == null) {
 					//crash... we can't do anything if the XML is busted
-					throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
-				} else {
-					
-					FunctionCategories fc = new FunctionCategories();
-					
+					return false;
+					//throw new Exception ("Error: (FunctionCategories Class) Invalid or missing Task Command XML.");
+				} else {		
 					foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
 					{
-						//not crashing... just skipping
-						if (xCategory.Attribute ("name") == null) 
-							continue;
-						
-						//not crashing... just skipping
-						if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
-							continue;
-						
-						//ok, minimal data is intact... proceed...
-						Category cat = new Category();
-						cat.Name = xCategory.Attribute("name").Value;
-						cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
-						cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
-						cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
-					
-						
-						//load up this category with it's functions
-						foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
-						{
-							//not crashing... just skipping
-							if (xFunction.Attribute ("name") == null) 
-								continue;
-							
-							//not crashing... just skipping
-							if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
-								continue;
-							
-							//ok, minimal data is intact... proceed...
-							Function fn = new Function(cat);
-							fn.Name = xFunction.Attribute("name").Value;
-							fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
-							fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
-							fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
-							fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
-							
-							if (xFunction.Element("function") != null)
-							{
-								if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
-								{
-									fn.TemplateXML = xFunction.Element("function").ToString();
-									fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
-								}
-							}						
-							cat.Functions.Add(fn.Name, fn);
-						}
-					
-						fc.Add(cat.Name, cat);
+						Category cat = BuildCategory(xCategory);
+						if (cat != null)
+							this.Add(cat.Name, cat);
 					}
-					return fc;
+					return true;
 				}
 			}
             catch (Exception ex)
@@ -2303,6 +2319,82 @@ namespace Globals
 				throw ex;
             }			
         }
+		
+		//method to append from the disk
+		//nearly identical to Load, but doesn't crash if the file is malformed, just skips it.
+		public bool Append(string sFileName)
+		{
+			try 
+			{
+				XDocument xCategories = XDocument.Load(sFileName);
+				if (xCategories == null) {
+					return false;
+				} else {
+					foreach (XElement xCategory in xCategories.XPathSelectElements("//categories/category"))
+					{
+						Category cat = BuildCategory(xCategory);
+						if (cat != null)
+							this.Add(cat.Name, cat);
+					}
+				}
+				return true;
+			}
+            catch (Exception)
+            {
+				return false;
+            }			
+        }
+		
+		private Category BuildCategory(XElement xCategory)
+		{
+			//not crashing... just skipping
+			if (xCategory.Attribute ("name") == null) 
+				return null;
+			
+			//not crashing... just skipping
+			if (string.IsNullOrEmpty(xCategory.Attribute("name").Value)) 
+				return null;
+			
+			//ok, minimal data is intact... proceed...
+			Category cat = new Category();
+			cat.Name = xCategory.Attribute("name").Value;
+			cat.Label = (xCategory.Attribute("label") == null ? xCategory.Attribute("name").Value : xCategory.Attribute("label").Value);
+			cat.Description = (xCategory.Attribute("description") == null ? "" : xCategory.Attribute("description").Value);
+			cat.Icon = (xCategory.Attribute("icon") == null ? "" : xCategory.Attribute("icon").Value);
+		
+			
+			//load up this category with it's functions
+			foreach (XElement xFunction in xCategory.XPathSelectElements("commands/command"))
+			{
+				//not crashing... just skipping
+				if (xFunction.Attribute ("name") == null) 
+					continue;
+				
+				//not crashing... just skipping
+				if (string.IsNullOrEmpty(xFunction.Attribute("name").Value)) 
+					continue;
+				
+				//ok, minimal data is intact... proceed...
+				Function fn = new Function(cat);
+				fn.Name = xFunction.Attribute("name").Value;
+				fn.Label = (xFunction.Attribute("label") == null ? xFunction.Attribute("name").Value : xFunction.Attribute("label").Value);
+				fn.Description = (xFunction.Attribute("description") == null ? "" : xFunction.Attribute("description").Value);
+				fn.Help = (xFunction.Attribute("help") == null ? "" : xFunction.Attribute("help").Value);
+				fn.Icon = (xFunction.Attribute("icon") == null ? "" : xFunction.Attribute("icon").Value);
+				
+				if (xFunction.Element("function") != null)
+				{
+					if (!string.IsNullOrEmpty(xFunction.Element("function").ToString()))
+					{
+						fn.TemplateXML = xFunction.Element("function").ToString();
+						fn.TemplateXDoc = new XDocument(xFunction.Element("function"));
+					}
+				}						
+				cat.Functions.Add(fn.Name, fn);
+			}
+			
+			return cat;
+		}
 	}
 	
 	//Functions IS a named dictionary of ALL Function objects
@@ -2583,7 +2675,17 @@ namespace Globals
 						if (!string.IsNullOrEmpty(this.FunctionXML))
 						{
 							this.FunctionXDoc = XDocument.Parse(this.FunctionXML);
-							this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+							if (this.FunctionXDoc != null) 
+							{
+								//well for now this method is for the API and xml based task creation, not the gui.
+								//so, the full function object is not required.
+								if (this.FunctionXDoc.Element("function").Attribute("command_type") != null)
+									this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
+								else
+									throw new Exception("Step from XElement: Function attribute 'command_type' is required and missing.");
+								
+								this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
+							}
 						}
 					}
 					
@@ -2598,10 +2700,6 @@ namespace Globals
 							this.VariableXML = this.VariableXDoc.ToString(SaveOptions.DisableFormatting);
 						}
 					}
-					
-					//well for now this method is for the API and xml based task creation, not the gui.
-					//so, the full function object is not required.
-					this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
 				}
             }
             catch (Exception ex)
@@ -3019,6 +3117,10 @@ namespace Globals
 					//this.UseConnectorSystem = false;
 	
 					this.DBExists = _DBExists();
+					//if it doesn't exist, here's the place where we reset the original_task_id.
+					//it doesn't exist, therefore it's new.
+					if (!this.DBExists)
+						this.OriginalTaskID = this.ID;
 					
 					//parameters
 					if (xeTask.Element("parameters") != null)
@@ -3518,7 +3620,7 @@ namespace Globals
 							" task_name, task_code, task_desc, task_status, created_dt)" +
 							" values " +
 							" ('" + this.ID + "'," +
-							"'" + this.ID + "'," +
+							"'" + this.OriginalTaskID + "'," +
 							" " + this.Version + "," +
 							" 1," +
 							" '" + ui.TickSlash(this.Name) + "'," +
@@ -3806,7 +3908,7 @@ namespace Globals
 				XElement xTask = new XElement("task");
 			
 				//xTask.SetAttributeValue("id", this.ID);
-				xTask.SetAttributeValue("original_id", this.OriginalTaskID);
+				xTask.SetAttributeValue("original_task_id", this.OriginalTaskID);
 				xTask.SetAttributeValue("name", this.Name);
 				xTask.SetAttributeValue("code", this.Code);
 				xTask.SetAttributeValue("status", this.Status);

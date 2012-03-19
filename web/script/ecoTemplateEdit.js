@@ -541,8 +541,9 @@ function doActionFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // Change the name in the header
-                    if (column == "action_name") { $(ctl).parents().find(".action_name_lbl").html(unpackJSON(value)); };
-                    if (column == "category") { $(ctl).parents().find(".action_category_lbl").html(unpackJSON(value) + " - "); };
+                    //parents.eq(1) says to get the "second" parent (0 based)
+                    if (column == "action_name") { $(ctl).parents().eq(1).find(".action_name_lbl").html(unpackJSON(value)); };
+                    if (column == "category") { $(ctl).parents().eq(1).find(".action_category_lbl").html(unpackJSON(value) + " - "); };
                 }
             },
             error: function (response) {

@@ -2,13 +2,13 @@
 	<providers>
 		<provider name="Amazon AWS" test_product="ec2" test_object="aws_ec2_security_group" user_defined_clouds="false">
 			<clouds>
-				<cloud id="4d6f35fc-faa7-11e0-b2ec-12313d0024c3" name="us-east-1" api_url="us-east-1.amazonaws.com" api_protocol="HTTPS"></cloud>
-				<cloud id="96e7d2c0-faa7-11e0-b2ec-12313d0024c3" name="us-west-1" api_url="us-west-1.amazonaws.com" api_protocol="HTTPS"></cloud>
-				<cloud id="d05446c8-1231-11e1-beeb-12313b07caa6" name="us-west-2" api_url="us-west-2.amazonaws.com" api_protocol="HTTPS"></cloud>
-				<cloud id="a9f303bc-faa7-11e0-b2ec-12313d0024c3" name="eu-west-1" api_url="eu-west-1.amazonaws.com" api_protocol="HTTPS"></cloud>
-				<cloud id="a9fe9bdc-faa7-11e0-b2ec-12313d0024c3" name="ap-southeast-1" api_url="ap-southeast-1.amazonaws.com" api_protocol="HTTPS"></cloud>
-				<cloud id="aa09974e-faa7-11e0-b2ec-12313d0024c3" name="ap-northeast-1" api_url="ap-northeast-1.amazonaws.com" api_protocol="HTTPS"></cloud>
-				<cloud id="54d17fl3-fhs8-9xj4-dj6h-2j678vh572h5" name="sa-east-1" api_url="sa-east-1.amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="4d6f35fc-faa7-11e0-b2ec-12313d0024c3" name="us-east-1" region="us-east-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="96e7d2c0-faa7-11e0-b2ec-12313d0024c3" name="us-west-1" region="us-west-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="d05446c8-1231-11e1-beeb-12313b07caa6" name="us-west-2" region="us-west-2" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="a9f303bc-faa7-11e0-b2ec-12313d0024c3" name="eu-west-1" region="eu-west-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="a9fe9bdc-faa7-11e0-b2ec-12313d0024c3" name="ap-southeast-1" region="ap-southeast-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="aa09974e-faa7-11e0-b2ec-12313d0024c3" name="ap-northeast-1" region="ap-northeast-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
+				<cloud id="54d17fl3-fhs8-9xj4-dj6h-2j678vh572h5" name="sa-east-1" region="sa-east-1" api_url="amazonaws.com" api_protocol="HTTPS"></cloud>
 			</clouds>
 			<products>
 				<product name="ec2" label="EC2" api_version="2011-12-01" api_url_prefix="ec2.">
@@ -70,20 +70,20 @@
 					</object_types>
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="iam." api_version="2010-05-08">
-					<object_types>
-						<type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
-							<property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
-							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
-							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
-						</type>
-						<type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
-							<property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
-							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
-							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
-						</type>
-					</object_types>
-				</product>
-				<product name="autoscaling" label="Auto Scaling" api_url_prefix="autoscaling." api_version="2010-08-01">
+					   <object_types>
+							   <type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
+									   <property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
+									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
+							   </type>
+							   <type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
+									   <property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
+									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
+							   </type>
+					   </object_types>
+			   </product>
+			   <product name="autoscaling" label="Auto Scaling" api_url_prefix="autoscaling." api_version="2010-08-01">
 					<object_types>
 						<type id="aws_as_group" label="Auto Scaling Groups" api_call="DescribeAutoScalingGroups" xml_record_xpath="//AutoScalingGroups/member">
 							<property name="GroupName" label="" xpath="AutoScalingGroupName" id_field="1" short_list="1" sort_order="1" />
@@ -197,15 +197,9 @@
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="" api_version="2010-05-08" api_uri="/services/Euare/">
 					<object_types>
-						<type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
-							<property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
-							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
-							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
-						</type>
 						<type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
 							<property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
-							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
 						</type>
 					</object_types>
 				</product>

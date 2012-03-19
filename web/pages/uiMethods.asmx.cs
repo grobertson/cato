@@ -3429,6 +3429,21 @@ namespace ACWebMethods
         }
 
         [WebMethod(EnableSession = true)]
+        public string wmGetCloudAccounts(string sProvider)
+        {
+			acUI.acUI ui = new acUI.acUI();
+			string sErr = "";
+			CloudAccounts ca = new CloudAccounts(sProvider, ref sErr);
+			if (ca == null) {
+				return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sProvider + "]. " + ui.packJSON(sErr) + "'}";
+			}
+            else
+            {
+				return ca.AsJSON();
+			}
+        }
+
+        [WebMethod(EnableSession = true)]
         public string wmGetProviderClouds(string sProvider)
         {
 			acUI.acUI ui = new acUI.acUI();

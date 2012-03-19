@@ -246,21 +246,38 @@ namespace acUI
 				return null;
 			}
 		}
-        public void SetTaskCommands(ref string sErr)
+        public bool SetTaskCommands(ref string sErr)
         {
 			//load the task_commands.xml file into the session.  If it doesn't exist, we can't proceed.
 			try 
 			{
 				//we load two classes here...
 				//first, the category/function hierarchy
-				FunctionCategories cats = FunctionCategories.Load(HttpContext.Current.Server.MapPath("~/pages/luCommands.xml"));
+				FunctionCategories cats = new FunctionCategories();
+				bool bCoreSuccess = cats.Load(HttpContext.Current.Server.MapPath("~/pages/luCommands.xml"));
+				if (!bCoreSuccess) return false;
+				
+				//try to append any extension files
+				//this will read all the xml files in /extensions
+				//and append to sErr if it failed, but not crash or die.
+				string [] fileEntries = Directory.GetFiles(HttpContext.Current.Server.MapPath("~/extensions"), "*.xml");
+				foreach(string sFileName in fileEntries)
+				{
+					if (!cats.Append(sFileName)) {
+						sErr += "Unable to load extension command file [" + sFileName + "].";
+					}
+				}
+				
 				SetSessionObject("function_categories", cats, "Security");
 				
 				//then the flat list of all functions for fastest lookups
 				Functions funcs = new Functions(cats);
 				SetSessionObject("functions", funcs, "Security");
+				
+				return true;
 			} catch (Exception ex) {
 				sErr = "Unable to load Task Commands XML." + ex.Message;
+				return false;
 			}
 		}
         public void DeleteSessionObject(string Key, string CollectionName = "")

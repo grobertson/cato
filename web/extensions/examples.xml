@@ -1,0 +1,71 @@
+<!--<categories>
+	<category name="extensions" label="Extensions" description="Extension Commands for performing functions not part of the Cato base product." icon="icons/extensions_32.png">
+		<commands>
+			<command name="hello_world" label="Hello World" description="Writes 'Hello World' to the Task Engine Log." help="&lt;b&gt;Hello World&lt;/b&gt;&lt;br&gt;An extension example. Writes 'Hello World' to the Task Engine log." icon="icons/smiley_32.png">
+				<function command_type="hello_world" extension="examples/hello_world/hello_world.tcl">
+					<message input_type="text" label="Say" />
+				</function>
+			</command>
+			<command name="python_example" label="Python Example" description="A Python extension." help="" icon="icons/python_32.png">
+				<function command_type="python_example" extension="examples/python_example/python_example.tcl">
+					<arg input_type="text" label="Argument" />
+				</function>
+			</command>
+			<command name="bash_example" label="Bash Example" description="A shell script extension." help="" icon="icons/shellscript_32.png">
+				<function command_type="bash_example" extension="examples/bash_example/bash_example.tcl">
+					<arg input_type="text" label="Argument" />
+				</function>
+			</command>
+		</commands>
+	</category>
+	<!--<category name="os_compute" label="OS Compute" description="" icon="icons/openstack_32.png">
+		<commands>
+			<command name="os_compute_ListServers" label="List Servers" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_ListServers">
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_GetServer" label="Get Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_GetServer">
+					<id label="Server ID" input_type="text" />
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_CreateServer" label="Create Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_CreateServer">
+					<request input_type="textarea" rows="3" label="Request" class="w95pct" style="display: block;">
+{
+    "server" : {
+        "name" : "",
+        "imageRef" : "",
+        "flavorRef" : "",
+        "metadata" : {
+            "" : "" 
+        },
+        "personality" : [
+            {
+                "path" : "",
+                "contents" : "" 
+            } 
+        ] 
+    }
+}
+					</request>
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_UpdateServer" label="Update Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_UpdateServer">
+					<request input_type="textarea" rows="3" label="Request" class="w95pct" style="display: block;" />
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+			<command name="os_compute_DeleteServer" label="Delete Server" description="" help="" icon="icons/openstack_32.png">
+				<function command_type="os_compute_DeleteServer">
+					<id input_type="text" label="Server ID" />
+					<result_name label="Result Variable" input_type="text" />
+				</function>
+			</command>
+		</commands>
+	</category>-->
+</categories>-->

@@ -151,14 +151,26 @@ namespace ACWebMethods
 		
 			Product prod = cot.ParentProduct;
 		
-			//if both are there, concatenate them
-			if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
-				sHostName = prod.APIUrlPrefix + c.APIUrl;
-			else if (string.IsNullOrEmpty(prod.APIUrlPrefix) && !string.IsNullOrEmpty(c.APIUrl))
-				sHostName = c.APIUrl;
-			else if (!string.IsNullOrEmpty(prod.APIUrlPrefix) && string.IsNullOrEmpty(c.APIUrl))
-				sHostName = prod.APIUrlPrefix;
+			sHostName = prod.APIUrlPrefix + (string.IsNullOrEmpty(c.Region) ? "" : c.Region + ".") + c.APIUrl;
 		
+			//Issue #250 - some aws endpoints aren't uniform like the rest.  The proper solution 
+			//is use of some variables to give flexibility in building the endpoint url.
+			//but, for the immediate need we're just doing an explicity replacement here if it's IAM.
+			
+			if (prod.Name == "iam")
+			{
+				sHostName = "iam.amazonaws.com";
+			}
+			
+			//following is the right way.
+			//the cloud_providers.xml would get product definitions like this:
+			//<product name="ec2" label="EC2" api_version="2011-12-01" api_url_prefix="{product}.{region}.">
+			
+//			//so, there may be variables {xxx} in the url, and we replace them here.
+//			//most any property of the product, or cloud, or object could be a variable.
+//			//but no goofy looping or being dynamic, just check each one explicitly
+//			sHostName = sHostName.Replace("{product}", prod.Name);
+//			sHostName = sHostName.Replace("{region}", c.Region);
 
 			if (string.IsNullOrEmpty(sHostName)) {
 				sErr = "Unable to reconcile an endpoint from the Cloud [" + c.Name + "] or Cloud Object [" + cot.ID + "] definitions." + sErr;
