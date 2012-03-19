@@ -157,7 +157,7 @@ namespace ACWebMethods
 			//is use of some variables to give flexibility in building the endpoint url.
 			//but, for the immediate need we're just doing an explicity replacement here if it's IAM.
 			
-			if (prod.Name == "iam")
+			if (prod.Name.ToLower() == "iam" && prod.ParentProvider.Name.ToLower() == "amazon aws")
 			{
 				sHostName = "iam.amazonaws.com";
 			}
