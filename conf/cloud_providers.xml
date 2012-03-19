@@ -149,7 +149,7 @@
 		</provider>
 		<provider name="Eucalyptus" test_product="eucalyptus" test_object="aws_ec2_security_group" user_defined_clouds="true">
 			<products>
-				<product name="eucalyptus" label="Eucalyptus" type="compute" api_version="2010-05-08" api_url_prefix="" api_uri="/services/Eucalyptus/">
+				<product name="eucalyptus" label="Eucalyptus" type="compute" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>
 						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
@@ -197,9 +197,15 @@
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="" api_version="2010-05-08" api_uri="/services/Euare/">
 					<object_types>
+						<type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
+							<property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
+							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
+						</type>
 						<type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
 							<property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
+							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
 						</type>
 					</object_types>
 				</product>
