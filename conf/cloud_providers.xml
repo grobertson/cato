@@ -71,7 +71,7 @@
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="iam." api_version="2010-05-08">
 					   <object_types>
-							   <type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
+							   <type id="aws_iam_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
 									   <property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
 									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
 									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
@@ -197,7 +197,7 @@
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="" api_version="2010-05-08" api_uri="/services/Euare/">
 					<object_types>
-						<type id="aws_iam_user_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
+						<type id="aws_iam_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
 							<property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
 							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
