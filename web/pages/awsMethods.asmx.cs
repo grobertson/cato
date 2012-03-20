@@ -77,7 +77,7 @@ namespace ACWebMethods
 			if (!string.IsNullOrEmpty(sErr))
 				return "{\"result\":\"fail\",\"error\":\"" + ui.packJSON(sErr) +"\"}";
 			
-			string sResult = ui.HTTPGet(sURL, 15000, null, ref sErr);
+			string sResult = ui.HTTPGet(sURL, 30000, null, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 				return "{\"result\":\"fail\",\"error\":\"" + ui.packJSON(sErr) + "\"}";
 
@@ -124,7 +124,7 @@ namespace ACWebMethods
 			if (!string.IsNullOrEmpty(sErr))
 				return null;
 			
-			sXML = ui.HTTPGet(sURL, 15000, null, ref sErr);
+			sXML = ui.HTTPGet(sURL, 30000, null, ref sErr);
 			if (!string.IsNullOrEmpty(sErr))
 				return null;
 
