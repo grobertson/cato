@@ -1908,10 +1908,9 @@ namespace FunctionTemplates
 				
 	            sHTML += " to Instance " + Environment.NewLine;
 	            sHTML += "<input type=\"text\" " +
-	                CommonAttribs(sStepID, sFunction, true, "asset", "") +
-	                " class=\"code w400px\"" +
+	                CommonAttribs(sStepID, sFunction, true, "asset", "w300px code") +
 	                " is_required=\"true\"" +
-	                " value=\"" + sAssetID + "\"" + " />"
+	                " value=\"" + sAssetID + "\"" + " /><br />"
 	                + Environment.NewLine;
 
 	            sHTML += " in Cloud " + Environment.NewLine;
@@ -4474,7 +4473,7 @@ namespace FunctionTemplates
             return sHTML;
         }
 
-        private string DrawStepFromXMLDocument(Step oStep)
+        private string DrawStepFromXMLDocument(Step oStep, ref string sOptionHTML)
         {
 			string sStepID = oStep.ID;
 			string sFunction = oStep.FunctionName;
@@ -4495,7 +4494,7 @@ namespace FunctionTemplates
             {
                 foreach (XElement xe in xd.XPathSelectElement("//function").Nodes())
                 {
-                    sHTML += DrawNode(xe, xe.Name.ToString(), sStepID, sFunction);
+                    sHTML += DrawNode(xe, xe.Name.ToString(), sStepID, sFunction, ref sOptionHTML);
                 }
             }
 			
@@ -4505,7 +4504,7 @@ namespace FunctionTemplates
             //    sHTML = "Error: Unable to identify any input fields in the XML for this command.";
             return sHTML;
         }
-        private string DrawNode(XElement xeNode, string sXPath, string sStepID, string sFunction)
+        private string DrawNode(XElement xeNode, string sXPath, string sStepID, string sFunction, ref string sOptionHTML)
         {
             string sHTML = "";
 
@@ -4519,11 +4518,13 @@ namespace FunctionTemplates
             string sIsRemovable = (xeNode.Parent.Attribute("is_array") == null ? "" : xeNode.Parent.Attribute("is_array").Value);
             bool bIsRemovable = dc.IsTrue(sIsRemovable);
 
+			string sOptionTab = (xeNode.Attribute("option_tab") == null ? "" : xeNode.Attribute("option_tab").Value);
+			
+
             //if a node has children we'll draw it with some hierarchical styling.
             //AND ALSO if it's editable, even if it has no children, we'll still draw it as a container.
             if (xeNode.HasElements || bIsEditable)
             {
-
                 //if there is only one child, AND it's not part of an array
                 //don't draw the header or the bounding box, just a composite field label.
                 if (xeNode.Nodes().Count() == 1 && !bIsEditable)
@@ -4532,7 +4533,7 @@ namespace FunctionTemplates
                     XElement xeOnlyChild = xeNode.XPathSelectElement("*[1]");
                     //call DrawNode just on the off chance it actually has children
                     string sChildXPath = sXPath + "/" + xeOnlyChild.Name.ToString();
-                    sHTML += sNodeName + "." + DrawNode(xeOnlyChild, sChildXPath, sStepID, sFunction);
+                    sHTML += sNodeName + "." + DrawNode(xeOnlyChild, sChildXPath, sStepID, sFunction, ref sOptionHTML);
 
                     //since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
                     if (bIsRemovable)
@@ -4611,7 +4612,7 @@ namespace FunctionTemplates
                             sChildXPath = sChildXPath + "[" + iLastIndex.ToString() + "]";
                         }
 
-                        sHTML += DrawNode(xeChildNode, sChildXPath, sStepID, sFunction);
+                        sHTML += DrawNode(xeChildNode, sChildXPath, sStepID, sFunction, ref sOptionHTML);
 
                     }
 
@@ -4632,8 +4633,14 @@ namespace FunctionTemplates
 
             }
 
-
-            return sHTML;
+			//ok, now that we've drawn it, it might be intended to go on the "options tab".
+			//if so, stick it there
+			if (string.IsNullOrEmpty(sOptionTab)) {
+				return sHTML;
+			} else {
+				sOptionHTML += sHTML;
+				return "";
+			}
         }
         private string DrawField(XElement xe, string sXPath, string sStepID, string sFunction)
         {
@@ -4646,18 +4653,25 @@ namespace FunctionTemplates
 			string sLabelStyle = (xe.Attribute("label_style") == null ? "" : xe.Attribute("label_style").Value);
            	sNodeLabel = "<span class=\"" + sLabelClasses + "\" style=\"" + sLabelStyle + "\">" + sNodeLabel + ": </span>";
 			
+            string sBreakBefore = (xe.Attribute("break_before") == null ? "" : xe.Attribute("break_before").Value);
 			string sBreakAfter = (xe.Attribute("break_after") == null ? "" : xe.Attribute("break_after").Value);
+            string sHRBefore = (xe.Attribute("hr_before") == null ? "" : xe.Attribute("hr_before").Value);
             string sHRAfter = (xe.Attribute("hr_after") == null ? "" : xe.Attribute("hr_after").Value);
             string sHelp = (xe.Attribute("help") == null ? "" : xe.Attribute("help").Value);
             string sCSSClasses = (xe.Attribute("class") == null ? "" : xe.Attribute("class").Value);
             string sStyle = (xe.Attribute("style") == null ? "" : xe.Attribute("style").Value);
             string sInputType = (xe.Attribute("input_type") == null ? "" : xe.Attribute("input_type").Value);
 
-
             string sRequired = (xe.Attribute("required") == null ? "" : xe.Attribute("required").Value);
             bool bRequired = dc.IsTrue(sRequired);
 
-            if (sInputType == "textarea")
+			//some getting started layout possibilities
+            if (sBreakBefore == "true")
+                sHTML += "<br />";
+            if (sHRBefore == "true")
+                sHTML += "<hr />";
+
+			if (sInputType == "textarea")
             {
                 //textareas have additional properties
                 string sRows = (xe.Attribute("rows") == null ? "2" : xe.Attribute("rows").Value);
@@ -4781,8 +4795,8 @@ namespace FunctionTemplates
                 sHTML += "<br />";
             if (sHRAfter == "true")
                 sHTML += "<hr />";
-
-            return sHTML;
+			
+			return sHTML;
         }
 		
         private string DrawReadOnlyNode(XElement xeNode, string sXPath, string sStepID, string sFunction)
@@ -4873,11 +4887,19 @@ namespace FunctionTemplates
             string sNodeValue = xe.Value;
             string sNodeLabel = (xe.Attribute("label") == null ? xe.Name.ToString() : xe.Attribute("label").Value);
 
+            string sBreakBefore = (xe.Attribute("break_before") == null ? "" : xe.Attribute("break_before").Value);
             string sBreakAfter = (xe.Attribute("break_after") == null ? "" : xe.Attribute("break_after").Value);
+            string sHRBefore = (xe.Attribute("hr_before") == null ? "" : xe.Attribute("hr_before").Value);
             string sHRAfter = (xe.Attribute("hr_after") == null ? "" : xe.Attribute("hr_after").Value);
             
 			//use input_type at some future point if needed
 			//string sInputType = (xe.Attribute("input_type") == null ? "" : xe.Attribute("input_type").Value);
+
+			//some getting started layout possibilities
+            if (sBreakBefore == "true")
+                sHTML += "<br />";
+            if (sHRBefore == "true")
+                sHTML += "<hr />";
 
             sHTML += sNodeLabel + ": " + "<span class=\"code\">" + sNodeValue + "</span>" + Environment.NewLine;
 

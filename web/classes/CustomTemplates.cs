@@ -39,7 +39,7 @@ namespace FunctionTemplates
                     break;
                 default:
                     //we don't have a special hardcoded case, just render it from the XML directly
-                    sHTML = DrawStepFromXMLDocument(oStep);
+                    sHTML = DrawStepFromXMLDocument(oStep, ref sOptionHTML);
 				
 					//is the variables xml attribute true?
 					XDocument xd = oStep.FunctionXDoc;
