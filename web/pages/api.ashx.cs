@@ -17,6 +17,8 @@ using System.Web;
 using System.Web.UI;
 using System.Collections.Specialized;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Globals;
 using ACWebMethods;
 
@@ -266,59 +268,40 @@ namespace Web
 
 			
 			string sErr = "";
-			
-			//we encoded this in javascript before the ajax call.
-			sTaskXML = ui.unpackJSON(sTaskXML);
-			if (!string.IsNullOrEmpty(sErr))
-			{
-				RESPONSE.ErrorCode = "3001";
-				RESPONSE.ErrorMessage = "Build Ecotemplate from XML failed";
-				RESPONSE.ErrorDetail = sErr;
-			}
-			
-			
-			//TODO: parameter xml will be inside the task xml...
-//			string sParameterXML = ui.unpackJSON(THENODEFROMTHETASK).Replace("'", "''");
-//			
-//			//we gotta peek into the XML and encrypt any "encrypt" flagged values
-//			um.PrepareAndEncryptParameterXML(ref sParameterXML);				
-			
-			
-			
-			//should be easy ... convert the XML into a real task
-			// insert that task into the db
-			
-			//the reason it goes into the db is for history's sake.
-			//the "adhoc" tasks remain in the db, possibly hidden from the user
-			//but at least for a while we retain a full record of what happened.
-			
-			//and, as a bonus, it's possible to take one of those ad-hoc tasks and "save" it as a regular task so it can be scheduled, etc.
-			
-			//will return a standard XML error document if there's a problem.
-			//or a standard result XML if it's successful.
-			
-			Task t = new Task().FromXML(sTaskXML, ref sErr);
-			
-			//ok, now we have a task object.
-			//call it's "create" method to save the whole thing in the db.
-			if (t.DBSave(ref sErr, null))
-			{
-				//success, but was there an error?
-				if (!string.IsNullOrEmpty(sErr))
-				{
-					RESPONSE.ErrorCode = "3002";
-					RESPONSE.ErrorMessage = "Task Create Failed";
-					RESPONSE.ErrorDetail = sErr;
+
+			taskMethods tm = new taskMethods();
+			string sResult = tm.wmCreateTasksFromXML(sTaskXML); //send the original xml
+
+			//our taskMethods call gives us a JSON response
+			//try to parse it
+			try {
+				JObject jo = JObject.Parse(sResult);
+				
+				if (jo["error"] != null) {
+					RESPONSE.ErrorCode = "3001";
+					RESPONSE.ErrorMessage = "Build Task from XML failed";
+					RESPONSE.ErrorDetail = jo["error"].ToString();
 				}
-			}	
-			else
-			{
-				RESPONSE.ErrorCode = "3003";
-				RESPONSE.ErrorMessage = "Task Create Failed";
-				RESPONSE.ErrorDetail = sErr;
+
+				if (jo["type"] != null && jo["ids"] != null) {
+					JArray jaIDs = (JArray)jo["ids"];
+					string sIDs = "";
+					foreach (var oID in jaIDs.Values()) 
+					{
+						sIDs += "<task_id>" + oID + "</task_id>";
+					}
+					RESPONSE.Response = "<task_ids>" + sIDs + "</task_ids>";
+				}
+				else 
+				{
+					//couldn't parse it, just return what we got back.
+					RESPONSE.Response = sResult;
+				}
+			} catch (Exception ex) {
+				RESPONSE.ErrorCode = "3002";
+				RESPONSE.ErrorMessage = "Error parsing results.";
+				RESPONSE.ErrorDetail = ex.Message;
 			}
-			
-			RESPONSE.Response = "<task_id>" + t.ID + "</task_id>";
         }
 
         private void RunTask(ref HttpContext context)

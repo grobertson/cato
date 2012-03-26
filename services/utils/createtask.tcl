@@ -159,19 +159,18 @@ if {"$error" != ""} {
 	exit	
 }
 
-# now, if it was successful we will have a task_id node.
-# the fastest way to do this is to assume success, check for that node, and display the error if it wasn't there.
-set task_id [$root selectNodes string(//task_id)]
-output "TID: $task_id"
-if {"$task_id" == ""} {
+#There may be one or more task_id nodes
+set task_ids [$root selectNodes string(task_ids)]
+#output "TID: $task_id"
+if {"$task_ids" == ""} {
 	set ::SILENT ""
 	output $::RESULT
 } else {
 	# if the silent flag is set, output only the task_id
 	if {"$::SILENT" == "-silent"} {
-		puts $task_id
+		puts [$root asXML]
 	} else {
-		output "Successfully created task_id $task_id"
+		output "Successfully created task_ids $task_ids"
 	}
 }
 

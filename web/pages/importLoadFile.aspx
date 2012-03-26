@@ -23,15 +23,20 @@ $(document).ready(function () {
 		        			showAlert(resp.error);
 		        		} else {
 							$("#xml_to_import").val("");
-							if (resp.type && resp.id)
+							if (resp.ids.length = 1)
 							{
 								var url = "";
 								if (resp.type == "task")
-									url = "taskEdit.aspx?task_id=" + resp.id;
+									url = "taskEdit.aspx?task_id=" + resp.ids[0];
 								if (resp.type == "ecotemplate")
-									url = "ecoTemplateEdit.aspx?ecotemplate_id=" + resp.id;
+									url = "ecoTemplateEdit.aspx?ecotemplate_id=" + resp.id[0];
 								
 								showInfo("Success!", "Click <a href='" + url + "'>here</a> to edit.", true);
+							} else {
+								if (resp.type == "task")
+									showInfo("Success!", "Click <a href='taskManage.aspx'>here</a> to manage Tasks.", true);
+								if (resp.type == "ecotemplate")
+									showInfo("Success!", "Click <a href='ecotemplateManage.aspx'>here</a> to manage Ecotemplates.", true);
 							}
 						}		
 					}
