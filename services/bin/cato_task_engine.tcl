@@ -2509,7 +2509,10 @@ proc replace_variables {the_string} {
 
 			}
 			#regsub -all {[ \r\t\n]+} [string toupper $variable] "" variable
-			regsub -all {[ \r\t\n]+} $variable "" variable
+			
+			#NSC 3-23-2012 important change.  In order to support dictionary lookups, 
+			# we stopped compressing spaces in the variable name.
+			regsub -all {[\r\t\n]+} $variable "" variable
 			#output "first index is $first_index, second is $second_index, variable is >$variable<" 2
 
 
@@ -2652,16 +2655,46 @@ proc replace_variables {the_string} {
 					}
 					default {
 						if {[string first "." $variable] > 0} {
+							# a . signifies a format of var.//xpath for an xml document
+							# where "var" contains the whole xml doc, and anything after the .
+							# is an xpath
+							# no xpath provided? return the whole xml
 							set var_name [string range $variable [expr [string first "." $variable] + 1 ] end]	
-output "var name is $var_name"
+							output "xpath is $var_name" 4
 							set variable [lindex [split $variable "."] 0]
-output "variable is $variable"
+							output "variable is $variable" 4
 							if [info exists ::runtime_arr([string toupper $variable],$array_index)] {
 								set xml $::runtime_arr([string toupper $variable],$array_index)
 								if {"$var_name" > ""} {
 									set subst_var [aws_get_result_var $xml $var_name]
 								} else {
 									set subst_var $xml
+								}
+								output "$var_name = $subst_var" 4
+							} else {
+								set subst_var ""
+							}
+						} elseif {[string first ":" $variable] > 0} {
+							output "Dictionary Variable" 4
+							#If the var name has a : in it, that signifies this is a dictionary (probably from JSON)
+							# the name of the dict preceeds the :, and the space delimited values after it
+							# are the hierarchy of keys
+							# no keys found, return the whole dictionary
+							set var_name [lindex [split $variable ":"] 0]
+							set key_list [string range $variable [expr [string first ":" $variable] + 1 ] end]	
+							if [info exists ::runtime_arr([string toupper $var_name],$array_index)] {
+								set dct $::runtime_arr([string toupper $var_name],$array_index)
+								if {"$key_list" > ""} {
+									#here's the dealio - the dict commands won't take a space delimited string
+									# as a key set ... they require separate args.
+									# so, eval to the rescue, as we just build the command in a string and execute that!
+									if [eval "dict exists \$dct $key_list"] {
+										set subst_var [eval "dict get \$dct $key_list"]
+									} else {
+										output "'$key_list' not found in dictionary '$var_name'."
+									}
+								} else {
+									set subst_var $dct
 								}
 								output "$var_name = $subst_var" 4
 							} else {
@@ -3918,173 +3951,13 @@ proc process_step {step_id task_name} {
 			winrm_cmd $command
 		}
 		"cmd_line" {
-			regsub -all "&" $command "&amp;" command
-			set xmldoc [dom parse $command]
-			set root [$xmldoc documentElement]
-			set conn_name [$root selectNodes string(conn_name)]
-			set cmd_timeout [$root selectNodes string(timeout)]
-			set command [fix [$root selectNodes string(command)]]
-			set positive_response [fix [$root selectNodes string(positive_response)]]
-			set negative_response [fix [$root selectNodes string(negative_response)]]
-			$root delete
-			$xmldoc delete
-
-			regsub -all "&amp;" $command {\&} command
-			regsub -all "&gt;" $command ">" command
-			regsub -all "&lt;" $command "<" command
-
-			if {[info exists ::connection_arr($conn_name,handle)]} {
-				set spawn_id $::connection_arr($conn_name,handle)
-				set system $::connection_arr($conn_name,system))
-			} else {
-				error_out "The telnet or ssh connection {$conn_name} has not been established. Check the connection name or the new_connection function." 2013
-			}
-			output "$conn_name, $cmd_timeout, $command, $positive_response, $negative_response" 4
-
-	
-			###
-			### Let's setup the expected responses
-			###
-
-			if {"$positive_response" == ""} {
-				set positive_response "PROMPT>|ftp> "
-			} else {
-				set positive_response [replace_variables_all $positive_response]
-			}
-			if {"$negative_response" == ""} {
-				set negative_response "This is a default response you shouldnt get it"
-			} else {
-				set negative_response [replace_variables_all $negative_response]
-			}
-
-
-
-			###
-			### Now we're ready to send the commands to the spawned process
-			###
-
-			output "Sending $command to the process" 0
-	
-			set send_slow {3 .0000001}
-			set MATCH_MAX 10485760
-			if {[catch {match_max $MATCH_MAX} return_code]} {
-				error_out "Communication channel not open to connection." 2014
-			}
-
-			if {"$cmd_timeout" > ""} {
-				set timeout $cmd_timeout
-			} else {
-				set timeout $::TIMEOUT_VALUE
-			}
-			set output_buffer ""
-
-			exp_send -s -- "$command\r"
-			#trace variable xxx w filter_buffer
-			set timed_out_flag 0
-			while 1 {
-				expect {
-					-re "$negative_response" {
-								output "**ERROR**" 1
-						#if {$FILTER_BUFFER == 0} {
-							set output_buffer $expect_out(buffer)
-						#} else {
-						#	set xxx $expect_out(buffer)
-						#	set output_buffer $xxx
-						#	unset xxx
-						#}
-						release_all
-						error_out "Negative response condition met: $output_buffer" 2015
-					}
-					-re "$positive_response" {
-						output "**OK**" 1
-						if {[string length $output_buffer] == 0} {
-							set prompt_len [string length $expect_out(0,string)]
-						}
-						break
-					}
-					full_buffer {
-						output "Reseting buffer" 1
-						if {[string length $output_buffer] == 0} {
-							set prompt_len [string length $expect_out(0,string)]
-						}
-						set output_buffer $output_buffer$expect_out(buffer)
-					}
-					timeout {
-						#global TIMEOUT_CODEBLOCK
-						#if {$TIMEOUT_CODEBLOCK == ""} {
-									output "**TIMED OUT**" 1
-							if {[info exists expect_out(buffer)]} {
-								set output_buffer $output_buffer$expect_out(buffer)
-							} else {
-								expect *
-								set output_buffer $output_buffer$expect_out(buffer)
-							} 
-							release_all
-							insert_audit $::STEP_ID  "$command" "TIMEOUT on command:\012$command\012$output_buffer" $conn_name
-							update_status Error
-							set error_msg "TIMEOUT while performing the command: $command\012$output_buffer\012 for step id $::STEP_ID"
-							error_out $error_msg 2016
-						#} else {
-						#	set output_buffer $output_buffer$expect_out(buffer)
-						#	output "**TIMED OUT**, calling codeblock $TIMEOUT_CODEBLOCK"
-						#	insert_audit $::STEP_ID  "$command" "TIMEOUT on command:\012$output_buffer... calling codeblock {$TIMEOUT_CODEBLOCK}." $conn_name
-						#	#set command $TIMEOUT_CODEBLOCK
-						#	set timed_out_flag 1
-						#	break
-						#}
-					}
-				}
-			}
-			#if {$timed_out_flag == 1} {
-			#	set code_block $TIMEOUT_CODEBLOCK
-			#	if {[lsearch -exact $BLOCKLIST "$task_name+_+$code_block"] == -1} {
-			#		output "The NEW codeblock is -> $code_block" 1
-			#		get_codeblock_steps task_name step_arr_1 $code_block $system $task_version
-			#		global step_arr_$task_name+_+$code_block
-			#		array set step_arr_$task_name+_+$code_block [array get step_arr_1]
-			#		lappend BLOCKLIST "$task_name+_+$code_block"
-			#	} else {
-			#		output "The OLD codeblock is -> $code_block" 1
-			#		global step_arr_$task_name+_+$code_block
-			#		array set step_arr_1 [array get step_arr_$task_name+_+$code_block]
-			#	}
-			#	run_commands step_arr_1 $num_systems $system $task_name $task_version
-			#	unset step_arr_1
-			#}
-			set output_buffer [string map {PROMPT2> ""} $output_buffer$expect_out(buffer)]
-			set prompt_len [string length $expect_out(0,string)]
-			if {[string length $output_buffer] == 0} {
-				set prompt_len [string length $expect_out(0,string)]
-			}
-			if {[info exists  expect_out]} {
-				unset expect_out
-			}
-
-			#output "The length of the buffer is [string length $output_buffer]" 1
-			#output "The length of the command is [string length '$command']" 1
-			#output "The first carriage return is at index [string first "\012" $output_buffer]" 1
-			#output "Stripping [string length '$command'] characters off the front of the buffer" 1
-			#output "Stripping  [string first "\012" $output_buffer] characters off the front of the buffer" 1
-			#output "The prompt length is $prompt_len" 1
-			#output "Stripping [expr $prompt_len + 1] characters off the end of the buffer (including carriage return)" 1
-			output "The buffer is ->$output_buffer<-" 1
-
-			## put the command in the special log column for user-friendly debugging
-			## shows the command after replacement, but not piled in the log field with the results
-			insert_audit $::STEP_ID "$command" "$command\012$output_buffer" $conn_name
-			##OLD ->insert_audit $::STEP_ID "$command" "$command\012$output_buffer" $conn_name
+			set result [execute_command $command]
 			
-			set output_buffer [string range $output_buffer 0 [expr [string length $output_buffer] - $prompt_len - 2]]
-			while {[string first "  " $output_buffer] > -1} {
-				regsub -all "(  )" $output_buffer " " output_buffer
-			}
-			#output "The buffer after removing multiple spaces, commands, and prompts is: $output_buffer" 0
-			output "The buffer is ->$output_buffer<-" 1
+			output "The result is ->$result<-" 1
 	
 			if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
-				process_buffer $output_buffer
+				process_buffer $result
 			}
-			unset conn_name
 		}
 		default {
 			output "Function '$function_name' not a Cato command.  Checking extensions..." 2
@@ -4114,12 +3987,12 @@ proc process_step {step_id task_name} {
 				# to be sure an extension builder doesn't stomp our internal functions.
 				
 				#does the proc we need exist?  this will return "" if it doesn't.
-				set function_name [info procs $function_name]
-				if {$function_name != ""} {
-					output "Found extension 'extension_file'.  Calling '$function_name' ..." 2
+				set fn_to_exec [info procs $function_name]
+				if {$fn_to_exec != ""} {
+					output "Found extension 'extension_file'.  Calling '$fn_to_exec' ..." 2
 					#try to call it
 					
-					set retval [eval $function_name {$command}]
+					set retval [eval $fn_to_exec {$command}]
 					output $retval
 					
 					#this was working, but couldn't figure out how to get the internal error message to print here.
@@ -4140,6 +4013,220 @@ proc process_step {step_id task_name} {
 }
 ##################################################
 #	end of run_commands
+##################################################
+
+#####################################################
+#
+#	procedure: new_command
+#
+#	Extension commands may need the ability to execute
+#	a command on an asset, similar to our cmd_line.
+#
+#	This creates a proper command xml that can be 
+#	passed to the execute_command proc, just as if
+#	it were a real step.
+#
+#####################################################
+
+proc new_command {conn_name cmd_text timeout pos_resp neg_resp} {
+	set proc_name new_command
+	
+	set cmd_xml "<function command_type=\"cmd_line\" parse_method=\"2\"> \
+		<conn_name input_type=\"text\">$conn_name</conn_name> \
+		<command input_type=\"text\">$cmd_text</command> \
+		<timeout input_type=\"text\">$timeout</timeout> \
+		<positive_response input_type=\"text\">$pos_resp</positive_response> \
+		<negative_response input_type=\"text\">$neg_resp</negative_response> \
+		</function>"
+	
+	return $cmd_xml
+}
+##################################################
+#	end of new_command
+##################################################
+
+
+#####################################################
+#
+#	procedure: execute_command
+#
+#	This proc does the actual execution of
+#   the cmd_line command.
+#
+#####################################################
+
+proc execute_command {command} {
+	set proc_name execute_command
+	output $command
+	regsub -all "&" $command "&amp;" command
+	set xmldoc [dom parse $command]
+	set root [$xmldoc documentElement]
+	set conn_name [$root selectNodes string(conn_name)]
+	set cmd_timeout [$root selectNodes string(timeout)]
+	set command [fix [$root selectNodes string(command)]]
+	set positive_response [fix [$root selectNodes string(positive_response)]]
+	set negative_response [fix [$root selectNodes string(negative_response)]]
+	$root delete
+	$xmldoc delete
+
+	regsub -all "&amp;" $command {\&} command
+	regsub -all "&gt;" $command ">" command
+	regsub -all "&lt;" $command "<" command
+
+	if {[info exists ::connection_arr($conn_name,handle)]} {
+		set spawn_id $::connection_arr($conn_name,handle)
+		set system $::connection_arr($conn_name,system))
+	} else {
+		error_out "The telnet or ssh connection {$conn_name} has not been established. Check the connection name or the new_connection function." 2013
+	}
+	output "$conn_name, $cmd_timeout, $command, $positive_response, $negative_response" 4
+
+
+	###
+	### Let's setup the expected responses
+	###
+
+	if {"$positive_response" == ""} {
+		set positive_response "PROMPT>|ftp> "
+	} else {
+		set positive_response [replace_variables_all $positive_response]
+	}
+	if {"$negative_response" == ""} {
+		set negative_response "This is a default response you shouldnt get it"
+	} else {
+		set negative_response [replace_variables_all $negative_response]
+	}
+
+
+
+	###
+	### Now we're ready to send the commands to the spawned process
+	###
+
+	output "Sending $command to the process" 0
+
+	set send_slow {3 .0000001}
+	set MATCH_MAX 10485760
+	if {[catch {match_max $MATCH_MAX} return_code]} {
+		error_out "Communication channel not open to connection." 2014
+	}
+
+	if {"$cmd_timeout" > ""} {
+		set timeout $cmd_timeout
+	} else {
+		set timeout $::TIMEOUT_VALUE
+	}
+	set output_buffer ""
+
+	exp_send -s -- "$command\r"
+	#trace variable xxx w filter_buffer
+	set timed_out_flag 0
+	while 1 {
+		expect {
+			-re "$negative_response" {
+						output "**ERROR**" 1
+				#if {$FILTER_BUFFER == 0} {
+					set output_buffer $expect_out(buffer)
+				#} else {
+				#	set xxx $expect_out(buffer)
+				#	set output_buffer $xxx
+				#	unset xxx
+				#}
+				release_all
+				error_out "Negative response condition met: $output_buffer" 2015
+			}
+			-re "$positive_response" {
+				output "**OK**" 1
+				if {[string length $output_buffer] == 0} {
+					set prompt_len [string length $expect_out(0,string)]
+				}
+				break
+			}
+			full_buffer {
+				output "Reseting buffer" 1
+				if {[string length $output_buffer] == 0} {
+					set prompt_len [string length $expect_out(0,string)]
+				}
+				set output_buffer $output_buffer$expect_out(buffer)
+			}
+			timeout {
+				#global TIMEOUT_CODEBLOCK
+				#if {$TIMEOUT_CODEBLOCK == ""} {
+							output "**TIMED OUT**" 1
+					if {[info exists expect_out(buffer)]} {
+						set output_buffer $output_buffer$expect_out(buffer)
+					} else {
+						expect *
+						set output_buffer $output_buffer$expect_out(buffer)
+					} 
+					release_all
+					insert_audit $::STEP_ID  "$command" "TIMEOUT on command:\012$command\012$output_buffer" $conn_name
+					update_status Error
+					set error_msg "TIMEOUT while performing the command: $command\012$output_buffer\012 for step id $::STEP_ID"
+					error_out $error_msg 2016
+				#} else {
+				#	set output_buffer $output_buffer$expect_out(buffer)
+				#	output "**TIMED OUT**, calling codeblock $TIMEOUT_CODEBLOCK"
+				#	insert_audit $::STEP_ID  "$command" "TIMEOUT on command:\012$output_buffer... calling codeblock {$TIMEOUT_CODEBLOCK}." $conn_name
+				#	#set command $TIMEOUT_CODEBLOCK
+				#	set timed_out_flag 1
+				#	break
+				#}
+			}
+		}
+	}
+	#if {$timed_out_flag == 1} {
+	#	set code_block $TIMEOUT_CODEBLOCK
+	#	if {[lsearch -exact $BLOCKLIST "$task_name+_+$code_block"] == -1} {
+	#		output "The NEW codeblock is -> $code_block" 1
+	#		get_codeblock_steps task_name step_arr_1 $code_block $system $task_version
+	#		global step_arr_$task_name+_+$code_block
+	#		array set step_arr_$task_name+_+$code_block [array get step_arr_1]
+	#		lappend BLOCKLIST "$task_name+_+$code_block"
+	#	} else {
+	#		output "The OLD codeblock is -> $code_block" 1
+	#		global step_arr_$task_name+_+$code_block
+	#		array set step_arr_1 [array get step_arr_$task_name+_+$code_block]
+	#	}
+	#	run_commands step_arr_1 $num_systems $system $task_name $task_version
+	#	unset step_arr_1
+	#}
+	set output_buffer [string map {PROMPT2> ""} $output_buffer$expect_out(buffer)]
+	set prompt_len [string length $expect_out(0,string)]
+	if {[string length $output_buffer] == 0} {
+		set prompt_len [string length $expect_out(0,string)]
+	}
+	if {[info exists  expect_out]} {
+		unset expect_out
+	}
+
+	#output "The length of the buffer is [string length $output_buffer]" 1
+	#output "The length of the command is [string length '$command']" 1
+	#output "The first carriage return is at index [string first "\012" $output_buffer]" 1
+	#output "Stripping [string length '$command'] characters off the front of the buffer" 1
+	#output "Stripping  [string first "\012" $output_buffer] characters off the front of the buffer" 1
+	#output "The prompt length is $prompt_len" 1
+	#output "Stripping [expr $prompt_len + 1] characters off the end of the buffer (including carriage return)" 1
+	output "The buffer is ->$output_buffer<-" 1
+
+	## put the command in the special log column for user-friendly debugging
+	## shows the command after replacement, but not piled in the log field with the results
+	insert_audit $::STEP_ID "$command" "$command\012$output_buffer" $conn_name
+	##OLD ->insert_audit $::STEP_ID "$command" "$command\012$output_buffer" $conn_name
+	
+	set output_buffer [string range $output_buffer 0 [expr [string length $output_buffer] - $prompt_len - 2]]
+	while {[string first "  " $output_buffer] > -1} {
+		regsub -all "(  )" $output_buffer " " output_buffer
+	}
+	#output "The buffer after removing multiple spaces, commands, and prompts is: $output_buffer" 0
+
+	unset conn_name
+	
+	return $output_buffer
+	
+}
+##################################################
+#	end of execute_command
 ##################################################
 
 #####################################################
