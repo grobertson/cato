@@ -2405,6 +2405,8 @@ namespace FunctionTemplates
                 sHTML += "  <option " + SetOption("TO_LOWER", xMod.Value) + " value=\"TO_LOWER\">lowercase</option>" + Environment.NewLine;
                 sHTML += "  <option " + SetOption("TO_BASE64", xMod.Value) + " value=\"TO_BASE64\">base64 encode</option>" + Environment.NewLine;
                 sHTML += "  <option " + SetOption("FROM_BASE64", xMod.Value) + " value=\"FROM_BASE64\">base64 decode</option>" + Environment.NewLine;
+                sHTML += "  <option " + SetOption("TO_JSON", xMod.Value) + " value=\"TO_JSON\">Write JSON</option>" + Environment.NewLine;
+                sHTML += "  <option " + SetOption("FROM_JSON", xMod.Value) + " value=\"FROM_JSON\">Read JSON</option>" + Environment.NewLine;
                 sHTML += "</select></td>" + Environment.NewLine;
 
                 sHTML += "<td class=\"w1pct\"><span class=\"fn_var_remove_btn pointer\" index=\"" + i.ToString() + "\" step_id=\"" + sStepID + "\">";
@@ -4783,11 +4785,20 @@ namespace FunctionTemplates
             }
             else //input is the default
             {
-                sHTML += sNodeLabel + " <input type=\"text\" " +
-                    CommonAttribs(sStepID, sFunction, bRequired, sXPath, sCSSClasses) +
+				string sElementID = ""; //some special cases below may need this.
+				sHTML += sNodeLabel + " <input type=\"text\" " +
+                    CommonAttribs(sStepID, sFunction, bRequired, sXPath, ref sElementID, sCSSClasses) +
                     " style=\"" + sStyle + "\"" +
                     " help=\"" + sHelp + "\"" +
                     " value=\"" + sNodeValue + "\" />" + Environment.NewLine;
+				
+				//might this be a conn_name field?  If so, we can show the picker.
+				string sConnPicker = (xe.Attribute("connection_picker") == null ? "" : xe.Attribute("connection_picker").Value);
+				if (dc.IsTrue(sConnPicker)) {
+					sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\"" +
+						" src=\"../images/icons/search.png\"" +
+						" link_to=\"" + sElementID + "\" />" + Environment.NewLine;
+				}
             }
             
             //some final layout possibilities

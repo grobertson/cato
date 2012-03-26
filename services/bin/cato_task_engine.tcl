@@ -3674,6 +3674,27 @@ proc process_step {step_id task_name} {
 						package require base64
 						set value [::base64::decode $value]
 					}
+					TO_JSON {
+						#Rules: this expects the buffer referenced by $variable_name to be a DICT object
+
+						if {[string length $value] == 0} {
+							output "TO_JSON - value is empty, are you referencing the correct variable?" 1
+						}						
+						
+						#huddle is required to read a dict and dump json
+						package require huddle
+						set hud [huddle compile dict $value]
+						set value [huddle jsondump $hud]
+					}
+					FROM_JSON {
+						#this will attempt to read a string into a DICT object using the json2dict lib
+						puts "go"
+						package require json
+						if {[catch {set value [::json::json2dict $value]}]} {
+							error_out "FROM_JSON - value is not valid JSON. Double check all braces, quotes, colons and commas." 4701
+						}
+						
+					}
 					default {
 					}
 				}
