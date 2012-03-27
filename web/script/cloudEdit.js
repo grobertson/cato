@@ -93,6 +93,9 @@ $(document).ready(function () {
         ShowItemAdd();
 	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
     }
+    
+    GetProvidersList();
+    GetClouds();
 });
 
 function pageLoad() {
@@ -186,7 +189,7 @@ function GetClouds() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudEdit.aspx/wmGetClouds",
+        url: "uiMethods.asmx/wmGetClouds",
         data: '{"sSearch":"' + $("#ctl00_phDetail_txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -194,6 +197,21 @@ function GetClouds() {
             $('#clouds').html(response.d);
             //gotta restripe the table
             initJtable(true, true);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+function GetProvidersList() {
+    $.ajax({
+        type: "GET",
+        async: false,
+        url: "uiMethods.asmx/wmGetProvidersList",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+            $('#ddlProvider').html(response.d);
         },
         error: function (response) {
             showAlert(response.responseText);

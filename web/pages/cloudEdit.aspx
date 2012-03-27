@@ -58,9 +58,7 @@
                     Provider:
                 </td>
                 <td>
-                    <select id="ddlProvider">
-                        <asp:Literal id="ltProviders" runat="server"></asp:Literal>
-                    </select>
+                    <select id="ddlProvider"></select>
                 </td>
             </tr>
             <tr>

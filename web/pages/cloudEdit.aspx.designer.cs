@@ -24,7 +24,5 @@ namespace Web.pages {
 		protected System.Web.UI.WebControls.TextBox txtSearch;
 		
 		protected System.Web.UI.WebControls.Literal ltClouds;
-		
-		protected System.Web.UI.WebControls.Literal ltProviders;
 	}
 }
