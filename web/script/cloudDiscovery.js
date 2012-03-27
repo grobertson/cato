@@ -160,9 +160,9 @@ function pageLoad() {
 }
 
 function CheckReady() {
-    if ($("#ctl00_ddlCloudAccounts").val() == null || $("#ctl00_phDetail_ddlEcosystems").val() == null) {
+    if ($("#header_cloud_accounts").val() == null || $("#ctl00_phDetail_ddlEcosystems").val() == null) {
         var msg = '';
-        if ($("#ctl00_ddlCloudAccounts").val() == null)
+        if ($("#header_cloud_accounts").val() == null)
         	msg += 'A Cloud Account is required to use the Discovery page.  An Administrator must first create at least one Cloud Account.<br /><br />';
 
         if ($("#ctl00_phDetail_ddlEcosystems").val() == null)
@@ -188,7 +188,7 @@ function Save() {
 
     //we will test it, but really we're not gonna use it rather we'll get it server side
     //this just traps if there isn't one.
-    if ($("#ctl00_ddlCloudAccounts").val() == null || $("#ctl00_ddlCloudAccounts").val() == "") {
+    if ($("#header_cloud_accounts").val() == null || $("#header_cloud_accounts").val() == "") {
         bSave = false;
         strValidationError += 'No Cloud Accounts are defined. An Administrator must first create at least one Cloud Account.<br /><br />';
     }

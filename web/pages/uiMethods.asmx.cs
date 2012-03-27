@@ -52,6 +52,130 @@ namespace ACWebMethods
     public class uiMethods : System.Web.Services.WebService
     {
 		#region "General"
+		[WebMethod(EnableSession = true)]
+        public string wmGetMenu()
+        {
+            acUI.acUI ui = new acUI.acUI();
+			
+			//first, every page has a menu, and every page updates the session heartbeat.
+            string sMsg = "";
+            ui.UpdateUserSession(ref sMsg);
+
+			//should do something nicer than throw an exception here.
+            if (!string.IsNullOrEmpty(sMsg))
+                throw new Exception(sMsg);
+
+			
+
+			string sHTML = "";	
+
+			//new menu from xml
+			string sRole = ui.GetSessionUserRole().ToLower();
+			
+            XDocument xSiteMaster = (XDocument)ui.GetSessionObject("site_master_xml", "Security");
+
+            if (xSiteMaster == null)
+            {
+                throw new Exception("Error: Site master XML is not in the session.");
+            } 
+			else 
+			{
+				foreach (XElement xMenu in xSiteMaster.XPathSelectElements("//mainmenu/menu"))
+                {
+					string sMenuRoles = (xMenu.Attribute("roles") == null ? "" : xMenu.Attribute("roles").Value);
+					
+					//so, you get to see this menu item IF:
+					// *) you're an "administrator"
+					// *) the "roles" attribute is "all"
+					// *) the  matches your role
+					if (sMenuRoles.ToLower().IndexOf("all") > -1 || sMenuRoles.ToLower().IndexOf(sRole) > -1 || sRole == "administrator") {
+
+						string sLabel = (xMenu.Attribute("label") == null ? "No Label Defined" : xMenu.Attribute("label").Value);
+						string sHref = (xMenu.Attribute("href") == null ? "" : " href=\"" + xMenu.Attribute("href").Value + "\"");
+						string sOnClick = (xMenu.Attribute("onclick") == null ? "" : " onclick=\"" + xMenu.Attribute("onclick").Value + "\"");
+						string sTarget = (xMenu.Attribute("target") == null ? "" : xMenu.Attribute("target").Value);
+						string sIcon = (xMenu.Attribute("icon") == null ? "" : "<img src=\"" + xMenu.Attribute("icon").Value + "\" alt=\"\" />");
+						string sClass = (xMenu.Attribute("class") == null ? "" : xMenu.Attribute("class").Value);
+						
+						//this is the top level menu... may or may not have onclicks or hrefs
+						//but should always have an image
+                        sHTML += "<li class=\"" + sClass + "\" style=\"cursor: pointer;\">";
+                        sHTML += "<a";
+						sHTML += sOnClick;
+						sHTML += sHref;
+						sHTML += sTarget;
+						sHTML += ">";
+                        sHTML += sIcon;
+                        sHTML += sLabel;
+						sHTML += "</a>";
+						
+						//may or may not have a submenu (we don't support many levels, just one.)
+						if (xMenu.XPathSelectElements("item").Count() > 0) {						
+							sHTML += "<ul>";
+							
+							foreach (XElement xSubMenu in xMenu.XPathSelectElements("item"))
+		                    {
+			                    sMenuRoles = (xSubMenu.Attribute("roles") == null ? "" : xSubMenu.Attribute("roles").Value);
+						
+								//so, you get to see this menu item IF:
+								// *) you're an "administrator"
+								// *) the "roles" attribute is "all"
+								// *) the  matches your role
+								if (sMenuRoles.ToLower().IndexOf("all") > -1 || sMenuRoles.ToLower().IndexOf(sRole) > -1 || sRole == "administrator") {
+									
+									sLabel = (xSubMenu.Attribute("label") == null ? "No Label Defined" : xSubMenu.Attribute("label").Value);
+									sHref = (xSubMenu.Attribute("href") == null ? "" : " href=\"" + xSubMenu.Attribute("href").Value + "\"");
+									sTarget = (xSubMenu.Attribute("target") == null ? "" : " target=\"" + xSubMenu.Attribute("target").Value + "\"");
+									sOnClick = (xSubMenu.Attribute("onclick") == null ? "" : " onclick=\"" + xSubMenu.Attribute("onclick").Value + "\"");
+									sIcon = (xSubMenu.Attribute("icon") == null ? "" : "<img src=\"" + xSubMenu.Attribute("icon").Value + "\" alt=\"\" />");
+									sClass = (xSubMenu.Attribute("class") == null ? "" : xSubMenu.Attribute("class").Value);
+									
+	                        		sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">";
+			                        sHTML += "<a";
+									sHTML += sOnClick ;
+									sHTML += sHref ;
+									sHTML += sTarget ;
+									sHTML += ">";
+			                        sHTML += sIcon;
+			                        sHTML += sLabel;
+									sHTML += "</a>";
+			                        sHTML += "</li>";
+								}
+		                    }
+							
+							sHTML += "</ul>";
+						}
+						
+                        sHTML += "</li>";
+                    }
+				}
+			}
+			return sHTML;
+		}
+
+        [WebMethod(EnableSession = true)]
+        public string wmGetCloudAccountsForHeader()
+        {
+            acUI.acUI ui = new acUI.acUI();
+
+			string sHTML = "";
+
+            DataTable dtCloudAccounts = (DataTable)ui.GetSessionObject("cloud_accounts_dt", "Security");
+            if (dtCloudAccounts != null)
+            {
+                if (dtCloudAccounts.Rows.Count > 0)
+                {
+					string sCurrent = ui.GetSelectedCloudAccountID();
+					foreach (DataRow dr in dtCloudAccounts.Rows)
+					{
+						string sSelected = (sCurrent == dr["account_id"].ToString() ? "selected=\"selected\"" : "");
+						sHTML += "<option value=\"" + dr["account_id"].ToString() + "\" " + sSelected + ">" + dr["account_label"].ToString() + "</option>";			
+					}
+                }
+            }
+			return sHTML;
+        }
+
         [WebMethod(EnableSession = true)]
         public string wmSetApplicationSetting(string sCategory, string sSetting, string sValue)
         {
@@ -3182,6 +3306,77 @@ namespace ACWebMethods
 
         #region "Cloud"
         [WebMethod(EnableSession = true)]
+        public string wmGetProvidersList()
+        {
+			acUI.acUI ui = new acUI.acUI();
+			string sHTML = "";
+			
+			CloudProviders cp = ui.GetCloudProviders();
+			if (cp != null)
+			{
+				foreach (Provider p in cp.Values) {
+					if (p.UserDefinedClouds)
+						sHTML += "<option value=\"" + p.Name + "\">" + p.Name + "</option>";
+				}
+			}
+		
+			return sHTML;
+		}
+		
+		[WebMethod(EnableSession = true)]
+        public string wmGetClouds(string sSearch)
+        {
+            string sErr = "";
+			string sHTML = "";
+
+			Clouds c = new Clouds(sSearch, ref sErr);
+				
+			if (c!= null && string.IsNullOrEmpty(sErr))
+			{
+	            //build the table
+	            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">";
+	            sHTML += "<tr>";
+	            sHTML += "<th class=\"chkboxcolumn\">";
+	            sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />";
+	            sHTML += "</th>";
+	
+	            sHTML += "<th sortcolumn=\"cloud_name\">Cloud Name</th>";
+	            sHTML += "<th sortcolumn=\"provider\">Type</th>";
+	            sHTML += "<th sortcolumn=\"api_protocol\">Protocol</th>";
+	            sHTML += "<th sortcolumn=\"api_url\">URL</th>";
+	
+	            sHTML += "</tr>";
+	
+	            //loop rows
+	            foreach (DataRow dr in c.DataTable.Rows)
+	            {
+	                sHTML += "<tr account_id=\"" + dr["cloud_id"].ToString() + "\">";
+	                sHTML += "<td class=\"chkboxcolumn\">";
+	                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" +
+	                    " id=\"chk_" + dr[0].ToString() + "\"" +
+	                    " object_id=\"" + dr[0].ToString() + "\"" +
+	                    " tag=\"chk\" />";
+	                sHTML += "</td>";
+	
+	                sHTML += "<td tag=\"selectable\">" + dr["cloud_name"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["provider"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["api_protocol"].ToString() +  "</td>";
+	                sHTML += "<td tag=\"selectable\">" + dr["api_url"].ToString() +  "</td>";
+	
+	                sHTML += "</tr>";
+	            }
+	
+	            sHTML += "</table>";
+			}
+			else
+			{
+				throw new Exception("Unable to get Clouds." + sErr);
+			}
+			
+			return sHTML;
+        }
+
+		[WebMethod(EnableSession = true)]
         public string wmSetActiveCloudAccount(string sAccountID)
         {
             acUI.acUI ui = new acUI.acUI();
@@ -3201,7 +3396,8 @@ namespace ACWebMethods
 
             return "";
         }
-        [WebMethod(EnableSession = true)]
+
+		[WebMethod(EnableSession = true)]
         public string wmDeleteClouds(string sDeleteArray)
         {
             dataAccess dc = new dataAccess();

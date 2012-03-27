@@ -125,7 +125,7 @@ function Save() {
 
     //we will test it, but really we're not gonna use it rather we'll get it server side
     //this just traps if there isn't one.
-    if ($("#ctl00_ddlCloudAccounts")[0].length == 0) {
+    if ($("#header_cloud_accounts")[0].length == 0) {
         bSave = false;
         strValidationError += 'Ecosystems require a Cloud Account.  Create a Cloud Account first.';
     };

@@ -403,7 +403,7 @@ function GetKeyPairs(sEditID) {
 
 function SaveItem(close_after_save) {
 	//used for changing the global dropdown if needed
-	var old_label = $('#ctl00_ddlCloudAccounts option:selected').text();
+	var old_label = $('#header_cloud_accounts option:selected').text();
     
     var bSaved = false;
     var bSave = true;
@@ -467,14 +467,14 @@ function SaveItem(close_after_save) {
 						var dropdown_label = account.Name + ' (' + account.Provider + ')';
 						//if we are adding a new one, add it to the dropdown too
 						if ($("#hidMode").val() == "add") {
-				            $('#ctl00_ddlCloudAccounts').append($('<option>', { value : account.ID }).text(dropdown_label)); 
+				            $('#header_cloud_accounts').append($('<option>', { value : account.ID }).text(dropdown_label)); 
 				          	//if this was the first one, get it in the session by nudging the change event.
-				          	if ($("#ctl00_ddlCloudAccounts option").length == 1)
-				          		$("#ctl00_ddlCloudAccounts").change();
+				          	if ($("#header_cloud_accounts option").length == 1)
+				          		$("#header_cloud_accounts").change();
 		          		} else {
 		          			//we've only changed it.  update the name in the drop down if it changed.
 		          			if (old_label != dropdown_label)
-		          				$('#ctl00_ddlCloudAccounts option[value="' + account.ID + '"]').text(dropdown_label);
+		          				$('#header_cloud_accounts option[value="' + account.ID + '"]').text(dropdown_label);
 		          		}
 			            
 			            if (close_after_save) {
@@ -583,14 +583,14 @@ function DeleteItems() {
 			myArray = $("#hidSelectedArray").val().split(',');
 			$.each(myArray, function(name, value) {
 				//whack it
-				$('#ctl00_ddlCloudAccounts option[value="' + value + '"]').remove();
+				$('#header_cloud_accounts option[value="' + value + '"]').remove();
 				//if we whacked what was selected, flag for change push
 				if (value == current)
 					do_refresh = true;
 			});
             
             if (do_refresh)
-            	$('#ctl00_ddlCloudAccounts').change();
+            	$('#header_cloud_accounts').change();
             
             //update the list in the dialog
             if (msg.d.length == 0) {
