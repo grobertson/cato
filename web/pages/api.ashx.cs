@@ -256,8 +256,6 @@ namespace Web
 #region "Tasks"
         private void CreateTask(ref HttpContext context)
 		{
-			acUI.acUI ui = new acUI.acUI();
-			
 			string sTaskXML = FORM["TaskXML"];
 			if (string.IsNullOrEmpty(sTaskXML))
 			{
@@ -267,8 +265,6 @@ namespace Web
 			}
 
 			
-			string sErr = "";
-
 			taskMethods tm = new taskMethods();
 			string sResult = tm.wmCreateTasksFromXML(sTaskXML); //send the original xml
 
