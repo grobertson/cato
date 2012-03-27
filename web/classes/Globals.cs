@@ -3093,13 +3093,20 @@ namespace Globals
 				{
 					XElement xeTask = xTask.Element("task");
 					
+					//name is required
+					if (xeTask.Attribute("name") == null) {
+						sErr = "Task 'name' attribute is required.";
+						return null;
+					}
+						
+					this.Name = xeTask.Attribute("name").Value;
+
 					//some of these properties will not be required coming from the XML.
 	
 					//if there's no ID we create one
 					this.ID = (xeTask.Attribute("id") != null ? xeTask.Attribute("id").Value.ToLower() : Guid.NewGuid().ToString().ToLower());
-					this.Name = xeTask.Attribute("name").Value;
-					this.Code = xeTask.Attribute("code").Value;
-					this.Description = xeTask.Element("description").Value;
+					this.Code = (xeTask.Attribute("code") != null ? xeTask.Attribute("code").Value : "");
+					this.Description = (xeTask.Element("description") != null ? xeTask.Element("description").Value : "");
 					
 					//if there are conflicts when we try to save this Task, what do we do?
 					this.OnConflict = (xeTask.Attribute("on_conflict") != null ? xeTask.Attribute("on_conflict").Value : "cancel"); //cancel is the default

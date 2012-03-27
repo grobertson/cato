@@ -2110,7 +2110,7 @@ namespace ACWebMethods
         }
 
 		[WebMethod(EnableSession = true)]
-        public string wmCreateTaskFromXML(string sXML)
+        public string wmCreateTasksFromXML(string sXML)
         {
             try
             {
@@ -2120,26 +2120,49 @@ namespace ACWebMethods
 	            acUI.acUI ui = new acUI.acUI();
 	            string sErr = "";
 	
-				Task t = new Task().FromXML(ui.unpackJSON(sXML), ref sErr);
-	
-				if (!string.IsNullOrEmpty(sErr))
-					return "{\"error\" : \"Could not create Task from XML: " + sErr + "\"}";
-	
-				if (t != null) {
-					if(t.DBSave(ref sErr, null))
-					{
-						if (!string.IsNullOrEmpty(sErr))
-							return "{\"error\" : \"" + sErr + "\"}";
+				string sTestXML = ui.unpackJSON(sXML);
+				XDocument xd = XDocument.Parse(sTestXML);
+				if (xd != null)
+				{
+					//make a transaction, and load them all
+					dataAccess.acTransaction oTrans = new dataAccess.acTransaction(ref sErr);
+					
+					string sTaskIDs = "";
+					
+					//root might be 'task' or 'tasks', so a global xpath handles both.
+					foreach (XElement xTask in xd.XPathSelectElements("//task")) {						
+						Task t = new Task().FromXML(xTask.ToString(SaveOptions.DisableFormatting), ref sErr);
 						
-						return "{\"type\" : \"task\", \"id\" : \"" + t.ID + "\"}";
+						if (!string.IsNullOrEmpty(sErr))
+							return "{\"error\" : \"Could not create Task from XML: " + sErr + "\"}";
+						
+						if (t != null) {
+							if(t.DBSave(ref sErr, oTrans))
+							{
+								if (!string.IsNullOrEmpty(sErr))
+									return "{\"error\" : \"" + sErr + "\"}";
+								
+								sTaskIDs += "\"" + t.ID + "\" ";
+							}
+							else
+								return "{\"error\" : \"" + sErr + "\"}";
+						}
+						else
+							return "{\"error\" : \"" + sErr + "\"}";
 					}
-					else
-						return "{\"error\" : \"" + sErr + "\"}";
+					
+					oTrans.Commit();
+					return "{\"type\" : \"tasks\", \"ids\" : [" + sTaskIDs.Trim().Replace(" ",",") + "] }";
+
+				} else {
+					return "{\"error\" : \"Unable to parse Task XML: " + sErr + "\"}";
 				}
-				else
-					return "{\"error\" : \"" + sErr + "\"}";
             }
-            catch (Exception ex)
+			catch (System.Xml.XmlException ex)
+			{
+				throw new Exception("Error parsing Task XML:\n" + ex.Message);
+			}
+			catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

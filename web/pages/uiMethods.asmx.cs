@@ -1912,20 +1912,30 @@ namespace ACWebMethods
 				if (xd != null)
 				{
 					string sResult = "";
+					
+					//the root node tells us what we have here
+					
+					//so, it might be more than one task?
+					XElement xe = xd.Root;
+					if (xe != null)
+					{
+						//what is is?
+						string sWhat = xe.Name.ToString();
+						
+						//a single task or many tasks?
+						if (sWhat == "task" || sWhat == "tasks")
+						{
+							taskMethods tm = new taskMethods();
+							sResult = tm.wmCreateTasksFromXML(sXML); //send the original xml
+						}
 
-					//an ecotemplate?
-					XElement xe = xd.Element("ecotemplate");
-					if (xe != null)
-					{
-						sResult = wmCreateEcotemplateFromXML(sXML); //send the original xml
+						//an ecotemplate?
+						if (sWhat == "ecotemplate")
+						{
+							sResult = wmCreateEcotemplateFromXML(sXML); //send the original xml
+						}
 					}
-					//a task?
-					xe = xd.Element("task");
-					if (xe != null)
-					{
-						taskMethods tm = new taskMethods();
-						sResult = tm.wmCreateTaskFromXML(sXML); //send the original xml
-					}
+					
 					
 					return sResult;
 				}

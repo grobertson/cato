@@ -350,6 +350,8 @@
     <Compile Include="pages\cloudDiscovery.aspx.designer.cs">
       <DependentUpon>cloudDiscovery.aspx</DependentUpon>
     </Compile>
+    <None Include="extensions\awsCommands.xml" />
+    <None Include="extensions\examples.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
