@@ -25,18 +25,18 @@
 		-->
 		<menu roles="all" label="Home" icon="../images/icons/home_24.png" onclick="showPleaseWait();" href="../pages/home.aspx">
 		</menu>
-		<menu roles="developer user" label="Information" icon="../images/demo.png">
-			<item roles="developer" label="View System Status" icon="../images/sys_stat_24.png" onclick="showPleaseWait();" href="../pages/systemStatusView.aspx">
+		<menu roles="developer user" label="Information" icon="../images/icons/info_24.png">
+			<item roles="developer" label="View System Status" icon="../images/icons/sys_stat_24.png" onclick="showPleaseWait();" href="../pages/systemStatusView.aspx">
 			</item>
-			<item roles="developer user" label="View Task Status" icon="../images/task_stat_24.png" onclick="showPleaseWait();" href="../pages/taskStatusView.aspx">
+			<item roles="developer user" label="View Task Status" icon="../images/icons/task_stat_24.png" onclick="showPleaseWait();" href="../pages/taskStatusView.aspx">
 			</item>
 			<item roles="developer user" label="About Cato" icon="../images/icons/about_24.png" onclick="showPleaseWait();" href="../pages/about.aspx">
 			</item>
 		</menu>
 		<menu label="Security" icon="../images/icons/password.png">
-			<item label="Manage Users" icon="../images/users_24.png" onclick="showPleaseWait();" href="../pages/userEdit.aspx">
+			<item label="Manage Users" icon="../images/icons/users_24.png" onclick="showPleaseWait();" href="../pages/userEdit.aspx">
 			</item>
-			<item label="Manage Shared Credentials" icon="../images/shared_24.png" onclick="showPleaseWait();" href="../pages/sharedCredentialEdit.aspx">
+			<item label="Manage Shared Credentials" icon="../images/icons/shared_24.png" onclick="showPleaseWait();" href="../pages/sharedCredentialEdit.aspx">
 			</item>
 		</menu>
 		<menu roles="developer" label="Tasks" icon="../images/icons/manage_tasks_24.png">
@@ -53,20 +53,20 @@
 			<item roles="developer user" label="Cloud Discovery" icon="../images/icons/cloud_discovery_24.png" onclick="showPleaseWait();" href="../pages/cloudDiscovery.aspx">
 			</item>
 		</menu>
-		<menu roles="developer" label="Configuration" icon="../images/config_24.png">
+		<menu roles="developer" label="Configuration" icon="../images/icons/config_24.png">
 			<item label="Manage Cloud Accounts" icon="../images/icons/cloud_accounts_24.png" onclick="showPleaseWait();" href="../pages/cloudAccountEdit.aspx">
 			</item>
 			<item label="Manage Clouds" icon="../images/icons/clouds_24.png" onclick="showPleaseWait();" href="../pages/cloudEdit.aspx">
 			</item>
 			<item roles="developer" label="Cloud API Tester" icon="../images/icons/api_tester_24.png" onclick="showPleaseWait();" href="../pages/cloudAPITester.aspx">
 			</item>
-			<item label="Manage Security Settings" icon="../images/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
+			<item label="Manage Security Settings" icon="../images/icons/login_24.png" onclick="showPleaseWait();" href="../pages/loginDefaultsEdit.aspx">
 			</item>
-			<item label="Manage Pollers" icon="../images/ldap_24.png" onclick="showPleaseWait();" href="../pages/pollerSettings.aspx">
+			<item label="Manage Pollers" icon="../images/icons/ldap_24.png" onclick="showPleaseWait();" href="../pages/pollerSettings.aspx">
 			</item>
-			<item label="Manage Notifications" icon="../images/notify_24.png" onclick="showPleaseWait();" href="../pages/notificationEdit.aspx">
+			<item label="Manage Notifications" icon="../images/icons/notify_24.png" onclick="showPleaseWait();" href="../pages/notificationEdit.aspx">
 			</item>
-			<item label="Manage Scheduler" icon="../images/date.png" onclick="showPleaseWait();" href="../pages/schedulerSettings.aspx">
+			<item label="Manage Scheduler" icon="../images/icons/sched_24.png" onclick="showPleaseWait();" href="../pages/schedulerSettings.aspx">
 			</item>
 			<item roles="developer" label="Import a Backup File" icon="../images/icons/import_24.png" onclick="showPleaseWait();" href="../pages/importLoadFile.aspx">
 			</item>
@@ -85,7 +85,7 @@
 			<item label="Register Cato" icon="../images/icons/register_24.png" onclick="registerCato();">
 			</item>
 		</menu>
-		<menu roles="all" label="Logout" icon="../images/logout.png" onclick="logout();">
+		<menu roles="all" label="Logout" icon="../images/icons/logout.png" onclick="logout();">
 		</menu>
 	</mainmenu>
 	<roles>
