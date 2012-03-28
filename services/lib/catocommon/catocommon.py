@@ -22,6 +22,13 @@ import time
 import threading
 from catodb import catodb
 
+# anything including catocommon can get new connections using the settings in 'config'
+def new_conn():
+    newdb = catodb.Db()
+    newdb.connect_db(server=config["server"], port=config["port"], 
+        user=config["user"], password=config["password"], database=config["database"])
+    return newdb
+
 def read_config():
 
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
@@ -64,6 +71,9 @@ def read_config():
         
     return key_vals
 
+#this file has a global 'config' that gets populated automatically.
+config = read_config()
+
 class CatoProcess():
     def __init__(self, process_name):
         # the following line does not work for a service started in the 
@@ -86,8 +96,8 @@ class CatoProcess():
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
         self.logfiles_path = os.path.join(base_path, "services", "logfiles")
         self.logfile_name = os.path.join(self.logfiles_path,  self.process_name.lower()+".log")
-        sys.stderr = open(self.logfile_name, 'a')
-        sys.stdout = open(self.logfile_name, 'a')
+        #sys.stderr = open(self.logfile_name, 'a')
+        #sys.stdout = open(self.logfile_name, 'a')
 
     def output(self,*args):
         output_string = time.strftime("%Y-%m-%d %H:%M:%S ") + "".join(str(s) for s in args) + "\n"
@@ -100,7 +110,6 @@ class CatoProcess():
         self.output("####################################### Starting up ", 
             self.process_name, 
             " #######################################")
-        config = read_config()
         self.db = catodb.Db()
         conn = self.db.connect_db(server=config["server"], port=config["port"], 
             user=config["user"], 
@@ -192,12 +201,5 @@ class CatoService(CatoProcess):
             self.get_settings()
             self.main_process()
             time.sleep(self.loop)
-
-    def new_conn(self):
-        newdb = catodb.Db()
-        newdb.connect_db(server=self.config["server"], port=self.config["port"], 
-            user=self.config["user"], password=self.config["password"], database=self.config["database"])
-        return newdb
-
 
 
