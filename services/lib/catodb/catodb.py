@@ -107,6 +107,6 @@ class Db(object):
 
 		return True
 
-        def close(self):
+	def close(self):
 		"""Closes the database connection."""
-                self.conn.close()
+		self.conn.close()

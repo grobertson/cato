@@ -193,6 +193,11 @@ class CatoService(CatoProcess):
             self.main_process()
             time.sleep(self.loop)
 
-    
+    def new_conn(self):
+        newdb = catodb.Db()
+        newdb.connect_db(server=self.config["server"], port=self.config["port"], 
+            user=self.config["user"], password=self.config["password"], database=self.config["database"])
+        return newdb
+
 
 
