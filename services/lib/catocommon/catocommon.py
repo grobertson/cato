@@ -29,6 +29,13 @@ def new_conn():
         user=config["user"], password=config["password"], database=config["database"])
     return newdb
 
+# this common function will use the encryption key in the config, and DECRYPT the input
+def cato_decrypt(encrypted):
+    return catocryptpy.decrypt_string(encrypted,config["key"])
+# this common function will use the encryption key in the config, and ENCRYPT the input
+def cato_encrypt(input):
+    return catocryptpy.encrypt_string(input,config["key"])
+
 def read_config():
 
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))

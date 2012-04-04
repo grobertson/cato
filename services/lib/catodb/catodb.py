@@ -20,6 +20,7 @@ class Db(object):
 
 	def __init__(self):
 		self.conn = ""
+		self.error = ""
 
 	def connect_db(self, server="", port=3306, database="", user="", password=""):
 		"""Establishes a connection as a class property."""
@@ -110,3 +111,23 @@ class Db(object):
 	def close(self):
 		"""Closes the database connection."""
 		self.conn.close()
+
+# Now something interesting...
+# these functions all just call the ones above...
+# with one difference - none of these throw exceptions.
+# instead, they set the 'error' property of the class.
+# GUI calls and other crash-proof services are made to expect messages, and display them nicely,
+# and not be filled with lots of wasteful try:except blocks.
+
+# we're only doing this for the update functions - if selects throw exceptions...
+# well... we've got bigger problems.
+
+	def try_exec_db(self, sql, params=()):
+		try:
+			self.exec_db(sql, params)
+		except Exception, e:
+			self.error = e.__str__()
+			return False
+
+		return True
+
