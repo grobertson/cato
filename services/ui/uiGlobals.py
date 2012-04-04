@@ -7,6 +7,9 @@ session = None
 # their own connections.
 dbconn = None
 
+# "server" is the running web service
+server = None
+
 class SecurityLogTypes(object):
     Object = "Object"
     Security = "Security"

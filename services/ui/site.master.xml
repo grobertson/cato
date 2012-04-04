@@ -56,7 +56,7 @@
 		<menu roles="developer" label="Configuration" icon="static/images/icons/config_24.png">
 			<item label="Manage Cloud Accounts" icon="static/images/icons/cloud_accounts_24.png" onclick="showPleaseWait();" href="../pages/cloudAccountEdit.aspx">
 			</item>
-			<item label="Manage Clouds" icon="static/images/icons/clouds_24.png" onclick="showPleaseWait();" href="../pages/cloudEdit.aspx">
+			<item label="Manage Clouds" icon="static/images/icons/clouds_24.png" onclick="showPleaseWait();" href="/cloudEdit">
 			</item>
 			<item roles="developer" label="Cloud API Tester" icon="static/images/icons/api_tester_24.png" onclick="showPleaseWait();" href="../pages/cloudAPITester.aspx">
 			</item>
