@@ -1,5 +1,7 @@
+import uiCommon
+
 class Cloud(object):
-    IsUserDefined = None
+    IsUserDefined = True
     ID = None
     Name = None
     APIUrl = None
@@ -8,7 +10,10 @@ class Cloud(object):
     Provider = None
 
     #the default constructor (manual creation)
-    def __init__(self, p, bUserDefined, sID, sName, sAPIUrl, sAPIProtocol, sRegion):
+    def FromArgs(self, p, bUserDefined, sID, sName, sAPIUrl, sAPIProtocol, sRegion):
+        if not sID:
+            raise Exception("Error building Cloud object: Cloud ID is required.")
+
         self.IsUserDefined = bUserDefined
         self.ID = sID
         self.Name = sName
@@ -26,10 +31,9 @@ class Cloud(object):
             cp = uiCommon.GetCloudProviders();
             if not cp:
                 raise Exception("Error building Cloud object: Unable to GetCloudProviders.")
-            
             #check the CloudProvider class first ... it *should be there unless something is wrong.
-            for p in cp:
-                for c in p.Clouds:
+            for pname, p in cp.Providers.iteritems():
+                for cname, c in p.Clouds.iteritems():
                     if c.ID == sCloudID:
                         self.IsUserDefined = c.IsUserDefined
                         self.ID = c.ID
@@ -38,35 +42,34 @@ class Cloud(object):
                         self.APIProtocol = c.APIProtocol
                         self.Region = c.Region
                         self.Provider = c.Provider
-                        return self
             
             #well, if we got here we have a problem... the ID provided wasn't found anywhere.
             #this should never happen, so bark about it.
-            raise Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");    
+            #raise Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");    
         except Exception, ex:
-            raise Exception(ex.Message)
+            raise ex
 
     def IsValidForCalls(self):
         if self.APIUrl and self.APIProtocol:
             return True
         return False
-"""
+
     def AsJSON(self):
         try:
-            sb = StringBuilder()
-            sb.Append("{")
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "ID", self._ID)
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "Name", self._Name)
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "Provider", self._Provider.Name)
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "APIUrl", self._APIUrl)
-            sb.AppendFormat("\"{0}\" : \"{1}\",", "APIProtocol", self._APIProtocol)
-            sb.AppendFormat("\"{0}\" : \"{1}\"", "Region", self._Region)
-            sb.Append("}")
-            return sb.ToString()
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+            sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+            sb.append("\"%s\" : \"%s\"," % ("Provider", self.Provider.Name))
+            sb.append("\"%s\" : \"%s\"," % ("APIUrl", self.APIUrl))
+            sb.append("\"%s\" : \"%s\"," % ("APIProtocol", self.APIProtocol))
+            sb.append("\"%s\" : \"%s\"" % ("Region", self.Region))
+            sb.append("}")
+            return "".join(sb)
         except Exception, ex:
             raise ex
 
-    #CLASS METHOD
+"""    #CLASS METHOD
     #creates this Cloud as a new record in the db
     #and returns the object
     def DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, sErr):

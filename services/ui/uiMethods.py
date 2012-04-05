@@ -6,6 +6,7 @@ import uiGlobals
 import uiCommon
 import providers
 from catocommon import catocommon
+import cloud
 
 #unlike uiCommon, which is used for shared ui elements
 # this is a methods class mapped to urls for web.py
@@ -202,9 +203,7 @@ class uiMethods:
         sHTML += "</tr>"
 
         sWhereString = ""
-        data = uiGlobals.web.data()
-        dic = json.loads(data)
-        sFilter = dic["sSearch"]
+        sFilter = uiCommon.getAjaxArg("sSearch")
         if sFilter:
             aSearchTerms = sFilter.split()
             for term in aSearchTerms:
@@ -242,15 +241,25 @@ class uiMethods:
         return sHTML    
 
     def wmGetProvidersList(self):
-        print "in GPL"
         sHTML = ""
         cp = uiCommon.GetCloudProviders();
-        print cp
         if cp:
-            print cp.Providers
             for name, p in cp.Providers.iteritems():
                 if p.UserDefinedClouds:
                     sHTML += "<option value=\"" + name + "\">" + name + "</option>"
                 
-        print sHTML
         return sHTML
+    
+    def wmGetCloud(self):
+        try:
+            sID = uiCommon.getAjaxArg("sID")
+            c = cloud.Cloud()
+            if c:
+                c.FromID(sID)
+                if c.ID:
+                    return uiCommon.json_response(c.AsJSON())
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
+        except Exception, ex:
+            raise ex

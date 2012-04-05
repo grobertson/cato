@@ -1,12 +1,18 @@
 import urllib
 import uiGlobals
 import sys
+import json
 from catocommon import catocommon
 
 def json_response(content):
     #jQuery ajax in "json" mode expects a json object with a single attribute - "d"
     #so, this wraps content in that construct so we don't need to change a ton of existing javascript
     return "{\"d\":\"%s\"}" % (content.replace("\"", "\\\""))
+
+def getAjaxArg(sArg):
+    data = uiGlobals.web.data()
+    dic = json.loads(data)
+    return dic[sArg]
 
 def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessage):
     sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip();

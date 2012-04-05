@@ -39,8 +39,9 @@ class CloudProviders(object):
                         sRegion = xCloud.get("region", "")
                             
                         #print ET.tostring(xCloud)
-                        c = cloud.Cloud(pv, False, xCloud.get("id", None), xCloud.get("name", None), xCloud.get("api_url", None), xCloud.get("api_protocol", None), sRegion)
-                        if c:
+                        c = cloud.Cloud()
+                        c.FromArgs(pv, False, xCloud.get("id", None), xCloud.get("name", None), xCloud.get("api_url", None), xCloud.get("api_protocol", None), sRegion)
+                        if c.ID:
                             pv.Clouds[c.ID] = c
 
                     #Let's also add any clouds that may be in the database...
@@ -52,7 +53,8 @@ class CloudProviders(object):
                         db.close()
                         if dt:
                             for dr in dt:
-                                c = cloud.Cloud(pv, True, dr[0], dr[1], dr[2], dr[3], "")
+                                c = cloud.Cloud()
+                                c.FromArgs(pv, True, dr[0], dr[1], dr[2], dr[3], "")
                                 if c:
                                     pv.Clouds[c.ID] = c
                         else:
