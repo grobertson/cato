@@ -28,9 +28,7 @@ def ForceLogout(sMsg):
 
 def GetSessionUserID():
     try:
-        s = uiGlobals.session.get('user', False)
-        if s:
-            uid = s.get('user_id', False)
+        uid = GetSessionObject("user", "user_id")
         if uid:
             return uid
         else:
@@ -56,5 +54,15 @@ def GetSessionObject(category, key):
                 return ""
         
         return ""
+    except Exception as ex:
+        raise ex
+
+def GetCloudProviders(): #These were put in the session at login
+    try:
+        cp = GetSessionObject("", "cloud_providers")
+        if cp:
+            return cp
+        else:
+            ForceLogout("Server Session has expired (1). Please log in again.")
     except Exception as ex:
         raise ex

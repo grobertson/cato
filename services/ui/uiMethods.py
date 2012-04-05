@@ -4,6 +4,7 @@ import json
 import xml.etree.ElementTree as ET
 import uiGlobals
 import uiCommon
+import providers
 from catocommon import catocommon
 
 #unlike uiCommon, which is used for shared ui elements
@@ -76,8 +77,17 @@ class login:
         if x:
             uiGlobals.session.site_master_xml = x
         else:
-            raise Error("Critical: Unable to read/parse site.master.xml.")
+            raise Exception("Critical: Unable to read/parse site.master.xml.")
 
+        #put the cloud providers and object types in the session
+        # also a big performance boost
+        x = ET.parse("../../conf/cloud_providers.xml")
+        if x:
+            cp = providers.CloudProviders(x)
+            uiGlobals.session.cloud_providers = cp
+        else:
+            raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
+        
         
         raise uiGlobals.web.seeother('/home')
 
@@ -113,7 +123,7 @@ class uiMethods:
         sHTML = ""
         xRoot = uiCommon.GetSessionObject("", "site_master_xml")
         if not xRoot:
-            raise Error("Critical: site_master_xml not cached in session.")
+            raise Exception("Critical: site_master_xml not cached in session.")
         xMenus = xRoot.findall("mainmenu/menu") 
         for xMenu in xMenus:
             sLabel = xMenu.get("label", "No Label Defined")
@@ -230,3 +240,17 @@ class uiMethods:
 
         sHTML += "</table>"    
         return sHTML    
+
+    def wmGetProvidersList(self):
+        print "in GPL"
+        sHTML = ""
+        cp = uiCommon.GetCloudProviders();
+        print cp
+        if cp:
+            print cp.Providers
+            for name, p in cp.Providers.iteritems():
+                if p.UserDefinedClouds:
+                    sHTML += "<option value=\"" + name + "\">" + name + "</option>"
+                
+        print sHTML
+        return sHTML

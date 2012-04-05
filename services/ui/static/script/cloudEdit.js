@@ -94,7 +94,7 @@ $(document).ready(function () {
 	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
     }
     
-    //GetProvidersList();
+    GetProvidersList();
     GetClouds();
 
     ManagePageLoad();
@@ -203,19 +203,7 @@ function GetClouds() {
     });
 }
 function GetProvidersList() {
-    $.ajax({
-        type: "GET",
-        async: false,
-        url: "uiMethods/wmGetProvidersList",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (response) {
-            $('#ddlProvider').html(response.d);
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
+    $("#ddlProvider").load("uiMethods/wmGetProvidersList");
 }
 
 function LoadEditDialog(editID) {

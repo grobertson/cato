@@ -86,4 +86,6 @@ if __name__ == "__main__":
     uiGlobals.session = session
     uiGlobals.server = server
     
+    web.config.debug = False
+    
     app.run()
