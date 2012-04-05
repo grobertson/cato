@@ -263,3 +263,16 @@ class uiMethods:
             return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
         except Exception, ex:
             raise ex
+
+    def wmGetCloudAccounts(self):
+        try:
+            sProvider = uiCommon.getAjaxArg("sProvider")
+            ca = cloud.CloudAccounts()
+            ca.Fill(sProvider)
+            if ca.DataTable:
+                return uiCommon.json_response(ca.AsJSON())
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sProvider + "].'}"
+        except Exception, ex:
+            raise ex

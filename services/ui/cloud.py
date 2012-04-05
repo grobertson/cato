@@ -1,4 +1,5 @@
 import uiCommon
+from catocommon import catocommon
 
 class Cloud(object):
     IsUserDefined = True
@@ -132,3 +133,55 @@ class Cloud(object):
         except Exception, ex:
             raise Exception(ex.Message)
 """
+
+# Note: this is not a container for CloudAccount objects - it's just a rowset from the database
+# with an AsJSON method.
+# why? Because the CloudAccount objects contain a full set of Provider information - stuff
+# we don't need for list pages and dropdowns.
+class CloudAccounts(object): 
+    DataTable = None
+    
+    def Fill(self, sFilter):
+        sWhereString = ""
+        if sFilter:
+            aSearchTerms = sFilter.split()
+            for term in aSearchTerms:
+                if term:
+                    sWhereString += " and (account_name like '%%" + term + "%%' " \
+                        "or account_number like '%%" + term + "%%' " \
+                        "or provider like '%%" + term + "%%' " \
+                        "or login_id like '%%" + term + "%%') "
+
+        sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," \
+            " case is_default when 1 then 'Yes' else 'No' end as is_default," \
+            " (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" \
+            " from cloud_account" \
+            " where 1=1 " + sWhereString + " order by is_default desc, account_name"
+        
+        db = catocommon.new_conn()
+        self.DataTable = db.select_all(sSQL)
+        db.close()
+
+    def AsJSON(self):
+        try:
+            i = 1
+            sb = []
+            sb.append("[")
+            for row in self.DataTable:
+                sb.append("{")
+                sb.append("\"%s\" : \"%s\"," % ("ID", row[0]))
+                sb.append("\"%s\" : \"%s\"" % ("Name", row[1]))
+                sb.append("}")
+            
+                #the last one doesn't get a trailing comma
+                print str(i) + " : " + str(len(self.DataTable))
+                if i < len(self.DataTable):
+                    sb.append(",")
+                    
+                i += 1
+
+            sb.append("]")
+            print "".join(sb)
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
