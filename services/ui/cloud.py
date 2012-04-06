@@ -1,4 +1,5 @@
 import uiCommon
+import uiGlobals
 from catocommon import catocommon
 
 class Cloud(object):
@@ -70,69 +71,76 @@ class Cloud(object):
         except Exception, ex:
             raise ex
 
-"""    #CLASS METHOD
+    #STATIC METHOD
     #creates this Cloud as a new record in the db
     #and returns the object
-    def DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol, sErr):
+    @staticmethod
+    def DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol):
         try:
-            dc = dataAccess()
-            ui = acUI.acUI()
             sSQL = ""
-            sNewID = ui.NewGUID()
-            sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" + " values ('" + sNewID + "'," + "'" + sCloudName + "'," + "'" + sProvider + "'," + "'" + sAPIUrl + "'," + "'" + sAPIProtocol + "')"
-            if not dc.sqlExecuteUpdate(sSQL, ):
-                if sErr == "key_violation":
-                    sErr = "A Cloud with that name already exists.  Please select another name."
-                    return None
+            sNewID = uiCommon.NewGUID()
+            sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" \
+                " values ('" + sNewID + "'," + "'" + sCloudName + "'," + "'" + sProvider + "'," + "'" + sAPIUrl + "'," + "'" + sAPIProtocol + "')"
+            db = catocommon.new_conn()
+            if not db.try_exec_db(sSQL):
+                if db.error == "key_violation":
+                    return None, "A Cloud with that name already exists.  Please select another name."
                 else:
-                    raise Exception(sErr)
-            ui.WriteObjectAddLog(Globals.acObjectTypes.Cloud, sNewID, sCloudName, "Cloud Created")
+                    return None, db.error
+            db.close()
+            
+            uiCommon.WriteObjectAddLog(db, uiGlobals.CatoObjectTypes.Cloud, sNewID, sCloudName, "Cloud Created")
+            
             #update the CloudProviders in the session
-            cp = ui.GetCloudProviders() #get the session object
-            cp[sProvider].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-            ui.UpdateCloudProviders(cp) #update the session
-            #now it's inserted... lets get it back from the db as a complete object for confirmation.
-            c = Cloud(sNewID)
+            cp = uiCommon.GetCloudProviders() #get the session object
+            cp.Providers[sProvider].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+            uiCommon.UpdateCloudProviders(cp) #update the session
+            
+            #now it's inserted and in the session... lets get it back from the db as a complete object for confirmation.
+            c = Cloud()
+            c.FromID(sNewID)
             #yay!
-            return c
+            return c, None
         except Exception, ex:
-            raise Exception(ex.Message)
-
-
-    DBCreateNew = staticmethod(DBCreateNew)
+            raise ex
 
     #INSTANCE METHOD
     #updates the current Cloud object to the db
-    def DBUpdate(self, sErr):
+    def DBUpdate(self):
         try:
-            ui = acUI.acUI()
-            dc = dataAccess()
-            sSQL = ""
+            db = catocommon.new_conn()
             #of course we do nothing if this cloud was hardcoded in the xml
             #just return success, which should never happen since the user can't get to edit a hardcoded Cloud anyway.
-            if not self._IsUserDefined:
+            if not self.IsUserDefined:
                 return True
             #what's the original name?
-            sOriginalName = ""
-            sSQL = "select cloud_name from clouds where cloud_id = '" + self._ID + "'"
-            if not dc.sqlGetSingleString(, sSQL, ):
-                raise Exception("Error getting original cloud name:" + sErr)
-            sSQL = "update clouds set" + " cloud_name = '" + self._Name + "'," + " provider = '" + self._Provider.Name + "'," + " api_protocol = '" + self._APIProtocol + "'," + " api_url = '" + self._APIUrl + "'" + " where cloud_id = '" + self._ID + "'"
-            if not dc.sqlExecuteUpdate(sSQL, ):
-                if sErr == "key_violation":
-                    sErr = "A Cloud with that name already exists.  Please select another name."
-                    return False
+            sSQL = "select cloud_name from clouds where cloud_id = '" + self.ID + "'"
+            sOriginalName = db.try_select_col(sSQL)
+            if db.error:
+                raise Exception("Error getting original cloud name:" + db.error)
+            
+            sSQL = "update clouds set" + " cloud_name = '" + self.Name + "'," \
+                " provider = '" + self.Provider.Name + "'," \
+                " api_protocol = '" + self.APIProtocol + "'," \
+                " api_url = '" + self.APIUrl + "'" \
+                " where cloud_id = '" + self.ID + "'"
+            if not db.try_exec_db(sSQL):
+                if db.error == "key_violation":
+                    return None, "A Cloud with that name already exists.  Please select another name."
                 else:
-                    raise Exception(sErr)
-            ui.WriteObjectChangeLog(Globals.acObjectTypes.Cloud, self._ID, self._Name, sOriginalName, self._Name)
+                    return None, db.error
+            db.close()
+            
+            uiCommon.WriteObjectPropertyChangeLog(db, uiGlobals.CatoObjectTypes.Cloud, self.ID, self.Name, sOriginalName, self.Name)
+            
             #update the CloudProviders in the session
-            cp = ui.GetCloudProviders() #get the session object
-            cp[self._Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-            ui.UpdateCloudProviders(cp) #update the session
+            cp = uiCommon.GetCloudProviders() #get the session object
+            cp.Providers[self.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+            uiCommon.UpdateCloudProviders(cp) #update the session
             return True
         except Exception, ex:
-            raise Exception(ex.Message)
-"""
+            raise Exception(ex)
+
 
 # Note: this is not a container for CloudAccount objects - it's just a rowset from the database
 # with an AsJSON method.
@@ -181,7 +189,6 @@ class CloudAccounts(object):
                 i += 1
 
             sb.append("]")
-            print "".join(sb)
             return "".join(sb)
         except Exception, ex:
             raise ex

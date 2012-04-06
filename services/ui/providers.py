@@ -132,32 +132,55 @@ class Provider(object):
         self.UserDefinedClouds = bUserDefinedClouds
 
     #get it by ID from the session
-    def GetFromSession(self, sProvider):
+    @staticmethod
+    def GetFromSession(sProvider):
         try:
             #get the provider record from the CloudProviders object in the session
-            cp = uiCommon.GetCloudProviders()
+            #importing one specific function here to avoid a circular reference
+            from uiCommon import GetCloudProviders
+            cp = GetCloudProviders()
             if cp == None:
                 raise Exception("Error building Provider object: Unable to GetCloudProviders.")
-            if cp.ContainsKey(sProvider):
-                return cp[sProvider]
+            if cp.Providers.has_key(sProvider):
+                return cp.Providers[sProvider]
             else:
-                raise Exception("Provider [" + sProvider + "] does not exist in the cloud_providers.xml file.")
+                raise Exception("Provider [" + sProvider + "] does not exist in the cloud_providers session xml.")
         except Exception, ex:
             raise ex
             
 
-        def GetObjectTypeByName(self, sObjectType):
-            for p in self.Products:
-                try:
-                    cot = p.CloudObjectTypes[sObjectType]
-                    if cot:
-                        return cot
-                except Exception, ex:
-                    """"""
-                    #don't crash while it's iterating, it may find it in the next object.
-                    #don't worry, we'll return null if it doesn't find anything.
-                        
-            return None
+    def GetObjectTypeByName(self, sObjectType):
+        for p in self.Products:
+            try:
+                cot = p.CloudObjectTypes[sObjectType]
+                if cot:
+                    return cot
+            except Exception, ex:
+                """"""
+                #don't crash while it's iterating, it may find it in the next object.
+                #don't worry, we'll return null if it doesn't find anything.
+                    
+        return None
+
+    def RefreshClouds(self):
+        try:
+            self.Clouds.clear()
+            sErr = ""
+            sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds  where provider = '" + self.Name + "'  order by cloud_name"
+            db = catocommon.new_conn()
+            dt = db.select_all(sSQL)
+            db.close()
+            if dt:
+                for dr in dt:
+                    c = cloud.Cloud()
+                    c.FromArgs(self, True, dr[0], dr[1], dr[2], dr[3], "")
+                    if c:
+                        self.Clouds[c.ID] = c
+            else:
+                raise Exception("Error building Cloud object: " + sErr)
+            return 
+        except Exception, ex:
+            raise ex
     
     
 class Product(object):

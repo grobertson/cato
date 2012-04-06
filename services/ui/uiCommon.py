@@ -2,6 +2,7 @@ import urllib
 import uiGlobals
 import sys
 import json
+import uuid
 from catocommon import catocommon
 
 def json_response(content):
@@ -14,6 +15,13 @@ def getAjaxArg(sArg):
     dic = json.loads(data)
     return dic[sArg]
 
+def NewGUID():
+    return str(uuid.uuid1())
+
+def TickSlash(s):
+    return s.replace("'", "''").replace("\\", "\\\\");
+
+
 def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessage):
     sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip();
     if sTrimmedLog:
@@ -23,6 +31,31 @@ def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessag
         values ('" + LogType + "', '" + Action + "', '" + sUserID + "', now(), " + str(ObjectType) + ", '" + ObjectID + "', '" + sTrimmedLog + "')"
     if not db.try_exec_db(sSQL):
         print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
+
+def WriteObjectAddLog(db, oType, sObjectID, sObjectName, sLog = ""):
+    if sObjectID and sObjectName:
+        if not sLog:
+            sLog = "Created: [" + TickSlash(sObjectName) + "]."
+        else:
+            sLog = "Created: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
+
+        AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+
+def WriteObjectChangeLog(db, oType, sObjectID, sObjectName, sLog = ""):
+    if sObjectID and sObjectName:
+        if not sObjectName:
+            sObjectName = "[" + TickSlash(sObjectName) + "]."
+        else:
+            sLog = "Changed: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
+
+        AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+
+def WriteObjectPropertyChangeLog(db, oType, sObjectID, sLabel, sFrom, sTo):
+    if sFrom and sTo:
+        if sFrom != sTo:
+            sLog = "Changed: " + sLabel + " from [" + TickSlash(sFrom) + "] to [" + TickSlash(sTo) + "]."
+            AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+
 
 def ForceLogout(sMsg):
     if not sMsg:
@@ -63,6 +96,12 @@ def GetSessionObject(category, key):
     except Exception as ex:
         raise ex
 
+def SetSessionObject(key, obj, category=""):
+    if category:
+        uiGlobals.session[category][key] = obj
+    else:
+        uiGlobals.session[key] = obj
+    
 def GetCloudProviders(): #These were put in the session at login
     try:
         cp = GetSessionObject("", "cloud_providers")
@@ -72,3 +111,7 @@ def GetCloudProviders(): #These were put in the session at login
             ForceLogout("Server Session has expired (1). Please log in again.")
     except Exception as ex:
         raise ex
+
+#this one takes a modified Cloud Providers class and puts it into the session
+def UpdateCloudProviders(cp):
+    SetSessionObject("cloud_providers", cp, "")

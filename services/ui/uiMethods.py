@@ -57,8 +57,9 @@ class login:
         user["role"] = row[3]
         user["email"] = row[4]
         user["ip_address"] = uiGlobals.web.ctx.ip
-        uiGlobals.session.user = user
-        
+        uiCommon.SetSessionObject("user", user)
+        #uiGlobals.session.user = user
+        print uiGlobals.session.user
         # reset the user counters and last_login
         sql = "update users set failed_login_attempts=0, last_login_dt=now() where user_id='" + user_id + "'"
         if not db.try_exec_db(sql):
@@ -173,7 +174,27 @@ class uiMethods:
         return sHTML
 
     def wmGetCloudAccountsForHeader(self):
-        return "<option value=\"foo\">NOT REAL!</option>"
+        try:
+            #Gotta get this list from the list stored in the session.
+            # or, quit using session and read from the db each time (preferred)
+            
+            #this should select the active one in the session
+            """sHTML = ""
+            ca = cloud.CloudAccounts()
+            ca.Fill("")
+            print ca.DataTable
+            if ca.DataTable:
+                for row in ca.DataTable:
+                    sHTML +=  "<option value=\"%s\">%s</option>" % (row[0], row[1])
+
+                return sHTML
+            
+            #should not get here if all is well
+            return "<option>ERROR</option>"
+            """
+            return "<option>NOT REAL!</option>"
+        except Exception, ex:
+            raise ex
 
     def wmUpdateHeartbeat(self):
         #NOTE: this needs all the kick and warn stuff
@@ -276,3 +297,41 @@ class uiMethods:
             return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sProvider + "].'}"
         except Exception, ex:
             raise ex
+
+    def wmSaveCloud(self):
+        sMode = uiCommon.getAjaxArg("sMode")
+        sCloudID = uiCommon.getAjaxArg("sCloudID")
+        sCloudName = uiCommon.getAjaxArg("sCloudName")
+        sProvider = uiCommon.getAjaxArg("sProvider")
+        sAPIUrl = uiCommon.getAjaxArg("sAPIUrl")
+        sAPIProtocol = uiCommon.getAjaxArg("sAPIProtocol")
+
+        sErr = ""
+        c = None
+        try:
+            if sMode == "add":
+                c, sErr = cloud.Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol)
+                if sErr:
+                    return "{\"error\" : \"" + sErr + "\"}"
+                if c == None:
+                    return "{\"error\" : \"Unable to create Cloud.\"}"
+            elif sMode == "edit":
+                c = cloud.Cloud()
+                c.FromID(sCloudID)
+                if c == None:
+                    return "{\"error\" : \"Unable to get Cloud using ID [" + sCloudID + "].\"}"
+                c.Name = sCloudName
+                c.APIProtocol = sAPIProtocol
+                c.APIUrl = sAPIUrl
+                #get a new provider by name
+                c.Provider = providers.Provider.GetFromSession(sProvider)
+                if not c.DBUpdate():
+                    raise Exception(sErr)
+            
+            if c:
+                return uiCommon.json_response(c.AsJSON())
+            else:
+                return "{\"error\" : \"Unable to save Cloud using mode [" + sMode + "].\"}"
+        except Exception, ex:
+            raise ex
+
