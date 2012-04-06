@@ -1664,7 +1664,7 @@ namespace acUI
         #region "Logging Functions"
         //also, we need to start standardizing the way we write 'security logs'.
         //this helps do that.
-        public void WriteObjectChangeLog(acObjectTypes oType, string sObjectID, string sLabel, string sFrom, string sTo)
+        public void WriteObjectPropertyChangeLog(acObjectTypes oType, string sObjectID, string sLabel, string sFrom, string sTo)
         {
             string sErr = "";
             if (!string.IsNullOrEmpty(sFrom) && !string.IsNullOrEmpty(sTo))

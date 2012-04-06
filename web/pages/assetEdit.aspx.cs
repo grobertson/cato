@@ -516,7 +516,7 @@ namespace Web.pages
                     throw new Exception(sErr);
 
                 // add security log
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + "Changed credential", sOriginalUserName, sCredUsername);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + "Changed credential", sOriginalUserName, sCredUsername);
 
             }
             else
@@ -649,14 +649,14 @@ namespace Web.pages
             {
                 string sOrigCredUsername = GetCredentialNameFromID(sOriginalCredentialID.Replace("'", "")).ToString();
                 string sCurrentCredUsername = GetCredentialNameFromID(sCredentialID.Replace("'", "")).ToString();
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Name", sOriginalAssetName, sAssetName);
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Address", sOriginalAddress, sAddress);
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Port", sOriginalPort, sPort);
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " DB Name", sOriginalDbName, sDbName);
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Connection Type", sOriginalConnectionType, sConnectionType);
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Credential", sOrigCredUsername, sCurrentCredUsername);
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Status", sOriginalAssetStatus, sAssetStatus);
-				ui.WriteObjectChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " ConnString", sOriginalConnString, sConnString);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Name", sOriginalAssetName, sAssetName);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Address", sOriginalAddress, sAddress);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Port", sOriginalPort, sPort);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " DB Name", sOriginalDbName, sDbName);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Connection Type", sOriginalConnectionType, sConnectionType);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Credential", sOrigCredUsername, sCurrentCredUsername);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " Status", sOriginalAssetStatus, sAssetStatus);
+				ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Asset, sAssetID, sAssetName.Trim().Replace("'", "''") + " ConnString", sOriginalConnString, sConnString);
             }
             else
             {

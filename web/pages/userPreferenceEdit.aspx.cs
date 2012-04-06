@@ -147,7 +147,7 @@ namespace Web.pages
                 
 
                 //logging, what else should we log? I guess the fact that the user changed the password would be enough?
-                ui.WriteObjectChangeLog(acObjectTypes.User, "User Preferences", "Email", hidEmail.Value, txtEmail.Text);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.User, "User Preferences", "Email", hidEmail.Value, txtEmail.Text);
                 // what else should we log? I guess the fact that the user changed the password would be enough?
                 if (txtPassword.Text != sPasswordFiller)
                 {
