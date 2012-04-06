@@ -119,8 +119,12 @@ class Db(object):
 # GUI calls and other crash-proof services are made to expect messages, and display them nicely,
 # and not be filled with lots of wasteful try:except blocks.
 
-# we're only doing this for the update functions - if selects throw exceptions...
-# well... we've got bigger problems.
+	def try_select_col(self, sql, params=()):
+		try:
+			return self.select_col(sql, params)
+		except Exception, e:
+			self.error = e.__str__()
+			return False
 
 	def try_exec_db(self, sql, params=()):
 		try:
