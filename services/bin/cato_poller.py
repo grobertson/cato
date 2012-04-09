@@ -38,10 +38,9 @@ class Poller(catocommon.CatoService):
             from tv_task_instance ti
             join task t on t.task_id = ti.task_id
             where ti.task_status = 'Submitted'
-            and ti.ce_node = %s
             order by task_instance asc limit %s"""
-        #self.output(sql % (self.instance_id, get_num))
-        rows = self.db.select_all(sql, (self.instance_id, get_num))
+        self.output(sql % (get_num))
+        rows = self.db.select_all(sql, (get_num))
         if rows:
             for row in rows:
                 task_instance = row[0]
@@ -79,20 +78,20 @@ class Poller(catocommon.CatoService):
     def update_cancelled(self, task_instance):
 
         sql = """update task_instance set task_status = 'Cancelled', 
-            completed_dt = now() where task_instance = %d"""
+            completed_dt = now() where task_instance = %s"""
         self.db.exec_db(sql, (task_instance))
 
     def kill_ce_pid(self, pid):
 
         self.output("Killing process %d", (pid))
-        os.kill(int(pid), signal.SIGHUP)
+        #os.kill(int(pid), signal.SIGHUP)
 
     def check_processing(self):
 
         db_pids = []
         os_pids = []
         sql = """select distinct pid from tv_task_instance 
-            where ce_node = %d and task_status = 'Processing' 
+            where ce_node = %s and task_status = 'Processing' 
             and pid is not null"""
         rows = self.db.select_all(sql, (self.instance_id))
         if rows:
@@ -101,7 +100,7 @@ class Poller(catocommon.CatoService):
 
         cmd_line = """ps U%s -opid | grep "%s/services/bin/cato_task_engine.tcl" | grep -v grep""" % (self.user, self.home)
 
-        os_pids = os.system(cmd_line)
+        #os_pids = os.system(cmd_line)
         print cmd_line
         print os_pids
         print db_pids
@@ -142,7 +141,7 @@ class Poller(catocommon.CatoService):
     def get_aborting(self): 
 
         sql = """select task_instance, pid from tv_task_instance 
-            where ce_node = %d and task_status = 'Aborting' 
+            where ce_node = %s and task_status = 'Aborting' 
             order by task_instance asc"""
 
         rows = self.db.select_all(sql, (self.instance_id))
@@ -159,8 +158,8 @@ class Poller(catocommon.CatoService):
         """main process loop, parent class will call this"""
 
         self.update_load()
-        #self.get_aborting()
-        #self.check_processing()
+        self.get_aborting()
+        self.check_processing()
 
         ### TO DO - need to get process count from linux
         process_count = 0
