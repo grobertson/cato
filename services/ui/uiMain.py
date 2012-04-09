@@ -39,6 +39,10 @@ class cloudEdit:
     def GET(self):
         return render.cloudEdit()
 
+class systemStatus:        
+    def GET(self):
+        return render.systemStatus()
+
 #Authentication preprocessor
 def auth_app_processor(handle):
     path = web.ctx.path
@@ -70,6 +74,7 @@ if __name__ == "__main__":
         '/logout', 'logout',
         '/home', 'home',
         '/cloudEdit', 'cloudEdit',
+        '/systemStatus', 'systemStatus',
         '/bypass', 'bypass'
     )
 

@@ -358,3 +358,73 @@ class uiMethods:
             raise ex
         finally:
             db.close()
+            
+    def wmGetSystemStatus(self):
+        try:
+            db = catocommon.new_conn()
+    
+            sProcessHTML = ""
+            sSQL = "select app_instance as Instance," \
+                " app_name as Component," \
+                " heartbeat as Heartbeat," \
+                " case master when 1 then 'Yes' else 'No' end as Enabled," \
+                " timestampdiff(MINUTE, heartbeat, now()) as mslr," \
+                " load_value as LoadValue, platform, hostname" \
+                " from application_registry " \
+                " order by component, master desc"
+            rows = db.select_all(sSQL)
+            for dr in rows:
+                sProcessHTML += "<tr>" \
+                    "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
+                    "<td>" + str((dr[1] if dr[1] else "")) + "</td>" \
+                    "<td>" + str((dr[2] if dr[2] else "")) + "</td>" \
+                    "<td>" + str((dr[3] if dr[3] else "")) + "</td>" \
+                    "<td>" + str((dr[4] if dr[4] else "")) + "</td>" \
+                    "<td>" + str((dr[5] if dr[5] else "")) + "</td>" \
+                    "</tr>"
+
+            sUserHTML = ""
+            sSQL = "select u.full_name, us.login_dt, us.heartbeat as last_update, us.address," \
+                " case when us.kick = 0 then 'Active' when us.kick = 1 then 'Warning' " \
+                " when us.kick = 2 then 'Kicking' when us.kick = 3 then 'Inactive' end as 'kick' " \
+                " from user_session us join users u on u.user_id = us.user_id " \
+                " where timestampdiff(MINUTE,us.heartbeat, now()) < 10" \
+                " order by us.heartbeat desc"
+            rows = db.select_all(sSQL)
+            for dr in rows:
+                sUserHTML += "<tr>" \
+                    "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
+                    "<td>" + str((dr[1] if dr[1] else "")) + "</td>" \
+                    "<td>" + str((dr[2] if dr[2] else "")) + "</td>" \
+                    "<td>" + str((dr[3] if dr[3] else "")) + "</td>" \
+                    "<td>" + str((dr[4] if dr[4] else "")) + "</td>" \
+                    "</tr>"
+                    
+            sMessageHTML = ""
+            sSQL = "select msg_to, msg_subject," \
+                " case status when 0 then 'Queued' when 1 then 'Error' when 2 then 'Success' end as status," \
+                " error_message," \
+                " convert(date_time_entered, CHAR(20)) as entered_dt, convert(date_time_completed, CHAR(20)) as completed_dt" \
+                " from message" \
+                " order by msg_id desc limit 100"
+            rows = db.select_all(sSQL)
+            for dr in rows:
+                sMessageHTML += "<tr>" \
+                    "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
+                    "<td>" + str((dr[1] if dr[1] else "")) + "</td>" \
+                    "<td>" + str((dr[2] if dr[2] else "")) + "</td>" \
+                    "<td>" + str((dr[3] if dr[3] else "")) + "</td>" \
+                    "<td>" + str((dr[4] if dr[4] else "")) + "<br />" + str((dr[5] if dr[5] else "")) + "</td>" \
+                    "</tr>"
+                    
+            
+            retval = "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
+            
+            return uiCommon.json_response(retval)
+
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+
+        

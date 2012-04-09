@@ -26,7 +26,7 @@
 		<menu roles="all" label="Home" icon="static/images/icons/home_24.png" onclick="showPleaseWait();" href="/home">
 		</menu>
 		<menu roles="developer user" label="Information" icon="static/images/icons/info_24.png">
-			<item roles="developer" label="View System Status" icon="static/images/icons/sys_stat_24.png" onclick="showPleaseWait();" href="../pages/systemStatusView.aspx">
+			<item roles="developer" label="View System Status" icon="static/images/icons/sys_stat_24.png" onclick="showPleaseWait();" href="/systemStatus">
 			</item>
 			<item roles="developer user" label="View Task Status" icon="static/images/icons/task_stat_24.png" onclick="showPleaseWait();" href="../pages/taskStatusView.aspx">
 			</item>
