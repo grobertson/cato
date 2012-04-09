@@ -5,6 +5,33 @@ $(document).ready(function () {
 
     //use this to define constants, set up jQuery objects, etc.
 
+    $.ajax({
+        type: "GET",
+        async: false,
+        url: "uiMethods.asmx/wmGetMenu",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+	        $('#main-menu').html(msg.d);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+    $.ajax({
+        type: "GET",
+        async: false,
+        url: "uiMethods.asmx/wmGetCloudAccountsForHeader",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+	        $('#header_cloud_accounts').html(msg.d);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+        
     $("ul.sf-menu").supersubs({
         minWidth: 18,   // minimum width of sub-menus in em units 
         maxWidth: 27,   // maximum width of sub-menus in em units 
@@ -16,7 +43,7 @@ $(document).ready(function () {
 
 
     //the cloud accounts dropdown updates the server session
-    $("#ctl00_ddlCloudAccounts").change(function () {
+    $("#header_cloud_accounts").change(function () {
         $("#update_success_msg").text("Updating...").show();
 
         var account_id = $(this).val();

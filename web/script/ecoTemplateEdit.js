@@ -654,7 +654,7 @@ function NewEcosystem() {
 
     //we will test it, but really we're not gonna use it rather we'll get it server side
     //this just traps if there isn't one.
-    if ($("#ctl00_ddlCloudAccounts").val() == "") {
+    if ($("#header_cloud_accounts").val() == "") {
         bSave = false;
         strValidationError += 'Error: Unable to determine Cloud Account.';
     };

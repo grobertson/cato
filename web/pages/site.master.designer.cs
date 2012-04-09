@@ -22,9 +22,5 @@ namespace Web {
 		protected System.Web.UI.ScriptManager ScriptManager;
 		
 		protected System.Web.UI.WebControls.ContentPlaceHolder phDetail;
-		
-		protected System.Web.UI.WebControls.PlaceHolder phMenu;
-		
-		protected System.Web.UI.WebControls.DropDownList ddlCloudAccounts;
 	}
 }

@@ -399,9 +399,9 @@ function ShowTaskLaunchDialog(jsonargs) {
 	//3) from the "Run Log" it will use the same as the previous instance being viewed in the log
 	//NOTE: if no args are passed to this function we will use the global setting
     if (!args.account_id || args.account_id == "") {
-        args.account_id = $("#ctl00_ddlCloudAccounts").val();
-        $("#task_launch_dialog_account_id").val($("#ctl00_ddlCloudAccounts").val());
-        $("#task_launch_dialog_account_name").html($("#ctl00_ddlCloudAccounts :selected").text());
+        args.account_id = $("#header_cloud_accounts").val();
+        $("#task_launch_dialog_account_id").val($("#header_cloud_accounts").val());
+        $("#task_launch_dialog_account_name").html($("#header_cloud_accounts :selected").text());
     } else {
         $("#task_launch_dialog_account_id").val(args.account_id);
         $("#task_launch_dialog_account_name").html(args.account_name);

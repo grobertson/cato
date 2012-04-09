@@ -1,0 +1,61 @@
+/* Login Page */
+body
+{
+	font: normal 12px Arial, lucida, sans-serif;
+}
+#wrapper
+{
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+}
+#container
+{
+	width: 700px;
+}
+#loginpanel
+{
+	padding-top: 20px;
+	height: 220px;
+	background-image: url(../images/login-banner.gif);
+	background-repeat: no-repeat;
+	background-position: -175px 54%; /* shorten it a bit */
+	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 6px 6px 6px 6px;
+}
+#loginbox
+{
+	padding: 20px;
+	color: #FFFFFF;
+	font-weight: bold;
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 6px 6px 6px 6px;
+}
+.loginerror
+{
+	margin-top: 20px;
+	padding: 20px;
+	font-weight: normal;
+	color: #EE4444;
+	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 6px 6px 6px 6px;
+}
+.loginannouncement
+{
+	margin-top: 20px;
+	padding: 5px;
+	font-weight: normal;
+	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+	border-radius: 6px 6px 6px 6px;
+}
+.loginannouncement img
+{
+	vertical-align: middle;
+}
+.pointer
+{
+	cursor: pointer;
+}
