@@ -95,7 +95,7 @@ $(document).ready(function () {
     }
     
     GetProvidersList();
-    GetClouds();
+    GetItems();
 
     ManagePageLoad();
 });
@@ -184,7 +184,7 @@ function TestConnection() {
 	}
 }
 
-function GetClouds() {
+function GetItems() {
     $.ajax({
         type: "POST",
         async: false,
@@ -193,7 +193,7 @@ function GetClouds() {
         contentType: "application/json; charset=utf-8",
         dataType: "html",
         success: function (response) {
-            $('#clouds').html(response);
+            $("#clouds").html(response);
             //gotta restripe the table
             initJtable(true, true);
         },
@@ -317,7 +317,7 @@ function SaveItem(close_after_save) {
 		        	} else {
 		                // clear the search field and fire a search click, should reload the grid
 		                $("[id*='txtSearch']").val("");
-						GetClouds();
+						GetItems();
 			            
 			            if (close_after_save) {
 			            	$("#edit_dialog").dialog('close');

@@ -99,9 +99,7 @@ $(document).ready(function () {
         ShowItemModify();
     });
     $("#item_search_btn").live("click", function () {
-        //until we redo this all as ajax, our pretty button clicks the hidden ugly one
-        //NOTE: the cloud account edit page now uses ajax!  It's a template for fixing the others.
-        $("#ctl00_phDetail_btnSearch").click();
+        GetItems();
     });
     
 
