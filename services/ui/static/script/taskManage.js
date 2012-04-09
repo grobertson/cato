@@ -64,7 +64,7 @@
     //what happens when you click a row?
     $("[tag='selectable']").live("click", function () {
         showPleaseWait();
-        location.href = 'taskEdit.aspx?task_id=' + $(this).parent().attr("task_id");
+        location.href = '/taskEdit?task_id=' + $(this).parent().attr("task_id");
     });
 
 	GetItems();
