@@ -3,7 +3,9 @@ import uiGlobals
 import sys
 import json
 import uuid
+import xml.etree.ElementTree as ET
 from catocommon import catocommon
+import providers
 
 def json_response(content):
     #jQuery ajax in "json" mode expects a json object with a single attribute - "d"
@@ -19,11 +21,18 @@ def NewGUID():
     return str(uuid.uuid1())
 
 def TickSlash(s):
-    return s.replace("'", "''").replace("\\", "\\\\");
+    return s.replace("'", "''").replace("\\", "\\\\")
 
+def QuoteUp(sString):
+    retval = ""
+    
+    for s in sString.split(","):
+        retval += "'" + s + "',"
+    
+    return retval[:-1] #whack the last comma 
 
 def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessage):
-    sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip();
+    sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip()
     if sTrimmedLog:
         if len(sTrimmedLog) > 7999:
             sTrimmedLog = sTrimmedLog[:7998]
@@ -40,6 +49,15 @@ def WriteObjectAddLog(db, oType, sObjectID, sObjectName, sLog = ""):
             sLog = "Created: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
 
         AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+
+def WriteObjectDeleteLog(db, oType, sObjectID, sObjectName, sLog = ""):
+    if sObjectID and sObjectName:
+        if not sLog:
+            sLog = "Deleted: [" + TickSlash(sObjectName) + "]."
+        else:
+            sLog = "Deleted: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
+
+        AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectDelete, oType, sObjectID, sLog)
 
 def WriteObjectChangeLog(db, oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
@@ -115,3 +133,13 @@ def GetCloudProviders(): #These were put in the session at login
 #this one takes a modified Cloud Providers class and puts it into the session
 def UpdateCloudProviders(cp):
     SetSessionObject("cloud_providers", cp, "")
+    
+#put the cloud providers and object types from a file into the session
+def SetCloudProviders():
+    x = ET.parse("../../conf/cloud_providers.xml")
+    if x:
+        cp = providers.CloudProviders(x)
+        uiGlobals.session.cloud_providers = cp
+    else:
+        raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
+

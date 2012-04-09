@@ -158,3 +158,13 @@ class Db(object):
 
 		return True
 
+	def tran_exec_noexcep(self, sql, params=()):
+		try:
+			self.tran_exec(sql, params)
+		except Exception, e:
+			self.conn.rollback()
+			self.error = e.__str__()
+			return False
+
+		return True
+

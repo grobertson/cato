@@ -190,7 +190,7 @@ class Product(object):
     APIUrlPrefix = None
     APIUri = None
     APIVersion = None
-    #Product CONTAINS a named dictionary of CloudObjectTypes;
+    #Product CONTAINS a named dictionary of CloudObjectTypes
     CloudObjectTypes = {}
     
     #constructor

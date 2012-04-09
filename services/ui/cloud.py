@@ -30,7 +30,7 @@ class Cloud(object):
                 raise Exception("Error building Cloud object: Cloud ID is required.")
             
             #search for the sCloudID in the CloudProvider Class -AND- the database
-            cp = uiCommon.GetCloudProviders();
+            cp = uiCommon.GetCloudProviders()
             if not cp:
                 raise Exception("Error building Cloud object: Unable to GetCloudProviders.")
             #check the CloudProvider class first ... it *should be there unless something is wrong.
@@ -47,7 +47,7 @@ class Cloud(object):
             
             #well, if we got here we have a problem... the ID provided wasn't found anywhere.
             #this should never happen, so bark about it.
-            #raise Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.");    
+            #raise Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.")   
         except Exception, ex:
             raise ex
 

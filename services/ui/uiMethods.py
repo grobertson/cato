@@ -27,7 +27,6 @@ class login:
         in_pwd = uiGlobals.web.input(password=None).password
 
         db = catocommon.new_conn()
-        db.conn.rollback()
         sql = "select user_id, user_password, full_name, user_role, email, status, failed_login_attempts, expiration_dt, force_change \
             from users where username='" + in_name + "'"
         
@@ -83,13 +82,7 @@ class login:
 
         #put the cloud providers and object types in the session
         # also a big performance boost
-        x = ET.parse("../../conf/cloud_providers.xml")
-        if x:
-            cp = providers.CloudProviders(x)
-            uiGlobals.session.cloud_providers = cp
-        else:
-            raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
-        
+        uiCommon.SetCloudProviders()
         
         raise uiGlobals.web.seeother('/home')
 
@@ -156,16 +149,16 @@ class uiMethods:
                     sIcon = "<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />"
                     sClass = xItem.get("class", "")
     
-                    sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">";
-                    sHTML += "<a";
-                    sHTML += sOnClick ;
-                    sHTML += sHref ;
-                    sHTML += sTarget ;
-                    sHTML += ">";
-                    sHTML += sIcon;
-                    sHTML += sLabel;
-                    sHTML += "</a>";
-                    sHTML += "</li>";
+                    sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">"
+                    sHTML += "<a"
+                    sHTML += sOnClick 
+                    sHTML += sHref 
+                    sHTML += sTarget 
+                    sHTML += ">"
+                    sHTML += sIcon
+                    sHTML += sLabel
+                    sHTML += "</a>"
+                    sHTML += "</li>"
                 sHTML += "</ul>"
                 
             #wrap up the outer menu
@@ -203,7 +196,7 @@ class uiMethods:
         
         if uid and ip:
             sSQL = "update user_session set heartbeat = now() where user_id = '" + uid + "' \
-                and address = '" + ip + "'";
+                and address = '" + ip + "'"
             db = catocommon.new_conn()
             if not db.exec_db_noexcep(sSQL):
                 print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
@@ -256,14 +249,14 @@ class uiMethods:
                 sHTML += "<td tag=\"selectable\">" + row[3] +  "</td>"
                 sHTML += "<td tag=\"selectable\">" + row[4] +  "</td>"
                 
-                sHTML += "</tr>";
+                sHTML += "</tr>"
 
         sHTML += "</table>"    
         return sHTML    
 
     def wmGetProvidersList(self):
         sHTML = ""
-        cp = uiCommon.GetCloudProviders();
+        cp = uiCommon.GetCloudProviders()
         if cp:
             for name, p in cp.Providers.iteritems():
                 if p.UserDefinedClouds:
@@ -335,3 +328,33 @@ class uiMethods:
         except Exception, ex:
             raise ex
 
+    def wmDeleteClouds(self):
+        try:
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return uiCommon.json_response("")
+    
+            sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
+            
+            #get important data that will be deleted for the log
+            sSQL = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")"
+            db = catocommon.new_conn()
+            rows = db.select_all(sSQL)
+
+            sSQL = "delete from clouds where cloud_id in (" + sDeleteArray + ")"
+            if not db.tran_exec_noexcep(sSQL):
+                raise Exception(db.error)
+            
+            #reget the cloud providers class in the session
+            uiCommon.SetCloudProviders()
+
+            #if we made it here, save the logs
+            for dr in rows:
+                uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Cloud, dr[0], dr[1], dr[2] + " Cloud Deleted.")
+    
+            return uiCommon.json_response("")
+            
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
