@@ -135,6 +135,22 @@ class Db(object):
 		"""Closes the database connection."""
 		self.conn.close()
 
+	def select_csv(self, sql, quoted=False):
+		"""Selects a set of rows, and returns the first column as a comma delimited string."""
+		s = ""
+		rows = self.select_all(sql)
+		if rows:
+			for row in rows:
+				if quoted:
+					s += "'%s'," % (row[0])
+				else:
+					s += "%s," % (row[0])
+			
+			s = s[:-1] #remove the trailing comma
+			
+		return s
+
+
 # Now something interesting...
 # these functions all just call the ones above...
 # with one difference - none of these throw exceptions.
