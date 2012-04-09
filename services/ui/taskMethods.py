@@ -98,25 +98,63 @@ class taskMethods:
         except Exception, ex:
             raise ex
 
-"""         Task t = new Task(ui.unpackJSON(sTaskName), ui.unpackJSON(sTaskCode), ui.unpackJSON(sTaskDesc));
+    def wmDeleteTasks(self):
+        try:
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return uiCommon.json_response("{\"info\" : \"Unable to delete - no selection.\"}")
+    
+            sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
 
-                //commit it
-                if (t.DBSave(ref sErr, null))
-                {
-                    //success, but was there an error?
-                    if (!string.IsNullOrEmpty(sErr))
-                        throw new Exception(sErr);
-                    
-                    return "task_id=" + t.ID;
-                }    
-                else
-                {
-                    //failed
-                    return sErr;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-"""
+            db = catocommon.new_conn()
+            
+            if not sDeleteArray:
+                return uiCommon.json_response("{\"info\" : \"Unable to delete - no selection.\"}")
+                
+            # first we need a list of tasks that will not be deleted
+            sSQL = "select task_name from task t " \
+                    " where t.original_task_id in (" + sDeleteArray + ")" \
+                    " and t.task_id in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)"
+            sTaskNames = db.select_csv(sSQL, True)
+
+            # list of tasks that will be deleted
+            # we have an array of 'original_task_id' - we need an array of task_id
+            sSQL = "select t.task_id from task t " \
+                " where t.original_task_id in (" + sDeleteArray + ")" \
+                " and t.task_id not in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)"
+            print sSQL
+            sTaskIDs = db.select_csv(sSQL, True)
+            print "!" + sTaskIDs
+            if len(sTaskIDs) > 1:
+                print "deleting..."
+                sSQL = "delete from task_step_user_settings" \
+                    " where step_id in" \
+                    " (select step_id from task_step where task_id in (" + sTaskIDs + "))"
+                if not db.tran_exec_noexcep(sSQL):
+                    raise Exception(db.error)
+    
+                sSQL = "delete from task_step where task_id in (" + sTaskIDs + ")"
+                if not db.tran_exec_noexcep(sSQL):
+                    raise Exception(db.error)
+    
+                sSQL = "delete from task_codeblock where task_id in (" + sTaskIDs + ")"
+                if not db.tran_exec_noexcep(sSQL):
+                    raise Exception(db.error)
+    
+                sSQL = "delete from task where task_id in (" + sTaskIDs + ")"
+                if not db.tran_exec_noexcep(sSQL):
+                    raise Exception(db.error)
+    
+                db.tran_commit()
+    
+                uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Task, "Multiple", "Original Task IDs", sDeleteArray)
+            
+            if len(sTaskNames) > 0:
+                return uiCommon.json_response("{\"info\" : \"Task(s) (" + sTaskNames + ") have history rows and could not be deleted.\"}")
+            
+            return uiCommon.json_response("{\"result\" : \"success\"}")
+            
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()

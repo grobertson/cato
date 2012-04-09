@@ -46,6 +46,7 @@ class Task(object):
 			raise Exception("Error building Task object: Name is required.")
 
 		self.ID = str(uuid.uuid4())
+		self.OriginalTaskID = self.ID
 		self.Name = sName
 		self.Code = sCode
 		self.Description = sDesc
@@ -116,7 +117,6 @@ class Task(object):
 		
 		return ET.tostring(root)
 
-	
 	def DBSave(self, db = None, bLocalTransaction = True):
 		print "here we go"
 		try:
@@ -284,11 +284,11 @@ class Task(object):
 						" values (" + "'" + s.ID + "'," \
 						"'" + s.Task.ID + "'," \
 						("NULL" if str.IsNullOrEmpty(s.Codeblock) else "'" + s.Codeblock + "'") + "," \
-						iStepOrder.ToString() + "," \
+						iStepOrder + "," \
 						"0,0," \
-						s.OutputParseType.ToString() + "," \
-						s.OutputRowDelimiter.ToString() + "," \
-						s.OutputColumnDelimiter.ToString() + "," \
+						s.OutputParseType + "," \
+						s.OutputRowDelimiter + "," \
+						s.OutputColumnDelimiter + "," \
 						"'" + s.FunctionName + "'," \
 						"'" + ui.TickSlash(s.FunctionXML) + "'" \
 						")"
