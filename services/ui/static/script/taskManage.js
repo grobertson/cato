@@ -243,31 +243,26 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "taskMethods.asmx/wmDeleteTasks",
+        url: "taskMethods/wmDeleteTasks",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
-
-                $("#hidSelectedArray").val("");
-
-                // clear the search field and fire a search click, should reload the grid
-                $("#txtSearch").val("");
-                $("#ctl00_phDetail_btnSearch").click();
-
-                hidePleaseWait();
-                showInfo('Delete Successful');
-
-            } else {
-                showAlert(msg.d);
-                // reload the list, some may have been deleted.
-                // clear the search field and fire a search click, should reload the grid
-                $("#txtSearch").val("");
-                $("#ctl00_phDetail_btnSearch").click();
-            }
-
-            $("#delete_dialog").dialog('close');
+        success: function (response) {
+	       try {
+	            var task = parseResponse(response);
+		        if (task) {
+	                // clear the selected array, search field and fire a new search
+	                $("#hidSelectedArray").val("");
+	                $("#txtSearch").val("");
+					GetItems();		
+	                hidePleaseWait();
+                	$("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
+		        }
+		        
+                $("#delete_dialog").dialog('close');
+			} catch (ex) {
+				showAlert(ex.Message);
+			}
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -359,15 +354,9 @@ function SaveNewTask() {
         dataType: "json",
         success: function (response) {
 	       try {
-	            var task = jQuery.parseJSON(response.d);
+	            var task = parseResponse(response);
 		        if (task) {
-		        	if (task.info) {
-		        		showInfo(task.info);
-		        	} else if (task.error) {
-		        		showAlert(task.error);
-		        	} else {
-		                location.href = "/taskEdit?" + task.id;
-					}
+	                location.href = "/taskEdit?" + task.id;
 		        } else {
 		            showAlert(response.d);
 		        }

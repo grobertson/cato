@@ -248,7 +248,7 @@ function FillEditForm(sEditID) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var cloud = jQuery.parseJSON(response.d);
+                var cloud = parseResponse(response);
 
                 // show the assets current values
                 $("#txtCloudName").val(cloud.Name);
@@ -308,27 +308,21 @@ function SaveItem(close_after_save) {
         dataType: "json",
         success: function (response) {
 	       try {
-	            var cloud = jQuery.parseJSON(response.d);
+	            var cloud = parseResponse(response);
 		        if (cloud) {
-		        	if (cloud.info) {
-		        		showInfo(cloud.info);
-		        	} else if (cloud.error) {
-		        		showAlert(cloud.error);
-		        	} else {
-		                // clear the search field and fire a search click, should reload the grid
-		                $("#txtSearch").val("");
-						GetItems();
-			            
-			            if (close_after_save) {
-			            	$("#edit_dialog").dialog('close');
-		            	} else {
-			            	//we aren't closing? fine, we're now in 'edit' mode.
-			            	$("#hidMode").val("edit");
-		            		$("#hidCurrentEditID").val(cloud.ID);
-		            		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
-		            	}
-		            	bSaved = true;
-					}
+	                // clear the search field and fire a search click, should reload the grid
+	                $("#txtSearch").val("");
+					GetItems();
+		            
+		            if (close_after_save) {
+		            	$("#edit_dialog").dialog('close');
+	            	} else {
+		            	//we aren't closing? fine, we're now in 'edit' mode.
+		            	$("#hidMode").val("edit");
+	            		$("#hidCurrentEditID").val(cloud.ID);
+	            		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
+	            	}
+	            	bSaved = true;
 		        } else {
 		            showAlert(response.d);
 		        }
@@ -373,19 +367,19 @@ function DeleteItems() {
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            //update the list in the dialog
-            if (msg.d.length == 0) {
+        success: function (response) {
+            var result = parseResponse(response);
+	        if (result) {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
                 $("[id*='txtSearch']").val("");
-				GetClouds();
+				GetItems();
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
             } else {
-                showAlert(msg.d);
+                showAlert(response.d);
             }
         },
         error: function (response) {

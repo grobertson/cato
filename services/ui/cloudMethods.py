@@ -146,7 +146,7 @@ class cloudMethods:
         try:
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
-                return uiCommon.json_response("")
+                return uiCommon.json_response("{\"info\" : \"Unable to delete - no selection.\"}")
     
             sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
             
@@ -166,7 +166,7 @@ class cloudMethods:
             for dr in rows:
                 uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Cloud, dr[0], dr[1], dr[2] + " Cloud Deleted.")
     
-            return uiCommon.json_response("")
+            return uiCommon.json_response("{\"result\" : \"success\"}")
             
         except Exception, ex:
             raise ex
