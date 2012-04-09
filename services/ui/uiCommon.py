@@ -29,7 +29,7 @@ def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessag
             sTrimmedLog = sTrimmedLog[:7998]
     sSQL = "insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg) \
         values ('" + LogType + "', '" + Action + "', '" + sUserID + "', now(), " + str(ObjectType) + ", '" + ObjectID + "', '" + sTrimmedLog + "')"
-    if not db.try_exec_db(sSQL):
+    if not db.exec_db_noexcep(sSQL):
         print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
 
 def WriteObjectAddLog(db, oType, sObjectID, sObjectName, sLog = ""):

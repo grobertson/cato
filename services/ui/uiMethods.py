@@ -27,7 +27,7 @@ class login:
         in_pwd = uiGlobals.web.input(password=None).password
 
         db = catocommon.new_conn()
-
+        db.conn.rollback()
         sql = "select user_id, user_password, full_name, user_role, email, status, failed_login_attempts, expiration_dt, force_change \
             from users where username='" + in_name + "'"
         
@@ -62,7 +62,7 @@ class login:
         print uiGlobals.session.user
         # reset the user counters and last_login
         sql = "update users set failed_login_attempts=0, last_login_dt=now() where user_id='" + user_id + "'"
-        if not db.try_exec_db(sql):
+        if not db.exec_db_noexcep(sql):
             print db.error
 
         #update the security log
@@ -205,7 +205,7 @@ class uiMethods:
             sSQL = "update user_session set heartbeat = now() where user_id = '" + uid + "' \
                 and address = '" + ip + "'";
             db = catocommon.new_conn()
-            if not db.try_exec_db(sSQL):
+            if not db.exec_db_noexcep(sSQL):
                 print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
             db.close()
         return uiCommon.json_response("")

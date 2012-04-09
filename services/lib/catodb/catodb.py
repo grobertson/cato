@@ -108,6 +108,29 @@ class Db(object):
 
 		return True
 
+	def tran_exec(self, sql, params=()):
+		"""DOES NOT perform a commit!"""
+		if sql == "":
+			print "update: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor()
+			c.execute(sql, params)
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		return True
+
+	def tran_rollback(self):
+		"""Rolls back anything on the current connection."""
+		self.conn.rollback()
+
+	def tran_commit(self):
+		"""Commits anything on the current connection."""
+		self.conn.commit()
+
 	def close(self):
 		"""Closes the database connection."""
 		self.conn.close()
@@ -119,14 +142,14 @@ class Db(object):
 # GUI calls and other crash-proof services are made to expect messages, and display them nicely,
 # and not be filled with lots of wasteful try:except blocks.
 
-	def try_select_col(self, sql, params=()):
+	def select_col_noexcep(self, sql, params=()):
 		try:
 			return self.select_col(sql, params)
 		except Exception, e:
 			self.error = e.__str__()
 			return False
 
-	def try_exec_db(self, sql, params=()):
+	def exec_db_noexcep(self, sql, params=()):
 		try:
 			self.exec_db(sql, params)
 		except Exception, e:

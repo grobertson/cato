@@ -82,7 +82,7 @@ class Cloud(object):
             sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" \
                 " values ('" + sNewID + "'," + "'" + sCloudName + "'," + "'" + sProvider + "'," + "'" + sAPIUrl + "'," + "'" + sAPIProtocol + "')"
             db = catocommon.new_conn()
-            if not db.try_exec_db(sSQL):
+            if not db.exec_db_noexcep(sSQL):
                 if db.error == "key_violation":
                     return None, "A Cloud with that name already exists.  Please select another name."
                 else:
@@ -115,7 +115,7 @@ class Cloud(object):
                 return True
             #what's the original name?
             sSQL = "select cloud_name from clouds where cloud_id = '" + self.ID + "'"
-            sOriginalName = db.try_select_col(sSQL)
+            sOriginalName = db.select_col_noexcep(sSQL)
             if db.error:
                 raise Exception("Error getting original cloud name:" + db.error)
             
@@ -124,7 +124,7 @@ class Cloud(object):
                 " api_protocol = '" + self.APIProtocol + "'," \
                 " api_url = '" + self.APIUrl + "'" \
                 " where cloud_id = '" + self.ID + "'"
-            if not db.try_exec_db(sSQL):
+            if not db.exec_db_noexcep(sSQL):
                 if db.error == "key_violation":
                     return None, "A Cloud with that name already exists.  Please select another name."
                 else:
