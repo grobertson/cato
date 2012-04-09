@@ -66,7 +66,7 @@ function printKeypressEvents(ctl) {
 
 //this function shows the "please wait" blockui effect.
 function showPleaseWait(msg) {
-    var msg = ((msg == "" || msg === undefined) ? "<img title='Loading...' 'alt='' src='../images/loading.gif'> Please Wait ..." : msg);
+    var msg = ((msg == "" || msg === undefined) ? "<img title='Loading...' 'alt='' src='static/images/loading.gif'> Please Wait ..." : msg);
     $.blockUI({
         message: msg,
         css: {
