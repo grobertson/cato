@@ -98,7 +98,7 @@ function ShowItemAdd() {
     clearEditDialog();
 
     $("#edit_dialog").dialog('open');
-    $("#txtTaskName").focus();
+    $("#txtTaskCode").focus();
 }
 
 function ShowItemExport() {
@@ -151,8 +151,8 @@ function ShowItemCopy() {
                 $("#hidSelectedArray").val('');
                 $("#hidCopyTaskID").val(task_copy_original_id);
                 $("#lblItemsSelected").html("0");
-                $("[jqname='txtCopyTaskName']").val('');
-                $("[jqname='txtCopyTaskCode']").val('');
+                $("#txtCopyTaskName").val('');
+                $("#txtCopyTaskCode").val('');
             }
         },
         error: function (response) {
@@ -191,8 +191,8 @@ function ShowItemCopy() {
 function CopyTask() {
 
 
-    var sNewTaskName = $("[jqname='txtCopyTaskName']").val();
-    var sNewTaskCode = $("[jqname='txtCopyTaskCode']").val();
+    var sNewTaskName = $("#txtCopyTaskName").val();
+    var sNewTaskCode = $("#txtCopyTaskCode").val();
     var sCopyTaskID = $("#ddlTaskVersions").val();
 
     // make sure we have all of the valid fields
@@ -216,7 +216,7 @@ function CopyTask() {
             if (msg.d.length == 36) {
                 $("#copy_dialog").dialog('close');
                 // clear the search field and fire a search click, should reload the grid
-                $("#ctl00_phDetail_txtSearch").val("");
+                $("#txtSearch").val("");
                 $("#ctl00_phDetail_btnSearch").click();
 
                 hidePleaseWait();
@@ -253,7 +253,7 @@ function DeleteItems() {
                 $("#hidSelectedArray").val("");
 
                 // clear the search field and fire a search click, should reload the grid
-                $("#ctl00_phDetail_txtSearch").val("");
+                $("#txtSearch").val("");
                 $("#ctl00_phDetail_btnSearch").click();
 
                 hidePleaseWait();
@@ -263,7 +263,7 @@ function DeleteItems() {
                 showAlert(msg.d);
                 // reload the list, some may have been deleted.
                 // clear the search field and fire a search click, should reload the grid
-                $("#ctl00_phDetail_txtSearch").val("");
+                $("#txtSearch").val("");
                 $("#ctl00_phDetail_btnSearch").click();
             }
 
@@ -302,7 +302,7 @@ function ExportTasks() {
                 $("#export_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
-                $("#ctl00_phDetail_txtSearch").val("");
+                $("#txtSearch").val("");
                 $("#ctl00_phDetail_btnSearch").click();
 
                 hidePleaseWait();
@@ -328,9 +328,9 @@ function SaveNewTask() {
     var sValidationErr = "";
     
     //some client side validation before we attempt to save
-    var sTaskName = $("[jqname='txtTaskName']").val();
-    var sTaskCode = $("[jqname='txtTaskCode']").val();
-    var sTaskDesc = $("[jqname='txtTaskDesc']").val();
+    var sTaskName = $("#txtTaskName").val();
+    var sTaskCode = $("#txtTaskCode").val();
+    var sTaskDesc = $("#txtTaskDesc").val();
 
 	if (sTaskName.length < 3) {
         sValidationErr += "- Task Name is required and must be at least three characters in length.<br />";
@@ -352,33 +352,33 @@ function SaveNewTask() {
 
     $.ajax({
         type: "POST",
-        url: "taskMethods.asmx/wmCreateTask",
+        async: false,
+        url: "taskMethods/wmCreateTask",
         data: '{"sTaskName":"' + sTaskName + '","sTaskCode":"' + sTaskCode + '","sTaskDesc":"' + sTaskDesc + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-	        if (msg.d.length != 0) {
-	            //I don't like this.. evidently an ajax call can only have one return value, a string.
-	            //so it might be the success value (my task_id) or it may be an error.
-	            //I gotta parse the result to know for sure. Ugh.
-	            //so instead of just returning the guid, I'm returning task_id=guid.
-	            //that way I can peek in the string for 'task_id' and know I have what I want.
-	            if (msg.d.indexOf("task_id") == 0) {
-	                location.href = "taskEdit.aspx?" + msg.d;
-	            } else {
-	                hidePleaseWait();
-	                showAlert(msg.d);
-	            }
-	        } else {
-	            hidePleaseWait();
-	            showAlert("Error: Task was created, but ID was not returned.");
-	        }
+        success: function (response) {
+	       try {
+	            var task = jQuery.parseJSON(response.d);
+		        if (task) {
+		        	if (task.info) {
+		        		showInfo(task.info);
+		        	} else if (task.error) {
+		        		showAlert(task.error);
+		        	} else {
+		                location.href = "/taskEdit?" + task.id;
+					}
+		        } else {
+		            showAlert(response.d);
+		        }
+			} catch (ex) {
+				showAlert(response.d);
+			}
         },
         error: function (response) {
             showAlert(response.responseText);
         }
     });
-
 }
 
 function RenameBackupFile(src_file_name, otid) {

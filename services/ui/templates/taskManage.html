@@ -5,7 +5,7 @@ $var cssfiles:
 <div style="display: none;">
     <input id="hidMode" type="hidden" name="hidMode" />
     <input id="hidEditCount" type="hidden" name="hidEditCount" />
-    <input id="hidCurrentEditID" type="hidden" name="hidCurrentEditID" />
+    <input id="hidCurrentEditid" type="hidden" name="hidCurrentEditid" />
     <input id="hidSelectedArray" type="hidden" name="hidSelectedArray" />
 </div>
 <div id="left_panel">
@@ -74,8 +74,8 @@ $var cssfiles:
                     Task Code
                 </td>
                 <td>
-                    <asp:TextBox ID="txtTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
-                        MaxLength="32" jqname="txtTaskCode"></asp:TextBox>
+                    <input type="text" id="txtTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
+                        MaxLength="32"jq>
                 </td>
             </tr>
             <tr>
@@ -83,8 +83,8 @@ $var cssfiles:
                     Task Name
                 </td>
                 <td>
-                    <asp:TextBox ID="txtTaskName" runat="server" class="usertextbox" Style="width: 300px;"
-                        MaxLength="256" jqname="txtTaskName"></asp:TextBox>
+                    <input type="text" id="txtTaskName" runat="server" class="usertextbox" Style="width: 300px;"
+                        MaxLength="256">
                 </td>
             </tr>
             <tr>
@@ -92,8 +92,8 @@ $var cssfiles:
                     Description
                 </td>
                 <td>
-                    <asp:TextBox ID="txtTaskDesc" runat="server" class="usertextbox" Style="width: 300px;"
-                        jqname="txtTaskDesc" TextMode="MultiLine"></asp:TextBox>
+                    <input type="text" id="txtTaskDesc" runat="server" class="usertextbox" Style="width: 300px;"
+                        TextMode="MultiLine">
                 </td>
             </tr>
         </tbody>
@@ -126,8 +126,8 @@ $var cssfiles:
                 New Task Code
             </td>
             <td>
-                <asp:TextBox ID="txtCopyTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
-                    MaxLength="32" jqname="txtCopyTaskCode"></asp:TextBox>
+                <input type="text" id="txtCopyTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
+                    MaxLength="32">
             </td>
         </tr>
         <tr>
@@ -135,10 +135,10 @@ $var cssfiles:
                 New Task Name
             </td>
             <td>
-                <asp:TextBox ID="txtCopyTaskName" runat="server" class="usertextbox" Style="width: 300px;"
-                    MaxLength="256" jqname="txtCopyTaskName"></asp:TextBox>
+                <input type="text" id="txtCopyTaskName" runat="server" class="usertextbox" Style="width: 300px;"
+                    MaxLength="256">
             </td>
         </tr>
     </table>
-    <input id="hidCopyTaskID" type="hidden" name="hidCopyTaskID" />
+    <input id="hidCopyTaskid" type="hidden" name="hidCopyTaskid" />
 </div>
