@@ -15,6 +15,9 @@ from uiMethods import uiMethods
 from uiMethods import logout
 from uiMethods import login
 
+from taskMethods import taskMethods
+from cloudMethods import cloudMethods
+
 import uiCommon
 import uiGlobals
 
@@ -74,6 +77,8 @@ if __name__ == "__main__":
     urls = (
         '/', 'index',
         '/uiMethods/(.*)', 'uiMethods',
+        '/cloudMethods/(.*)', 'cloudMethods',
+        '/taskMethods/(.*)', 'taskMethods',
         '/login', 'login',
         '/logout', 'logout',
         '/home', 'home',

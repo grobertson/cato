@@ -107,7 +107,7 @@ function GetProviderAccounts() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmGetCloudAccounts",
+        url: "cloudMethods/wmGetCloudAccounts",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -188,8 +188,8 @@ function GetItems() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmGetClouds",
-        data: '{"sSearch":"' + $("#ctl00_phDetail_txtSearch").val() + '"}',
+        url: "cloudMethods/wmGetClouds",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",
         success: function (response) {
@@ -203,7 +203,7 @@ function GetItems() {
     });
 }
 function GetProvidersList() {
-    $("#ddlProvider").load("uiMethods/wmGetProvidersList");
+    $("#ddlProvider").load("cloudMethods/wmGetProvidersList");
 }
 
 function LoadEditDialog(editID) {
@@ -238,7 +238,7 @@ function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmGetCloud",
+        url: "cloudMethods/wmGetCloud",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -302,7 +302,7 @@ function SaveItem(close_after_save) {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmSaveCloud",
+        url: "cloudMethods/wmSaveCloud",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -316,7 +316,7 @@ function SaveItem(close_after_save) {
 		        		showAlert(cloud.error);
 		        	} else {
 		                // clear the search field and fire a search click, should reload the grid
-		                $("[id*='txtSearch']").val("");
+		                $("#txtSearch").val("");
 						GetItems();
 			            
 			            if (close_after_save) {
@@ -369,7 +369,7 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "uiMethods/wmDeleteClouds",
+        url: "cloudMethods/wmDeleteClouds",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
