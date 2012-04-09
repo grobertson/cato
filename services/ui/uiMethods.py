@@ -29,7 +29,7 @@ class login:
         sql = "select user_id, user_password, full_name, user_role, email, status, failed_login_attempts, expiration_dt, force_change \
             from users where username='" + in_name + "'"
         
-        row = db.select_row(sql)
+        row = db.select_row_dict(sql)
         if not row:
             uiGlobals.server.output("Invalid login attempt - [%s] not a valid user." % (in_name))
             msg = "Invalid Username or Password."
@@ -41,19 +41,19 @@ class login:
         # NOT by decrypting it here.
         encpwd = catocommon.cato_encrypt(in_pwd)
         
-        if row[1] != encpwd:
+        if row["user_password"] != encpwd:
             uiGlobals.server.output("Invalid login attempt - [%s] bad password." % (in_name))
             msg = "Invalid Username or Password."
             raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote(msg))
             
-        user_id = row[0]
+        user_id = row["user_id"]
         
         #all good, put a few key things in the session
         user = {}
         user["user_id"] = user_id
-        user["full_name"] = row[2]
-        user["role"] = row[3]
-        user["email"] = row[4]
+        user["full_name"] = row["full_name"]
+        user["role"] = row["user_role"]
+        user["email"] = row["email"]
         user["ip_address"] = uiGlobals.web.ctx.ip
         uiCommon.SetSessionObject("user", user)
         #uiGlobals.session.user = user
@@ -221,25 +221,25 @@ class uiMethods:
             " where default_version = 1 " + sWhereString + " order by task_code"
 
         db = catocommon.new_conn()
-        rows = db.select_all(sSQL)
+        rows = db.select_all_dict(sSQL)
         db.close()
 
         if rows:
             for row in rows:
-                sHTML += "<tr task_id=\"" + row[0] + "\">"
+                sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
                 sHTML += "<td class=\"chkboxcolumn\">"
                 sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
-                " id=\"chk_" + row[0] + "\"" \
-                " object_id=\"" + row[0] + "\"" \
+                " id=\"chk_" + row["task_id"] + "\"" \
+                " object_id=\"" + row["task_id"] + "\"" \
                 " tag=\"chk\" />"
                 sHTML += "</td>"
                 
-                sHTML += "<td tag=\"selectable\">" + row[3] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[2] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row[5]) +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[4] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[6] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row[7]) +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_code"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_name"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + str(row["version"]) +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_desc"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_status"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + str(row["versions"]) +  "</td>"
                 
                 sHTML += "</tr>"
 

@@ -149,6 +149,67 @@ class Db(object):
 			s = s[:-1] #remove the trailing comma
 			
 		return s
+	
+	# These next functions are the same as their predecessors, except they return the results in a dict.
+	# This is handy for referencing valued by column name instead of index.
+
+	def select_all_dict(self, sql, params=()):
+		"""Gets a row set for a provided query."""
+		if sql == "":
+			print "select_all: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			result = c.fetchall()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result
+		else:
+			return False
+
+
+	def select_row_dict(self, sql, params=()):
+		"""Gets a single row for a provided query.  If there are multiple rows, the first is returned."""
+		if sql == "":
+			print "select_row: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			result = c.fetchone()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result
+		else:
+			return False
+
+	def select_col_dict(self, sql, params=()):
+		"""Gets a single value from the database.  If the query returns more than one column, the first is used."""
+		if sql == "":
+			print "select_column: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			result = c.fetchone()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result[0]
+		else:
+			return False
 
 
 # Now something interesting...

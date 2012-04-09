@@ -46,23 +46,23 @@ class cloudMethods:
             " where 1=1 " + sWhereString + " order by provider, cloud_name"
         
         db = catocommon.new_conn()
-        rows = db.select_all(sSQL)
+        rows = db.select_all_dict(sSQL)
         db.close()
 
         if rows:
             for row in rows:
-                sHTML += "<tr account_id=\"" + row[0] + "\">"
+                sHTML += "<tr account_id=\"" + row["cloud_id"] + "\">"
                 sHTML += "<td class=\"chkboxcolumn\">"
                 sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
-                " id=\"chk_" + row[0] + "\"" \
-                " object_id=\"" + row[0] + "\"" \
+                " id=\"chk_" + row["cloud_id"] + "\"" \
+                " object_id=\"" + row["cloud_id"] + "\"" \
                 " tag=\"chk\" />"
                 sHTML += "</td>"
                 
-                sHTML += "<td tag=\"selectable\">" + row[1] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[2] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[3] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[4] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["cloud_name"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["provider"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["api_url"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["api_protocol"] +  "</td>"
                 
                 sHTML += "</tr>"
 
