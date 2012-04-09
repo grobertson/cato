@@ -205,17 +205,6 @@ class uiMethods:
     
     def wmGetClouds(self):
         sHTML = ""
-        sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">"
-        sHTML += "<tr>"
-        sHTML += "<th class=\"chkboxcolumn\">"
-        sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />"
-        sHTML += "</th>"           
-        sHTML += "<th sortcolumn=\"cloud_name\">Cloud Name</th>"
-        sHTML += "<th sortcolumn=\"provider\">Type</th>"
-        sHTML += "<th sortcolumn=\"api_protocol\">Protocol</th>"
-        sHTML += "<th sortcolumn=\"api_url\">URL</th>"
-        sHTML += "</tr>"
-
         sWhereString = ""
         sFilter = uiCommon.getAjaxArg("sSearch")
         if sFilter:
@@ -251,7 +240,49 @@ class uiMethods:
                 
                 sHTML += "</tr>"
 
-        sHTML += "</table>"    
+        return sHTML    
+
+    def wmGetTasks(self):
+        sHTML = ""
+        sWhereString = ""
+        sFilter = uiCommon.getAjaxArg("sSearch")
+        if sFilter:
+            aSearchTerms = sFilter.split()
+            for term in aSearchTerms:
+                if term:
+                    sWhereString += " and (task_name like '%%" + term + "%%' " \
+                        "or task_code like '%%" + term + "%%' " \
+                        "or task_desc like '%%" + term + "%%' " \
+                        "or task_status like '%%" + term + "%%') "
+
+        sSQL = "select task_id, original_task_id, task_name, task_code, task_desc, version, task_status," \
+            " (select count(*) from task a where original_task_id = a.original_task_id) as versions" \
+            " from task" \
+            " where default_version = 1 " + sWhereString + " order by task_code"
+
+        db = catocommon.new_conn()
+        rows = db.select_all(sSQL)
+        db.close()
+
+        if rows:
+            for row in rows:
+                sHTML += "<tr task_id=\"" + row[0] + "\">"
+                sHTML += "<td class=\"chkboxcolumn\">"
+                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                " id=\"chk_" + row[0] + "\"" \
+                " object_id=\"" + row[0] + "\"" \
+                " tag=\"chk\" />"
+                sHTML += "</td>"
+                
+                sHTML += "<td tag=\"selectable\">" + row[3] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row[2] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + str(row[5]) +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row[4] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row[6] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + str(row[7]) +  "</td>"
+                
+                sHTML += "</tr>"
+
         return sHTML    
 
     def wmGetProvidersList(self):

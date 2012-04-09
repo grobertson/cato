@@ -35,6 +35,10 @@ class home:
     def GET(self):
         return render.home()
 
+class taskManage:        
+    def GET(self):
+        return render.taskManage()
+
 class cloudEdit:        
     def GET(self):
         return render.cloudEdit()
@@ -74,6 +78,7 @@ if __name__ == "__main__":
         '/logout', 'logout',
         '/home', 'home',
         '/cloudEdit', 'cloudEdit',
+        '/taskManage', 'taskManage',
         '/systemStatus', 'systemStatus',
         '/bypass', 'bypass'
     )

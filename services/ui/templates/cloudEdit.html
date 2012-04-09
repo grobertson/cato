@@ -1,23 +1,6 @@
 $def with ()
-$var jsfiles: cloudEdit.js managePageCommon.js
+$var jsfiles: managePageCommon.js cloudEdit.js
 $var cssfiles:
-
-<!--
-//Copyright 2011 Cloud Sidekick
-// 
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-// 
-//    http://www.apache.org/licenses/LICENSE-2.0
-// 
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
-//
--->
 
 <div style="display: none;">
     <input id="hidMode" type="hidden" />
@@ -50,11 +33,22 @@ $var cssfiles:
 <div id="content">
     <span id="lblItemsSelected">0</span> Items Selected <span id="clear_selected_btn"></span><span 
 		id="item_create_btn">Create</span><span id="item_delete_btn">Delete</span>
-    <input type="text" id="ctl00_phDetail_txtSearch" class="search_text" />
+    <input type="text" id="txtSearch" class="search_text" />
     <span id="item_search_btn">Search</span>
-	<div id="clouds">
-		
-	</div>
+    <table class="jtable" cellspacing="1" cellpadding="1" width="99%">
+    	<thead>
+	        <tr>
+	        	<th class="chkboxcolumn">
+		        	<input type="checkbox" class="chkbox" id="chkAll" />
+	       		</th>
+		        <th sortcolumn="cloud_name">Cloud Name</th>
+		        <th sortcolumn="provider">Type</th>
+		        <th sortcolumn="api_protocol">Protocol</th>
+		        <th sortcolumn="api_url">URL</th>
+	        </tr>
+        </thead>
+        <tbody id="clouds"></tbody>
+	</table>
 </div>
 <div id="edit_dialog" class="hidden" title="Create Cloud">
     <table width="100%">
