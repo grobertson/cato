@@ -3,6 +3,7 @@ import uiGlobals
 import sys
 import json
 import uuid
+import base64
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import providers
@@ -22,6 +23,20 @@ def NewGUID():
 
 def TickSlash(s):
     return s.replace("'", "''").replace("\\", "\\\\")
+
+def packJSON(sIn):
+    if not sIn:
+        return sIn
+    
+    sOut = base64.b64decode(sIn)
+    return sOut.replace("/", "%2F").replace("+", "%2B")
+
+def unpackJSON(sIn):
+    if not sIn:
+        return sIn
+    
+    sOut = sIn.replace("%2F", "/").replace("%2B", "+")
+    return base64.b64decode(sOut)
 
 def QuoteUp(sString):
     retval = ""
