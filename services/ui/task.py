@@ -38,6 +38,7 @@ class Task(object):
 		self.ConcurrentInstances = ""
 		self.QueueDepth = ""
 		self.ParameterXDoc = None
+		self.NumberOfApprovedVersions = 0
 		#a task has a dictionary of codeblocks
 		self.Codeblocks = {}
 
@@ -177,6 +178,7 @@ class Task(object):
 			sb.append("\"%s\" : \"%s\"," % ("Description", self.Description))
 			sb.append("\"%s\" : \"%s\"," % ("ConcurrentInstances", self.ConcurrentInstances))
 			sb.append("\"%s\" : \"%s\"," % ("QueueDepth", self.QueueDepth))
+			sb.append("\"%s\" : \"%s\"," % ("NumberOfApprovedVersions", self.NumberOfApprovedVersions))
 			sb.append("\"%s\" : \"%s\"" % ("UseConnectorSystem", self.UseConnectorSystem))
 			sb.append("}")
 			return "".join(sb)

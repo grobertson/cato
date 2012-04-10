@@ -204,12 +204,44 @@ function doGetDetails() {
         dataType: "json",
         success: function (task) {
 	       try {
-	       		$("#hidOriginalTaskID").val(task.OriginalTaskID);
-	       		$("#txtTaskCode").val(task.Code);
-	       		$("#txtTaskName").val(task.Name);
-	       		$("#txtDescription").val(task.Description);
-	       		$("#txtConcurrentInstances").val(task.ConcurrentInstances);
-	       		$("#txtQueueDepth").val(task.QueueDepth);
+				$("#hidOriginalTaskID").val(task.OriginalTaskID);
+				$("#txtTaskCode").val(task.Code);
+				$("#txtTaskName").val(task.Name);
+				$("#txtDescription").val(task.Description);
+				$("#txtConcurrentInstances").val(task.ConcurrentInstances);
+				$("#txtQueueDepth").val(task.QueueDepth);
+	       		
+                //ATTENTION!
+                //Approved tasks CANNOT be edited.  So, if the status is approved... we redirect to the
+                //task 'view' page.
+                //this is to prevent any sort of attempts on the client to load an approved or otherwise 'locked' 
+                // version into the edit page.
+                if (task.Status == "Approved")
+                {
+                    location.href = "taskView.aspx?task_id=" + g_task_id;
+                }
+
+                $("#lblVersion").text(task.Version);
+                $("#lblCurrentVersion").text(task.Version);
+				$("#lblStatus2").text(task.Status);
+
+                /*                    
+                 * ok, this is important.
+                 * there are some rules for the process of 'Approving' a task.
+                 * specifically:
+                 * -- if there are no other approved tasks in this family, this one will become the default.
+                 * -- if there is another approved task in this family, we show the checkbox
+                 * -- allowing the user to decide whether or not to make this one the default
+                 */
+                if (task.NumberOfApprovedVersions > "0")
+                    $("#chkMakeDefault").show();
+                else
+                    $("#chkMakeDefault").hide();
+
+                //the header
+                $("#lblTaskNameHeader").text(task.Name);
+                $("#lblVersionHeader").text(task.Version + (task.IsDefaultVersion ? " (default)" : ""));
+	       		
 			} catch (ex) {
 				showAlert(response.d);
 			}
