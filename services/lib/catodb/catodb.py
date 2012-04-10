@@ -170,7 +170,7 @@ class Db(object):
 		if result:
 			return result
 		else:
-			return False
+			return None
 
 
 	def select_row_dict(self, sql, params=()):
@@ -190,26 +190,7 @@ class Db(object):
 		if result:
 			return result
 		else:
-			return False
-
-	def select_col_dict(self, sql, params=()):
-		"""Gets a single value from the database.  If the query returns more than one column, the first is used."""
-		if sql == "":
-			print "select_column: SQL cannot be empty."
 			return None
-		
-		try:
-			c = self.conn.cursor(pymysql.cursors.DictCursor)
-			c.execute(sql, params)
-			result = c.fetchone()
-			c.close()
-		except Exception, e:
-			raise Exception(e)
-
-		if result:
-			return result[0]
-		else:
-			return False
 
 
 # Now something interesting...
@@ -221,10 +202,15 @@ class Db(object):
 
 	def select_col_noexcep(self, sql, params=()):
 		try:
-			return self.select_col(sql, params)
+			result = self.select_col(sql, params)
+			if result:
+				return result #result is already a single column
+			else:
+				return "" #returns an empty string, not a boolean!
 		except Exception, e:
 			self.error = e.__str__()
-			return False
+			
+		return None
 
 	def exec_db_noexcep(self, sql, params=()):
 		try:
