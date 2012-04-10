@@ -18,7 +18,7 @@
 
 $(document).ready(function () {
     //used a lot
-    g_task_id = $("[id$='hidTaskID']").val();
+    g_task_id = getQuerystringVariable("task_id");
 
     //jquery buttons
     $("#asset_search_btn").button({ icons: { primary: "ui-icon-search"} });
@@ -51,7 +51,7 @@ $(document).ready(function () {
         location.href = "taskEdit.aspx?task_id=" + $(this).attr("task_id") + "&tab=versions";
     });
     //whatever the current version is... change it's class in the list
-    $("#v_" + $("#ctl00_phDetail_hidTaskID").val()).addClass("version_selected");
+    $("#v_" + g_task_id).addClass("version_selected");
 
 });
 
@@ -61,7 +61,7 @@ function tabWasClicked(tab) {
     //not a problem, they just won't be hit.
 
     if (tab == "parameters") {
-        doGetParams("task", $("#ctl00_phDetail_hidTaskID").val());
+        doGetParams("task", g_task_id);
     } else if (tab == "versions") {
         doGetVersions();
     } else if (tab == "schedules") {

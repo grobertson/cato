@@ -55,11 +55,10 @@ $(document).ready(function () {
         //don't start it unless it's 'inactive'
         //if ($("[id$='lblCurrentStatus']").text() == "Inactive") {
 
-        var task_id = $("#ctl00_phDetail_hidTaskID").val();
-        var task_name = $("#ctl00_phDetail_lblTaskNameHeader").html() + " - " + $("#ctl00_phDetail_lblVersionHeader").html();
-        var asset_id = $("#ctl00_phDetail_txtTestAsset").attr("asset_id");
+        var task_name = $("#lblTaskNameHeader").html() + " - " + $("#lblVersionHeader").html();
+        var asset_id = $("#txtTestAsset").attr("asset_id");
 
-        var args = '{"task_id":"' + task_id + '", "task_name":"' + task_name + '", "debug_level":"4"}';
+        var args = '{"task_id":"' + g_task_id + '", "task_name":"' + g_task_id + '", "debug_level":"4"}';
             
         //note: we are not passing the account_id - the dialog will use the default
         ShowTaskLaunchDialog(args);
@@ -69,13 +68,12 @@ $(document).ready(function () {
     });
 
     //bind the debug show log button
-    $("#ctl00_phDetail_debug_view_latest_log").click(function () {
-    	var id = $("#ctl00_phDetail_hidTaskID").val();
-        openDialogWindow('taskRunLog.aspx?task_id=' + id, 'TaskRunLog' + id, 950, 750, 'true');
+    $("#debug_view_latest_log").click(function () {
+        openDialogWindow('taskRunLog.aspx?task_id=' + g_task_id, 'TaskRunLog' + g_task_id, 950, 750, 'true');
     });
     //bind the debug show active log button
     $("#debug_view_active_log").click(function () {
-        var aid = $("#ctl00_phDetail_hidDebugActiveInstance").val();
+        var aid = $("#hidDebugActiveInstance").val();
         if (aid != "") {
             openDialogWindow('taskRunLog.aspx?task_instance=' + aid, 'TaskRunLog' + aid, 950, 750, 'true');
         }
@@ -83,8 +81,8 @@ $(document).ready(function () {
 
 
     $("#debug_asset_clear_btn").click(function () {
-        $("#ctl00_phDetail_txtTestAsset").val("");
-        $("#ctl00_phDetail_txtTestAsset").attr("asset_id", "");
+        $("#txtTestAsset").val("");
+        $("#txtTestAsset").attr("asset_id", "");
         doSaveDebugAsset();
     });
 
@@ -126,7 +124,7 @@ $(document).ready(function () {
                 $("#asset_picker_results li[tag='asset_picker_row']").click(function () {
 
 
-                    if ($("#asset_picker_target_field").val() == "ctl00_phDetail_txtTestAsset") {
+                    if ($("#asset_picker_target_field").val() == "txtTestAsset") {
                         field.val($(this).attr("asset_name"))
                         //this is the picker for the Debug tab
                         field.attr("asset_id", $(this).attr("asset_id"));
@@ -171,7 +169,7 @@ function doDebugStop() {
     //if (current_status != "Inactive" && current_status != "Aborting") {
     $("#update_success_msg").text("Stopping...").fadeIn(200);
 
-    var $instance = $("#ctl00_phDetail_hidDebugActiveInstance");
+    var $instance = $("#hidDebugActiveInstance");
 
 	if ($instance.val() == '')
 		return;
@@ -202,15 +200,14 @@ function doDebugStop() {
     //}
 }
 function doSaveDebugAsset() {
-    var task_id = $("#ctl00_phDetail_hidTaskID").val();
-    var asset_id = $("#ctl00_phDetail_txtTestAsset").attr("asset_id");
+    var asset_id = $("#txtTestAsset").attr("asset_id");
     $("#update_success_msg").text("Updating...").show();
 
     $.ajax({
         async: false,
         type: "POST",
         url: "taskMethods.asmx/wmSaveTestAsset",
-        data: '{"sTaskID":"' + task_id + '","sAssetID":"' + asset_id + '"}',
+        data: '{"sTaskID":"' + g_task_id + '","sAssetID":"' + asset_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {

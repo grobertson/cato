@@ -15,8 +15,8 @@
 
 //This is all the functions to support the taskEdit page.
 $(document).ready(function () {
-    //used a lot
-    g_task_id = $("[id$='hidTaskID']").val();
+    //used a lot - also on different script files so be mindful of the include order
+    g_task_id = getQuerystringVariable("task_id");
 
     //fix certain ui elements to not have selectable text
     $("#toolbox .toolbox_tab").disableSelection();
@@ -26,11 +26,11 @@ $(document).ready(function () {
     $(".step_common_button").disableSelection();
 
     //specific field validation and masking
-    $("#ctl00_phDetail_txtTaskCode").keypress(function (e) { return restrictEntryCustom(e, this, /[a-zA-Z0-9 _\-]/); });
-    $("#ctl00_phDetail_txtTaskName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
-    $("#ctl00_phDetail_txtTaskDesc").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
-    $("#ctl00_phDetail_txtConcurrentInstances").keypress(function (e) { return restrictEntryToPositiveInteger(e, this); });
-    $("#ctl00_phDetail_txtQueueDepth").keypress(function (e) { return restrictEntryToPositiveInteger(e, this); });
+    $("#txtTaskCode").keypress(function (e) { return restrictEntryCustom(e, this, /[a-zA-Z0-9 _\-]/); });
+    $("#txtTaskName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
+    $("#txtTaskDesc").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
+    $("#txtConcurrentInstances").keypress(function (e) { return restrictEntryToPositiveInteger(e, this); });
+    $("#txtQueueDepth").keypress(function (e) { return restrictEntryToPositiveInteger(e, this); });
 
     //enabling the 'change' event for the Details tab
     $("#div_details :input[te_group='detail_fields']").change(function () { doDetailFieldUpdate(this); });
@@ -54,7 +54,7 @@ $(document).ready(function () {
             'Approve': function () {
                 $.blockUI({ message: null });
 
-                var $chk = $("#ctl00_phDetail_chkMakeDefault");
+                var $chk = $("#chkMakeDefault");
                 var make_default = 0;
 
                 if ($chk.is(':checked'))
@@ -182,22 +182,51 @@ $(document).ready(function () {
         $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
     });
 
+	//get the details
+	doGetDetails();
 	//get the codeblocks
-	doGetCodeblocks();
+	//doGetCodeblocks();
 	//get the steps
-	doGetSteps();
+	//doGetSteps();
 
     //finally, init the draggable items (commands and the clipboard)
     //this will also be called when items are added/removed from the clipboard.
     initDraggable();
 });
 
+function doGetDetails() {
+	$.ajax({
+        type: "POST",
+        async: false,
+        url: "taskMethods/wmGetTask",
+        data: '{"sTaskID":"' + g_task_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (task) {
+	       try {
+	       		$("#hidOriginalTaskID").val(task.OriginalTaskID);
+	       		$("#txtTaskCode").val(task.Code);
+	       		$("#txtTaskName").val(task.Name);
+	       		$("#txtDescription").val(task.Description);
+	       		$("#txtConcurrentInstances").val(task.ConcurrentInstances);
+	       		$("#txtQueueDepth").val(task.QueueDepth);
+			} catch (ex) {
+				showAlert(response.d);
+			}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+
+}
+
 function doGetSteps() {
 	//this codeblock thing has always been an issue.  What codeblock are we getting?
 	//for now, we're gonna try keeping the codeblock in a hidden field
-    var codeblock_name = $("#ctl00_phDetail_hidCodeblockName").val();
+    var codeblock_name = $("#hidCodeblockName").val();
 
-		$.ajax({
+	$.ajax({
         type: "POST",
         async: false,
         url: "taskMethods.asmx/wmGetSteps",
@@ -263,7 +292,7 @@ function doDetailFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // bugzilla 1037 Change the name in the header
-                    if (column == "task_name") { $("#ctl00_phDetail_lblTaskNameHeader").html(unpackJSON(value)); };
+                    if (column == "task_name") { $("#lblTaskNameHeader").html(unpackJSON(value)); };
                 }
 
 

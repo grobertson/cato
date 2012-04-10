@@ -81,7 +81,7 @@ $(document).ready(function () {
     $("#codeblock_selector .codeblock_title").live("click", function () {
         cb = $(this).attr("name");
 
-        $("#ctl00_phDetail_hidCodeblockName").val(cb);
+        $("#hidCodeblockName").val(cb);
         doGetSteps();
         $("#codeblock_selector").hide();
     });
@@ -133,7 +133,7 @@ function doGetCodeblocks() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetCodeblocks",
+        url: "taskMethods/wmGetCodeblocks",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -216,9 +216,9 @@ function doCodeblockUpdate(old_name) {
                 $("#codeblock_edit_dialog").dialog("close");
 
                 //if we are looking at the codeblock we are changing... gotta reset the hidden field
-                if ($("#ctl00_phDetail_hidCodeblockName").val() == old_name) {
+                if ($("#hidCodeblockName").val() == old_name) {
                     $("#codeblock_steps_title").text(sNewCodeblockName);
-                    $("#ctl00_phDetail_hidCodeblockName").val(sNewCodeblockName);
+                    $("#hidCodeblockName").val(sNewCodeblockName);
                 }
 
                 //refresh the codeblock list
@@ -258,7 +258,7 @@ function doCodeblockAdd() {
 	        dataType: "json",
 	        success: function (response) {
 		        //set the hidden field and label
-		        $("#ctl00_phDetail_hidCodeblockName").val(codeblock_name);
+		        $("#hidCodeblockName").val(codeblock_name);
 		        $("#codeblock_steps_title").text(codeblock_name);
 		
 				//refresh the list
@@ -312,7 +312,7 @@ function doCodeblockDelete() {
 		    $("#codeblock_to_delete").val("");
 		
 		    //when we delete a codeblock we reset the step list to MAIN.
-		    $("#ctl00_phDetail_hidCodeblockName").val("MAIN");
+		    $("#hidCodeblockName").val("MAIN");
 			doGetSteps();
 		
 		    $("#update_success_msg").text("Update Successful").fadeOut(2000);

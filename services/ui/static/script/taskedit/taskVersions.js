@@ -34,7 +34,7 @@ function CreateNewVersion() {
     $.ajax({
         type: "POST",
         url: "taskMethods.asmx/wmCreateNewTaskVersion",
-        data: '{"sTaskID":"' + $("#ctl00_phDetail_hidTaskID").val() + '","sMinorMajor":"' + $("input[name='rbMinorMajor']:checked").val() + '"}',
+        data: '{"sTaskID":"' + g_task_id + '","sMinorMajor":"' + $("input[name='rbMinorMajor']:checked").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(msg) {
@@ -66,7 +66,7 @@ function doGetVersions() {
         async: false,
         type: "POST",
         url: "taskMethods.asmx/wmGetTaskVersions",
-        data: '{"sTaskID":"' + $("#ctl00_phDetail_hidTaskID").val() + '"}',
+        data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (retval) {

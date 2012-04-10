@@ -159,7 +159,7 @@ $(document).ready(function() {
 
     //the onclick event of the 'delete' link of each step
     $("#steps .step_delete_btn").live("click", function() {
-        $("#ctl00_phDetail_hidStepDelete").val($(this).attr("remove_id"));
+        $("#hidStepDelete").val($(this).attr("remove_id"));
         $("#step_delete_confirm_dialog").dialog('open');
     });
 
@@ -205,7 +205,7 @@ $(document).ready(function() {
             async: false,
             type: "POST",
             url: "taskMethods.asmx/wmGetTaskConnections",
-            data: '{"sTaskID":"' + $("#ctl00_phDetail_hidTaskID").val() + '"}',
+            data: '{"sTaskID":"' + g_task_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function(retval) {
@@ -262,7 +262,7 @@ $(document).ready(function() {
             async: false,
             type: "POST",
             url: "taskMethods.asmx/wmGetTaskCodeblocks",
-            data: '{"sTaskID":"' + $("#ctl00_phDetail_hidTaskID").val() + '","sStepID":"' + stepid + '"}',
+            data: '{"sTaskID":"' + g_task_id + '","sStepID":"' + stepid + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function(retval) {
@@ -624,7 +624,7 @@ function showVarPicker(e) {
         async: false,
         type: "POST",
         url: "taskMethods.asmx/wmGetTaskVariables",
-        data: '{"sTaskID":"' + $("#ctl00_phDetail_hidTaskID").val() + '"}',
+        data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(retval) {
@@ -742,7 +742,7 @@ function doStepDelete() {
     );
 
 
-    var step_id = $("#ctl00_phDetail_hidStepDelete").val();
+    var step_id = $("#hidStepDelete").val();
     //don't need to block, the dialog blocks.
     $("#update_success_msg").text("Updating...").show();
     $.ajax({
@@ -776,13 +776,13 @@ function doStepDelete() {
         }
     });
 
-    $("#ctl00_phDetail_hidStepDelete").val("");
+    $("#hidStepDelete").val("");
 }
 
 function doStepAdd(new_step) {
     //ok this works, but we need to know if it's a new item before we override the html
-    var task_id = $("#ctl00_phDetail_hidTaskID").val();
-    var codeblock_name = $("#ctl00_phDetail_hidCodeblockName").val();
+    var task_id = g_task_id;
+    var codeblock_name = $("#hidCodeblockName").val();
     var item = new_step.attr("id");
 
     //it's a new drop!

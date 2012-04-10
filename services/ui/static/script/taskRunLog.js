@@ -123,7 +123,6 @@ $(document).ready(function () {
             OK: function () {
                 $(this).dialog('close');
 
-                var task_id = $("#ctl00_phDetail_hidTaskID").val();
                 var task_name = $("#ctl00_phDetail_lblTaskName").html();
                 var asset_id = $("#ctl00_phDetail_hidAssetID").val();
                 var ecosystem_id = $("#ctl00_phDetail_hidEcosystemID").val();
@@ -132,7 +131,7 @@ $(document).ready(function () {
                 var instance = $("#ctl00_phDetail_hidInstanceID").val();
                 var debug_level = $("#ctl00_phDetail_hidDebugLevel").val();
 
-				var args = '{"task_id":"' + task_id + '", "task_name":"' + task_name + '", "debug_level":"' + debug_level + '"';
+				var args = '{"task_id":"' + g_task_id + '", "task_name":"' + task_name + '", "debug_level":"' + debug_level + '"';
         
 				if (account_id)
 					args += ', "account_id":"' + account_id + '", "account_name":"' + account_name + '"';

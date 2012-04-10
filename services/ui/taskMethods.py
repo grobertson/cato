@@ -71,6 +71,22 @@ class taskMethods:
 
         return sHTML    
 
+    def wmGetTask(self):
+        try:
+            sID = uiCommon.getAjaxArg("sTaskID")
+            t, sErr = task.Task.FromID(sID)
+            if sErr:
+                print sErr
+            if t:
+                if t.ID:
+                    print t.ID
+                    return t.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Task details for Task ID [" + sID + "].'}"
+        except Exception, ex:
+            raise ex
+
     def wmCreateTask(self):
         sTaskName = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskName"))
         sTaskCode = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskCode"))

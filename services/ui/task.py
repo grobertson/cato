@@ -51,6 +51,51 @@ class Task(object):
 		self.Code = sCode
 		self.Description = sDesc
 
+	#constructor - from the database by ID
+	@staticmethod
+	def FromID(sTaskID, bIncludeUserSettings = False):
+		sErr = ""
+		try:
+			t = Task()
+			
+			db = catocommon.new_conn()
+
+			sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," \
+					" task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" \
+					" from task" \
+					" where task_id = '" + sTaskID + "'"
+
+			dr = db.select_row_dict(sSQL)
+
+			if dr:
+				sErr = t.PopulateTask(dr, bIncludeUserSettings)
+				
+			if t.ID:
+				return t, ""
+			else:
+				return None, sErr
+			
+		except Exception, ex:
+			raise ex
+
+	"""@staticmethod
+	def FromOTIDVersion(self, sOriginalTaskID, sVersion):
+		try:
+			dc = dataAccess()
+			sVersionClause = ""
+			if str.IsNullOrEmpty(sVersion):
+				sVersionClause = " and default_version = 1"
+			else:
+				sVersionClause = " and version = '" + sVersion + "'"
+			sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," + " task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" + " from task" + " where original_task_id = '" + sOriginalTaskID + "'" + sVersionClause
+			dr = None
+			if not dc.sqlGetDataRow(, sSQL, ):
+				return 
+			if dr != None:
+				self.PopulateTask(dr, False, )
+		except Exception, ex:
+			raise ex"""
+
 	def FromXML(self, sTaskXML=""):
 		if sTaskXML == "": return None
 		
@@ -116,6 +161,27 @@ class Task(object):
 				xStep.set("codeblock", stp.Codeblock)
 		
 		return ET.tostring(root)
+
+	def AsJSON(self):
+		print "inasjson"
+		try:
+			sb = []
+			sb.append("{")
+			sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+			sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+			sb.append("\"%s\" : \"%s\"," % ("Code", self.Code))
+			sb.append("\"%s\" : \"%s\"," % ("Version", self.Version))
+			sb.append("\"%s\" : \"%s\"," % ("Status", self.Status))
+			sb.append("\"%s\" : \"%s\"," % ("OriginalTaskID", self.OriginalTaskID))
+			sb.append("\"%s\" : \"%s\"," % ("IsDefaultVersion", self.IsDefaultVersion))
+			sb.append("\"%s\" : \"%s\"," % ("Description", self.Description))
+			sb.append("\"%s\" : \"%s\"," % ("ConcurrentInstances", self.ConcurrentInstances))
+			sb.append("\"%s\" : \"%s\"," % ("QueueDepth", self.QueueDepth))
+			sb.append("\"%s\" : \"%s\"" % ("UseConnectorSystem", self.UseConnectorSystem))
+			sb.append("}")
+			return "".join(sb)
+		except Exception, ex:
+			raise ex
 
 	def DBSave(self, db = None, bLocalTransaction = True):
 		print "here we go"
@@ -191,14 +257,14 @@ class Task(object):
 							" (task_id, original_task_id, version, default_version," \
 							" task_name, task_code, task_desc, task_status, created_dt)" \
 							" values " \
-							" ('" + self._ID + "'," \
-							" '" + self._OriginalTaskID + "'," \
-							" " + self._Version + "," + " " \
-							(1 if self._IsDefaultVersion else 0) + "," \
-							" '" + ui.TickSlash(self._Name) + "'," \
-							" '" + ui.TickSlash(self._Code) + "'," \
-							" '" + ui.TickSlash(self._Description) + "'," \
-							" '" + self._Status + "'," \
+							" ('" + self.ID + "'," \
+							" '" + self.OriginalTaskID + "'," \
+							" " + self.Version + "," + " " \
+							(1 if self.IsDefaultVersion else 0) + "," \
+							" '" + ui.TickSlash(self.Name) + "'," \
+							" '" + ui.TickSlash(self.Code) + "'," \
+							" '" + ui.TickSlash(self.Description) + "'," \
+							" '" + self.Status + "'," \
 							" now())"
 						if not oTrans.ExecUpdate():
 							return False
@@ -214,14 +280,14 @@ class Task(object):
 							" (task_id, original_task_id, version, default_version," \
 							" task_name, task_code, task_desc, task_status, created_dt)" \
 							" values " \
-							" ('" + self._ID + "'," \
-							" '" + self._OriginalTaskID + "'," \
-							" " + self._Version + "," \
-							" " + (1 if self._IsDefaultVersion else 0) + "," \
-							" '" + ui.TickSlash(self._Name) + "'," \
-							" '" + ui.TickSlash(self._Code) + "'," \
-							" '" + ui.TickSlash(self._Description) + "'," \
-							" '" + self._Status + "'," \
+							" ('" + self.ID + "'," \
+							" '" + self.OriginalTaskID + "'," \
+							" " + self.Version + "," \
+							" " + (1 if self.IsDefaultVersion else 0) + "," \
+							" '" + ui.TickSlash(self.Name) + "'," \
+							" '" + ui.TickSlash(self.Code) + "'," \
+							" '" + ui.TickSlash(self.Description) + "'," \
+							" '" + self.Status + "'," \
 							" now())"
 						if not oTrans.ExecUpdate():
 							return False
@@ -300,10 +366,106 @@ class Task(object):
 				print "committing"
 				db.tran_commit()
 		except Exception, ex:
-			return False, "Error updating the DB. " + ex.__str__()
+			return False, "Error updating the DB. " + ex._str__()
 		finally:
 			return True, ""
 
+	def PopulateTask(self, dr, IncludeUserSettings):
+		try:
+			#of course it exists...
+			self.DBExists = True
+
+			self.ID = dr["task_id"]
+			self.Name = dr["task_name"]
+			self.Code = dr["task_code"]
+			self.Version = dr["version"]
+			self.Status = dr["task_status"]
+			self.OriginalTaskID = dr["original_task_id"]
+			self.IsDefaultVersion = (True if dr["default_version"] == "1" else False)
+			self.Description = (dr["task_desc"] if dr["task_desc"] else "")
+			self.ConcurrentInstances = (dr["concurrent_instances"] if dr["concurrent_instances"] else "")
+			self.QueueDepth = (dr["queue_depth"] if dr["queue_depth"] else "")
+			self.UseConnectorSystem = (True if dr["use_connector_system"] == 1 else False)
+			"""
+			#parameters
+			if not str.IsNullOrEmpty(dr["parameter_xml"]):
+				xParameters = XDocument.Parse(dr["parameter_xml"])
+				if xParameters != None:
+					self.ParameterXDoc = xParameters
+			# 
+			# * ok, this is important.
+			# * there are some rules for the process of 'Approving' a task and other things.
+			# * so, we'll need to know some count information
+			# 
+			sSQL = "select count(*) from task" + " where original_task_id = '" + self.OriginalTaskID + "'" + " and task_status = 'Approved'"
+			iCount = 0
+			if not dc.sqlGetSingleInteger(, sSQL, ):
+				return None
+			self.NumberOfApprovedVersions = iCount
+			sSQL = "select count(*) from task" + " where original_task_id = '" + self.OriginalTaskID + "'"
+			if not dc.sqlGetSingleInteger(, sSQL, ):
+				return None
+			self.NumberOfOtherVersions = iCount
+			#now, the fun stuff
+			#1 get all the codeblocks and populate that dictionary
+			#2 then get all the steps... ALL the steps in one sql
+			#..... and while spinning them put them in the appropriate codeblock
+			#GET THE CODEBLOCKS
+			sSQL = "select codeblock_name" + " from task_codeblock" + " where task_id = '" + self.ID + "'" + " order by codeblock_name"
+			dt = DataTable()
+			if not dc.sqlGetDataTable(, sSQL, ):
+				return None
+			if dt.Rows.Count > 0:
+				enumerator = dt.Rows.GetEnumerator()
+				while enumerator.MoveNext():
+					drCB = enumerator.Current
+					self.Codeblocks.Add(drCB["codeblock_name"], Codeblock(drCB["codeblock_name"]))
+			else:
+				#uh oh... there are no codeblocks!
+				#since all tasks require a MAIN codeblock... if it's missing,
+				#we can just repair it right here.
+				sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + self.ID + "', 'MAIN')"
+				if not dc.sqlExecuteUpdate(sSQL, ):
+					return None
+				self.Codeblocks.Add("MAIN", Codeblock("MAIN"))
+			#GET THE STEPS
+			#we need the userID to get the user settings in some cases
+			if IncludeUserSettings:
+				sUserID = ui.GetSessionUserID()
+				#NOTE: it may seem like sorting will be an issue, but it shouldn't.
+				#sorting ALL the steps by their ID here will ensure they get added to their respective 
+				# codeblocks in the right order.
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," + " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," + " us.visible, us.breakpoint, us.skip, us.button" + " from task_step s" + " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" + " where s.task_id = '" + self.ID + "'" + " order by s.step_order"
+			else:
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," + " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," + " 0 as visible, 0 as breakpoint, 0 as skip, '' as button" + " from task_step s" + " where s.task_id = '" + self.ID + "'" + " order by s.step_order"
+			dtSteps = DataTable()
+			if not dc.sqlGetDataTable(, sSQL, ):
+				sErr += "Database Error: " + sErr
+			if dtSteps.Rows.Count > 0:
+				enumerator = dtSteps.Rows.GetEnumerator()
+				while enumerator.MoveNext():
+					drSteps = enumerator.Current
+					oStep = Step(drSteps, self)
+					if oStep != None:
+						#a 'REAL' codeblock will be in this collection
+						# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+						if self.Codeblocks.ContainsKey(oStep.Codeblock):
+							self.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep)
+						else:
+							#so, what do we do if we found a step that's not in a 'real' codeblock?
+							#well, the gui will take care of drawing those embedded steps...
+							#but we have a problem with export, version up, etc.
+							#these steps can't be orphans!
+							#so, we'll go ahead and create codeblocks for them.
+							#this is terrible, but part of the problem with this embedded stuff.
+							#we'll tweak the gui so GUID named codeblocks don't show.
+							self.Codeblocks.Add(oStep.Codeblock, Codeblock(oStep.Codeblock))
+							self.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep)
+			#maybe one day we'll do the full recusrive loading of all embedded steps here
+			# but not today... it's a big deal and we need to let these changes settle down first.
+			"""
+		except Exception, ex:
+			raise ex
 
 class Codeblock(object):
 	def __init__(self):
@@ -324,8 +486,6 @@ class Codeblock(object):
 			newstep = Step()
 			newstep.FromXML(ET.tostring(xStep), self.Name)
 			self.Steps[newstep.ID] = newstep
-
-
 
 class Step(object):
 	def __init__(self):

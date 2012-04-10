@@ -67,7 +67,7 @@ $(document).ready(function () {
         ShowParameterEdit($(this).attr("id"));
     });
     $("#parameters .parameter_remove_btn").live("click", function () {
-        $("#ctl00_phDetail_hidParamDelete").val($(this).attr("remove_id"));
+        $("#hidParamDelete").val($(this).attr("remove_id"));
         $("#param_delete_confirm_dialog").dialog('open');
     });
 
@@ -127,9 +127,9 @@ function ShowParameterEdit(param_id) {
     var id = "";
     var type = $("#hidParamType").val();
     if (type == "task")
-        id = $("#ctl00_phDetail_hidTaskID").val();
+        id = g_task_id;
     else if (type == "ecosystem")
-        id = $("#ctl00_phDetail_hidEcosystemID").val();
+        id = $("#hidEcosystemID").val();
 
     //go get the details for the parameter via ajax and populate the dialog
     $.ajax({
@@ -157,9 +157,9 @@ function doSaveParam() {
     var id = "";
     var type = $("#hidParamType").val();
     if (type == "task")
-        id = $("#ctl00_phDetail_hidTaskID").val();
+        id = g_task_id;
     else if (type == "ecosystem")
-        id = $("#ctl00_phDetail_hidEcosystemID").val();
+        id = $("#hidEcosystemID").val();
 
     var param_id = $("#param_edit_param_id").val();
     var name = $("#param_edit_name").val();
@@ -246,13 +246,13 @@ function doSaveParam() {
 }
 
 function doDeleteParam() {
-    var param_id = $("#ctl00_phDetail_hidParamDelete").val();
+    var param_id = $("#hidParamDelete").val();
     var id = "";
     var type = $("#hidParamType").val();
     if (type == "task")
-        id = $("#ctl00_phDetail_hidTaskID").val();
+        id = g_task_id;
     else if (type == "ecosystem")
-        id = $("#ctl00_phDetail_hidEcosystemID").val();
+        id = $("#hidEcosystemID").val();
 
     $("#update_success_msg").text("Updating...").show();
     $.ajax({

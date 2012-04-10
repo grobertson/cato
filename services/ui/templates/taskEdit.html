@@ -12,42 +12,41 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             <span id="tab_schedules" linkto="div_schedules" class="ui-state-default ui-corner-top toolbox_tab">Schedules</span><span id="tab_parameters" 
 				linkto="div_parameters"
                     class="ui-state-default ui-corner-top toolbox_tab">Parameters</span><span id="tab_clipboard"
-                        linkto="div_clipboard" class="ui-state-default ui-corner-top toolbox_tab" runat="server">Clipboard</span><br />
+                        linkto="div_clipboard" class="ui-state-default ui-corner-top toolbox_tab">Clipboard</span><br />
             <span id="tab_details" linkto="div_details" class="ui-state-default ui-corner-top ui-state-active toolbox_tab">
                 Details</span><span id="tab_versions" linkto="div_versions" class="ui-state-default ui-corner-top toolbox_tab">Versions</span><span
                         id="tab_commands" linkto="div_commands" class="ui-state-default ui-corner-top toolbox_tab">Commands</span><span
                             id="tab_debug" linkto="div_debug" class="ui-state-default ui-corner-top toolbox_tab">Run</span>
             <!--<<span
                         id="tab_registry" linkto="div_registry" class="ui-state-default ui-corner-top toolbox_tab"
-                        style="padding-left: 7px; padding-right: 7px;" runat="server">Registry</span><span
+                        style="padding-left: 7px; padding-right: 7px;">Registry</span><span
                             id="tab_tags" linkto="div_tags" class="ui-state-default ui-corner-top toolbox_tab">Tags</span>-->
         </div>
         <div id="div_details" class="toolbox_panel">
             <div style="padding: 0 0 0 5px;">
                 <span class="detail_label">Code:</span>
-                <asp:TextBox ID="txtTaskCode" runat="server" CssClass="task_details code" validate_as=""
-                    te_group="detail_fields" column="task_code"></asp:TextBox>
+                <input type="text" id="txtTaskCode" class="task_details code" validate_as=""
+                    te_group="detail_fields" column="task_code" />
                 <br />
                 <span class="detail_label">Name:</span>
-                <asp:TextBox ID="txtTaskName" runat="server" CssClass="task_details code" te_group="detail_fields"
-                    column="task_name"></asp:TextBox>
+                <input type="text" id="txtTaskName" class="task_details code" te_group="detail_fields"
+                    column="task_name" />
                 <br />
                 <span class="detail_label">Description:</span>
                 <br />
-                <asp:TextBox ID="txtDescription" TextMode="MultiLine" Rows="5" runat="server" CssClass="code"
-                    te_group="detail_fields" column="task_desc"></asp:TextBox>
+                <textarea id="txtDescription" rows="5" class="code" te_group="detail_fields" column="task_desc"></textarea>
                 <br />
                 <!-- *** Commented out per Bug 1029 ***
-                    <input type="checkbox" class="chkbox" id="chkDirect" runat="server" te_group="detail_fields"
+                    <input type="checkbox" class="chkbox" id="chkDirect" te_group="detail_fields"
                         column="use_connector_system" />
                     Direct to Asset?<br />-->
                 <span class="detail_label">Concurrent Instances:</span>
-                <asp:TextBox ID="txtConcurrentInstances" runat="server" CssClass="task_details code"
-                    te_group="detail_fields" column="concurrent_instances" validate_as="posint"></asp:TextBox>
+                <input type="text" id="txtConcurrentInstances" class="task_details code"
+                    te_group="detail_fields" column="concurrent_instances" validate_as="posint" />
                 <br />
                 <span class="detail_label">Number to Queue:</span>
-                <asp:TextBox ID="txtQueueDepth" runat="server" CssClass="task_details code" te_group="detail_fields"
-                    column="queue_depth" validate_as="posint"></asp:TextBox>
+                <input type="text" id="txtQueueDepth" class="task_details code" te_group="detail_fields"
+                    column="queue_depth" validate_as="posint" />
                 <br />
                 <br />
                 <hr />
@@ -59,9 +58,9 @@ $var cssfiles: registry.css taskEdit.css taskView.css
         </div>
         <div id="div_versions" class="toolbox_panel hidden">
             <span class="detail_label">Selected Version:</span>
-            <asp:Label ID="lblVersion" runat="server" CssClass="code"></asp:Label><br />
+            <asp:Label ID="lblVersion" class="code"></asp:Label><br />
             <span class="detail_label">Status: </span>
-            <asp:Label ID="lblStatus2" runat="server" CssClass="code"></asp:Label><br />
+            <asp:Label ID="lblStatus2" class="code"></asp:Label><br />
             <input type="button" id="approve_btn" value="Approve" />
             <hr />
             <span class="detail_label">All Versions:</span>
@@ -76,12 +75,12 @@ $var cssfiles: registry.css taskEdit.css taskView.css
                 <tr>
                     <td width="30%">
                         <ul id="categories">
-							<asp:Literal ID="ltCategories" runat="server"></asp:Literal>
+							<asp:Literal ID="ltCategories"></asp:Literal>
                         </ul>
                     </td>
                     <td width="70%">
                         <div class="category_functions" id="category_functions">
-							<asp:Literal ID="ltFunctions" runat="server"></asp:Literal>
+							<asp:Literal ID="ltFunctions"></asp:Literal>
                         </div>
                     </td>
                 </tr>
@@ -90,8 +89,8 @@ $var cssfiles: registry.css taskEdit.css taskView.css
         <div id="div_debug" class="toolbox_panel hidden">
             <!--<p>
                 Test Asset:<br />
-                <asp:TextBox ID="txtTestAsset" runat="server" Enabled="false" asset_id="" CssClass="code"
-                    Width="80%"></asp:TextBox>
+                <input type="text" id="txtTestAsset" Enabled="false" asset_id="" class="code"
+                    Width="80%" />
                 <img class="asset_picker_btn pointer" src="static/images/icons/search.png" link_to="ctl00_phDetail_txtTestAsset"
                     alt="" />
                 <img id="debug_asset_clear_btn" class="pointer" src="static/images/icons/fileclose.png"
@@ -99,18 +98,18 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             </p>-->
             <p>
                 Last Run Time:
-                <asp:Label ID="lblLastRunDT" runat="server"></asp:Label><br />
+                <asp:Label ID="lblLastRunDT"></asp:Label><br />
                 Last Run Status:
-                <asp:Label ID="lblLastRunStatus" runat="server"></asp:Label>
-                <asp:Image ID="debug_view_latest_log" CssClass="debug_btn" ImageUrl="static/images/icons/view_text_16.png"
-                    runat="server" />
+                <asp:Label ID="lblLastRunStatus"></asp:Label>
+                <asp:Image ID="debug_view_latest_log" class="debug_btn" ImageUrl="static/images/icons/view_text_16.png"
+                    />
             </p>
             <br />
             <hr />
             <br />
             <p style="text-align: center;">
                 Current Status:
-                <asp:Label ID="lblCurrentStatus" runat="server"></asp:Label>
+                <asp:Label ID="lblCurrentStatus"></asp:Label>
                 <br />
                 <img id="debug_stop_btn" class="debug_btn" src="static/images/icons/player_stop_32.png"
                     alt="" />
@@ -143,7 +142,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             <span id="clear_clipboard_btn">Clear All</span>
             <hr />
             <ul id="clipboard">
-                <asp:PlaceHolder ID="phClipboard" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="phClipboard"></asp:PlaceHolder>
             </ul>
         </div>
         <div id="div_tags" class="toolbox_panel hidden">
@@ -162,9 +161,9 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 <div id="content_te">
     <center>
         <h3>
-            <asp:Label ID="lblTaskNameHeader" runat="server"></asp:Label>
+            <asp:Label ID="lblTaskNameHeader"></asp:Label>
             <span id="version_tag">Version:
-                <asp:Label ID="lblVersionHeader" runat="server"></asp:Label></span></h3>
+                <asp:Label ID="lblVersionHeader"></asp:Label></span></h3>
     </center>
     <div class="te_help_box">
         <img src="static/images/icons/about_24.png" height="16px" width="16px" alt="" />
@@ -199,16 +198,13 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 <div id="step_update_array" class="hidden">
 </div>
 <div class="hidden">
-    <asp:HiddenField ID="hidCodeblockName" runat="server" Value="MAIN"></asp:HiddenField>
+    <input type="hidden" id="hidCodeblockName" Value="MAIN" />
     <input type="hidden" id="hidParamType" value="task" />
-    <input id="hidObjectType" type="hidden" value="3" />
-    <asp:HiddenField ID="hidTaskID" runat="server"></asp:HiddenField>
-    <asp:HiddenField ID="hidOriginalTaskID" runat="server"></asp:HiddenField>
-    <asp:HiddenField ID="hidDefault" runat="server"></asp:HiddenField>
-    <asp:HiddenField ID="hidStepDelete" runat="server"></asp:HiddenField>
-    <asp:HiddenField ID="hidParamDelete" runat="server"></asp:HiddenField>
-    <asp:HiddenField ID="hidDebugActiveInstance" runat="server"></asp:HiddenField>
-
+    <input type="hidden" id="hidObjectType" value="3" />
+    <input type="hidden" id="hidOriginalTaskID" />
+    <input type="hidden" id="hidStepDelete" />
+    <input type="hidden" id="hidParamDelete" />
+    <input type="hidden" id="hidDebugActiveInstance" />
 </div>
 <div id="step_delete_confirm_dialog" title="Delete Step" class="hidden ui-state-highlight">
     <p>
@@ -299,12 +295,12 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 </div>
 <div id="addVersion_dialog" class="hidden" title="Create Another Version">
     Current Version Number:
-    <asp:Label ID="lblCurrentVersion" runat="server" Text="" />
+    <asp:Label ID="lblCurrentVersion" Text="" />
     <center>
         <input id="rbMinor" checked="checked" name="rbMinorMajor" value="Minor" type="radio" />
-        <asp:Label ID="lblNewMinor" runat="server" Text="New Minor Version" /><br />
+        <asp:Label ID="lblNewMinor" Text="New Minor Version" /><br />
         <input id="rbMajor" name="rbMinorMajor" value="Major" type="radio" />
-        <asp:Label ID="lblNewMajor" runat="server" Text="New Major Version" /><br />
+        <asp:Label ID="lblNewMajor" Text="New Major Version" /><br />
         <input type="button" value="Create New Version" onclick="CreateNewVersion();return false;" />
         <input type="button" value="Cancel" onclick="CloseVersionDialog();return false;" />
     </center>
@@ -337,7 +333,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
     <p>
         Are you sure you wish to Approve this Version?</p>
     <p style="text-align: center;">
-        <asp:CheckBox ID="chkMakeDefault" runat="server" Text="Mark as the 'Default' Version?" />
+        <asp:CheckBox ID="chkMakeDefault" Text="Mark as the 'Default' Version?" />
     </p>
 </div>
 <div id="codeblock_edit_dialog" title="Codeblock" class="hidden">
