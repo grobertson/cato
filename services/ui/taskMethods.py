@@ -84,17 +84,17 @@ class taskMethods:
             t.FromArgs(sTaskName, sTaskCode, sTaskDesc)
 
             if not t.Name:
-                return uiCommon.json_response("{\"error\" : \"Unable to create Task.\"}")
+                return "{\"error\" : \"Unable to create Task.\"}"
             
             bSuccess, sErr = t.DBSave()
             print "~" + str(bSuccess)
             if not bSuccess:
                 if sErr:
-                    return uiCommon.json_response("{\"info\" : \"" + sErr + "\"}")
+                    return "{\"info\" : \"" + sErr + "\"}"
                 else:
-                    return uiCommon.json_response("{\"error\" : \"Unable to save Task.\"}")
+                    return "{\"error\" : \"Unable to save Task.\"}"
             
-            return uiCommon.json_response("{\"id\" : \"%s\"}" % (t.ID))
+            return "{\"id\" : \"%s\"}" % (t.ID)
         except Exception, ex:
             raise ex
 
@@ -102,14 +102,14 @@ class taskMethods:
         try:
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
-                return uiCommon.json_response("{\"info\" : \"Unable to delete - no selection.\"}")
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
     
             sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
 
             db = catocommon.new_conn()
             
             if not sDeleteArray:
-                return uiCommon.json_response("{\"info\" : \"Unable to delete - no selection.\"}")
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
                 
             # first we need a list of tasks that will not be deleted
             sSQL = "select task_name from task t " \
@@ -150,11 +150,48 @@ class taskMethods:
                 uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Task, "Multiple", "Original Task IDs", sDeleteArray)
             
             if len(sTaskNames) > 0:
-                return uiCommon.json_response("{\"info\" : \"Task(s) (" + sTaskNames + ") have history rows and could not be deleted.\"}")
+                return "{\"info\" : \"Task(s) (" + sTaskNames + ") have history rows and could not be deleted.\"}"
             
-            return uiCommon.json_response("{\"result\" : \"success\"}")
+            return "{\"result\" : \"success\"}"
             
         except Exception, ex:
             raise ex
         finally:
             db.close()
+
+    def wmGetCodeblocks(self):
+        try:
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            if len(sTaskID) < 36:
+                return "{\"info\" : \"Unable to get Codeblocks - invalid Task ID.\"}"
+
+            sErr = ""
+            #instantiate the new Task object
+            oTask, sErr = task.FromID(sTaskID, False)
+            if oTask == None:
+                return "{\"error\" : \"wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr + "\"}"
+            sCBHTML = ""
+
+            for cb in oTask.Codeblocks.iteritems():
+                #if it's a guid it's a bogus codeblock (for export only)
+                if ui.IsGUID(cb.Name):
+                    continue
+                sCBHTML += "<li class=\"ui-widget-content codeblock\" id=\"cb_" + cb.Name + "\">"
+                sCBHTML += "<div>"
+                sCBHTML += "<div class=\"codeblock_title\" name=\"" + cb.Name + "\">"
+                sCBHTML += "<span>" + cb.Name + "</span>"
+                sCBHTML += "</div>"
+                sCBHTML += "<div class=\"codeblock_icons pointer\">"
+                sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\">"
+                sCBHTML += "<img class=\"codeblock_rename\" codeblock_name=\"" + cb.Name + "\""
+                sCBHTML += " src=\"../images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\""
+                sCBHTML += " codeblock_name=\"" + cb.Name + "\">"
+                sCBHTML += "<img src=\"../images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\""
+                sCBHTML += " class=\"codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">"
+                sCBHTML += "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>"
+                sCBHTML += "</div>"
+                sCBHTML += "</div>"
+                sCBHTML += "</li>"
+            return sCBHTML
+        except Exception, ex:
+            return "{\"error\" : \"" + ex + "\"}"

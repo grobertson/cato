@@ -33,11 +33,9 @@ function GetData() {
         url: "uiMethods/wmGetSystemStatus",
         dataType: "json",
         success: function (response) {
-            var resp = jQuery.parseJSON(response.d);
-
-			$("#processes").html(resp.processes);
-			$("#users").html(resp.users);
-			$("#messages").html(resp.messages);
+			$("#processes").html(response.processes);
+			$("#users").html(response.users);
+			$("#messages").html(response.messages);
 			
 		    initJtable(true, true);
         },

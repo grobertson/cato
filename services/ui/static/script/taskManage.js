@@ -247,9 +247,8 @@ function DeleteItems() {
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (task) {
 	       try {
-	            var task = parseResponse(response);
 		        if (task) {
 	                // clear the selected array, search field and fire a new search
 	                $("#hidSelectedArray").val("");
@@ -352,9 +351,8 @@ function SaveNewTask() {
         data: '{"sTaskName":"' + sTaskName + '","sTaskCode":"' + sTaskCode + '","sTaskDesc":"' + sTaskDesc + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (task) {
 	       try {
-	            var task = parseResponse(response);
 		        if (task) {
 	                location.href = "/taskEdit?" + task.id;
 		        } else {

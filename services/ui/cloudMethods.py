@@ -85,10 +85,10 @@ class cloudMethods:
             if c:
                 c.FromID(sID)
                 if c.ID:
-                    return uiCommon.json_response(c.AsJSON())
+                    return c.AsJSON()
             
             #should not get here if all is well
-            return uiCommon.json_response("{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}")
+            return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
         except Exception, ex:
             raise ex
 
@@ -98,10 +98,10 @@ class cloudMethods:
             ca = cloud.CloudAccounts()
             ca.Fill(sProvider)
             if ca.DataTable:
-                return uiCommon.json_response(ca.AsJSON())
+                return ca.AsJSON()
             
             #should not get here if all is well
-            return uiCommon.json_response("{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sProvider + "].'}")
+            return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sProvider + "].'}"
         except Exception, ex:
             raise ex
 
@@ -119,14 +119,14 @@ class cloudMethods:
             if sMode == "add":
                 c, sErr = cloud.Cloud.DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol)
                 if sErr:
-                    return uiCommon.json_response("{\"error\" : \"" + sErr + "\"}")
+                    return "{\"error\" : \"" + sErr + "\"}"
                 if c == None:
                     return "{\"error\" : \"Unable to create Cloud.\"}"
             elif sMode == "edit":
                 c = cloud.Cloud()
                 c.FromID(sCloudID)
                 if c == None:
-                    return uiCommon.json_response("{\"error\" : \"Unable to get Cloud using ID [" + sCloudID + "].\"}")
+                    return "{\"error\" : \"Unable to get Cloud using ID [" + sCloudID + "].\"}"
                 c.Name = sCloudName
                 c.APIProtocol = sAPIProtocol
                 c.APIUrl = sAPIUrl
@@ -136,9 +136,9 @@ class cloudMethods:
                     raise Exception(sErr)
             
             if c:
-                return uiCommon.json_response(c.AsJSON())
+                return c.AsJSON()
             else:
-                return uiCommon.json_response("{\"error\" : \"Unable to save Cloud using mode [" + sMode + "].\"}")
+                return "{\"error\" : \"Unable to save Cloud using mode [" + sMode + "].\"}"
         except Exception, ex:
             raise ex
 
@@ -146,7 +146,7 @@ class cloudMethods:
         try:
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
-                return uiCommon.json_response("{\"info\" : \"Unable to delete - no selection.\"}")
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
     
             sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
             
@@ -166,7 +166,7 @@ class cloudMethods:
             for dr in rows:
                 uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Cloud, dr[0], dr[1], dr[2] + " Cloud Deleted.")
     
-            return uiCommon.json_response("{\"result\" : \"success\"}")
+            return "{\"result\" : \"success\"}"
             
         except Exception, ex:
             raise ex

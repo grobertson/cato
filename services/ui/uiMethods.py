@@ -200,7 +200,7 @@ class uiMethods:
             if not db.exec_db_noexcep(sSQL):
                 print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
             db.close()
-        return uiCommon.json_response("")
+        return ""
     
     def wmGetTasks(self):
         sHTML = ""
@@ -304,9 +304,7 @@ class uiMethods:
                     "</tr>"
                     
             
-            retval = "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
-            
-            return uiCommon.json_response(retval)
+            return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
 
         except Exception, ex:
             raise ex

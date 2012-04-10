@@ -111,9 +111,7 @@ function GetProviderAccounts() {
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
-            var accounts = jQuery.parseJSON(response.d);
-
+        success: function (accounts) {
             // all we want here is to loop the clouds
             $("#ddlTestAccount").empty();
             $.each(accounts, function(index, account){
@@ -242,15 +240,12 @@ function FillEditForm(sEditID) {
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (cloud) {
             //update the list in the dialog
-            if (response.d.length == 0) {
+            if (cloud.length == 0) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var cloud = parseResponse(response);
-
-                // show the assets current values
                 $("#txtCloudName").val(cloud.Name);
                 $("#ddlProvider").val(cloud.Provider);
                 $("#txtAPIUrl").val(cloud.APIUrl);
@@ -307,8 +302,8 @@ function SaveItem(close_after_save) {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-	       try {
-	            var cloud = parseResponse(response);
+			try {
+				cloud = response;
 		        if (cloud) {
 	                // clear the search field and fire a search click, should reload the grid
 	                $("#txtSearch").val("");
@@ -324,10 +319,10 @@ function SaveItem(close_after_save) {
 	            	}
 	            	bSaved = true;
 		        } else {
-		            showAlert(response.d);
+		            showAlert(response);
 		        }
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {
@@ -368,8 +363,7 @@ function DeleteItems() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-            var result = parseResponse(response);
-	        if (result) {
+	        if (response) {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
@@ -379,7 +373,7 @@ function DeleteItems() {
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
             } else {
-                showAlert(response.d);
+                showAlert(response);
             }
         },
         error: function (response) {

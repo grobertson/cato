@@ -8,11 +8,6 @@ import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import providers
 
-def json_response(content):
-    #jQuery ajax in "json" mode expects a json object with a single attribute - "d"
-    #so, this wraps content in that construct so we don't need to change a ton of existing javascript
-    return "{\"d\":\"%s\"}" % (content.replace("\"", "\\\""))
-
 def getAjaxArg(sArg):
     data = uiGlobals.web.data()
     dic = json.loads(data)

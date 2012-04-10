@@ -45,19 +45,6 @@ function unpackJSON(instr) {
 	return $.base64.decode(outstr);
 }
 
-function parseResponse(response) {
-    var obj = jQuery.parseJSON(response.d);
-    if (obj) {
-    	if (obj.info) {
-    		showInfo(obj.info);
-    	} else if (obj.error) {
-    		showAlert(obj.error);
-    	} else {
-    		return obj
-		}
-	}
-}
-
 //this is a debugging function.
 function printClickEvents(ctl) {
 	"use strict";
