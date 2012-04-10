@@ -39,8 +39,8 @@ $(document).ready(function () {
                 //if it does, it will do some sort of nice clean refresh logic.
                 CloudAccountWasChanged();
 
-                if (msg.d.length > 0) {
-                    showInfo(msg.d);
+                if (msg.length > 0) {
+                    showInfo(msg);
                 }
             },
             error: function (response) {
@@ -76,8 +76,8 @@ function updateHeartbeat() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
-            if (msg.d.length > 0) {
-                showAlert(msg.d);
+            if (msg) {
+                showAlert(msg);
             }
         },
         error: function (response) {

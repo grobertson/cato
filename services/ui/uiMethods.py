@@ -202,49 +202,6 @@ class uiMethods:
             db.close()
         return ""
     
-    def wmGetTasks(self):
-        sHTML = ""
-        sWhereString = ""
-        sFilter = uiCommon.getAjaxArg("sSearch")
-        if sFilter:
-            aSearchTerms = sFilter.split()
-            for term in aSearchTerms:
-                if term:
-                    sWhereString += " and (task_name like '%%" + term + "%%' " \
-                        "or task_code like '%%" + term + "%%' " \
-                        "or task_desc like '%%" + term + "%%' " \
-                        "or task_status like '%%" + term + "%%') "
-
-        sSQL = "select task_id, original_task_id, task_name, task_code, task_desc, version, task_status," \
-            " (select count(*) from task a where original_task_id = a.original_task_id) as versions" \
-            " from task" \
-            " where default_version = 1 " + sWhereString + " order by task_code"
-
-        db = catocommon.new_conn()
-        rows = db.select_all_dict(sSQL)
-        db.close()
-
-        if rows:
-            for row in rows:
-                sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
-                sHTML += "<td class=\"chkboxcolumn\">"
-                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
-                " id=\"chk_" + row["task_id"] + "\"" \
-                " object_id=\"" + row["task_id"] + "\"" \
-                " tag=\"chk\" />"
-                sHTML += "</td>"
-                
-                sHTML += "<td tag=\"selectable\">" + row["task_code"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row["task_name"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row["version"]) +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row["task_desc"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row["task_status"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row["versions"]) +  "</td>"
-                
-                sHTML += "</tr>"
-
-        return sHTML    
-
     def wmGetSystemStatus(self):
         try:
             db = catocommon.new_conn()

@@ -116,8 +116,9 @@ class Cloud(object):
             #what's the original name?
             sSQL = "select cloud_name from clouds where cloud_id = '" + self.ID + "'"
             sOriginalName = db.select_col_noexcep(sSQL)
-            if db.error:
-                raise Exception("Error getting original cloud name:" + db.error)
+            if not sOriginalName:
+                if db.error:
+                    raise Exception("Error getting original cloud name:" + db.error)
             
             sSQL = "update clouds set" + " cloud_name = '" + self.Name + "'," \
                 " provider = '" + self.Provider.Name + "'," \

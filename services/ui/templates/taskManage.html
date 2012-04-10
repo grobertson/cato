@@ -74,7 +74,7 @@ $var cssfiles:
                     Task Code
                 </td>
                 <td>
-                    <input type="text" id="txtTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
+                    <input type="text" id="txtTaskCode" class="usertextbox" Style="width: 300px;"
                         MaxLength="32"jq>
                 </td>
             </tr>
@@ -83,7 +83,7 @@ $var cssfiles:
                     Task Name
                 </td>
                 <td>
-                    <input type="text" id="txtTaskName" runat="server" class="usertextbox" Style="width: 300px;"
+                    <input type="text" id="txtTaskName" class="usertextbox" Style="width: 300px;"
                         MaxLength="256">
                 </td>
             </tr>
@@ -92,7 +92,7 @@ $var cssfiles:
                     Description
                 </td>
                 <td>
-                    <input type="text" id="txtTaskDesc" runat="server" class="usertextbox" Style="width: 300px;"
+                    <input type="text" id="txtTaskDesc" class="usertextbox" Style="width: 300px;"
                         TextMode="MultiLine">
                 </td>
             </tr>
@@ -117,8 +117,7 @@ $var cssfiles:
                 Copy From Version
             </td>
             <td>
-                <div id="divTaskVersions">
-                </div>
+                <select name="ddlTaskVersions" id="ddlTaskVersions"></select>
             </td>
         </tr>
         <tr>
@@ -126,7 +125,7 @@ $var cssfiles:
                 New Task Code
             </td>
             <td>
-                <input type="text" id="txtCopyTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
+                <input type="text" id="txtCopyTaskCode" class="usertextbox" Style="width: 300px;"
                     MaxLength="32">
             </td>
         </tr>
@@ -135,10 +134,10 @@ $var cssfiles:
                 New Task Name
             </td>
             <td>
-                <input type="text" id="txtCopyTaskName" runat="server" class="usertextbox" Style="width: 300px;"
+                <input type="text" id="txtCopyTaskName" class="usertextbox" Style="width: 300px;"
                     MaxLength="256">
             </td>
         </tr>
     </table>
-    <input id="hidCopyTaskid" type="hidden" name="hidCopyTaskid" />
+    <input id="hidCopyTaskID" type="hidden" name="hidCopyTaskID" />
 </div>
