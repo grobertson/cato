@@ -386,48 +386,54 @@ class Task(object):
 			self.ConcurrentInstances = (dr["concurrent_instances"] if dr["concurrent_instances"] else "")
 			self.QueueDepth = (dr["queue_depth"] if dr["queue_depth"] else "")
 			self.UseConnectorSystem = (True if dr["use_connector_system"] == 1 else False)
-			"""
+			
 			#parameters
-			if not str.IsNullOrEmpty(dr["parameter_xml"]):
-				xParameters = XDocument.Parse(dr["parameter_xml"])
-				if xParameters != None:
+			if dr["parameter_xml"]:
+				xParameters = xTask = ET.fromstring(dr["parameter_xml"])
+				if xParameters:
 					self.ParameterXDoc = xParameters
 			# 
 			# * ok, this is important.
 			# * there are some rules for the process of 'Approving' a task and other things.
 			# * so, we'll need to know some count information
 			# 
-			sSQL = "select count(*) from task" + " where original_task_id = '" + self.OriginalTaskID + "'" + " and task_status = 'Approved'"
-			iCount = 0
-			if not dc.sqlGetSingleInteger(, sSQL, ):
-				return None
+			db = catocommon.new_conn()
+			
+			sSQL = "select count(*) from task" \
+				" where original_task_id = '" + self.OriginalTaskID + "'" \
+				" and task_status = 'Approved'"
+			iCount = db.select_col_noexcep(sSQL)
+			if db.error:
+				return "Error counting Approved versions:" + db.error
 			self.NumberOfApprovedVersions = iCount
-			sSQL = "select count(*) from task" + " where original_task_id = '" + self.OriginalTaskID + "'"
-			if not dc.sqlGetSingleInteger(, sSQL, ):
-				return None
+
+			sSQL = "select count(*) from task where original_task_id = '" + self.OriginalTaskID + "'"
+			iCount = db.select_col_noexcep(sSQL)
+			if db.error:
+				return "Error counting Approved versions:" + db.error
 			self.NumberOfOtherVersions = iCount
+
 			#now, the fun stuff
 			#1 get all the codeblocks and populate that dictionary
 			#2 then get all the steps... ALL the steps in one sql
 			#..... and while spinning them put them in the appropriate codeblock
 			#GET THE CODEBLOCKS
-			sSQL = "select codeblock_name" + " from task_codeblock" + " where task_id = '" + self.ID + "'" + " order by codeblock_name"
-			dt = DataTable()
-			if not dc.sqlGetDataTable(, sSQL, ):
-				return None
-			if dt.Rows.Count > 0:
-				enumerator = dt.Rows.GetEnumerator()
-				while enumerator.MoveNext():
-					drCB = enumerator.Current
-					self.Codeblocks.Add(drCB["codeblock_name"], Codeblock(drCB["codeblock_name"]))
+			sSQL = "select codeblock_name from task_codeblock where task_id = '" + self.ID + "' order by codeblock_name"
+			rows = db.select_all_dict(sSQL)
+			for drCB in rows:
+				cb = Codeblock(drCB["codeblock_name"])
+				self.Codeblocks[cb.Name] = cb
 			else:
 				#uh oh... there are no codeblocks!
 				#since all tasks require a MAIN codeblock... if it's missing,
 				#we can just repair it right here.
 				sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + self.ID + "', 'MAIN')"
-				if not dc.sqlExecuteUpdate(sSQL, ):
-					return None
-				self.Codeblocks.Add("MAIN", Codeblock("MAIN"))
+				if not db.exec_db_noexcep(sSQL):
+					return db.error
+				self.Codeblocks["MAIN"] = Codeblock("MAIN")
+
+			print self.Codeblocks
+			"""
 			#GET THE STEPS
 			#we need the userID to get the user settings in some cases
 			if IncludeUserSettings:
@@ -468,8 +474,8 @@ class Task(object):
 			raise ex
 
 class Codeblock(object):
-	def __init__(self):
-		self.Name = ""
+	def __init__(self, sName):
+		self.Name = sName
 		self.Steps = {}
 		
 	#a codeblock contains a dictionary collection of steps

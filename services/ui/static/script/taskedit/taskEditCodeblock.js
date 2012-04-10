@@ -136,9 +136,9 @@ function doGetCodeblocks() {
         url: "taskMethods/wmGetCodeblocks",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#codeblocks").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#codeblocks").html(response);
             
         	//crazy... we can drag out of the codeblock selector!
 		    $("#codeblock_selector .codeblock").draggable("destroy");

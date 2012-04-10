@@ -4,6 +4,7 @@ import sys
 import json
 import uuid
 import base64
+import re
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import providers
@@ -16,6 +17,14 @@ def getAjaxArg(sArg):
 def NewGUID():
     return str(uuid.uuid1())
 
+def IsGUID(s):
+    p = re.compile("^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$")
+    m = p.match(s)
+    if m:
+        return True
+    else:
+        return False
+     
 def TickSlash(s):
     return s.replace("'", "''").replace("\\", "\\\\")
 

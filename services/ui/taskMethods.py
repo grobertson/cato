@@ -179,18 +179,19 @@ class taskMethods:
         try:
             sTaskID = uiCommon.getAjaxArg("sTaskID")
             if len(sTaskID) < 36:
-                return "{\"info\" : \"Unable to get Codeblocks - invalid Task ID.\"}"
-
+                return "Unable to get Codeblocks - invalid Task ID."
             sErr = ""
             #instantiate the new Task object
-            oTask, sErr = task.FromID(sTaskID, False)
-            if oTask == None:
-                return "{\"error\" : \"wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr + "\"}"
+            oTask, sErr = task.Task.FromID(sTaskID, False)
+            if sErr:
+                print sErr
+            if not oTask:
+                return "wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr
             sCBHTML = ""
-
-            for cb in oTask.Codeblocks.iteritems():
+            print oTask.Name
+            for name, cb in oTask.Codeblocks.iteritems():
                 #if it's a guid it's a bogus codeblock (for export only)
-                if ui.IsGUID(cb.Name):
+                if uiCommon.IsGUID(cb.Name):
                     continue
                 sCBHTML += "<li class=\"ui-widget-content codeblock\" id=\"cb_" + cb.Name + "\">"
                 sCBHTML += "<div>"
@@ -200,14 +201,14 @@ class taskMethods:
                 sCBHTML += "<div class=\"codeblock_icons pointer\">"
                 sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\">"
                 sCBHTML += "<img class=\"codeblock_rename\" codeblock_name=\"" + cb.Name + "\""
-                sCBHTML += " src=\"../images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\""
+                sCBHTML += " src=\"static/images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\""
                 sCBHTML += " codeblock_name=\"" + cb.Name + "\">"
-                sCBHTML += "<img src=\"../images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\""
+                sCBHTML += "<img src=\"static/images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\""
                 sCBHTML += " class=\"codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">"
-                sCBHTML += "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>"
+                sCBHTML += "<img src=\"static/images/icons/fileclose.png\" alt=\"\" /></span>"
                 sCBHTML += "</div>"
                 sCBHTML += "</div>"
                 sCBHTML += "</li>"
             return sCBHTML
         except Exception, ex:
-            return "{\"error\" : \"" + ex + "\"}"
+            return ex

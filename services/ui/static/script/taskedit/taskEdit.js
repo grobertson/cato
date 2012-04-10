@@ -185,7 +185,7 @@ $(document).ready(function () {
 	//get the details
 	doGetDetails();
 	//get the codeblocks
-	//doGetCodeblocks();
+	doGetCodeblocks();
 	//get the steps
 	//doGetSteps();
 
@@ -413,18 +413,6 @@ function getStep(step_id, target, init) {
     });
 }
 
-// Callback function invoked on successful completion of the MS AJAX page method.
-function OnSuccess(result, userContext, methodName) {
-    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-}
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnFailure(error, userContext, methodName) {
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
-}
-
 function doDropZoneEnable($ctl) {
     $ctl.html("Drag a command from the toolbox and drop it here now, or <span class=\"step_nested_drop_target_cancel_btn\" onclick=\"doDropZoneDisable('" + $ctl.attr("id") + "');\">click " +
         "here to cancel</span> add add it later.");
@@ -474,15 +462,6 @@ function doDropZoneDisable(id) {
     $("#" + id).removeClass("step_nested_drop_target_active");
     $("#" + id).droppable("destroy");
     initSortable();
-}
-
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnUpdateFailure(error, userContext, methodName) {
-    //alert('failure');
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
 }
 
 function doClearClipboard(id) {
