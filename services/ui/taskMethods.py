@@ -36,36 +36,36 @@ class taskMethods:
             aSearchTerms = sFilter.split()
             for term in aSearchTerms:
                 if term:
-                    sWhereString += " and (task_name like '%%" + term + "%%' " \
-                        "or task_code like '%%" + term + "%%' " \
-                        "or task_desc like '%%" + term + "%%' " \
-                        "or task_status like '%%" + term + "%%') "
+                    sWhereString += " and (a.task_name like '%%" + term + "%%' " \
+                        "or a.task_code like '%%" + term + "%%' " \
+                        "or a.task_desc like '%%" + term + "%%' " \
+                        "or a.task_status like '%%" + term + "%%') "
 
-        sSQL = "select task_id, original_task_id, task_name, task_code, task_desc, version, task_status," \
-            " (select count(*) from task a where original_task_id = a.original_task_id) as versions" \
-            " from task" \
-            " where default_version = 1 " + sWhereString + " order by task_code"
-
+        sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," \
+            " (select count(*) from task where original_task_id = a.original_task_id) as versions" \
+            " from task a" \
+            " where a.default_version = 1 " + sWhereString + " order by a.task_code"
+        
         db = catocommon.new_conn()
-        rows = db.select_all(sSQL)
+        rows = db.select_all_dict(sSQL)
         db.close()
 
         if rows:
             for row in rows:
-                sHTML += "<tr task_id=\"" + row[0] + "\">"
+                sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
                 sHTML += "<td class=\"chkboxcolumn\">"
                 sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
-                " id=\"chk_" + row[0] + "\"" \
-                " object_id=\"" + row[0] + "\"" \
+                " id=\"chk_" + row["original_task_id"] + "\"" \
+                " object_id=\"" + row["task_id"] + "\"" \
                 " tag=\"chk\" />"
                 sHTML += "</td>"
                 
-                sHTML += "<td tag=\"selectable\">" + row[3] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[2] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row[5]) +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[4] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row[6] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row[7]) +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_code"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_name"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + str(row["version"]) +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_desc"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + row["task_status"] +  "</td>"
+                sHTML += "<td tag=\"selectable\">" + str(row["versions"]) +  "</td>"
                 
                 sHTML += "</tr>"
 
@@ -87,12 +87,53 @@ class taskMethods:
         except Exception, ex:
             raise ex
 
+    def wmGetTaskCodeFromID(self):
+            sOriginalTaskID = uiCommon.getAjaxArg("sOriginalTaskID")
+
+            if not uiCommon.IsGUID(sOriginalTaskID.replace("'", "")):
+                raise Exception("Invalid or missing Task ID.")
+
+            try:
+                db = catocommon.new_conn()
+                sSQL = "select task_code from task where original_task_id = '" + sOriginalTaskID + "' and default_version = 1"
+                sTaskCode = db.select_col_noexcep(sSQL)
+                print sTaskCode
+                if not sTaskCode:
+                    if db.error:
+                        raise Exception("Unable to get task code." + db.error)
+                    else:
+                        return ""
+                else:
+                    return "{\"code\" : \"%s\"}" % (sTaskCode)
+            except Exception, ex:
+                raise(ex)
+    
+    def wmGetTaskVersionsDropdown(self):
+        try:
+            sOriginalTaskID = uiCommon.getAjaxArg("sOriginalTaskID")
+            db = catocommon.new_conn()
+            sbString = []
+            sSQL = "select task_id, version, default_version" \
+                " from task " \
+                " where original_task_id = '" + sOriginalTaskID + "'" \
+                " order by default_version desc, version"
+            print sSQL
+            dt = db.select_all_dict(sSQL)
+            if not dt:
+                raise Exception("Error selecting versions: " + db.error)
+            else:
+                for dr in dt:
+                    sLabel = str(dr["version"]) + (" (default)" if dr["default_version"] == 1 else "")
+                    sbString.append("<option value=\"" + dr["task_id"] + "\">" + sLabel + "</option>")
+
+                return "".join(sbString)
+        except Exception, ex:
+            raise (ex)
+    
     def wmCreateTask(self):
         sTaskName = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskName"))
         sTaskCode = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskCode"))
         sTaskDesc = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskDesc"))
-
-        print sTaskName + sTaskCode + sTaskDesc
 
         t = None
         try:
@@ -111,6 +152,24 @@ class taskMethods:
                     return "{\"error\" : \"Unable to save Task.\"}"
             
             return "{\"id\" : \"%s\"}" % (t.ID)
+        except Exception, ex:
+            raise ex
+
+    def wmCopyTask(self):
+        sCopyTaskID = uiCommon.getAjaxArg("sCopyTaskID")
+        sTaskName = uiCommon.getAjaxArg("sTaskName")
+        sTaskCode =uiCommon.getAjaxArg("sTaskCode")
+
+        try:
+            t, sErr = task.Task.FromID(sCopyTaskID)
+            if not t:
+                return "{\"error\" : \"Unable to build Task object from ID [" + sCopyTaskID + "].\"}"
+            
+            sNewTaskID = t.Copy(0, sTaskName, sTaskCode)
+            if not sNewTaskID:
+                return "Unable to create Task."
+            
+            return "{\"id\" : \"%s\"}" % (sNewTaskID)
         except Exception, ex:
             raise ex
 

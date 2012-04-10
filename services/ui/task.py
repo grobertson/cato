@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import uiGlobals
 import uiCommon
+from datetime import datetime
 
 class Task(object):
 	def __init__(self):
@@ -69,7 +70,7 @@ class Task(object):
 
 			if dr:
 				sErr = t.PopulateTask(dr, bIncludeUserSettings)
-				
+
 			if t.ID:
 				return t, ""
 			else:
@@ -367,6 +368,170 @@ class Task(object):
 			return False, "Error updating the DB. " + ex.str__()
 		finally:
 			return True, ""
+
+	def Copy(self, iMode, sNewTaskName, sNewTaskCode):
+		#iMode 0=new task, 1=new major version, 2=new minor version
+		try:
+			sSourceTaskID = self.ID
+			#NOTE: this routine is not very object-aware.  It works and was copied in here
+			#so it can live with other relevant code.
+			#may update it later to be more object friendly
+			sErr = ""
+			sSQL = ""
+			sNewTaskID = uiCommon.NewGUID()
+			iIsDefault = 0
+			sTaskName = ""
+			sOTID = ""
+
+			#do it all in a transaction
+			db = catocommon.new_conn()
+
+			#figure out the new name and selected version
+			sTaskName = self.Name
+			sOTID = self.OriginalTaskID
+
+			#figure out te new version
+			if iMode == 0:
+				#figure out the new name and selected version
+				sSQL = "select count(*) from task where task_name = '" + sNewTaskName + "'"
+				iExists = db.select_col_noexcep(sSQL)
+				if db.error:
+					raise Exception("Unable to check name conflicts for  [" + sNewTaskName + "]." + db.error)
+				sTaskName = (sNewTaskName + " (" + str(datetime.now()) + ")" if iExists > 0 else sNewTaskName)
+
+				iIsDefault = 1
+				self.Version = "1.000"
+				sOTID = sNewTaskID
+			elif iMode == 1:
+				self.IncrementMajorVersion()
+			elif iMode == 2:
+				self.IncrementMinorVersion()
+			else: #a iMode is required
+				raise Exception("A mode required for this copy operation.")
+
+			#if we are versioning, AND there are not yet any 'Approved' versions,
+			#we set this new version to be the default
+			#(that way it's the one that you get taken to when you pick it from a list)
+			if iMode > 0:
+				sSQL = "select case when count(*) = 0 then 1 else 0 end" \
+					" from task where original_task_id = '" + sOTID + "'" \
+					" and task_status = 'Approved'"
+				iExists = db.select_col_noexcep(sSQL)
+				if db.error:
+					db.tran_rollback()
+					raise Exception(db.error)
+
+			#string sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now + ")" : sNewTaskName);
+			#drop the temp tables.
+			sSQL = "drop temporary table if exists _copy_task"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "drop temporary table if exists _step_ids"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "drop temporary table if exists _copy_task_codeblock"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "drop temporary table if exists _copy_task_step"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#start copying
+			sSQL = "create temporary table _copy_task select * from task where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#update the task_id
+			sSQL = "update _copy_task set" \
+				" task_id = '" + sNewTaskID + "'," \
+				" original_task_id = '" + sOTID + "'," \
+				" version = '" + str(self.Version) + "'," \
+				" task_name = '" + sTaskName + "'," \
+				" task_code = '" + sNewTaskCode + "'," \
+				" default_version = " + str(iIsDefault) + "," \
+				" task_status = 'Development'," \
+				" created_dt = now()"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#codeblocks
+			sSQL = "create temporary table _copy_task_codeblock" \
+				" select '" + sNewTaskID + "' as task_id, codeblock_name" \
+				" from task_codeblock where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#USING TEMPORARY TABLES... need a place to hold step ids while we manipulate them
+			sSQL = "create temporary table _step_ids" \
+				" select distinct step_id, uuid() as newstep_id" \
+				" from task_step where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#steps temp table
+			sSQL = "create temporary table _copy_task_step" \
+				" select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," \
+				" locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," \
+				" output_column_delimiter, variable_xml" \
+				" from task_step where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#update the step id
+			sSQL = "update _copy_task_step a, _step_ids b" \
+				" set a.step_id = b.newstep_id" \
+				" where a.step_id = b.step_id"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#update steps with codeblocks that reference a step (embedded steps)
+			sSQL = "update _copy_task_step a, _step_ids b" \
+				" set a.codeblock_name = b.newstep_id" \
+				" where b.step_id = a.codeblock_name"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#spin the steps and update any embedded step id's in the commands
+			sSQL = "select step_id, newstep_id from _step_ids"
+			dtStepIDs = db.select_all_dict(sSQL)
+			if db.error:
+				raise Exception("Unable to get step ids." + db.error)
+
+			for drStepIDs in dtStepIDs:
+				sSQL = "update _copy_task_step" \
+					" set function_xml = replace(lower(function_xml)," \
+					" '" + drStepIDs["step_id"].lower() + "'," \
+					" '" + drStepIDs["newstep_id"] + "')" \
+					" where function_name in ('if','loop','exists','while')"
+				if not db.tran_exec_noexcep(sSQL):
+					raise Exception(db.error)
+
+			#finally, put the temp steps table in the real steps table
+			sSQL = "insert into task select * from _copy_task"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "insert into task_codeblock select * from _copy_task_codeblock"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "insert into task_step select * from _copy_task_step"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#finally, if we versioned up and we set this one as the new default_version,
+			#we need to unset the other row
+			if iMode > 0 and iIsDefault == 1:
+				sSQL = "update task set default_version = 0 where original_task_id = '" + sOTID + "' and task_id <> '" + sNewTaskID + "'"
+				if not db.tran_exec_noexcep(sSQL):
+					raise Exception(db.error)
+
+			db.tran_commit()
+			uiCommon.WriteObjectAddLog(db, uiGlobals.CatoObjectTypes.Task, self.ID, self.Name, "Copied from " + sSourceTaskID);
+
+			return sNewTaskID
+		except Exception, ex:
+			raise ex
+		finally:
+			db.close()
 
 	def PopulateTask(self, dr, IncludeUserSettings):
 		try:
