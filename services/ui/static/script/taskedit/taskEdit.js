@@ -187,7 +187,7 @@ $(document).ready(function () {
 	//get the codeblocks
 	doGetCodeblocks();
 	//get the steps
-	//doGetSteps();
+	doGetSteps();
 
     //finally, init the draggable items (commands and the clipboard)
     //this will also be called when items are added/removed from the clipboard.
@@ -229,17 +229,17 @@ function doGetSteps() {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "taskMethods.asmx/wmGetSteps",
+        url: "taskMethods/wmGetSteps",
         data: '{"sTaskID":"' + g_task_id + '","sCodeblockName":"' + codeblock_name + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (response) {
 	       try {
 				//the result is an html snippet
 				//we have to redo the sortable for the new content
 				$("#steps").empty();
 			    $("#steps").sortable("destroy");
-			    $("#steps").append(response.d);
+			    $("#steps").append(response);
 				initSortable();
 				validateStep();
 				$("#codeblock_steps_title").text(codeblock_name);

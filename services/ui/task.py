@@ -163,7 +163,6 @@ class Task(object):
 		return ET.tostring(root)
 
 	def AsJSON(self):
-		print "inasjson"
 		try:
 			sb = []
 			sb.append("{")
@@ -184,7 +183,6 @@ class Task(object):
 			raise ex
 
 	def DBSave(self, db = None, bLocalTransaction = True):
-		print "here we go"
 		try:
 			#if a db connection is passed, use it, else create one
 			if db:
@@ -366,7 +364,7 @@ class Task(object):
 				print "committing"
 				db.tran_commit()
 		except Exception, ex:
-			return False, "Error updating the DB. " + ex._str__()
+			return False, "Error updating the DB. " + ex.str__()
 		finally:
 			return True, ""
 
@@ -389,7 +387,7 @@ class Task(object):
 			
 			#parameters
 			if dr["parameter_xml"]:
-				xParameters = xTask = ET.fromstring(dr["parameter_xml"])
+				xParameters = ET.fromstring(dr["parameter_xml"])
 				if xParameters:
 					self.ParameterXDoc = xParameters
 			# 
@@ -419,10 +417,11 @@ class Task(object):
 			#..... and while spinning them put them in the appropriate codeblock
 			#GET THE CODEBLOCKS
 			sSQL = "select codeblock_name from task_codeblock where task_id = '" + self.ID + "' order by codeblock_name"
-			rows = db.select_all_dict(sSQL)
-			for drCB in rows:
-				cb = Codeblock(drCB["codeblock_name"])
-				self.Codeblocks[cb.Name] = cb
+			dtCB = db.select_all_dict(sSQL)
+			if dtCB:
+				for drCB in dtCB:
+					cb = Codeblock(drCB["codeblock_name"])
+					self.Codeblocks[cb.Name] = cb
 			else:
 				#uh oh... there are no codeblocks!
 				#since all tasks require a MAIN codeblock... if it's missing,
@@ -432,46 +431,59 @@ class Task(object):
 					return db.error
 				self.Codeblocks["MAIN"] = Codeblock("MAIN")
 
-			print self.Codeblocks
-			"""
 			#GET THE STEPS
 			#we need the userID to get the user settings in some cases
 			if IncludeUserSettings:
-				sUserID = ui.GetSessionUserID()
+				sUserID = uiCommon.GetSessionUserID()
 				#NOTE: it may seem like sorting will be an issue, but it shouldn't.
 				#sorting ALL the steps by their ID here will ensure they get added to their respective 
 				# codeblocks in the right order.
-				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," + " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," + " us.visible, us.breakpoint, us.skip, us.button" + " from task_step s" + " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" + " where s.task_id = '" + self.ID + "'" + " order by s.step_order"
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
+					" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+					" us.visible, us.breakpoint, us.skip, us.button" \
+					" from task_step s" \
+					" left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
+					" where s.task_id = '" + self.ID + "'" \
+					" order by s.step_order"
 			else:
-				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," + " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," + " 0 as visible, 0 as breakpoint, 0 as skip, '' as button" + " from task_step s" + " where s.task_id = '" + self.ID + "'" + " order by s.step_order"
-			dtSteps = DataTable()
-			if not dc.sqlGetDataTable(, sSQL, ):
-				sErr += "Database Error: " + sErr
-			if dtSteps.Rows.Count > 0:
-				enumerator = dtSteps.Rows.GetEnumerator()
-				while enumerator.MoveNext():
-					drSteps = enumerator.Current
-					oStep = Step(drSteps, self)
-					if oStep != None:
-						#a 'REAL' codeblock will be in this collection
-						# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
-						if self.Codeblocks.ContainsKey(oStep.Codeblock):
-							self.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep)
-						else:
-							#so, what do we do if we found a step that's not in a 'real' codeblock?
-							#well, the gui will take care of drawing those embedded steps...
-							#but we have a problem with export, version up, etc.
-							#these steps can't be orphans!
-							#so, we'll go ahead and create codeblocks for them.
-							#this is terrible, but part of the problem with this embedded stuff.
-							#we'll tweak the gui so GUID named codeblocks don't show.
-							self.Codeblocks.Add(oStep.Codeblock, Codeblock(oStep.Codeblock))
-							self.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep)
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
+				" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+				" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" \
+				" from task_step s" \
+				" where s.task_id = '" + self.ID + "'" \
+				" order by s.step_order"
+
+			dtSteps = db.select_all_dict(sSQL)
+			for drSteps in dtSteps:
+				oStep = Step.FromRow(drSteps, self)
+				if oStep:
+					#print "found step" + oStep.ID + " for " + oStep.Codeblock
+					#a 'REAL' codeblock will be in this collection
+					# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+					if self.Codeblocks.has_key(oStep.Codeblock):
+						#print "codeblock has key"
+						self.Codeblocks[oStep.Codeblock].Steps[oStep.ID] = oStep
+						#print self.Codeblocks[oStep.Codeblock].Steps
+					else:
+						#print "doens't have, must be a goofy embedded one"
+						#so, what do we do if we found a step that's not in a 'real' codeblock?
+						#well, the gui will take care of drawing those embedded steps...
+						#but we have a problem with export, version up, etc.
+						#these steps can't be orphans!
+						#so, we'll go ahead and create codeblocks for them.
+						#this is terrible, but part of the problem with this embedded stuff.
+						#we'll tweak the gui so GUID named codeblocks don't show.
+						self.Codeblocks[oStep.Codeblock] = Codeblock(oStep.Codeblock)
+						self.Codeblocks[oStep.Codeblock].Steps[oStep.ID] = oStep
 			#maybe one day we'll do the full recusrive loading of all embedded steps here
 			# but not today... it's a big deal and we need to let these changes settle down first.
-			"""
+			
+			#print "ok, so...."
+			#print self.Codeblocks["INTERACT"].Steps
 		except Exception, ex:
 			raise ex
+		finally:
+			db.close()
 
 class Codeblock(object):
 	def __init__(self, sName):
@@ -513,4 +525,53 @@ class Step(object):
 		self.ID = xStep.get("id", str(uuid.uuid4()))
 		self.Codeblock = sCodeblockName
 
+	@staticmethod
+	def FromRow(dr, task):
+		s = Step()
+		s.PopulateStep(dr, task)
+		return s
+		
+	def PopulateStep(self, dr, oTask):
+		try:
+			self.ID = dr["step_id"]
+			self.Codeblock = ("" if not dr["codeblock_name"] else dr["codeblock_name"])
+			self.Order = dr["step_order"]
+			self.Description = ("" if not dr["step_desc"] else dr["step_desc"])
+			self.Commented = (False if dr["commented"] == "0" else True)
+			self.Locked = (False if dr["locked"] == "0" else True)
+			self.OutputParseType = dr["output_parse_type"]
+			self.OutputRowDelimiter = dr["output_row_delimiter"]
+			self.OutputColumnDelimiter = dr["output_column_delimiter"]
+			self.FunctionXML = ("" if not dr["function_xml"] else dr["function_xml"])
+			self.VariableXML = ("" if not dr["variable_xml"] else dr["variable_xml"])
+			#once parsed, it's cleaner.  update the object with the cleaner xml
+			if self.FunctionXML:
+				self.FunctionXDoc = ET.fromstring(self.FunctionXML)
+			if self.VariableXML:
+				self.VariableXDoc = ET.fromstring(self.VariableXML)
 
+			#this.Function = Function.GetFunctionByName(dr["function_name"]);
+			self.FunctionName = dr["function_name"]
+
+			#NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
+			#if it's null, it will not populate the parent object.
+			#this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task
+			#object being created hundreds of times.
+			if oTask:
+				self.Task = oTask
+			else:
+				#NOTE HACK TODO - this is bad and wrong
+				#we shouldn't assume the datarow was a join to the task table... but in a few places it was.
+				#so we're populating some stuff here.
+				#the right approach is to create a full Task object from the ID, but we need to analyze
+				#how it's working, so we don't create a bunch more database hits.
+				#I THINK THIS is only happening on taskStepVarsEdit, but double check.
+				self.Task = Task()
+				self.Task.ID = dr["task_id"]
+				if dr["task_name"]:
+					self.Task.Name = dr["task_name"]
+				if dr["version"]:
+					self.Task.Version = dr["version"]
+			return self
+		except Exception, ex:
+			raise ex

@@ -188,7 +188,6 @@ class taskMethods:
             if not oTask:
                 return "wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr
             sCBHTML = ""
-            print oTask.Name
             for name, cb in oTask.Codeblocks.iteritems():
                 #if it's a guid it's a bogus codeblock (for export only)
                 if uiCommon.IsGUID(cb.Name):
@@ -212,3 +211,40 @@ class taskMethods:
             return sCBHTML
         except Exception, ex:
             return ex
+        
+    def wmGetSteps(self):
+        try:
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sCodeblockName = uiCommon.getAjaxArg("sCodeblockName")
+            if len(sTaskID) < 36:
+                return "Unable to get Steps - invalid Task ID."
+            if not sCodeblockName:
+                return "Unable to get Steps - No Codeblock specified."
+
+            sAddHelpMsg =  "No Commands have been defined in this Codeblock. Drag a Command here to add it."
+            sErr = ""
+            #instantiate the new Task object
+            oTask, sErr = task.Task.FromID(sTaskID, True)
+            if sErr:
+                print sErr
+            if not oTask:
+                return "wmGetSteps: Unable to get Task for ID [" + sTaskID + "]. " + sErr
+
+            sHTML = ""
+
+            cb = oTask.Codeblocks[sCodeblockName]
+            if cb.Steps:
+                # we always need the no_step item to be there, we just hide it if we have other items
+                # it will get unhidden if someone deletes the last step.
+                sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>"
+        
+                for name, step in cb.Steps.iteritems():
+                    #sHTML += ft.DrawFullStep(oStep)
+                    sHTML += "<li>" + step.ID + "</li>"
+            else:
+                sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>"
+                    
+            return sHTML
+        except Exception, ex:
+            return ex
+        
