@@ -15,6 +15,9 @@ from catocommon import catocommon
 # these are generic ui web methods, and stuff that's not enough to need it's own file.
 class login:
     def GET(self):
+        # visiting the login page kills the session
+        uiGlobals.session.kill()
+        
         qs = ""
         i = uiGlobals.web.input(msg=None)
         if i.msg:

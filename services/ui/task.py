@@ -620,7 +620,7 @@ class Task(object):
 					#a 'REAL' codeblock will be in this collection
 					# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
 					if self.Codeblocks.has_key(oStep.Codeblock):
-						self.Codeblocks[oStep.Codeblock].Steps[oStep.ID] = oStep
+						self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
 						#print self.Codeblocks[oStep.Codeblock].Steps
 					else:
 						#so, what do we do if we found a step that's not in a 'real' codeblock?
@@ -631,7 +631,7 @@ class Task(object):
 						#this is terrible, but part of the problem with this embedded stuff.
 						#we'll tweak the gui so GUID named codeblocks don't show.
 						self.Codeblocks[oStep.Codeblock] = Codeblock(oStep.Codeblock)
-						self.Codeblocks[oStep.Codeblock].Steps[oStep.ID] = oStep
+						self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
 			#maybe one day we'll do the full recusrive loading of all embedded steps here
 			# but not today... it's a big deal and we need to let these changes settle down first.
 			
@@ -669,7 +669,18 @@ class Step(object):
 		self.Commented = False
 		self.Locked = False
 		self.OutputParseType = 0
+		self.OutputRowDelimiter = 0
+		self.OutputColumnDelimiter = 0
+		self.FunctionXML = None
+		self.FunctionXDoc = None
+		self.VariableXML = None
+		self.VariableXDoc = None
+		self.FunctionName = ""
 		self.UserSettings = StepUserSettings()
+		# this property isn't added by the "Populate" methods - but can be added manually.
+		# this is because of xml import/export - where the function details aren't required.
+		# but they are in the UI when drawing steps.
+		self.Function = None 
 
 	def FromXML(self, sStepXML="", sCodeblockName=""):
 		if sStepXML == "": return None
@@ -693,8 +704,8 @@ class Step(object):
 			self.Codeblock = ("" if not dr["codeblock_name"] else dr["codeblock_name"])
 			self.Order = dr["step_order"]
 			self.Description = ("" if not dr["step_desc"] else dr["step_desc"])
-			self.Commented = (False if dr["commented"] == "0" else True)
-			self.Locked = (False if dr["locked"] == "0" else True)
+			self.Commented = (True if dr["commented"] == "1" else False)
+			self.Locked = (True if dr["locked"] == "1" else False)
 			self.OutputParseType = dr["output_parse_type"]
 			self.OutputRowDelimiter = dr["output_row_delimiter"]
 			self.OutputColumnDelimiter = dr["output_column_delimiter"]
@@ -709,9 +720,14 @@ class Step(object):
 			#this.Function = Function.GetFunctionByName(dr["function_name"]);
 			self.FunctionName = dr["function_name"]
 
-			#TODO: if dr["button"] or skip, or visible exists, set the proper values in STepUserSettings
+			# user settings, if available
+			if dr["button"] is not None:
+				self.UserSettings.Button = dr["button"]
+			if dr["skip"] is not None:
+				self.UserSettings.Skip = (True if dr["skip"] == 1 else False)
+			if dr["visible"] is not None:
+				self.UserSettings.Visible = (True if dr["visible"] == 1 else False)
 			
-
 			#NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
 			#if it's null, it will not populate the parent object.
 			#this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task

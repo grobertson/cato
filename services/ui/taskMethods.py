@@ -291,7 +291,7 @@ class taskMethods:
                 # it will get unhidden if someone deletes the last step.
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>"
         
-                for name, step in cb.Steps.iteritems():
+                for order, step in sorted(cb.Steps.iteritems()):
                     sHTML += ST.DrawFullStep(step)
             else:
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>"
@@ -300,3 +300,69 @@ class taskMethods:
         except Exception, ex:
             return ex
         
+    def wmToggleStepCommonSection(self):
+        # no exceptions, just a log message if there are problems.
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sButton = uiCommon.getAjaxArg("sButton")
+            db = catocommon.new_conn()
+            print sStepID
+            if uiCommon.IsGUID(sStepID):
+                sUserID = uiCommon.GetSessionUserID()
+                sButton = ("null" if sButton == "" else "'" + sButton + "'")
+    
+                #is there a row?
+                iRowCount = db.select_col_noexcep("select count(*) from task_step_user_settings" \
+                    " where user_id = '" + sUserID + "'" \
+                    " and step_id = '" + sStepID + "'")
+                if iRowCount == 0:
+                    sSQL = "insert into task_step_user_settings" \
+                        " (user_id, step_id, visible, breakpoint, skip, button)" \
+                        " values ('" + sUserID + "','" + sStepID + "', 1, 0, 0, " + sButton + ")"
+                else:
+                    sSQL = "update task_step_user_settings set button = " + sButton + " where step_id = '" + sStepID + "'"
+
+                if not db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to toggle step button [" + sStepID + "]." + db.error, 2)
+
+                return ""
+            else:
+                uiCommon.log("Unable to toggle step button. Missing or invalid step_id.", 2)
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+            
+    def wmToggleStep(self):
+        # no exceptions, just a log message if there are problems.
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sVisible = uiCommon.getAjaxArg("sVisible")
+            
+            db = catocommon.new_conn()
+            if uiCommon.IsGUID(sStepID):
+                sUserID = uiCommon.GetSessionUserID()
+
+                sVisible = ("1" if sVisible == "1" else "0")
+    
+                #is there a row?
+                iRowCount = db.select_col_noexcep("select count(*) from task_step_user_settings" \
+                    " where user_id = '" + sUserID + "'" \
+                    " and step_id = '" + sStepID + "'")
+                if iRowCount == 0:
+                    sSQL = "insert into task_step_user_settings" \
+                        " (user_id, step_id, visible, breakpoint, skip)" \
+                        " values ('" + sUserID + "','" + sStepID + "', " + sVisible + ", 0, 0)"
+                else:
+                    sSQL = "update task_step_user_settings set visible = '" + sVisible + "' where step_id = '" + sStepID + "'"
+
+                if not db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to toggle step visibility [" + sStepID + "]." + db.error, 2)
+                
+                return ""
+            else:
+                uiCommon.log("Unable to toggle step visibility. Missing or invalid step_id.", 2)
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()            

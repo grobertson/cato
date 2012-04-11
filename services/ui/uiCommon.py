@@ -5,6 +5,7 @@ import sys
 import json
 import uuid
 import base64
+import cgi
 import re
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
@@ -58,6 +59,42 @@ def QuoteUp(sString):
     
     return retval[:-1] #whack the last comma 
 
+def GetSnip(sString, iMaxLength):
+    # helpful for short notes or long notes with a short title line.
+    
+    # odd behavior, but web forms seems to put just a \n as the newline entered in a textarea.
+    # so I'll test for both just to be safe.
+    sReturn = ""
+    if sString:
+        bShowElipse = False
+        
+        iLength = sString.find("\\n")
+        if iLength < 0:
+            iLength = sString.find("\\r\\n")
+        if iLength < 0:
+            iLength = sString.find("\\r")
+        if iLength < 0:
+            iLength = iMaxLength
+            
+        # now, if what we are showing is shorter than the entire field, show an elipse
+        # if it is the entire field, set the length
+        if iLength < len(sString):
+            bShowElipse = True
+        else:
+            iLength = len(sString)
+
+        sReturn += sString[0:iLength]
+        if bShowElipse:
+            sReturn += " ... "
+
+    return SafeHTML(sReturn)
+
+def SafeHTML(sInput):
+    return cgi.escape(sInput)
+
+def FixBreaks(sInput):
+    return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+
 def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessage):
     sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip()
     if sTrimmedLog:
@@ -106,7 +143,9 @@ def ForceLogout(sMsg):
     if not sMsg:
         sMsg = "Session Ended"
     
-    uiGlobals.session.user = None
+    # logging out kills the session
+    uiGlobals.session.kill()
+    
     log("Forcing logout with message: " + sMsg, 0)
     raise uiGlobals.web.seeother('/login?msg=' + urllib.quote(sMsg))
 

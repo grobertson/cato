@@ -27,6 +27,7 @@ class FunctionCategories(object):
     # append extension files to the class
     def Append(self, sFileName):
         try:
+            log("Parsing extension file " + sFileName, 4)
             xRoot = ET.parse(sFileName)
             if xRoot == None:
                 #crash... we can't do anything if the XML is busted
@@ -105,8 +106,12 @@ class Functions(dict):
                 raise Exception ("Error: (Functions Class) Invalid or missing FunctionCategories Class.")
             else:
                 for c_name, cat in fc.Categories.iteritems():
+                    #print c_name
                     for fn_name, fn in cat.Functions.iteritems():
+                        #print "-- " + fn_name
                         f[fn.Name] = fn
+                        
+                return f
         except Exception, ex:
             raise ex
 

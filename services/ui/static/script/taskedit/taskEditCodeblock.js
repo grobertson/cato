@@ -131,7 +131,7 @@ $(document).ready(function () {
 
 function doGetCodeblocks() {
     $.ajax({
-        async: false,
+        async: true,
         type: "POST",
         url: "taskMethods/wmGetCodeblocks",
         data: '{"sTaskID":"' + g_task_id + '"}',

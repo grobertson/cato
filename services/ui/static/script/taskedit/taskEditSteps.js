@@ -31,9 +31,9 @@ $(document).ready(function() {
 
         // swap the child image, this will work as long as the up down image stays the first child if the span
         if (visible == 1) {
-            $(this).children(":first-child").attr("src", "../images/icons/expand_down.png");
+            $(this).children(":first-child").attr("src", "static/images/icons/expand_down.png");
         } else {
-            $(this).children(":first-child").attr("src", "../images/icons/expand_up.png");
+            $(this).children(":first-child").attr("src", "static/images/icons/expand_up.png");
         }
 
 
@@ -41,9 +41,9 @@ $(document).ready(function() {
         //now persist it
         $("#update_success_msg").text("Updating...").show();
         $.ajax({
-            async: false,
+            async: true,
             type: "POST",
-            url: "taskMethods.asmx/wmToggleStep",
+            url: "taskMethods/wmToggleStep",
             data: '{"sStepID":"' + step_id + '","sVisible":"' + visible + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -63,13 +63,13 @@ $(document).ready(function() {
         // also change the expand images
         if ($("#steps .step_collapsed").length == $(".step_detail").length) {
             $("#steps .step_detail").removeClass("step_collapsed");
-            $(this).children(":first-child").attr("src", "../images/icons/expand_down.png");
-            $("#steps .expand_image").attr("src", "../images/icons/expand_down.png");
+            $(this).children(":first-child").attr("src", "static/images/icons/expand_down.png");
+            $("#steps .expand_image").attr("src", "static/images/icons/expand_down.png");
         } else {
             $("#steps .step_detail").addClass("step_collapsed");
             $("#steps .step_common_detail").addClass("step_common_collapsed");
-            $(this).children(":first-child").attr("src", "../images/icons/expand_up.png");
-            $("#steps .expand_image").attr("src", "../images/icons/expand_up.png");
+            $(this).children(":first-child").attr("src", "static/images/icons/expand_up.png");
+            $("#steps .expand_image").attr("src", "static/images/icons/expand_up.png");
         }
     });
 
@@ -98,9 +98,9 @@ $(document).ready(function() {
         //now persist it
         $("#update_success_msg").text("Updating...").show();
         $.ajax({
-            async: false,
+            async: true,
             type: "POST",
-            url: "taskMethods.asmx/wmToggleStepCommonSection",
+            url: "taskMethods/wmToggleStepCommonSection",
             data: '{"sStepID":"' + stp + '","sButton":"' + btn + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",

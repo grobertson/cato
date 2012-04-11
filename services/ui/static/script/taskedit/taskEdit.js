@@ -197,7 +197,7 @@ $(document).ready(function () {
 function doGetDetails() {
 	$.ajax({
         type: "POST",
-        async: false,
+        async: true,
         url: "taskMethods/wmGetTask",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
@@ -260,7 +260,7 @@ function doGetSteps() {
 
 	$.ajax({
         type: "POST",
-        async: false,
+        async: true,
         url: "taskMethods/wmGetSteps",
         data: '{"sTaskID":"' + g_task_id + '","sCodeblockName":"' + codeblock_name + '"}',
         contentType: "application/json; charset=utf-8",
