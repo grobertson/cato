@@ -183,7 +183,6 @@ class CloudAccounts(object):
                 sb.append("}")
             
                 #the last one doesn't get a trailing comma
-                print str(i) + " : " + str(len(self.DataTable))
                 if i < len(self.DataTable):
                     sb.append(",")
                     

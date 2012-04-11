@@ -6,6 +6,7 @@ import uiGlobals
 import uiCommon
 from catocommon import catocommon
 import task
+import stepTemplates as ST
 
 # task-centric web methods
 
@@ -76,10 +77,9 @@ class taskMethods:
             sID = uiCommon.getAjaxArg("sTaskID")
             t, sErr = task.Task.FromID(sID)
             if sErr:
-                print sErr
+                uiCommon.log(sErr, 2)
             if t:
                 if t.ID:
-                    print t.ID
                     return t.AsJSON()
             
             #should not get here if all is well
@@ -97,7 +97,6 @@ class taskMethods:
                 db = catocommon.new_conn()
                 sSQL = "select task_code from task where original_task_id = '" + sOriginalTaskID + "' and default_version = 1"
                 sTaskCode = db.select_col_noexcep(sSQL)
-                print sTaskCode
                 if not sTaskCode:
                     if db.error:
                         raise Exception("Unable to get task code." + db.error)
@@ -117,7 +116,6 @@ class taskMethods:
                 " from task " \
                 " where original_task_id = '" + sOriginalTaskID + "'" \
                 " order by default_version desc, version"
-            print sSQL
             dt = db.select_all_dict(sSQL)
             if not dt:
                 raise Exception("Error selecting versions: " + db.error)
@@ -144,7 +142,6 @@ class taskMethods:
                 return "{\"error\" : \"Unable to create Task.\"}"
             
             bSuccess, sErr = t.DBSave()
-            print "~" + str(bSuccess)
             if not bSuccess:
                 if sErr:
                     return "{\"info\" : \"" + sErr + "\"}"
@@ -197,11 +194,8 @@ class taskMethods:
             sSQL = "select t.task_id from task t " \
                 " where t.original_task_id in (" + sDeleteArray + ")" \
                 " and t.task_id not in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)"
-            print sSQL
             sTaskIDs = db.select_csv(sSQL, True)
-            print "!" + sTaskIDs
             if len(sTaskIDs) > 1:
-                print "deleting..."
                 sSQL = "delete from task_step_user_settings" \
                     " where step_id in" \
                     " (select step_id from task_step where task_id in (" + sTaskIDs + "))"
@@ -243,7 +237,7 @@ class taskMethods:
             #instantiate the new Task object
             oTask, sErr = task.Task.FromID(sTaskID, False)
             if sErr:
-                print sErr
+                log(sErr, 2)
             if not oTask:
                 return "wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr
             sCBHTML = ""
@@ -285,7 +279,7 @@ class taskMethods:
             #instantiate the new Task object
             oTask, sErr = task.Task.FromID(sTaskID, True)
             if sErr:
-                print sErr
+                log(sErr, 2)
             if not oTask:
                 return "wmGetSteps: Unable to get Task for ID [" + sTaskID + "]. " + sErr
 
@@ -298,8 +292,7 @@ class taskMethods:
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>"
         
                 for name, step in cb.Steps.iteritems():
-                    #sHTML += ft.DrawFullStep(oStep)
-                    sHTML += "<li>" + step.ID + "</li>"
+                    sHTML += ST.DrawFullStep(step)
             else:
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>"
                     

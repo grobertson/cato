@@ -103,7 +103,7 @@ class Task(object):
 		
 		xmlerr = "XML Error: Attribute not found."
 		
-		print "Creating Task object from XML"
+		log("Creating Task object from XML", 3)
 		xTask = ET.fromstring(sTaskXML)
 		
 		#attributes of the <task> node
@@ -126,7 +126,7 @@ class Task(object):
 		
 		#CODEBLOCKS
 		xCodeblocks = xTask.findall("codeblocks/codeblock")
-		print "Number of Codeblocks: " + str(len(xCodeblocks))
+		log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
 		for xCB in xCodeblocks:
 			newcb = Codeblock()
 			newcb.FromXML(ET.tostring(xCB))
@@ -148,7 +148,6 @@ class Task(object):
 			#the dict can't unpack the object?
 			#try it by reference
 			cb = self.Codeblocks[k]
-			#print cb.Name
 			xCB = ET.SubElement(xCodeblocks, "codeblock") #add the codeblock
 			xCB.set("name", cb.Name)
 			
@@ -157,7 +156,6 @@ class Task(object):
 			
 			for s in cb.Steps:
 				stp = cb.Steps[s]
-				#print stp
 				xStep = ET.SubElement(xSteps, "step") #add the step
 				xStep.set("id", stp.ID)
 				xStep.set("codeblock", stp.Codeblock)
@@ -310,13 +308,9 @@ class Task(object):
 					" '" + uiCommon.TickSlash(self.Description) + "'," \
 					" '" + self.Status + "'," \
 					" now())"
-				print sSQL
 				if not db.tran_exec_noexcep(sSQL):
-					print "failed"
 					return False, db.error
-				print "what?"
 				# add security log
-				print "logging"
 				uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, self.ID, self.Name, "");
 
 			"""
@@ -364,7 +358,6 @@ class Task(object):
 					iStepOrder += 1
 			"""
 			if bLocalTransaction:
-				print "committing"
 				db.tran_commit()
 		except Exception, ex:
 			return False, "Error updating the DB. " + ex.str__()
@@ -624,15 +617,12 @@ class Task(object):
 			for drSteps in dtSteps:
 				oStep = Step.FromRow(drSteps, self)
 				if oStep:
-					#print "found step" + oStep.ID + " for " + oStep.Codeblock
 					#a 'REAL' codeblock will be in this collection
 					# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
 					if self.Codeblocks.has_key(oStep.Codeblock):
-						#print "codeblock has key"
 						self.Codeblocks[oStep.Codeblock].Steps[oStep.ID] = oStep
 						#print self.Codeblocks[oStep.Codeblock].Steps
 					else:
-						#print "doens't have, must be a goofy embedded one"
 						#so, what do we do if we found a step that's not in a 'real' codeblock?
 						#well, the gui will take care of drawing those embedded steps...
 						#but we have a problem with export, version up, etc.
@@ -645,8 +635,6 @@ class Task(object):
 			#maybe one day we'll do the full recusrive loading of all embedded steps here
 			# but not today... it's a big deal and we need to let these changes settle down first.
 			
-			#print "ok, so...."
-			#print self.Codeblocks["INTERACT"].Steps
 		except Exception, ex:
 			raise ex
 		finally:
@@ -666,7 +654,7 @@ class Codeblock(object):
 		
 		#STEPS
 		xSteps = xCB.findall("steps/step")
-		print "Number of Steps in [" +self.Name + "]: " + str(len(xSteps))
+		uiCommon.log("Number of Steps in [" +self.Name + "]: " + str(len(xSteps)), 4)
 		for xStep in xSteps:
 			newstep = Step()
 			newstep.FromXML(ET.tostring(xStep), self.Name)

@@ -57,11 +57,12 @@ class login:
         user["ip_address"] = uiGlobals.web.ctx.ip
         uiCommon.SetSessionObject("user", user)
         #uiGlobals.session.user = user
-        print uiGlobals.session.user
+        uiCommon.log("Login granted for: ", 4)
+        uiCommon.log(uiGlobals.session.user, 4)
         # reset the user counters and last_login
         sql = "update users set failed_login_attempts=0, last_login_dt=now() where user_id='" + user_id + "'"
         if not db.exec_db_noexcep(sql):
-            print db.error
+            uiCommon.log(db.error, 0)
 
         #update the security log
         uiCommon.AddSecurityLog(db, user_id, uiGlobals.SecurityLogTypes.Security, 
@@ -202,7 +203,7 @@ class uiMethods:
                 and address = '" + ip + "'"
             db = catocommon.new_conn()
             if not db.exec_db_noexcep(sSQL):
-                print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
+                uiCommon.log(__name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error, 2)
             db.close()
         return ""
     

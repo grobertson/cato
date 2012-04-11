@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from uiCommon import log
 
 # FunctionCategories IS a named dictionary of task command Category objects
 # it's useful for spinning categories and functions hierarchically, as when building the command toolbox
@@ -14,17 +15,34 @@ class FunctionCategories(object):
                 return False
             else:
                 xCategories = xRoot.findall(".//category")
-                print "Number of xCategories: " + str(len(xCategories))
                 for xCategory in xCategories:
-                    print "inxcat"
                     cat = self.BuildCategory(xCategory)
                     if cat != None:
-                        print "in fc load - " + cat.Name
                         self.Categories[cat.Name] = cat
                         
                 return True
         except Exception, ex:
             raise ex
+
+    # append extension files to the class
+    def Append(self, sFileName):
+        try:
+            xRoot = ET.parse(sFileName)
+            if xRoot == None:
+                #crash... we can't do anything if the XML is busted
+                return False
+            else:
+                xCategories = xRoot.findall(".//category")
+                for xCategory in xCategories:
+                    cat = self.BuildCategory(xCategory)
+                    if cat != None:
+                        log("Parsing extension category = " + cat.Name, 4)
+                        self.Categories[cat.Name] = cat
+                        
+                return True
+        except Exception, ex:
+            # appending does not throw an exception, just a warning in the log
+            log("WARNING: Error parsing extension command file [" + sFileName + "]. " + ex.__str__(), 0)
 
     def BuildCategory(self, xCategory):
         #not crashing... just skipping
@@ -52,14 +70,12 @@ class FunctionCategories(object):
             fn.Help = xFunction.get("help", "")
             fn.Icon = xFunction.get("icon", "")
             
-            if xFunction.find("function"):
-                func = xFunction.find("function")
-                if func:
-                    fn.TemplateXML = ET.tostring(func)
-                    fn.TemplateXDoc = func
+            func = xFunction.find("function")
+            if func is not None:
+                fn.TemplateXML = ET.tostring(func)
+                fn.TemplateXDoc = func
 
             cat.Functions[fn.Name] = fn
-            print "in build cat - " + fn.Name
 
         return cat
 
@@ -89,9 +105,7 @@ class Functions(dict):
                 raise Exception ("Error: (Functions Class) Invalid or missing FunctionCategories Class.")
             else:
                 for c_name, cat in fc.Categories.iteritems():
-                    print c_name
                     for fn_name, fn in cat.Functions.iteritems():
-                        print fn_name
                         f[fn.Name] = fn
         except Exception, ex:
             raise ex
