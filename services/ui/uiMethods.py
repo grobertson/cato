@@ -83,6 +83,10 @@ class login:
         # also a big performance boost
         uiCommon.SetCloudProviders()
         
+        #put the task commants in the session
+        # another big performance boost
+        uiCommon.SetTaskCommands()
+        
         raise uiGlobals.web.seeother('/home')
 
 

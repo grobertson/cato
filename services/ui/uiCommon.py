@@ -162,3 +162,33 @@ def SetCloudProviders():
     else:
         raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
 
+#put the cloud providers and object types from a file into the session
+def SetTaskCommands():
+    try:
+        from taskCommands import FunctionCategories, Functions
+        #we load two classes here...
+        #first, the category/function hierarchy
+        cats = FunctionCategories()
+        bCoreSuccess = cats.Load("task_commands.xml")
+        if not bCoreSuccess:
+            raise Exception("Critical: Unable to read/parse task_commands.xml.")
+
+        #try to append any extension files
+        #this will read all the xml files in /extensions
+        #and append to sErr if it failed, but not crash or die.
+        """fileEntries = Directory.GetFiles(HttpContext.Current.Server.MapPath("~/extensions"), "*.xml")
+        enumerator = fileEntries.GetEnumerator()
+        while enumerator.MoveNext():
+            sFileName = enumerator.Current
+            if not cats.Append(sFileName):
+                sErr += "Unable to load extension command file [" + sFileName + "]."
+        """
+        uiGlobals.session.function_categories = cats
+        #then the flat list of all functions for fastest lookups
+        funcs = Functions.WithCategories(cats)
+        uiGlobals.session.functions = funcs
+
+        return True
+    except Exception, ex:
+        raise Exception("Unable to load Task Commands XML." + ex.__str__())
+

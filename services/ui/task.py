@@ -681,6 +681,7 @@ class Step(object):
 		self.Commented = False
 		self.Locked = False
 		self.OutputParseType = 0
+		self.UserSettings = StepUserSettings()
 
 	def FromXML(self, sStepXML="", sCodeblockName=""):
 		if sStepXML == "": return None
@@ -720,6 +721,9 @@ class Step(object):
 			#this.Function = Function.GetFunctionByName(dr["function_name"]);
 			self.FunctionName = dr["function_name"]
 
+			#TODO: if dr["button"] or skip, or visible exists, set the proper values in STepUserSettings
+			
+
 			#NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
 			#if it's null, it will not populate the parent object.
 			#this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task
@@ -742,3 +746,12 @@ class Step(object):
 			return self
 		except Exception, ex:
 			raise ex
+		
+class StepUserSettings(object):
+	def __init__(self):
+		self.Visible = True
+		self.Breakpoint= False
+		self.Skip = False
+		self.Button = ""
+
+
