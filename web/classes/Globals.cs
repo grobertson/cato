@@ -1916,7 +1916,7 @@ namespace Globals
 						throw new Exception(sErr);
 				}
 				
-				ui.WriteObjectChangeLog(Globals.acObjectTypes.Cloud, this.ID, this.Name, sOriginalName, this.Name);
+				ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Cloud, this.ID, this.Name, sOriginalName, this.Name);
 
 				//update the CloudProviders in the session
 				CloudProviders cp = ui.GetCloudProviders();  //get the session object
@@ -2257,7 +2257,7 @@ namespace Globals
 						throw new Exception(sErr);
 				}
 				
-				ui.WriteObjectChangeLog(Globals.acObjectTypes.CloudAccount, this.ID, this.Name, sOriginalName, this.Name);
+				ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.CloudAccount, this.ID, this.Name, sOriginalName, this.Name);
 
                 //if "default" was selected, unset all the others
                 if (this.IsDefault)

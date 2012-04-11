@@ -89,11 +89,11 @@ namespace Web.pages
             //logging
             var sLogObject = "Log Server Settings";
 
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "On / Off", ViewState["ddlPollerOnOff"].ToString(), ddlOnOff.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Loop", ViewState["txtLoopDelay"].ToString(), txtLoopDelay.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Port", ViewState["txtPort"].ToString(), txtPort.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Log File Days", ViewState["txtLogFileDays"].ToString(), txtLogFileDays.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Log Table Days", ViewState["txtLogTableDays"].ToString(), txtLogTableDays.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "On / Off", ViewState["ddlPollerOnOff"].ToString(), ddlOnOff.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Loop", ViewState["txtLoopDelay"].ToString(), txtLoopDelay.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Port", ViewState["txtPort"].ToString(), txtPort.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Log File Days", ViewState["txtLogFileDays"].ToString(), txtLogFileDays.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Log Table Days", ViewState["txtLogTableDays"].ToString(), txtLogTableDays.Text);
            
             // all good, notify user
             ui.RaiseInfo(Page, "Settings updated.", "");

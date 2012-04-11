@@ -153,16 +153,16 @@ namespace Web.pages
             {
                 //logging
                 var sLogObject = "Manage Notifications";
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Messenger On / Off", sOrigMessengerOnOff, sMessengerOnOff);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Poll Loop", sOrigPollLoop, sPollLoop);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Retry Delay", sOrigRetryDelay, sRetryDelay);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Retry Max Attempts", sOrigRetryMaxAttempts, sRetryMaxAttempts);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "SMTP Server Address", sOrigSMTPServerAddress, sSMTPServerAddress);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "SMTP User Account", sOrigSMTPUserAccount, sSMTPUserAccount);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "SMTP Server Port", sOrigSMTPServerPort, sSMTPServerPort);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "From Email", sOrigFromEmail, sFromEmail);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "From Name", sOrigFromName, sFromName);
-                ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "From Name", sOrigAdminEmail, sAdminEmail);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Messenger On / Off", sOrigMessengerOnOff, sMessengerOnOff);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Poll Loop", sOrigPollLoop, sPollLoop);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Retry Delay", sOrigRetryDelay, sRetryDelay);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Retry Max Attempts", sOrigRetryMaxAttempts, sRetryMaxAttempts);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "SMTP Server Address", sOrigSMTPServerAddress, sSMTPServerAddress);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "SMTP User Account", sOrigSMTPUserAccount, sSMTPUserAccount);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "SMTP Server Port", sOrigSMTPServerPort, sSMTPServerPort);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "From Email", sOrigFromEmail, sFromEmail);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "From Name", sOrigFromName, sFromName);
+                ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "From Name", sOrigAdminEmail, sAdminEmail);
 
                 // send a notification to the user that made the change
                 if (sMessengerOnOff == "on")

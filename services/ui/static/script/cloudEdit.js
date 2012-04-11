@@ -95,7 +95,7 @@ $(document).ready(function () {
     }
     
     GetProvidersList();
-    GetClouds();
+    GetItems();
 
     ManagePageLoad();
 });
@@ -107,13 +107,11 @@ function GetProviderAccounts() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmGetCloudAccounts",
+        url: "cloudMethods/wmGetCloudAccounts",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
-            var accounts = jQuery.parseJSON(response.d);
-
+        success: function (accounts) {
             // all we want here is to loop the clouds
             $("#ddlTestAccount").empty();
             $.each(accounts, function(index, account){
@@ -184,16 +182,16 @@ function TestConnection() {
 	}
 }
 
-function GetClouds() {
+function GetItems() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmGetClouds",
-        data: '{"sSearch":"' + $("#ctl00_phDetail_txtSearch").val() + '"}',
+        url: "cloudMethods/wmGetClouds",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",
         success: function (response) {
-            $('#clouds').html(response);
+            $("#clouds").html(response);
             //gotta restripe the table
             initJtable(true, true);
         },
@@ -203,7 +201,7 @@ function GetClouds() {
     });
 }
 function GetProvidersList() {
-    $("#ddlProvider").load("uiMethods/wmGetProvidersList");
+    $("#ddlProvider").load("cloudMethods/wmGetProvidersList");
 }
 
 function LoadEditDialog(editID) {
@@ -238,19 +236,16 @@ function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmGetCloud",
+        url: "cloudMethods/wmGetCloud",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (cloud) {
             //update the list in the dialog
-            if (response.d.length == 0) {
+            if (cloud.length == 0) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-                var cloud = jQuery.parseJSON(response.d);
-
-                // show the assets current values
                 $("#txtCloudName").val(cloud.Name);
                 $("#ddlProvider").val(cloud.Provider);
                 $("#txtAPIUrl").val(cloud.APIUrl);
@@ -302,38 +297,32 @@ function SaveItem(close_after_save) {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods/wmSaveCloud",
+        url: "cloudMethods/wmSaveCloud",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-	       try {
-	            var cloud = jQuery.parseJSON(response.d);
+			try {
+				cloud = response;
 		        if (cloud) {
-		        	if (cloud.info) {
-		        		showInfo(cloud.info);
-		        	} else if (cloud.error) {
-		        		showAlert(cloud.error);
-		        	} else {
-		                // clear the search field and fire a search click, should reload the grid
-		                $("[id*='txtSearch']").val("");
-						GetClouds();
-			            
-			            if (close_after_save) {
-			            	$("#edit_dialog").dialog('close');
-		            	} else {
-			            	//we aren't closing? fine, we're now in 'edit' mode.
-			            	$("#hidMode").val("edit");
-		            		$("#hidCurrentEditID").val(cloud.ID);
-		            		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
-		            	}
-		            	bSaved = true;
-					}
+	                // clear the search field and fire a search click, should reload the grid
+	                $("#txtSearch").val("");
+					GetItems();
+		            
+		            if (close_after_save) {
+		            	$("#edit_dialog").dialog('close');
+	            	} else {
+		            	//we aren't closing? fine, we're now in 'edit' mode.
+		            	$("#hidMode").val("edit");
+	            		$("#hidCurrentEditID").val(cloud.ID);
+	            		$("#edit_dialog").dialog("option", "title", "Modify Cloud");	
+	            	}
+	            	bSaved = true;
 		        } else {
-		            showAlert(response.d);
+		            showAlert(response);
 		        }
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {
@@ -369,23 +358,22 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "uiMethods/wmDeleteClouds",
+        url: "cloudMethods/wmDeleteClouds",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            //update the list in the dialog
-            if (msg.d.length == 0) {
+        success: function (response) {
+	        if (response) {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
                 $("[id*='txtSearch']").val("");
-				GetClouds();
+				GetItems();
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
             } else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {

@@ -5,18 +5,18 @@ $(document).ready(function () {
 
     //use this to define constants, set up jQuery objects, etc.
 
-    $('#main-menu').load("uiMethods/wmGetMenu");
-    $('#header_cloud_accounts').load("uiMethods/wmGetCloudAccountsForHeader");
-      
-    $("ul.sf-menu").supersubs({
-        minWidth: 18,   // minimum width of sub-menus in em units 
-        maxWidth: 27,   // maximum width of sub-menus in em units 
-        extraWidth: .5     // extra width can ensure lines don't sometimes turn over 
-        // due to slight rounding differences and font-family 
-    }).superfish();  // call supersubs first, then superfish, so that subs are 
-    // not display:none when measuring. Call before initialising 
-    // containing tabs for same reason.
+    $('#main-menu').load("uiMethods/wmGetMenu", function() {
+	    $("ul.sf-menu").supersubs({
+	        minWidth: 18,   // minimum width of sub-menus in em units 
+	        maxWidth: 27,   // maximum width of sub-menus in em units 
+	        extraWidth: .5     // extra width can ensure lines don't sometimes turn over 
+	        // due to slight rounding differences and font-family 
+	    }).superfish();  // call supersubs first, then superfish, so that subs are 
+	    // not display:none when measuring. Call before initialising 
+	    // containing tabs for same reason.
+	});
 
+    $('#header_cloud_accounts').load("uiMethods/wmGetCloudAccountsForHeader");
 
     //the cloud accounts dropdown updates the server session
     $("#header_cloud_accounts").change(function () {

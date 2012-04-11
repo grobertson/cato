@@ -1191,7 +1191,7 @@ namespace ACWebMethods
 
                     oTrans.Commit();
 
-                    ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, sTaskID, "Status", "Development", "Approved");
+                    ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Task, sTaskID, "Status", "Development", "Approved");
                     if (sMakeDefault == "1")
                         ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, sTaskID, "Default", "Set as Default Version.");
 

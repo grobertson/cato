@@ -80,9 +80,9 @@ namespace Web.pages
             //logging
             var sLogObject = "Poller Settings";
 
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Poller On / Off", ViewState["ddlPollerOnOff"].ToString(), ddlPollerOnOff.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Poll Loop", ViewState["txtLoopDelay"].ToString(), txtLoopDelay.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Max Processes", ViewState["txtPollerMaxProcesses"].ToString(), txtPollerMaxProcesses.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Poller On / Off", ViewState["ddlPollerOnOff"].ToString(), ddlPollerOnOff.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Poll Loop", ViewState["txtLoopDelay"].ToString(), txtLoopDelay.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Max Processes", ViewState["txtPollerMaxProcesses"].ToString(), txtPollerMaxProcesses.Text);
            
             // all good, notify user
             ui.RaiseInfo(Page, "Poller settings updated.", "");

@@ -15,6 +15,9 @@ from uiMethods import uiMethods
 from uiMethods import logout
 from uiMethods import login
 
+from taskMethods import taskMethods
+from cloudMethods import cloudMethods
+
 import uiCommon
 import uiGlobals
 
@@ -35,9 +38,21 @@ class home:
     def GET(self):
         return render.home()
 
+class taskManage:        
+    def GET(self):
+        return render.taskManage()
+
+class taskEdit:        
+    def GET(self):
+        return render.taskEdit()
+
 class cloudEdit:        
     def GET(self):
         return render.cloudEdit()
+
+class systemStatus:        
+    def GET(self):
+        return render.systemStatus()
 
 #Authentication preprocessor
 def auth_app_processor(handle):
@@ -66,10 +81,15 @@ if __name__ == "__main__":
     urls = (
         '/', 'index',
         '/uiMethods/(.*)', 'uiMethods',
+        '/cloudMethods/(.*)', 'cloudMethods',
+        '/taskMethods/(.*)', 'taskMethods',
         '/login', 'login',
         '/logout', 'logout',
         '/home', 'home',
         '/cloudEdit', 'cloudEdit',
+        '/taskEdit', 'taskEdit',
+        '/taskManage', 'taskManage',
+        '/systemStatus', 'systemStatus',
         '/bypass', 'bypass'
     )
 

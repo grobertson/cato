@@ -1,0 +1,144 @@
+$def with ()
+$var jsfiles: managePageCommon.js taskManage.js
+$var cssfiles:
+
+<div style="display: none;">
+    <input id="hidMode" type="hidden" name="hidMode" />
+    <input id="hidEditCount" type="hidden" name="hidEditCount" />
+    <input id="hidCurrentEditID" type="hidden" name="hidCurrentEditID" />
+    <input id="hidSelectedArray" type="hidden" name="hidSelectedArray" />
+</div>
+<div id="left_panel">
+    <div class="left_tooltip">
+        <img src="static/images/manage-tasks-192x192.png" alt="" />
+        <div id="left_tooltip_box_outer">
+            <div id="left_tooltip_box_inner">
+				<h2>Tasks</h2>
+                <p>
+                    The Manage Tasks screen allows administrators
+                    to modify, add and delete Tasks.</p>
+                <p>
+                    Select one or more Tasks from the list to the right, using the checkboxes. Select
+                    an action to modify or delete the Tasks you've selected.</p>
+				<p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Tasks?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><img src="static/images/icons/info.png" alt="" />Click here</a>
+					for a more detailed introduction to Tasks.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="content">
+    <span id="lblItemsSelected">0</span> Items Selected <span id="clear_selected_btn"></span><span 
+		id="item_create_btn">Create</span><span id="item_copy_btn">Copy</span><span 
+		id="item_export_btn">Export</span><span id="item_delete_btn">Delete</span>
+    <input type="text" id="txtSearch" class="search_text" />
+    <span id="item_search_btn">Search</span>
+    <table class="jtable" cellspacing="1" cellpadding="1" width="99%">
+		<thead>
+	        <tr>
+	            <th class="chkboxcolumn">
+	                <input class="chkbox" type="checkbox" id="chkAll" />
+	            </th>
+	            <th sortcolumn="task_code" width="75px">
+	                Task Code
+	            </th>
+	            <th sortcolumn="task_name" width="200px">
+	                Task Name
+	            </th>
+	            <th sortcolumn="version" width="50px">
+	                Version
+	            </th>
+	            <th sortcolumn="task_desc" width="400px">
+	                Description
+	            </th>
+	            <th sortcolumn="task_status" width="75px">
+	                Status
+	            </th>
+	            <th sortcolumn="versions" width="25px">
+	                Versions
+	            </th>
+	        </tr>
+		</thead>
+		<tbody id="tasks"></tbody>
+    </table>
+</div>
+<div id="edit_dialog" class="hidden" title="Create Task">
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <span id="lblNewTaskMessage" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Task Code
+                </td>
+                <td>
+                    <input type="text" id="txtTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
+                        MaxLength="32"jq>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Task Name
+                </td>
+                <td>
+                    <input type="text" id="txtTaskName" runat="server" class="usertextbox" Style="width: 300px;"
+                        MaxLength="256">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Description
+                </td>
+                <td>
+                    <input type="text" id="txtTaskDesc" runat="server" class="usertextbox" Style="width: 300px;"
+                        TextMode="MultiLine">
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div id="delete_dialog" class="hidden" title="Delete Tasks">
+    Are you sure you want to delete these Tasks?
+</div>
+<div id="export_dialog" class="hidden" title="Export Tasks">
+    Are you sure you want to export these Tasks?
+</div>
+<div id="copy_dialog" class="hidden" title="Copy Task">
+    <table id="tblCopy" width="100%">
+        <tr>
+            <td colspan="2">
+                <span id="lblTaskCopy" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Copy From Version
+            </td>
+            <td>
+                <div id="divTaskVersions">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                New Task Code
+            </td>
+            <td>
+                <input type="text" id="txtCopyTaskCode" runat="server" class="usertextbox" Style="width: 300px;"
+                    MaxLength="32">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                New Task Name
+            </td>
+            <td>
+                <input type="text" id="txtCopyTaskName" runat="server" class="usertextbox" Style="width: 300px;"
+                    MaxLength="256">
+            </td>
+        </tr>
+    </table>
+    <input id="hidCopyTaskid" type="hidden" name="hidCopyTaskid" />
+</div>

@@ -89,11 +89,11 @@ namespace Web.pages
             //logging
             var sLogObject = "Scheduler Settings";
 
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Scheduler On / Off", ViewState["ddlSchedulerOnOff"].ToString(), ddlSchedulerOnOff.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Poll Loop", ViewState["txtLoopDelay"].ToString(), txtLoopDelay.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Min Depth", ViewState["txtScheduleMinDepth"].ToString(), txtScheduleMinDepth.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Max Days", ViewState["txtScheduleMaxDays"].ToString(), txtScheduleMaxDays.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Clean Registry", ViewState["txtCleanAppRegistry"].ToString(), txtCleanAppRegistry.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Scheduler On / Off", ViewState["ddlSchedulerOnOff"].ToString(), ddlSchedulerOnOff.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Poll Loop", ViewState["txtLoopDelay"].ToString(), txtLoopDelay.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Min Depth", ViewState["txtScheduleMinDepth"].ToString(), txtScheduleMinDepth.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Max Days", ViewState["txtScheduleMaxDays"].ToString(), txtScheduleMaxDays.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Clean Registry", ViewState["txtCleanAppRegistry"].ToString(), txtCleanAppRegistry.Text);
            
             // all good, notify user
             ui.RaiseInfo(Page, "Scheduler settings updated.", "");

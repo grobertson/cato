@@ -108,9 +108,109 @@ class Db(object):
 
 		return True
 
+	def tran_exec(self, sql, params=()):
+		"""DOES NOT perform a commit!"""
+		if sql == "":
+			print "update: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor()
+			c.execute(sql, params)
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		return True
+
+	def tran_rollback(self):
+		"""Rolls back anything on the current connection."""
+		self.conn.rollback()
+
+	def tran_commit(self):
+		"""Commits anything on the current connection."""
+		self.conn.commit()
+
 	def close(self):
 		"""Closes the database connection."""
 		self.conn.close()
+
+	def select_csv(self, sql, quoted=False):
+		"""Selects a set of rows, and returns the first column as a comma delimited string."""
+		s = ""
+		rows = self.select_all(sql)
+		if rows:
+			for row in rows:
+				if quoted:
+					s += "'%s'," % (row[0])
+				else:
+					s += "%s," % (row[0])
+			
+			s = s[:-1] #remove the trailing comma
+			
+		return s
+	
+	# These next functions are the same as their predecessors, except they return the results in a dict.
+	# This is handy for referencing valued by column name instead of index.
+
+	def select_all_dict(self, sql, params=()):
+		"""Gets a row set for a provided query."""
+		if sql == "":
+			print "select_all: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			result = c.fetchall()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result
+		else:
+			return False
+
+
+	def select_row_dict(self, sql, params=()):
+		"""Gets a single row for a provided query.  If there are multiple rows, the first is returned."""
+		if sql == "":
+			print "select_row: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			result = c.fetchone()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result
+		else:
+			return False
+
+	def select_col_dict(self, sql, params=()):
+		"""Gets a single value from the database.  If the query returns more than one column, the first is used."""
+		if sql == "":
+			print "select_column: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			result = c.fetchone()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result[0]
+		else:
+			return False
+
 
 # Now something interesting...
 # these functions all just call the ones above...
@@ -119,13 +219,27 @@ class Db(object):
 # GUI calls and other crash-proof services are made to expect messages, and display them nicely,
 # and not be filled with lots of wasteful try:except blocks.
 
-# we're only doing this for the update functions - if selects throw exceptions...
-# well... we've got bigger problems.
+	def select_col_noexcep(self, sql, params=()):
+		try:
+			return self.select_col(sql, params)
+		except Exception, e:
+			self.error = e.__str__()
+			return False
 
-	def try_exec_db(self, sql, params=()):
+	def exec_db_noexcep(self, sql, params=()):
 		try:
 			self.exec_db(sql, params)
 		except Exception, e:
+			self.error = e.__str__()
+			return False
+
+		return True
+
+	def tran_exec_noexcep(self, sql, params=()):
+		try:
+			self.tran_exec(sql, params)
+		except Exception, e:
+			self.conn.rollback()
 			self.error = e.__str__()
 			return False
 

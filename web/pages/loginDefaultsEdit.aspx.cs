@@ -120,16 +120,16 @@ namespace Web.pages
 
             //logging
             var sLogObject = "Login Defaults";
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Max Age", ViewState["txtPassMaxAge"].ToString(), txtPassMaxAge.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Max Login Attempts", ViewState["txtPassMaxAttempts"].ToString(), txtPassMaxAttempts.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Max Length", ViewState["txtPassMaxLength"].ToString(), txtPassMaxLength.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Min Length", ViewState["txtPassMinLength"].ToString(), txtPassMinLength.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Age Warn Days", ViewState["txtPassAgeWarn"].ToString(), txtPassAgeWarn.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password History", ViewState["txtPasswordHistory"].ToString(), txtPasswordHistory.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Auto Lock Reset", ViewState["txtAutoLockReset"].ToString(), txtAutoLockReset.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Login Message", ViewState["txtLoginMessage"].ToString(), txtLoginMessage.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password Auth Error Message", ViewState["txtAuthErrorMessage"].ToString(), txtAuthErrorMessage.Text);
-            ui.WriteObjectChangeLog(acObjectTypes.None, sLogObject, "Password New User Message", ViewState["txtNewUserMessage"].ToString(), txtNewUserMessage.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Max Age", ViewState["txtPassMaxAge"].ToString(), txtPassMaxAge.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Max Login Attempts", ViewState["txtPassMaxAttempts"].ToString(), txtPassMaxAttempts.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Max Length", ViewState["txtPassMaxLength"].ToString(), txtPassMaxLength.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Min Length", ViewState["txtPassMinLength"].ToString(), txtPassMinLength.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Age Warn Days", ViewState["txtPassAgeWarn"].ToString(), txtPassAgeWarn.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password History", ViewState["txtPasswordHistory"].ToString(), txtPasswordHistory.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Auto Lock Reset", ViewState["txtAutoLockReset"].ToString(), txtAutoLockReset.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Login Message", ViewState["txtLoginMessage"].ToString(), txtLoginMessage.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password Auth Error Message", ViewState["txtAuthErrorMessage"].ToString(), txtAuthErrorMessage.Text);
+            ui.WriteObjectPropertyChangeLog(acObjectTypes.None, sLogObject, "Password New User Message", ViewState["txtNewUserMessage"].ToString(), txtNewUserMessage.Text);
 
             if (ViewState["cbPassComplexity"].ToString() != cbPassComplexity.Checked.ToString())
             {

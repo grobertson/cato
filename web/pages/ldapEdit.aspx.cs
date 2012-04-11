@@ -248,7 +248,7 @@ namespace Web.pages
             // add security log
             if (sMode == "edit")
             {
-                ui.WriteObjectChangeLog(Globals.acObjectTypes.Domain, sEditDomain, sEditDomain, sEditDomain, sDomain);
+                ui.WriteObjectPropertyChangeLog(Globals.acObjectTypes.Domain, sEditDomain, sEditDomain, sEditDomain, sDomain);
             }
             else
             {
