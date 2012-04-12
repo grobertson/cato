@@ -57,8 +57,9 @@ def TickSlash(s):
 def packJSON(sIn):
     if not sIn:
         return sIn
-    
-    sOut = base64.b64decode(sIn)
+    print sIn
+    sOut = base64.b64encode(sIn)
+    print sOut
     return sOut.replace("/", "%2F").replace("+", "%2B")
 
 def unpackJSON(sIn):

@@ -103,7 +103,7 @@ class Task(object):
 		
 		xmlerr = "XML Error: Attribute not found."
 		
-		log("Creating Task object from XML", 3)
+		uiCommon.log("Creating Task object from XML", 3)
 		xTask = ET.fromstring(sTaskXML)
 		
 		#attributes of the <task> node
@@ -126,7 +126,7 @@ class Task(object):
 		
 		#CODEBLOCKS
 		xCodeblocks = xTask.findall("codeblocks/codeblock")
-		log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
+		uiCommon.log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
 		for xCB in xCodeblocks:
 			newcb = Codeblock()
 			newcb.FromXML(ET.tostring(xCB))
@@ -548,7 +548,7 @@ class Task(object):
 			#parameters
 			if dr["parameter_xml"]:
 				xParameters = ET.fromstring(dr["parameter_xml"])
-				if xParameters:
+				if xParameters is not None:
 					self.ParameterXDoc = xParameters
 			# 
 			# * ok, this is important.

@@ -128,6 +128,49 @@ class taskMethods:
         except Exception, ex:
             raise (ex)
     
+    def wmGetCommands(self):
+        try:
+            sCatHTML = ""
+            sFunHTML = ""
+
+            # so, we will use the FunctionCategories class in the session that was loaded at login, and build the list items for the commands tab.
+            cats = uiCommon.GetTaskFunctionCategories()
+            if not cats:
+                return "{\"error\" : \"Error: Task Function Categories class is not in the session.\"}"
+            else:
+                for name, cat in cats.Categories.iteritems():
+                    sCatHTML += "<li class=\"ui-widget-content ui-corner-all command_item category\""
+                    sCatHTML += " id=\"cat_" + cat.Name + "\""
+                    sCatHTML += " name=\"" + cat.Name + "\">"
+                    sCatHTML += "<div>"
+                    sCatHTML += "<img class=\"category_icon\" src=\"static/images/" + cat.Icon + "\" alt=\"\" />"
+                    sCatHTML += "<span>" + cat.Label + "</span>"
+                    sCatHTML += "</div>"
+                    sCatHTML += "<div id=\"help_text_" + cat.Name + "\" class=\"hidden\">"
+                    sCatHTML += cat.Description
+                    sCatHTML += "</div>"
+                    sCatHTML += "</li>"
+                    
+                    sFunHTML += "<div class=\"functions hidden\" id=\"cat_" + cat.Name + "_functions\">"
+                    # now, let's work out the functions.
+                    # we can just draw them all... they are hidden and will display on the client as clicked
+                    for name, fn in cat.Functions.iteritems():
+                        sFunHTML += "<div class=\"ui-widget-content ui-corner-all command_item function\""
+                        sFunHTML += " id=\"fn_" + fn.Name + "\""
+                        sFunHTML += " name=\"" + fn.Name + "\">"
+                        sFunHTML += "<img class=\"function_icon\" src=\"static/images/" + fn.Icon + "\" alt=\"\" />"
+                        sFunHTML += "<span>" + fn.Label + "</span>"
+                        sFunHTML += "<div id=\"help_text_" + fn.Name + "\" class=\"hidden\">"
+                        sFunHTML += fn.Description
+                        sFunHTML += "</div>"
+                        sFunHTML += "</div>"
+
+                    sFunHTML += "</div>"
+
+            return "{\"categories\" : \"%s\", \"functions\" : \"%s\"}" % (uiCommon.packJSON(sCatHTML), uiCommon.packJSON(sFunHTML))
+        except Exception, ex:
+            raise ex
+
     def wmCreateTask(self):
         sTaskName = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskName"))
         sTaskCode = uiCommon.unpackJSON(uiCommon.getAjaxArg("sTaskCode"))
