@@ -237,7 +237,7 @@ class taskMethods:
             #instantiate the new Task object
             oTask, sErr = task.Task.FromID(sTaskID, False)
             if sErr:
-                log(sErr, 2)
+                uiCommon.log(sErr, 2)
             if not oTask:
                 return "wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr
             sCBHTML = ""
@@ -279,7 +279,7 @@ class taskMethods:
             #instantiate the new Task object
             oTask, sErr = task.Task.FromID(sTaskID, True)
             if sErr:
-                log(sErr, 2)
+                uiCommon.log(sErr, 2)
             if not oTask:
                 return "wmGetSteps: Unable to get Task for ID [" + sTaskID + "]. " + sErr
 

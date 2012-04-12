@@ -33,7 +33,24 @@ def IsGUID(s):
         return True
     else:
         return False
-     
+
+def IsTrue(var):
+    # not just regular python truth testing - certain string values are also "true"
+    # but false if the string has length but isn't a "true" statement
+    # since any object could be passed here (we only want bools, ints or strs)
+    # we just cast it to a str
+    s = str(var).lower()
+    if len(s) > 0 and str(var).lower() in "true,yes,on,enable,enabled":
+        print "[" + str(var).lower() + "] IS TRUE because it matched [true,yes,on,enable,enabled]"
+        return True
+    else:
+        # wasn't an explicit string match, return the regular python truth value
+        if var:
+            print "[" + str(var) + "] IS TRUE because of Python"
+            return True
+        else:
+            return False
+         
 def TickSlash(s):
     return s.replace("'", "''").replace("\\", "\\\\")
 
