@@ -54,7 +54,7 @@ def DrawFullStep(oStep):
     #(hate this... wish the label was consistent across all step types)
     #hack for initial loading of the step... don't show the order if it's a "-1"... it's making a
     #strange glitch in the browser...you can see it update
-    sIcon = ("" if not oStep.Function.Icon else "static/images/" + oStep.Function.Icon)
+    sIcon = ("" if not oStep.Function.Icon else oStep.Function.Icon)
     sStepOrder = ("" if oStep.Order == -1 else str(oStep.Order))
     sLabel = "<img class=\"step_header_function_icon\" src=\"" + sIcon + "\" alt=\"\" />" \
         "<span class=\"step_order_label\">" + str(sStepOrder) + "</span> : " + \
