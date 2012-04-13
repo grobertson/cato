@@ -203,10 +203,9 @@ def GetStepTemplate(oStep):
         # IF a command "populates variables" it will be noted in the command xml
         # is the variables xml attribute true?
         xd = oStep.FunctionXDoc
-        print xd
         if xd is not None:
             sPopulatesVars = xd.get("variables", "")
-            print "Populates Variables?" + sPopulatesVars
+            log("Populates Variables?" + sPopulatesVars, 4)
             if uiCommon.IsTrue(sPopulatesVars):
                 sVariableHTML += "## WOULD DRAW VARSECTION ##" #DrawVariableSectionForDisplay(oStep, true)
         
@@ -259,10 +258,10 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
         sIsRemovable = "" #xeNode.PARENT.get("is_array", "")
         bIsRemovable = uiCommon.IsTrue(sIsRemovable)
 
-        print "-- Label: " + sNodeLabel
-        print "-- Editable: " + sIsEditable + " - " + str(bIsEditable)
-        print "-- Removable: " + sIsRemovable + " - " + str(bIsRemovable)
-        print "-- Elements: " + str(len(xeNode))
+        log("-- Label: " + sNodeLabel, 4)
+        log("-- Editable: " + sIsEditable + " - " + str(bIsEditable), 4)
+        log("-- Removable: " + sIsRemovable + " - " + str(bIsRemovable), 4)
+        log("-- Elements: " + str(len(xeNode)), 4)
         
         #if a node has children we'll draw it with some hierarchical styling.
         #AND ALSO if it's editable, even if it has no children, we'll still draw it as a container.
@@ -359,7 +358,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
 def DrawField(xe, sXPath, sStepID, sFunction):
         sHTML = ""
         sNodeValue = (xe.text if xe.text else "")
-        print "-- Value :" + sNodeValue
+        log("-- Value :" + sNodeValue, 4)
         
         sNodeLabel = xe.get("label", xe.tag)
         sLabelClasses = xe.get("label_class", "")
@@ -377,7 +376,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
         sRequired = xe.get("required", "")
         bRequired = uiCommon.IsTrue(sRequired)
 
-        print "-- Input Type :" + sInputType
+        log("-- Input Type :" + sInputType, 4)
 
 
         #some getting started layout possibilities
@@ -464,7 +463,6 @@ def DrawField(xe, sXPath, sStepID, sFunction):
             sHTML += "</select>"
             """
         else: #input is the default
-            print "-- drawing text field..."
             sElementID = uiCommon.NewGUID() #some special cases below may need this.
             sHTML += sNodeLabel + " <input type=\"text\" " + \
                 CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sCSSClasses) + \

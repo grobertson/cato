@@ -343,13 +343,182 @@ class taskMethods:
         except Exception, ex:
             return ex
         
+    def wmAddStep(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sCodeblockName = uiCommon.getAjaxArg("sCodeblockName")
+        sItem = uiCommon.getAjaxArg("sItem")
+        try:
+            sUserID = uiCommon.GetSessionUserID()
+
+            db = catocommon.new_conn()
+
+            sStepHTML = ""
+            sErr = ""
+            sSQL = ""
+            sNewStepID = ""
+            
+            # in some cases, we'll have some special values to go ahead and set in the function_xml
+            # when it's added
+            # it's content will be xpath, value
+            dValues = {}
+
+            if not uiCommon.IsGUID(sTaskID):
+                raise Exception("Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]")
+
+
+            # now, the sItem variable may have a function name (if it's a new command)
+            # or it may have a guid (if it's from the clipboard)
+
+            # so, if it's a guid after stripping off the prefix, it's from the clipboard
+
+            # the function has a fn_ or clip_ prefix on it from the HTML.  Strip it off.
+            # FIX... test the string to see if it BEGINS with fn_ or clip_
+            # IF SO... cut off the beginning... NOT a replace operation.
+            if sItem[:3] == "fn_": sItem = sItem[3:]
+            if sItem[:5] == "clip_": sItem = sItem[5:]
+
+            # could also beging with cb_, which means a codeblock was dragged and dropped.
+            # this special case will result in a codeblock command.
+            if sItem[:3] == "cb_":
+                # so, the sItem becomes "codeblock"
+                sCBName = sItem[3:]
+                dValues["//codeblock"] = sCBName
+                sItem = "codeblock"
+
+            # NOTE: !! yes we are adding the step with an order of -1
+            # the update event on the client does not know the index at which it was dropped.
+            # so, we have to insert it first to get the HTML... but the very next step
+            # will serialize and update the entire sortable... 
+            # immediately replacing this -1 with the correct position
+
+            if uiCommon.IsGUID(sItem):
+                sNewStepID = sItem
+
+                # copy from the clipboard (using the root_step_id to get ALL associated steps)
+                sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
+                    " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
+                    " function_name, function_xml, variable_xml)" \
+                    " select step_id, '" + sTaskID + "'," \
+                    " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
+                    "-1,step_desc," \
+                    "0,0,output_parse_type,output_row_delimiter,output_column_delimiter," \
+                    "function_name,function_xml,variable_xml" \
+                    " from task_step_clipboard" \
+                    " where user_id = '" + sUserID + "'" \
+                    " and root_step_id = '" + sItem + "'"
+
+                if not db.exec_db_noexcep(sSQL):
+                    raise Exception("Unable to add step." + db.error)
+
+                uiCommon.WriteObjectChangeLog(db, uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
+                    "Added Command from Clipboard to Codeblock:" + sCodeblockName)
+
+            else:
+                # THE NEW CLASS CENTRIC WAY
+                # 1) Get a Function object for the sItem (function_name)
+                # 2) use those values to construct an insert statement
+                
+                func = uiCommon.GetTaskFunction(sItem)
+                if not func:
+                    raise Exception("Unable to add step.  Can't find a Function definition for [" + sItem + "]")
+                
+                # add a new command
+                sNewStepID = uiCommon.NewGUID()
+
+                # NOTE: !! yes we are doing some command specific logic here.
+                # Certain commands have different 'default' values for delimiters, etc.
+                # sOPM: 0=none, 1=delimited, 2=parsed
+                sOPM = "0"
+
+                # gotta do a few things to the templatexml
+                xdTemplate = ET.fromstring(func.TemplateXML)
+                if xdTemplate is not None:
+                    xe = xdTemplate.find("function")
+                    if xe is not None:
+                        # get the OPM
+                        sOPM = xe.get("parse_method", "0")
+                        # it's possible that variables=true and parse_method=0..
+                        # (don't know why you'd do that on purpose, but whatever.)
+                        # but if there's NO parse method attribute, and yet there is a 'variables=true' attribute
+                        # well, we can't let the absence of a parse_method negate it,
+                        # so the default is "2".
+                        sPopVars = xe.get("variables", "false")
+                        if uiCommon.IsTrue(sPopVars) and sOPM == "0":
+                            sOPM = "2"
+                        
+                        
+                        # there may be some provided values ... so alter the func.TemplateXML accordingly
+                        for sXPath, sValue in dValues.iteritems():
+                            xNode = xe.find(sXPath)
+                            if xNode is not None:
+                                xNode.text = dValues[sXPath]
+                
+                sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
+                    " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
+                    " function_name, function_xml)" \
+                    " values (" \
+                    "'" + sNewStepID + "'," \
+                    "'" + sTaskID + "'," + \
+                    ("'" + sCodeblockName + "'" if sCodeblockName else "null") + "," \
+                    "-1," \
+                    "0,0," + sOPM + ",0,0," \
+                    "'" + func.Name + "'," \
+                    "'" + ET.tostring(xdTemplate) + "'" \
+                    ")"
+
+                if not db.exec_db_noexcep(sSQL):
+                    raise Exception("Unable to add step." + db.error)
+
+                uiCommon.WriteObjectChangeLog(db, uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
+                    "Added Command Type:" + sItem + " to Codeblock:" + sCodeblockName)
+
+            if sNewStepID:
+                # now... get the newly inserted step and draw it's HTML
+                oNewStep = task.Step.ByIDWithSettings(sNewStepID, sUserID)
+                print "gotastep!"
+                if oNewStep:
+                    sStepHTML += ST.DrawFullStep(oNewStep)
+                else:
+                    sStepHTML += "<span class=\"red_text\">Error: Unable to draw Step.</span>"
+
+                # return the html
+                return "{\"step_id\":\"" + sNewStepID + "\",\"step_html\":\"" + uiCommon.packJSON(sStepHTML) + "\"}"
+            else:
+                raise Exception("Unable to add step.  No new step_id." + sErr)
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+
+    def wmReorderSteps(self):
+        sSteps = uiCommon.getAjaxArg("sSteps")
+        db = catocommon.new_conn()
+
+        try:
+            i = 1
+            aSteps = sSteps.split(',')
+            for step_id in aSteps:
+                sSQL = "update task_step set step_order = " + str(i) + " where step_id = '" + step_id + "'"
+
+                # there will be no sSQL if there were no steps, so just skip it.
+                if sSQL:
+                    if not db.exec_db_noexcep(sSQL):
+                        raise Exception("Unable to update steps." + db.error)
+                    
+                i += 1
+
+            return ""
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+    
     def wmToggleStepCommonSection(self):
         # no exceptions, just a log message if there are problems.
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
             sButton = uiCommon.getAjaxArg("sButton")
             db = catocommon.new_conn()
-            print sStepID
             if uiCommon.IsGUID(sStepID):
                 sUserID = uiCommon.GetSessionUserID()
                 sButton = ("null" if sButton == "" else "'" + sButton + "'")

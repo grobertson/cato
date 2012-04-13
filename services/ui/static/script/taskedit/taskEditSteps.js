@@ -793,40 +793,39 @@ function doStepAdd(new_step) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmAddStep",
+        url: "taskMethods/wmAddStep",
         data: '{"sTaskID":"' + task_id + '","sCodeblockName":"' + codeblock_name + '","sItem":"' + item + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function(retval) {
-            $("#no_step").addClass("hidden");
-            //use the new html str
-            //the first 36 chars are the step_id, everything after that is the html
-            var new_step_id = retval.d.substring(0, 36);
-
-            //the rest of the return is the HTML of the step
-            new_step.replaceWith(retval.d.substring(36));
-
-
-            //then reorder the other steps
-            doStepReorder();
-
-            //note we're not 'unblocking' the ui here... that will happen in stepReorder
-
-            //NOTE NOTE NOTE: this is temporary
-            //until I fix the copy command ... we will delete the clipboard item after pasting
-            //this is not permanent, but allows it to be checked in now
-            if (item.indexOf('clip_') != -1)
-                doClearClipboard(item.replace(/clip_/, ""))
-
-            //but we will change the sortable if this command has embedded commands.
-            //you have to add the embedded command NOW, or click cancel.
-            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
-                doDropZoneEnable($("#" + new_step_id + " .step_nested_drop_target"));
-            }
-            else {
-                initSortable();
-                validateStep(new_step_id);
-            }
+        success: function(response) {
+        	if (response.step_id){
+		        new_step_id = response.step_id;
+		        
+		        $("#no_step").addClass("hidden");
+		        
+		        new_step.replaceWith(unpackJSON(response.step_html));
+		
+		        //then reorder the other steps
+		        doStepReorder();
+		
+		        //note we're not 'unblocking' the ui here... that will happen in stepReorder
+		
+		        //NOTE NOTE NOTE: this is temporary
+		        //until I fix the copy command ... we will delete the clipboard item after pasting
+		        //this is not permanent, but allows it to be checked in now
+		        if (item.indexOf('clip_') != -1)
+		            doClearClipboard(item.replace(/clip_/, ""))
+		
+		        //but we will change the sortable if this command has embedded commands.
+		        //you have to add the embedded command NOW, or click cancel.
+		        if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
+		            doDropZoneEnable($("#" + new_step_id + " .step_nested_drop_target"));
+		        }
+		        else {
+		            initSortable();
+		            validateStep(new_step_id);
+		        }
+        	}
         },
         error: function(response) {
             $("#update_success_msg").fadeOut(2000);
@@ -844,7 +843,7 @@ function doStepReorder() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmReorderSteps",
+        url: "taskMethods/wmReorderSteps",
         data: '{"sSteps":"' + steparray + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",

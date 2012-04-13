@@ -607,31 +607,32 @@ class Task(object):
 					" order by s.step_order"
 			else:
 				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
-				" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
-				" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" \
-				" from task_step s" \
-				" where s.task_id = '" + self.ID + "'" \
-				" order by s.step_order"
+    				" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+    				" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" \
+    				" from task_step s" \
+    				" where s.task_id = '" + self.ID + "'" \
+    				" order by s.step_order"
 
 			dtSteps = db.select_all_dict(sSQL)
-			for drSteps in dtSteps:
-				oStep = Step.FromRow(drSteps, self)
-				if oStep:
-					#a 'REAL' codeblock will be in this collection
-					# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
-					if self.Codeblocks.has_key(oStep.Codeblock):
-						self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
-						#print self.Codeblocks[oStep.Codeblock].Steps
-					else:
-						#so, what do we do if we found a step that's not in a 'real' codeblock?
-						#well, the gui will take care of drawing those embedded steps...
-						#but we have a problem with export, version up, etc.
-						#these steps can't be orphans!
-						#so, we'll go ahead and create codeblocks for them.
-						#this is terrible, but part of the problem with this embedded stuff.
-						#we'll tweak the gui so GUID named codeblocks don't show.
-						self.Codeblocks[oStep.Codeblock] = Codeblock(oStep.Codeblock)
-						self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
+			if dtSteps:
+				for drSteps in dtSteps:
+					oStep = Step.FromRow(drSteps, self)
+					if oStep:
+						#a 'REAL' codeblock will be in this collection
+						# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+						if self.Codeblocks.has_key(oStep.Codeblock):
+							self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
+							#print self.Codeblocks[oStep.Codeblock].Steps
+						else:
+							#so, what do we do if we found a step that's not in a 'real' codeblock?
+							#well, the gui will take care of drawing those embedded steps...
+							#but we have a problem with export, version up, etc.
+							#these steps can't be orphans!
+							#so, we'll go ahead and create codeblocks for them.
+							#this is terrible, but part of the problem with this embedded stuff.
+							#we'll tweak the gui so GUID named codeblocks don't show.
+							self.Codeblocks[oStep.Codeblock] = Codeblock(oStep.Codeblock)
+							self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
 			#maybe one day we'll do the full recusrive loading of all embedded steps here
 			# but not today... it's a big deal and we need to let these changes settle down first.
 			
@@ -681,6 +682,10 @@ class Step(object):
 		# this is because of xml import/export - where the function details aren't required.
 		# but they are in the UI when drawing steps.
 		self.Function = None 
+		# Very rarely does a single Step object have an associated parent Task.
+		# usually, we're working on steps within the context of already knowing the Task.
+		# but if it's needed, it will have been explicitly populated.
+		self.Task = None
 
 	def FromXML(self, sStepXML="", sCodeblockName=""):
 		if sStepXML == "": return None
@@ -697,6 +702,42 @@ class Step(object):
 		s = Step()
 		s.PopulateStep(dr, task)
 		return s
+		
+	@staticmethod
+	def ByIDWithSettings(sStepID, sUserID):
+		"""
+		Gets a single step object, including user settings.  Does NOT have an associated parent Task object.
+		This is called by the AddStep methods, and other functions *on* the task page where we don't need
+		the associated task object
+		"""
+		try:
+			"""	            string sSQL = "select t.task_name, t.version," +
+		                " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
+		                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
+		                " from task_step s" +
+		                " join task t on s.task_id = t.task_id" +
+		                " where s.step_id = '" + sStepID + "' limit 1";
+			"""
+			sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name," \
+				" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+				" us.visible, us.breakpoint, us.skip, us.button" \
+				" from task_step s" \
+				" left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
+				" where s.step_id = '" + sStepID + "' limit 1"
+			db = catocommon.new_conn()
+			row = db.select_row_dict(sSQL)
+			if row:
+				oStep = Step.FromRow(row, None)
+				return oStep
+
+			if db.error:
+				uiCommon.log("Error getting Step by ID: " + db.error, 2)
+			
+			return None
+		except Exception, ex:
+			raise ex
+		finally:
+			db.close()
 		
 	def PopulateStep(self, dr, oTask):
 		try:
@@ -740,12 +781,13 @@ class Step(object):
 				#so we're populating some stuff here.
 				#the right approach is to create a full Task object from the ID, but we need to analyze
 				#how it's working, so we don't create a bunch more database hits.
-				#I THINK THIS is only happening on taskStepVarsEdit, but double check.
+				#I THINK THIS is only happening on GetSingleStep and taskStepVarsEdit, but double check.
 				self.Task = Task()
-				self.Task.ID = dr["task_id"]
-				if dr["task_name"]:
+				if dr.has_key("task_id"):
+					self.Task.ID = dr["task_id"]
+				if dr.has_key("task_name"):
 					self.Task.Name = dr["task_name"]
-				if dr["version"]:
+				if dr.has_key("version"):
 					self.Task.Version = dr["version"]
 			return self
 		except Exception, ex:

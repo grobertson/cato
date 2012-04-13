@@ -41,12 +41,10 @@ def IsTrue(var):
     # we just cast it to a str
     s = str(var).lower()
     if len(s) > 0 and str(var).lower() in "true,yes,on,enable,enabled":
-        print "[" + str(var).lower() + "] IS TRUE because it matched [true,yes,on,enable,enabled]"
         return True
     else:
         # wasn't an explicit string match, return the regular python truth value
         if var:
-            print "[" + str(var) + "] IS TRUE because of Python"
             return True
         else:
             return False
@@ -57,9 +55,7 @@ def TickSlash(s):
 def packJSON(sIn):
     if not sIn:
         return sIn
-    print sIn
     sOut = base64.b64encode(sIn)
-    print sOut
     return sOut.replace("/", "%2F").replace("+", "%2B")
 
 def unpackJSON(sIn):
