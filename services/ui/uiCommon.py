@@ -7,6 +7,7 @@ import uuid
 import base64
 import cgi
 import re
+import pickle
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import providers
@@ -202,7 +203,10 @@ def SetSessionObject(key, obj, category=""):
     
 def GetCloudProviders(): #These were put in the session at login
     try:
-        cp = GetSessionObject("", "cloud_providers")
+        #cp = GetSessionObject("", "cloud_providers")
+        f = open("datacache/_providers.pickle", 'rb')
+        cp = pickle.load(f)
+        f.close()
         if cp:
             return cp
         else:
@@ -212,24 +216,38 @@ def GetCloudProviders(): #These were put in the session at login
 
 #this one takes a modified Cloud Providers class and puts it into the session
 def UpdateCloudProviders(cp):
-    SetSessionObject("cloud_providers", cp, "")
+    #SetSessionObject("cloud_providers", cp, "")
+    f = open("datacache/_providers.pickle", 'wb')
+    pickle.dump(cp, f, pickle.HIGHEST_PROTOCOL)
+    f.close()
     
 #put the cloud providers and object types from a file into the session
 def SetCloudProviders():
     x = ET.parse("../../conf/cloud_providers.xml")
     if x:
         cp = providers.CloudProviders(x)
-        uiGlobals.session.cloud_providers = cp
+        # uiGlobals.session.cloud_providers = cp
+        f = open("datacache/_providers.pickle", 'wb')
+        pickle.dump(cp, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
     else:
         raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
 
 #this one returns a list of Categories from the FunctionCategories class
 def GetTaskFunctionCategories():
-    return GetSessionObject("", "function_categories")
+    f = open("datacache/_categories.pickle", 'rb')
+    obj = pickle.load(f)
+    f.close()
+    return obj.Categories
+    # return GetSessionObject("", "function_categories")
 
 #this one returns the Functions dict containing all functions
 def GetTaskFunctions():
-    return GetSessionObject("", "functions")
+    f = open("datacache/_categories.pickle", 'rb')
+    obj = pickle.load(f)
+    f.close()
+    return obj.Functions
+    # return GetSessionObject("", "functions")
 
 #this one returns just one specific function
 def GetTaskFunction(sFunctionName):
@@ -268,10 +286,17 @@ def SetTaskCommands():
                         log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
 
         #put the categories list in the session...
-        uiGlobals.session.function_categories = cats.Categories
+        #uiGlobals.session.function_categories = cats.Categories
         #then the dict of all functions for fastest lookups
-        uiGlobals.session.functions = cats.Functions
+        #uiGlobals.session.functions = cats.Functions
 
+        # was told not to put big objects in the session, so since this can actually be shared by all users,
+        # lets try saving a pickle
+        # it will get created every time a user logs in, but can be read by all.
+        f = open("datacache/_categories.pickle", 'wb')
+        pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
+        
         return True
     except Exception, ex:
         raise Exception("Unable to load Task Commands XML." + ex.__str__())
