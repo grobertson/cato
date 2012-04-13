@@ -227,11 +227,11 @@ def SetCloudProviders():
     else:
         raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
 
-#this one returns the entire FunctionCategories class
+#this one returns a list of Categories from the FunctionCategories class
 def GetTaskFunctionCategories():
     return GetSessionObject("", "function_categories")
 
-#this one returns the flattened Functions class
+#this one returns the Functions dict containing all functions
 def GetTaskFunctions():
     return GetSessionObject("", "functions")
 
@@ -252,7 +252,7 @@ def GetTaskFunction(sFunctionName):
 #put the cloud providers and object types from a file into the session
 def SetTaskCommands():
     try:
-        from taskCommands import FunctionCategories, Functions
+        from taskCommands import FunctionCategories
         #we load two classes here...
         #first, the category/function hierarchy
         cats = FunctionCategories()
@@ -271,12 +271,10 @@ def SetTaskCommands():
                     if not cats.Append(fullpath):
                         log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
 
-        #put it in the session...
-        uiGlobals.session.function_categories = cats
-
-        #then the flat list of all functions for fastest lookups
-        funcs = Functions.WithCategories(cats)
-        uiGlobals.session.functions = funcs
+        #put the categories list in the session...
+        uiGlobals.session.function_categories = cats.Categories
+        #then the dict of all functions for fastest lookups
+        uiGlobals.session.functions = cats.Functions
 
         return True
     except Exception, ex:

@@ -138,7 +138,7 @@ class taskMethods:
             if not cats:
                 return "{\"error\" : \"Error: Task Function Categories class is not in the session.\"}"
             else:
-                for name, cat in cats.Categories.iteritems():
+                for cat in cats:
                     sCatHTML += "<li class=\"ui-widget-content ui-corner-all command_item category\""
                     sCatHTML += " id=\"cat_" + cat.Name + "\""
                     sCatHTML += " name=\"" + cat.Name + "\">"
@@ -154,7 +154,7 @@ class taskMethods:
                     sFunHTML += "<div class=\"functions hidden\" id=\"cat_" + cat.Name + "_functions\">"
                     # now, let's work out the functions.
                     # we can just draw them all... they are hidden and will display on the client as clicked
-                    for name, fn in cat.Functions.iteritems():
+                    for fn in cat.Functions:
                         sFunHTML += "<div class=\"ui-widget-content ui-corner-all command_item function\""
                         sFunHTML += " id=\"fn_" + fn.Name + "\""
                         sFunHTML += " name=\"" + fn.Name + "\">"
