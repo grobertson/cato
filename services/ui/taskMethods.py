@@ -143,7 +143,7 @@ class taskMethods:
                     sCatHTML += " id=\"cat_" + cat.Name + "\""
                     sCatHTML += " name=\"" + cat.Name + "\">"
                     sCatHTML += "<div>"
-                    sCatHTML += "<img class=\"category_icon\" src=\"static/images/" + cat.Icon + "\" alt=\"\" />"
+                    sCatHTML += "<img class=\"category_icon\" src=\"" + cat.Icon + "\" alt=\"\" />"
                     sCatHTML += "<span>" + cat.Label + "</span>"
                     sCatHTML += "</div>"
                     sCatHTML += "<div id=\"help_text_" + cat.Name + "\" class=\"hidden\">"
@@ -158,7 +158,7 @@ class taskMethods:
                         sFunHTML += "<div class=\"ui-widget-content ui-corner-all command_item function\""
                         sFunHTML += " id=\"fn_" + fn.Name + "\""
                         sFunHTML += " name=\"" + fn.Name + "\">"
-                        sFunHTML += "<img class=\"function_icon\" src=\"static/images/" + fn.Icon + "\" alt=\"\" />"
+                        sFunHTML += "<img class=\"function_icon\" src=\"" + fn.Icon + "\" alt=\"\" />"
                         sFunHTML += "<span>" + fn.Label + "</span>"
                         sFunHTML += "<div id=\"help_text_" + fn.Name + "\" class=\"hidden\">"
                         sFunHTML += fn.Description
@@ -507,6 +507,68 @@ class taskMethods:
                     
                 i += 1
 
+            return ""
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+
+    def wmDeleteStep(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        try:
+            db = catocommon.new_conn()
+
+            # you have to know which one we are removing
+            sDeletedStepOrder = "0"
+            sTaskID = ""
+            sCodeblock = ""
+            sFunction = ""
+            sFunctionXML = ""
+
+            sSQL = "select task_id, codeblock_name, step_order, function_name, function_xml" \
+                " from task_step where step_id = '" + sStepID + "'"
+
+            dr = db.select_row_dict(sSQL)
+            if dr:
+                sDeletedStepOrder = str(dr["step_order"])
+                sTaskID = dr["task_id"]
+                sCodeblock = dr["codeblock_name"]
+                sFunction = dr["function_name"]
+                sFunctionXML = dr["function_xml"]
+
+                # for logging, we'll stick the whole command XML into the log
+                # so we have a complete record of the step that was just deleted.
+                uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Task, "Multiple", "Original Task IDs",
+                    "Codeblock:" + sCodeblock +
+                    " Step Order:" + sDeletedStepOrder +
+                    " Command Type:" + sFunction +
+                    " Details:" + sFunctionXML)
+
+            # "embedded" steps have a codeblock name referencing their "parent" step.
+            # if we're deleting a parent, whack all the children
+            sSQL = "delete from task_step where codeblock_name = '" + sStepID + "'"
+            if not db.tran_exec_noexcep(sSQL):
+                raise Exception("Unable to delete step." + db.error)
+
+            # step might have user_settings
+            sSQL = "delete from task_step_user_settings where step_id = '" + sStepID + "'"
+            if not db.tran_exec_noexcep(sSQL):
+                raise Exception("Unable to delete step user settings." + db.error)
+
+            # now whack the parent
+            sSQL = "delete from task_step where step_id = '" + sStepID + "'"
+            if not db.tran_exec_noexcep(sSQL):
+                raise Exception("Unable to delete step." + db.error)
+
+            sSQL = "update task_step set step_order = step_order - 1" \
+                " where task_id = '" + sTaskID + "'" \
+                " and codeblock_name = '" + sCodeblock + "'" \
+                " and step_order > " + sDeletedStepOrder
+            if not db.tran_exec_noexcep(sSQL):
+                raise Exception("Unable to reorder steps after deletion." + db.error)
+
+            db.tran_commit()
+            
             return ""
         except Exception, ex:
             raise ex

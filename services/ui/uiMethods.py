@@ -74,7 +74,7 @@ class login:
 
         db.close()
 
-
+        uiCommon.log("Creating session...", 3)
         #put the site.master.xml in the session here
         # this is a significant boost to performance
         x = ET.parse("site.master.xml")

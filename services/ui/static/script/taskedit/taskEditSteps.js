@@ -748,7 +748,7 @@ function doStepDelete() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmDeleteStep",
+        url: "taskMethods/wmDeleteStep",
         data: '{"sStepID":"' + step_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
