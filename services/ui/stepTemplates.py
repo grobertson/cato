@@ -3,6 +3,7 @@ from uiCommon import log
 from catocommon import catocommon
 import xml.etree.ElementTree as ET
 import providers
+from uiGlobals import ConnectionTypes
 
 # LIKE uiCommon - this isn't a class that gets instantiated ... it's just a collection of 
 # all the functions used to draw the Task Steps.
@@ -166,7 +167,7 @@ def GetStepTemplate(oStep):
         # (styles, etc.)
 
         if sFunction.lower() == "new_connection":
-            sHTML = "Not Yet Available" #NewConnection(oStep)
+            sHTML = NewConnection(oStep)
         elif sFunction.lower() == "if":
             sHTML = "Not Yet Available" #If(oStep)
         elif sFunction.lower() == "loop":
@@ -632,4 +633,164 @@ def ddDataSource_GetAWSClouds():
 
     return data
 
+def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
+    try:
+        if not uiCommon.IsGUID(sStepID):
+            raise Exception("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
 
+        SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sValue)
+
+        return
+    except Exception, ex:
+        raise ex
+
+def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue):
+    try:
+        db = catocommon.new_conn()
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = db.select_col_noexcep(sSQL)
+
+        if not sXML:
+            if db.error:
+                raise Exception("Unable to get task xml." + db.error)
+            else:
+                return
+        else:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                raise Exception("Error: Unable to parse XML.")
+
+            # get the specified node from the doc and update it
+            xNodeToSet = xd.find(sNodeToSet)
+            if xNodeToSet is not None:
+                log("... setting [" + sNodeToSet + "] to [" + sValue + "].", 4)
+                xNodeToSet.text = sValue
+
+            # then send the whole doc back to the database
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "' where " + sWhereClause
+            if not db.exec_db_noexcep(sSQL):
+                raise Exception("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "].")
+
+        return
+    except Exception, ex:
+        raise ex
+
+"""
+From here to the bottom are the hardcoded commands.
+"""
+
+def NewConnection(oStep):
+    log("New Connection command:", 4)
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+    xAsset = xd.find("asset")
+    xConnName = xd.find("conn_name")
+    xConnType = xd.find("conn_type")
+    xCloudName = xd.find("cloud_name")
+    sAssetID = ("" if xAsset is None else ("" if xAsset.text is None else xAsset.text))
+    sConnName = ("" if xConnName is None else ("" if xConnName.text is None else xConnName.text))
+    sConnType = ("" if xConnType is None else ("" if xConnType.text is None else xConnType.text))
+    sCloudName = ("" if xCloudName is None else ("" if xCloudName.text is None else xCloudName.text))
+
+    sHTML = ""
+    sHTML += "Connect via: \n"
+    sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "conn_type", "") + " reget_on_change=\"true\">\n"
+
+    for ct in ConnectionTypes:
+        sHTML += "<option " + SetOption(ct, sConnType) + " value=\"" + ct + "\">" + ct + "</option>\n"
+
+    sHTML += "</select>\n"
+
+    # now, based on the type, we might show or hide certain things
+    if sConnType == "ssh - ec2":
+        # if the assetid is a guid, it means the user switched from another connection type... wipe it.
+        if uiCommon.IsGUID(sAssetID):
+            SetNodeValueinCommandXML(sStepID, "asset", "")
+            sAssetID = ""
+        
+        sHTML += " to Instance \n"
+        sHTML += "<input type=\"text\" " + \
+            CommonAttribs(sStepID, sFunction, True, "asset", "w300px code") + \
+            " is_required=\"true\"" \
+            " value=\"" + sAssetID + "\"" + " /><br />\n"
+
+        sHTML += " in Cloud \n"
+        
+        sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "cloud_name", "combo") + ">\n"
+        # empty one
+        sHTML += "<option " + SetOption("", sCloudName) + " value=\"\"></option>\n"
+        
+        bValueWasInData = False
+        data = ddDataSource_GetAWSClouds()
+        
+        if data is not None:
+            for k, v in data:
+                sHTML += "<option " + SetOption(k, sCloudName) + " value=\"" + k + "\">" + v + "</option>\n"
+
+                if k ==sCloudName: bValueWasInData = True
+        
+        # NOTE: we're allowing the user to enter a value that may not be 
+        # in the dataset.  If that's the case, we must add the actual saved value to the list too. 
+        if not bValueWasInData: #we didn't find it in the data ..:
+            if sCloudName: #and it's a combo and not empty
+                sHTML += "<option " + SetOption(sCloudName, sCloudName) + " value=\"" + sCloudName + "\">" + sCloudName + "</option>\n";            
+        
+        sHTML += "</select>"
+
+    else:
+        sElementID = ""
+        # clear out the cloud_name property... it's not relevant for these types
+        SetNodeValueinCommandXML(sStepID, "cloud_name", "")
+        
+        # ASSET
+        # IF IT's A GUID...
+        #  get the asset name belonging to this asset_id
+        #  OTHERWISE
+        #  make the sAssetName value be what's in sAssetID (a literal value in [[variable]] format)
+        if uiCommon.IsGUID(sAssetID):
+            sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
+            db = catocommon.new_conn()
+            sAssetName = db.select_col_noexcep(sSQL)
+            db.close()
+            if not sAssetName:
+                if db.error:
+                    raise Exception("Unable to look up Asset name." + db.error)
+                else:
+                    SetNodeValueinCommandXML(sStepID, "asset", "")
+        else:
+            sAssetName = sAssetID
+
+
+        sHTML += " to Asset \n"
+        sHTML += "<input type=\"text\" " + \
+            CommonAttribsWithID(sStepID, sFunction, False, "asset", sElementID, "hidden") + \
+            " value=\"" + sAssetID + "\"" + " />\n"
+        sHTML += "<input type=\"text\"" \
+            " help=\"Select an Asset or enter a variable.\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " class=\"code w400px\"" \
+            " is_required=\"true\"" \
+            " id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+            " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sElementID + "');\"" \
+            " value=\"" + sAssetName + "\" />\n"
+
+        
+        sHTML += "<img class=\"fn_field_clear_btn pointer\" clear_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+            " style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+            " alt=\"\" title=\"Clear\" />"
+
+        sHTML += "<img class=\"asset_picker_btn pointer\" alt=\"\"" \
+            " link_to=\"" + sElementID + "\"" \
+            " target_field_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " src=\"static/images/icons/search.png\" />\n"
+        
+    sHTML += " as \n"
+    sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "conn_name", "w200px") + \
+        " help=\"Name this connection for reference in the Task.\" value=\"" + sConnName + "\" />\n"
+    sHTML += "\n"
+
+
+    return sHTML
