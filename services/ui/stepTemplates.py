@@ -1,9 +1,8 @@
 import uiCommon
 from uiCommon import log
-import uiGlobals
-import taskCommands
 from catocommon import catocommon
 import xml.etree.ElementTree as ET
+import providers
 
 # LIKE uiCommon - this isn't a class that gets instantiated ... it's just a collection of 
 # all the functions used to draw the Task Steps.
@@ -235,6 +234,7 @@ def DrawStepFromXMLDocument(oStep):
             # some fields may be defined to go on an "options tab", in which case they will come back as sNodeOptionHTML
             # you'll never get back both NodeHTML and OptionHTML - one will always be blank.
             for xe in xd:
+                log("Drawing [" + xe.tag + "]", 4)
                 sNodeHTML, sNodeOptionHTML = DrawNode(xe, xe.tag, sStepID, sFunction)
                 sHTML += sNodeHTML
                 sOptionHTML += sNodeOptionHTML
@@ -244,7 +244,6 @@ def DrawStepFromXMLDocument(oStep):
 def DrawNode(xeNode, sXPath, sStepID, sFunction):
         sHTML = ""
         sNodeName = xeNode.tag
-        log("Drawing [" + sNodeName + "]", 4)
 
         sNodeLabel = xeNode.get("label", "")
         sIsEditable = xeNode.get("is_array", "")
@@ -274,6 +273,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
             #if there is only one child, AND it's not part of an array
             #don't draw the header or the bounding box, just a composite field label.
             if len(xeNode) == 1 and not bIsEditable:
+                log("-- no more children ... drawing ... ", 4)
                 #get the first (and only) node
                 xeOnlyChild = xeNode.find("*[1]")
                 
@@ -290,8 +290,9 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
                 #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
                 if bIsRemovable:
                     sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
-                    sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+                    sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
             else: #there is more than one child... business as usual
+                log("-- more children ... drawing and drilling down ... ", 4)
                 sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
                 sHTML += "  <div class=\"ui-state-default step_group_header\">" #header
                 sHTML += "      <div class=\"step_header_title\">" + sNodeLabel + "</div>"
@@ -302,7 +303,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
                 if bIsEditable:
                     sHTML += "<div class=\"fn_nodearray_add_btn pointer\"" + " step_id=\"" + sStepID + "\"" \
                         " xpath=\"" + sXPath + "\">" \
-                        "<img style=\"width:10px; height:10px;\" src=\"../images/icons/edit_add.png\"" \
+                        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
                         " alt=\"\" title=\"Add another...\" /></div>"
    
                 #BUT, if this nodes PARENT is editable, that means THIS NODE can be deleted.
@@ -310,7 +311,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
                 #you can't remove unless there are more than one
                 if bIsRemovable:
                     sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
-                    sHTML += "<img style=\"width:10px; height:10px;\" src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+                    sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
                 sHTML += "</div>" #end step header icons
                 sHTML += "  </div>" #end header
 
@@ -318,27 +319,33 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
                     sChildNodeName = xeChildNode.tag
                     sChildXPath = sXPath + "/" + sChildNodeName
 
-                    """
                     #here's the magic... are there any children nodes here with the SAME NAME?
                     #if so they need an index on the xpath
-                    if xeNode.XPathSelectElements(sChildNodeName).Count() > 1:
+                    if len(xeNode.find(sChildNodeName)) > 1:
+                        print "1"
                         #since the document won't necessarily be in perfect order,
                         #we need to keep track of same named nodes and their indexes.
                         #so, stick each array node up in a lookup table.
                         #is it already in my lookup table?
                         iLastIndex = 0
-                        dictNodes.TryGetValue(sChildNodeName, )
-                        if iLastIndex == 0:
+                        if dictNodes.has_key(sChildNodeName):
+                            print "2"
                             #not there, add it
                             iLastIndex = 1
-                            dictNodes.Add(sChildNodeName, iLastIndex)
+                            dictNodes[sChildNodeName] = iLastIndex
                         else:
+                            print "3"
                             #there, increment it and set it
                             iLastIndex += 1
                             dictNodes[sChildNodeName] = iLastIndex
-                        sChildXPath = sChildXPath + "[" + iLastIndex + "]"
-                    sHTML += self.DrawNode(xeChildNode, sChildXPath, sStepID, sFunction, )
-                    """
+                        sChildXPath = sChildXPath + "[" + str(iLastIndex) + "]"
+                        
+                    # it's not possible for an 'editable' node to be in the options tab if it's parents aren't,
+                    # so here we ignore the options return
+                    sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, sStepID, sFunction)
+                    if sBunk:
+                        log("WARNING: This shouldn't have returned 'option' html.", 2)
+                    sHTML += sNodeHTML
 
                 sHTML += "</div>"
         else: #end section
@@ -346,7 +353,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
             #it may be that these fields themselves are removable
             if bIsRemovable:
                 sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
-                sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"../images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+                sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
         
         #ok, now that we've drawn it, it might be intended to go on the "options tab".
         #if so, stick it there
@@ -358,7 +365,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
 def DrawField(xe, sXPath, sStepID, sFunction):
         sHTML = ""
         sNodeValue = (xe.text if xe.text else "")
-        log("-- Value :" + sNodeValue, 4)
+        log("---- Value :" + sNodeValue, 4)
         
         sNodeLabel = xe.get("label", xe.tag)
         sLabelClasses = xe.get("label_class", "")
@@ -376,7 +383,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
         sRequired = xe.get("required", "")
         bRequired = uiCommon.IsTrue(sRequired)
 
-        log("-- Input Type :" + sInputType, 4)
+        log("---- Input Type :" + sInputType, 4)
 
 
         #some getting started layout possibilities
@@ -396,72 +403,101 @@ def DrawField(xe, sXPath, sStepID, sFunction):
             #big box button
             sHTML += "<img class=\"big_box_btn pointer\" alt=\"\" src=\"static/images/icons/edit_16.png\" link_to=\"" + sTextareaID + "\" /><br />"
         elif sInputType == "dropdown":
-            sHTML += "##DROPDOWN##"
-            """
-            #the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
-            #there is no "default" datasource... if nothing is available, it draws an empty picker
+            # the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
+            # there is no "default" datasource... if nothing is available, it draws an empty picker
             sDatasource = xe.get("datasource", "")
             sDataSet = xe.get("dataset", "")
             sFieldStyle = xe.get("style", "")
-            sHTML += sNodeLabel + " <select " + self.CommonAttribs(sStepID, sFunction, False, sXPath, sFieldStyle) + ">"
-            #empty one
-            sHTML += "<option " + self.SetOption("", sNodeValue) + " value=\"\"></option>"
-            #if it's a combo, it's possible we may have a value that isn't actually in the list.
-            #but we will need to add it to the list otherwise we can't select it!
-            #so, first let's keep track of if we find the value anywhere in the various datasets.
+
+            sHTML += sNodeLabel + " <select " + CommonAttribs(sStepID, sFunction, False, sXPath, sFieldStyle) + ">\n"
+            
+            # empty one
+            sHTML += "<option " + SetOption("", sNodeValue) + " value=\"\"></option>\n"
+            
+            # if it's a combo, it's possible we may have a value that isn't actually in the list.
+            # but we will need to add it to the list otherwise we can't select it!
+            # so, first let's keep track of if we find the value anywhere in the various datasets.
             bValueWasInData = False
+            
+            if sDatasource == "":
+                log("---- 'datasource' attribute not found, defaulting to 'local'.", 4)
             if sDatasource == "file":
+                log("---- File datasource ... reading [" + sDataSet + "] ...", 4)
                 try:
-                    #sDataset is an XML file name.
-                    #sTable is the parent node in the XML containing the data
-                    sTable = xe.get("table", "")
-                    sValueNode = xe.get("valuenode", "")
-                    if sTable == "" or sValueNode == "":
-                        return "Unable to render input element - missing required attribute 'table' or 'valuenode'."
-                    ds = DataSet()
-                    ds.ReadXml(Server.MapPath("~/pages/" + sDataSet))
-                    if ds.Tables[sTable].Rows.Count > 0:
-                        enumerator = ds.Tables[sTable].Rows.GetEnumerator()
-                        while enumerator.MoveNext():
-                            dr = enumerator.Current
-                            sVal = dr[sValueNode]
-                            sHTML += "<option " + self.SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>"
-                            if sVal.Equals(sNodeValue):
-                                bValueWasInData = True
+                    # sDataset is a file name.
+                    # sFormat is the type of data
+                    # sTable is the parent node in the XML containing the data
+                    sFormat = xe.get("format", "")
+
+                    if sFormat == "":
+                        log("---- 'format' attribute not found, defaulting to 'flat'.", 4)
+                
+                    if sFormat.lower() == "xml":
+                        sTable = xe.get("table", "")
+                        sValueNode = xe.get("valuenode", "")
+                        
+                        if sTable == "":
+                            log("---- 'table' attribute not found, defaulting to 'values'.", 4)
+                        if sValueNode == "":
+                            log("---- 'valuenode' attribute not found, defaulting to 'value'.", 4)
+                        
+                        xml = ET.parse("extensions/" + sDataSet)
+                        if xml:
+                            nodes = xml.findall(".//" + sValueNode)
+                            if len(nodes) > 0:
+                                log("---- Found data ... parsing ...", 4)
+                                for node in nodes:
+                                    sHTML += "<option " + SetOption(node.text, sNodeValue) + " value=\"" + node.text + "\">" + node.text + "</option>\n"
+                                    if node.text == sNodeValue: bValueWasInData = True
+                            else:
+                                log("---- Dataset found but cannot find values in [" + sValueNode + "].", 4)
+                        else:
+                            log("---- Dataset file not found or unable to read.", 4)
+                        
+                    else:
+                        log("---- opening [" + sDataSet + "].", 4)
+                        f = open("extensions/" + sDataSet, 'rb')
+                        if not f:
+                            log("ERROR: extensions/" + sDataSet + " not found", 0)
+
+                        for line in f:
+                            val = line.strip()
+                            sHTML += "<option " + SetOption(val, sNodeValue) + " value=\"" + val + "\">" + val + "</option>\n"
+                            if val == sNodeValue: bValueWasInData = True
+                            
+                        f.close()
                 except Exception, ex:
-                    return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.Message
-                finally:
+                    return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.__str__()
             elif sDatasource == "function":
-                #this uses reflection to execute the function specified in the sDataSet property
-                #at this time, the function must exist in this namespace!
-                #since it's populating a dropdown, we expect the function to return a dictionary
-                data = Dictionary[str, str]()
-                info = self.GetType().GetMethod(sDataSet, BindingFlags.NonPublic | BindingFlags.Instance)
-                if info != None:
-                    data = info.Invoke(self, None)
-                    if data != None:
-                        enumerator = data.GetEnumerator()
-                        while enumerator.MoveNext():
-                            pair = enumerator.Current
-                            sHTML += "<option " + self.SetOption(pair.Key, sNodeValue) + " value=\"" + pair.Key + "\">" + pair + "</option>"
-                            if pair.Key.Equals(sNodeValue):
-                                bValueWasInData = True
-            else: #default is "local"
-                #data is pipe delimited
-                aValues = sDataSet.Split('|')
-                enumerator = aValues.GetEnumerator()
-                while enumerator.MoveNext():
-                    sVal = enumerator.Current
-                    sHTML += "<option " + self.SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>"
-                    if sVal.Equals(sNodeValue):
-                        bValueWasInData = True
-            #NOTE: If it has the "combo" style and a value, that means we're allowing the user to enter a value that may not be 
-            #in the dataset.  If that's the case, we must add the actual saved value to the list too. 
-            if not bValueWasInData: #we didn't find it in the data ...
-                if sFieldStyle.Contains("combo") and not str.IsNullOrEmpty(sNodeValue): #and it's a combo and not empty 
-                    sHTML += "<option " + self.SetOption(sNodeValue, sNodeValue) + " value=\"" + sNodeValue + "\">" + sNodeValue + "</option>"
+                log("---- Function datasource ... executing [" + sDataSet + "] ...", 4)
+                # this executes a function to populate the drop down
+                # at this time, the function must exist in this namespace
+                # we expect the function to return a dictionary
+                try:
+                    if sDataSet:
+                        data = globals()[sDataSet]()
+                        if data:
+                            for key, val in data.iteritems():
+                                sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
+                                if key == sNodeValue: bValueWasInData = True
+                except Exception as ex:
+                    raise ex
+            else: # default is "local"
+                log("---- Inline datasource ... reading my own 'dataset' attribute ...", 4)
+                # data is pipe delimited
+                aValues = sDataSet.split('|')
+                for sVal in aValues:
+                    sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>\n"
+
+                    if sVal == sNodeValue: bValueWasInData = True
+            
+            # NOTE: If it has the "combo" style and a value, that means we're allowing the user to enter a value that may not be 
+            # in the dataset.  If that's the case, we must add the actual saved value to the list too. 
+            if not bValueWasInData: # we didn't find it in the data ..
+                if "combo" in sFieldStyle and sNodeValue:   # and it's a combo and not empty
+                    sHTML += "<option " + SetOption(sNodeValue, sNodeValue) + " value=\"" + sNodeValue + "\">" + sNodeValue + "</option>\n";            
+
             sHTML += "</select>"
-            """
         else: #input is the default
             sElementID = uiCommon.NewGUID() #some special cases below may need this.
             sHTML += sNodeLabel + " <input type=\"text\" " + \
@@ -480,6 +516,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
         if sHRAfter == uiCommon.IsTrue(sHRAfter):
             sHTML += "<hr />"
 
+        log("---- ... done", 4)
         return sHTML
 
 def CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sAdditionalClasses):
@@ -569,3 +606,30 @@ def DrawStepCommon(oStep, sOptionHTML, sVariableHTML):
     sHTML += "        </div>"
     
     return sHTML
+
+def SetOption(s1, s2):
+    return " selected=\"selected\"" if s1 == s2 else ""
+
+def SetCheckRadio(s1, s2):
+    return " checked=\"checked\"" if s1 == s2 else ""
+
+# NOTE: the following functions are internal, but support dynamic dropdowns on step functions.
+# the function name is referenced by the "dataset" value of a dropdown type of input, where the datasource="function"
+# dropdowns expect a Dictionary<string,string> object return
+def ddDataSource_GetAWSClouds():
+    data = {}
+    
+    # AWS regions
+    p = providers.Provider.GetFromSession("Amazon AWS")
+    if p is not None:
+        for c_name, c in p.Clouds.iteritems():
+            data[c.Name] = c.Name
+    # Eucalyptus clouds
+    p = providers.Provider.GetFromSession("Eucalyptus")
+    if p is not None:
+        for c_name, c in p.Clouds.iteritems():
+            data[c.Name] = c.Name
+
+    return data
+
+
