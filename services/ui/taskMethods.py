@@ -106,6 +106,9 @@ class taskMethods:
                     return "{\"code\" : \"%s\"}" % (sTaskCode)
             except Exception, ex:
                 raise(ex)
+            finally:
+                db.close()
+
     
     def wmGetTaskVersionsDropdown(self):
         try:
@@ -127,7 +130,44 @@ class taskMethods:
                 return "".join(sbString)
         except Exception, ex:
             raise (ex)
+        finally:
+            db.close()
     
+    def wmGetTaskVersions(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        db = catocommon.new_conn()
+        try:
+            sHTML = ""
+
+            sSQL = "select task_id, version, default_version," \
+                " case default_version when 1 then ' (default)' else '' end as is_default," \
+                " case task_status when 'Approved' then 'encrypted' else 'unlock' end as status_icon," \
+                " created_dt" \
+                " from task" \
+                " where original_task_id = " \
+                " (select original_task_id from task where task_id = '" + sTaskID + "')" \
+                " order by version"
+
+            dt = db.select_all_dict(sSQL)
+            print dt
+            if db.error:
+                sHTML = "Error selecting versions: " + db.error
+            else:
+                if dt:
+                    for dr in dt:
+                        print dr
+                        sHTML += "<li class=\"ui-widget-content ui-corner-all version code\" id=\"v_" + dr["task_id"] + "\""
+                        sHTML += "task_id=\"" + dr["task_id"] + "\">"
+                        sHTML += "<img src=\"static/images/icons/" + dr["status_icon"] + "_16.png\" alt=\"\" />"
+                        sHTML += str(dr["version"]) + "&nbsp;&nbsp;" + str(dr["created_dt"]) + dr["is_default"]
+                        sHTML += "</li>"
+
+            return sHTML
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+
     def wmGetCommands(self):
         try:
             sCatHTML = ""
@@ -136,7 +176,7 @@ class taskMethods:
             # so, we will use the FunctionCategories class in the session that was loaded at login, and build the list items for the commands tab.
             cats = uiCommon.GetTaskFunctionCategories()
             if not cats:
-                return "{\"error\" : \"Error: Task Function Categories class is not in the session.\"}"
+                return "{\"error\" : \"Error: Task Function Categories class is not in the datacache.\"}"
             else:
                 for cat in cats:
                     sCatHTML += "<li class=\"ui-widget-content ui-corner-all command_item category\""
@@ -270,6 +310,80 @@ class taskMethods:
             raise ex
         finally:
             db.close()
+
+    def wmUpdateTaskDetail(self):
+        try:
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sColumn = uiCommon.getAjaxArg("sColumn")
+            sValue = uiCommon.getAjaxArg("sValue")
+            sUserID = uiCommon.GetSessionUserID()
+
+            if uiCommon.IsGUID(sTaskID) and uiCommon.IsGUID(sUserID):
+                db = catocommon.new_conn()
+                
+                # we encoded this in javascript before the ajax call.
+                # the safest way to unencode it is to use the same javascript lib.
+                # (sometimes the javascript and .net libs don't translate exactly, google it.)
+                sValue = uiCommon.unpackJSON(sValue)
+                sValue = uiCommon.TickSlash(sValue)
+
+                sSQL = "select original_task_id from task where task_id = '" + sTaskID + "'"
+                sOriginalTaskID = db.select_col_noexcep(sSQL)
+
+                if not sOriginalTaskID:
+                    uiCommon.log("ERROR: Unable to get original_task_id for [" + sTaskID + "]." + db.error, 3)
+                    return "{\"error\" : \"Unable to get original_task_id for [" + sTaskID + "].\"}"
+
+
+                # what's the "set clause"?
+                sSetClause = sColumn + "='" + sValue + "'"
+
+                #  bugzilla 1074, check for existing task_code and task_name
+                if sColumn == "task_code" or sColumn == "task_name":
+                    sSQL = "select task_id from task where " + \
+                        sColumn + "='" + sValue + "'" \
+                        " and original_task_id <> '" + sOriginalTaskID + "'"
+
+                    sValueExists = db.select_col_noexcep(sSQL)
+                    if db.error:
+                        uiCommon.log("ERROR: Unable to check for existing names [" + sTaskID + "]." + db.error, 3)
+
+                    if sValueExists:
+                        return "{\"info\" : \"" + sValue + " exists, please choose another value.\"}"
+                
+                    # changing the name or code updates ALL VERSIONS
+                    sSQL = "update task set " + sSetClause + " where original_task_id = '" + sOriginalTaskID + "'"
+                else:
+                    # some columns on this table allow nulls... in their case an empty sValue is a null
+                    if sColumn == "concurrent_instances" or sColumn == "queue_depth":
+                        if len(sValue.replace(" ", "")) == 0:
+                            sSetClause = sColumn + " = null"
+                    
+                    # some columns are checkboxes, so make sure it is a db appropriate value (1 or 0)
+                    if sColumn == "concurrent_by_asset":
+                        if uiCommon.IsTrue(sValue):
+                            sSetClause = sColumn + " = 1"
+                        else:
+                            sSetClause = sColumn + " = 0"
+                    
+                    sSQL = "update task set " + sSetClause + " where task_id = '" + sTaskID + "'"
+                
+
+                if not db.exec_db_noexcep(sSQL):
+                    raise Exception("Unable to update task [" + sTaskID + "]." + db.error)
+
+                uiCommon.WriteObjectChangeLog(db, uiGlobals.CatoObjectTypes.Task, sTaskID, sColumn, sValue)
+
+            else:
+                raise Exception("Unable to update task. Missing or invalid task [" + sTaskID + "] id.")
+
+            return "{\"result\" : \"success\"}"
+            
+        except Exception, ex:
+            raise ex            
+        finally:
+            db.close()
+
 
     def wmGetCodeblocks(self):
         try:

@@ -205,14 +205,19 @@ def GetCloudProviders(): #These were put in the session at login
     try:
         #cp = GetSessionObject("", "cloud_providers")
         f = open("datacache/_providers.pickle", 'rb')
+        if not f:
+            log("ERROR: Providers pickle missing.", 0)
+
         cp = pickle.load(f)
         f.close()
         if cp:
             return cp
         else:
-            ForceLogout("Server Session has expired (1). Please log in again.")
-    except Exception as ex:
-        raise ex
+            log("ERROR: Providers pickle could not be read.", 0)
+    except Exception, ex:
+        log("ERROR: Providers pickle could not be read." + ex.__str__(), 0)
+        
+    return None
 
 #this one takes a modified Cloud Providers class and puts it into the session
 def UpdateCloudProviders(cp):
@@ -235,18 +240,40 @@ def SetCloudProviders():
 
 #this one returns a list of Categories from the FunctionCategories class
 def GetTaskFunctionCategories():
-    f = open("datacache/_categories.pickle", 'rb')
-    obj = pickle.load(f)
-    f.close()
-    return obj.Categories
+    try:
+        f = open("datacache/_categories.pickle", 'rb')
+        if not f:
+            log("ERROR: Categories pickle missing.", 0)
+        obj = pickle.load(f)
+        f.close()
+        if obj:
+            print obj
+            return obj.Categories
+        else:
+            log("ERROR: Categories pickle could not be read.", 0)
+    except Exception, ex:
+        log("ERROR: Categories pickle could not be read." + ex.__str__(), 0)
+        
+    return None
+        
     # return GetSessionObject("", "function_categories")
 
 #this one returns the Functions dict containing all functions
 def GetTaskFunctions():
-    f = open("datacache/_categories.pickle", 'rb')
-    obj = pickle.load(f)
-    f.close()
-    return obj.Functions
+    try:
+        f = open("datacache/_categories.pickle", 'rb')
+        if not f:
+            log("ERROR: Categories pickle missing.", 0)
+        obj = pickle.load(f)
+        f.close()
+        if obj:
+            return obj.Functions
+        else:
+            log("ERROR: Categories pickle could not be read.", 0)
+    except Exception, ex:
+        log("ERROR: Categories pickle could not be read." + ex.__str__(), 0)
+        
+    return None
     # return GetSessionObject("", "functions")
 
 #this one returns just one specific function

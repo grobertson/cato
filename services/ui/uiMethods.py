@@ -83,11 +83,13 @@ class login:
         else:
             raise Exception("Critical: Unable to read/parse site.master.xml.")
 
-        #put the cloud providers and object types in the session
+
+        uiCommon.log("Refreshing datacache...", 3)
+        #put the cloud providers and object types in a pickle
         # also a big performance boost
         uiCommon.SetCloudProviders()
         
-        #put the task commants in the session
+        #put the task commands in a pickle
         # another big performance boost
         uiCommon.SetTaskCommands()
         

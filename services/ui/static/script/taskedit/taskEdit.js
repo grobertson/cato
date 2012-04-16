@@ -341,24 +341,32 @@ function doDetailFieldUpdate(ctl) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmUpdateTaskDetail",
+            url: "taskMethods/wmUpdateTaskDetail",
             data: '{"sTaskID":"' + g_task_id + '","sColumn":"' + column + '","sValue":"' + value + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
-            success: function (msg) {
-
-                if (msg.d != '') {
-                    $("#update_success_msg").text("Update Failed").fadeOut(2000);
-                    showInfo(msg.d);
-                }
-                else {
-                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-                    // bugzilla 1037 Change the name in the header
-                    if (column == "task_name") { $("#lblTaskNameHeader").html(unpackJSON(value)); };
-                }
-
-
+            success: function (response) {
+				try {
+					if (response.error) {
+						showAlert(response.error);
+					}
+					if (response.info) {
+						showInfo(response.info);
+					}
+					if (response.result) {
+		                if (response.result == "success") {
+		                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
+		                    // bugzilla 1037 Change the name in the header
+		                    if (column == "task_name") { $("#lblTaskNameHeader").html(unpackJSON(value)); };
+		                }
+		                else {
+		                    $("#update_success_msg").text("Update Failed").fadeOut(2000);
+		                    showInfo(msg);
+		                }
+	               }
+				} catch (ex) {
+					showAlert(response);
+				}
             },
             error: function (response) {
                 $("#update_success_msg").fadeOut(2000);

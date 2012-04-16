@@ -43,16 +43,6 @@ $(document).ready(function () {
         var url = "taskRunLog.aspx?task_id=" + g_task_id;
         openWindow(url, "TaskRunLog" + g_task_id, "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
-
-    //VERSION TOOLBOX
-    $("#versions .version").disableSelection();
-    //the onclick event of the 'version' elements
-    $("#versions .version").live("click", function () {
-        location.href = "taskEdit.aspx?task_id=" + $(this).attr("task_id") + "&tab=versions";
-    });
-    //whatever the current version is... change it's class in the list
-    $("#v_" + g_task_id).addClass("version_selected");
-
 });
 
 function tabWasClicked(tab) {
