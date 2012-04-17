@@ -876,7 +876,7 @@ function doStepDetailUpdate(field, step_id, func, xpath) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmUpdateStep",
+            url: "taskMethods/wmUpdateStep",
             data: '{"sStepID":"' + step_id + '","sFunction":"' + func + '","sXPath":"' + xpath + '","sValue":"' + val + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -1002,7 +1002,7 @@ function validateStep(in_element_id) {
 
 function drawStepValidationBar(step_id, cnt, msg) {
     return "<div id=\"info_" + step_id.toString() + "\" class=\"step_validation_template\">" +
-        "<img src=\"../images/icons/status_unknown_16.png\" alt=\"\" />" +
+        "<img src=\"static/images/icons/status_unknown_16.png\" alt=\"\" />" +
         "The following Command has <span class=\"info_error_count\">" + cnt.toString() +
         "</span> item(s) needing attention." +
         "<div class=\"info_syntax_errors\"></div>" +

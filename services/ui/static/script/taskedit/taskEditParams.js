@@ -81,7 +81,7 @@ $(document).ready(function () {
         var html = "<div id=\"" + id + "\">" +
             "<textarea class=\"param_edit_value\" rows=\"1\"></textarea>" +
             " <img class=\"param_edit_value_remove_btn pointer\" remove_id=\"" + id + "\"" +
-            " src=\"../images/icons/fileclose.png\" alt=\"\" /></div>";
+            " src=\"static/images/icons/fileclose.png\" alt=\"\" /></div>";
 
         $("#param_edit_values").append(html);
         $("#" + id + " textarea:first").focus();
