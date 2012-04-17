@@ -1,5 +1,6 @@
 import uiCommon
 from uiCommon import log
+import uiCommon
 from catocommon import catocommon
 import xml.etree.ElementTree as ET
 import providers
@@ -169,7 +170,7 @@ def GetStepTemplate(oStep):
         if sFunction.lower() == "new_connection":
             sHTML = NewConnection(oStep)
         elif sFunction.lower() == "if":
-            sHTML = "Not Yet Available" #If(oStep)
+            sHTML = If(oStep)
         elif sFunction.lower() == "loop":
             sHTML = "Not Yet Available" #Loop(oStep)
         elif sFunction.lower() == "while":
@@ -676,6 +677,47 @@ def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue
     except Exception, ex:
         raise ex
 
+def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRequired):
+    # drop zones are common for all the steps that can contain embedded steps.
+    # they are a div to drop on and a hidden field to hold the embedded step id.
+    sHTML = ""
+    sElementID = uiCommon.NewGUID()
+
+    # a hidden field holds the embedded step_id as the data.
+    # Following this is a dropzone that actually gets the graphical representation of the embedded step.
+    sHTML += "<input type=\"text\" " + \
+        CommonAttribsWithID(sParentStepID, sFunction, False, sColumn, sElementID, "hidden") + \
+        " value=\"" + sEmbeddedStepID + "\" />\n"
+
+    sHTML += sLabel
+
+    # some of our 'columns' may be complex XPaths.  XPaths have invalid characters for use in 
+    # an HTML ID attribute
+    # but we need it to be unique... so just 'clean up' the column name
+    sColumn = sColumn.replace("[", "").replace("]", "").replace("/", "")
+
+    # the dropzone
+    sDropZone = "<div" + \
+        (" is_required=\"true\" value=\"\"" if bRequired else "") + \
+        " id=\"" + sFunction + "_" + sParentStepID + "_" + sColumn + "_dropzone\"" \
+        " datafield_id=\"" + sElementID + "\"" \
+        " step_id=\"" + sParentStepID + "\"" \
+        " class=\"step_nested_drop_target " + ("is_required" if bRequired else "") + "\">Click here to add a Command.</div>"
+
+    # GONNA RETHINK THE WHOLE EMBEDDED THING
+    """
+    if uiCommon.IsGUID(sEmbeddedStepID):
+        oEmbeddedStep = GetSingleStep(sEmbeddedStepID, sUserID)
+        if oEmbeddedStep is not None:
+            sHTML += DrawEmbeddedStep(oEmbeddedStep)
+        else:
+            sHTML += "<span class=\"red_text\">" + db.error + "</span>"
+    else:
+        sHTML += sDropZone
+    """
+    sHTML += sDropZone # THIS IS FOR TESTING ONLY, REMOVE IT WHEN YOU UNCOMMENT THE PREVIOUS BLOCK
+    return sHTML
+
 """
 From here to the bottom are the hardcoded commands.
 """
@@ -740,7 +782,6 @@ def NewConnection(oStep):
         sHTML += "</select>"
 
     else:
-        sElementID = ""
         # clear out the cloud_name property... it's not relevant for these types
         SetNodeValueinCommandXML(sStepID, "cloud_name", "")
         
@@ -762,6 +803,7 @@ def NewConnection(oStep):
         else:
             sAssetName = sAssetID
 
+        sElementID = uiCommon.NewGUID()
 
         sHTML += " to Asset \n"
         sHTML += "<input type=\"text\" " + \
@@ -792,5 +834,95 @@ def NewConnection(oStep):
         " help=\"Name this connection for reference in the Task.\" value=\"" + sConnName + "\" />\n"
     sHTML += "\n"
 
+
+    return sHTML
+
+def If(oStep):
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+
+    sHTML = ""
+
+    xTests = xd.findall("tests/test")
+    sHTML += "<div id=\"if_" + sStepID + "_conditions\" number=\"" + str(len(xTests)) + "\">"
+
+    i = 1 # because XPath starts at "1"
+
+    for xTest in xTests:
+        sEval = xTest.findtext("eval", None)
+        sAction = xTest.findtext("action", None)
+
+        #  we gotta get the field id first, but don't show the textarea until after
+        sFieldID = uiCommon.NewGUID()
+        sCol = "tests/test[" + str(i) + "]/eval"
+        sCommonAttribsForTA = CommonAttribsWithID(sStepID, sFunction, True, sCol, sFieldID, "")
+
+        # a way to delete the section you just added
+        if i == 1:
+            xGlobals = ET.parse("luCompareTemplates.xml")
+
+            if xGlobals is None:
+                sHTML += "(No Compare templates file available)<br />"
+            else:
+                sHTML += "Comparison Template: <select class=\"compare_templates\" textarea_id=\"" + sFieldID + "\">\n"
+                sHTML += "  <option value=\"\"></option>\n"
+
+                xTemplates = xGlobals.findall("template")
+                for xEl in xTemplates:
+                    sHTML += "  <option value=\"" + xEl.findtext("value", "") + "\">" + xEl.findtext("name", "") + "</option>\n"
+                sHTML += "</select> <br />\n"
+
+
+            sHTML += "If:<br />"
+        else:
+            sHTML += "<div id=\"if_" + sStepID + "_else_" + str(i) + "\" class=\"fn_if_else_section\">"
+            sHTML += "<span class=\"fn_if_remove_btn pointer\" number=\"" + str(i) + "\" step_id=\"" + sStepID + "\">" \
+                "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else If condition.\" /></span> "
+            sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
+
+
+        print sEval
+        if sEval is not None:
+            sHTML += "<textarea " + sCommonAttribsForTA + " help=\"Enter a test condition.\">" + sEval + "</textarea><br />\n"
+        else:
+            sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
+
+
+        # here's the embedded content
+        sCol = "tests/test[" + str(i) + "]/action"
+
+        if sAction is not None:
+            sHTML += DrawDropZone(sStepID, sAction, sFunction, sCol, "Action:<br />", True)
+        else:
+            sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
+
+
+        if i != 1:
+            sHTML += "</div>"
+
+        i += i
+
+    sHTML += "</div>"
+
+
+    # draw an add link.  The rest will happen on the client.
+    sHTML += "<div class=\"fn_if_add_btn pointer\" add_to_id=\"if_" + sStepID + "_conditions\" step_id=\"" + sStepID + "\" next_index=\"" + str(i) + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add another Else If section.\" />( click to add another 'Else If' section )</div>"
+
+
+    sHTML += "<div id=\"if_" + sStepID + "_else\" class=\"fn_if_else_section\">"
+
+    # the final 'else' area
+    sElse = xd.findtext("else", "")
+    if sElse is not None:
+        sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\">" \
+           "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else condition.\" /></span> "
+        sHTML += "Else (no 'If' conditions matched):"
+        sHTML += DrawDropZone(sStepID, sElse, sFunction, "else", "", True)
+    else:
+        # draw an add link.  The rest will happen on the client.
+        sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add an Else section.\" />( click to add a final 'Else' section )</div>"
+
+    sHTML += "</div>"
 
     return sHTML
