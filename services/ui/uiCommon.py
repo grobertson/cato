@@ -77,6 +77,12 @@ def QuoteUp(sString):
     
     return retval[:-1] #whack the last comma 
 
+def LastIndexOf(s, pat):
+    if not s:
+        return -1
+
+    return len(s) - 1 - s[::-1].index(pat)
+
 def GetSnip(sString, iMaxLength):
     # helpful for short notes or long notes with a short title line.
     

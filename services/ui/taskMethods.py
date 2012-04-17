@@ -689,6 +689,130 @@ class taskMethods:
         finally:
             db.close()
     
+    def wmUpdateStep(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        sFunction = uiCommon.getAjaxArg("sFunction")
+        sXPath = uiCommon.getAjaxArg("sXPath")
+        sValue = uiCommon.getAjaxArg("sValue")
+        db = catocommon.new_conn()
+
+        # we encoded this in javascript before the ajax call.
+        # the safest way to unencode it is to use the same javascript lib.
+        # (sometimes the javascript and .net libs don't translate exactly, google it.)
+        sValue = uiCommon.unpackJSON(sValue)
+
+        uiCommon.log("Updating step [%s (%s)] setting [%s] to [%s]." % (sFunction, sStepID, sXPath, sValue) , 4)
+        # if the function type is "_common" that means this is a literal column on the step table.
+        if sFunction == "_common":
+            sValue = uiCommon.TickSlash(sValue) # escape single quotes for the SQL insert
+            sSQL = "update task_step set " + sXPath + " = '" + sValue + "' where step_id = '" + sStepID + "'"
+
+            if not db.exec_db_noexcep(sSQL):
+                raise Exception(db.error)
+
+        else:
+            # XML processing
+            # get the xml from the step table and update it
+            sSQL = "select function_xml from task_step where step_id = '" + sStepID + "'"
+
+            sXMLTemplate = db.select_col_noexcep(sSQL)
+            print sXMLTemplate
+            if db.error:
+                raise Exception("Unable to get XML data for step [" + sStepID + "].")
+
+            xDoc = ET.fromstring(sXMLTemplate)
+            if xDoc is None:
+                raise Exception("XML data for step [" + sStepID + "] is invalid.")
+
+            try:
+                uiCommon.log("... looking for %s" % sXPath, 4)
+                xNode = xDoc.find(sXPath)
+                print ET.tostring(xNode)
+                if xNode is None:
+                    raise Exception("XML data for step [" + sStepID + "] does not contain '" + sXPath + "' node.")
+
+                xNode.text = sValue
+            except Exception:
+                try:
+                    # here's the deal... given an XPath statement, we simply cannot add a new node if it doesn't exist.
+                    # why?  because xpath is a query language.  It doesnt' describe exactly what to add due to wildcards and # foo syntax.
+
+                    # but, what we can do is make an assumption in our specific case... 
+                    # that we are only wanting to add because we changed an underlying command XML template, and there are existing commands.
+
+                    # so... we will split the xpath into segments, and traverse upward until we find an actual node.
+                    # once we have it, we will need to add elements back down.
+
+                    # string[] nodes = sXPath.Split('/')
+
+                    # for node in nodes:
+#                         #     # try: to select THIS one, and stick it on the backwards stack
+                    #     xNode = xRoot.find("# " + node)
+                    #     if xNode is None:
+                    #         raise Exception("XML data for step [" + sStepID + "] does not contain '" + sXPath + "' node.")
+
+                    # }
+
+                    xFoundNode = None
+                    aMissingNodes = []
+
+                    # if there are no slashes we'll just add this one explicitly as a child of root
+                    if sXPath.find("/") == -1:
+                        xDoc.append(ET.Element(sXPath))
+                    else:                             # and if there are break it down
+                        sWorkXPath = sXPath
+                        while sWorkXPath.find("/") > -1:
+                            idx = uiCommon.LastIndexOf(sWorkXPath, "/") + 1
+                            aMissingNodes.append(sWorkXPath[idx:])
+                            sWorkXPath = sWorkXPath[:idx]
+
+                            xFoundNode = xDoc.find(sWorkXPath)
+                            if xFoundNode is not None:
+                                # Found one! stop looping
+                                break
+
+                        # now that we know where to start (xFoundNode), we can use that as a basis for adding
+                        for sNode in aMissingNodes:
+                            xFoundNode.append(ET.Element(sNode))
+
+                    # now we should be good to stick the value on the final node.
+                    xNode = xDoc.find(sXPath)
+                    if xNode is None:
+                        raise Exception("XML data for step [" + sStepID + "] does not contain '" + sXPath + "' node.")
+
+                    xNode.text = sValue
+
+                    # xRoot.Add(new XElement(sXPath, sValue))
+                    # xRoot.SetElementValue(sXPath, sValue)
+                except Exception, ex:
+                    raise Exception("Error Saving Step [" + sStepID + "].  Could not find and cannot create the [" + sXPath + "] property in the XML." + ex.__str__())
+
+
+
+            sSQL = "update task_step set " \
+                " function_xml = '" + uiCommon.TickSlash(ET.tostring(xDoc)) + "'" \
+                " where step_id = '" + sStepID + "';"
+
+            if not db.exec_db_noexcep(sSQL):
+                raise Exception(db.error)
+
+
+        sSQL = "select task_id, codeblock_name, step_order from task_step where step_id = '" + sStepID + "'"
+        dr = db.select_row_dict(sSQL)
+        if db.error:
+            raise Exception(db.error)
+
+        if dr is not None:
+            uiCommon.WriteObjectChangeLog(db, uiGlobals.CatoObjectTypes.Task, dr["task_id"], sFunction,
+                "Codeblock:" + dr["codeblock_name"] + \
+                " Step Order:" + str(dr["step_order"]) + \
+                " Command Type:" + sFunction + \
+                " Property:" + sXPath + \
+                " New Value: " + sValue)
+
+        db.close()
+        return ""
+
     def wmToggleStepCommonSection(self):
         # no exceptions, just a log message if there are problems.
         try:
