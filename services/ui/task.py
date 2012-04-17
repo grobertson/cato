@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import uiGlobals
 import uiCommon
+from datetime import datetime
 
 class Task(object):
 	def __init__(self):
@@ -37,6 +38,7 @@ class Task(object):
 		self.ConcurrentInstances = ""
 		self.QueueDepth = ""
 		self.ParameterXDoc = None
+		self.NumberOfApprovedVersions = 0
 		#a task has a dictionary of codeblocks
 		self.Codeblocks = {}
 
@@ -69,7 +71,7 @@ class Task(object):
 
 			if dr:
 				sErr = t.PopulateTask(dr, bIncludeUserSettings)
-				
+
 			if t.ID:
 				return t, ""
 			else:
@@ -101,7 +103,7 @@ class Task(object):
 		
 		xmlerr = "XML Error: Attribute not found."
 		
-		print "Creating Task object from XML"
+		uiCommon.log("Creating Task object from XML", 3)
 		xTask = ET.fromstring(sTaskXML)
 		
 		#attributes of the <task> node
@@ -124,7 +126,7 @@ class Task(object):
 		
 		#CODEBLOCKS
 		xCodeblocks = xTask.findall("codeblocks/codeblock")
-		print "Number of Codeblocks: " + str(len(xCodeblocks))
+		uiCommon.log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
 		for xCB in xCodeblocks:
 			newcb = Codeblock()
 			newcb.FromXML(ET.tostring(xCB))
@@ -146,7 +148,6 @@ class Task(object):
 			#the dict can't unpack the object?
 			#try it by reference
 			cb = self.Codeblocks[k]
-			#print cb.Name
 			xCB = ET.SubElement(xCodeblocks, "codeblock") #add the codeblock
 			xCB.set("name", cb.Name)
 			
@@ -155,7 +156,6 @@ class Task(object):
 			
 			for s in cb.Steps:
 				stp = cb.Steps[s]
-				#print stp
 				xStep = ET.SubElement(xSteps, "step") #add the step
 				xStep.set("id", stp.ID)
 				xStep.set("codeblock", stp.Codeblock)
@@ -163,7 +163,6 @@ class Task(object):
 		return ET.tostring(root)
 
 	def AsJSON(self):
-		print "inasjson"
 		try:
 			sb = []
 			sb.append("{")
@@ -177,6 +176,7 @@ class Task(object):
 			sb.append("\"%s\" : \"%s\"," % ("Description", self.Description))
 			sb.append("\"%s\" : \"%s\"," % ("ConcurrentInstances", self.ConcurrentInstances))
 			sb.append("\"%s\" : \"%s\"," % ("QueueDepth", self.QueueDepth))
+			sb.append("\"%s\" : \"%s\"," % ("NumberOfApprovedVersions", self.NumberOfApprovedVersions))
 			sb.append("\"%s\" : \"%s\"" % ("UseConnectorSystem", self.UseConnectorSystem))
 			sb.append("}")
 			return "".join(sb)
@@ -184,7 +184,6 @@ class Task(object):
 			raise ex
 
 	def DBSave(self, db = None, bLocalTransaction = True):
-		print "here we go"
 		try:
 			#if a db connection is passed, use it, else create one
 			if db:
@@ -309,13 +308,9 @@ class Task(object):
 					" '" + uiCommon.TickSlash(self.Description) + "'," \
 					" '" + self.Status + "'," \
 					" now())"
-				print sSQL
 				if not db.tran_exec_noexcep(sSQL):
-					print "failed"
 					return False, db.error
-				print "what?"
 				# add security log
-				print "logging"
 				uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, self.ID, self.Name, "");
 
 			"""
@@ -363,12 +358,175 @@ class Task(object):
 					iStepOrder += 1
 			"""
 			if bLocalTransaction:
-				print "committing"
 				db.tran_commit()
 		except Exception, ex:
-			return False, "Error updating the DB. " + ex._str__()
+			return False, "Error updating the DB. " + ex.str__()
 		finally:
 			return True, ""
+
+	def Copy(self, iMode, sNewTaskName, sNewTaskCode):
+		#iMode 0=new task, 1=new major version, 2=new minor version
+		try:
+			sSourceTaskID = self.ID
+			#NOTE: this routine is not very object-aware.  It works and was copied in here
+			#so it can live with other relevant code.
+			#may update it later to be more object friendly
+			sErr = ""
+			sSQL = ""
+			sNewTaskID = uiCommon.NewGUID()
+			iIsDefault = 0
+			sTaskName = ""
+			sOTID = ""
+
+			#do it all in a transaction
+			db = catocommon.new_conn()
+
+			#figure out the new name and selected version
+			sTaskName = self.Name
+			sOTID = self.OriginalTaskID
+
+			#figure out te new version
+			if iMode == 0:
+				#figure out the new name and selected version
+				sSQL = "select count(*) from task where task_name = '" + sNewTaskName + "'"
+				iExists = db.select_col_noexcep(sSQL)
+				if db.error:
+					raise Exception("Unable to check name conflicts for  [" + sNewTaskName + "]." + db.error)
+				sTaskName = (sNewTaskName + " (" + str(datetime.now()) + ")" if iExists > 0 else sNewTaskName)
+
+				iIsDefault = 1
+				self.Version = "1.000"
+				sOTID = sNewTaskID
+			elif iMode == 1:
+				self.IncrementMajorVersion()
+			elif iMode == 2:
+				self.IncrementMinorVersion()
+			else: #a iMode is required
+				raise Exception("A mode required for this copy operation.")
+
+			#if we are versioning, AND there are not yet any 'Approved' versions,
+			#we set this new version to be the default
+			#(that way it's the one that you get taken to when you pick it from a list)
+			if iMode > 0:
+				sSQL = "select case when count(*) = 0 then 1 else 0 end" \
+					" from task where original_task_id = '" + sOTID + "'" \
+					" and task_status = 'Approved'"
+				iExists = db.select_col_noexcep(sSQL)
+				if db.error:
+					db.tran_rollback()
+					raise Exception(db.error)
+
+			#string sTaskName = (iExists > 0 ? sNewTaskName + " (" + DateTime.Now + ")" : sNewTaskName);
+			#drop the temp tables.
+			sSQL = "drop temporary table if exists _copy_task"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "drop temporary table if exists _step_ids"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "drop temporary table if exists _copy_task_codeblock"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "drop temporary table if exists _copy_task_step"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#start copying
+			sSQL = "create temporary table _copy_task select * from task where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#update the task_id
+			sSQL = "update _copy_task set" \
+				" task_id = '" + sNewTaskID + "'," \
+				" original_task_id = '" + sOTID + "'," \
+				" version = '" + str(self.Version) + "'," \
+				" task_name = '" + sTaskName + "'," \
+				" task_code = '" + sNewTaskCode + "'," \
+				" default_version = " + str(iIsDefault) + "," \
+				" task_status = 'Development'," \
+				" created_dt = now()"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#codeblocks
+			sSQL = "create temporary table _copy_task_codeblock" \
+				" select '" + sNewTaskID + "' as task_id, codeblock_name" \
+				" from task_codeblock where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#USING TEMPORARY TABLES... need a place to hold step ids while we manipulate them
+			sSQL = "create temporary table _step_ids" \
+				" select distinct step_id, uuid() as newstep_id" \
+				" from task_step where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#steps temp table
+			sSQL = "create temporary table _copy_task_step" \
+				" select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," \
+				" locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," \
+				" output_column_delimiter, variable_xml" \
+				" from task_step where task_id = '" + self.ID + "'"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#update the step id
+			sSQL = "update _copy_task_step a, _step_ids b" \
+				" set a.step_id = b.newstep_id" \
+				" where a.step_id = b.step_id"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#update steps with codeblocks that reference a step (embedded steps)
+			sSQL = "update _copy_task_step a, _step_ids b" \
+				" set a.codeblock_name = b.newstep_id" \
+				" where b.step_id = a.codeblock_name"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#spin the steps and update any embedded step id's in the commands
+			sSQL = "select step_id, newstep_id from _step_ids"
+			dtStepIDs = db.select_all_dict(sSQL)
+			if db.error:
+				raise Exception("Unable to get step ids." + db.error)
+
+			for drStepIDs in dtStepIDs:
+				sSQL = "update _copy_task_step" \
+					" set function_xml = replace(lower(function_xml)," \
+					" '" + drStepIDs["step_id"].lower() + "'," \
+					" '" + drStepIDs["newstep_id"] + "')" \
+					" where function_name in ('if','loop','exists','while')"
+				if not db.tran_exec_noexcep(sSQL):
+					raise Exception(db.error)
+
+			#finally, put the temp steps table in the real steps table
+			sSQL = "insert into task select * from _copy_task"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "insert into task_codeblock select * from _copy_task_codeblock"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+			sSQL = "insert into task_step select * from _copy_task_step"
+			if not db.tran_exec_noexcep(sSQL):
+				raise Exception(db.error)
+
+			#finally, if we versioned up and we set this one as the new default_version,
+			#we need to unset the other row
+			if iMode > 0 and iIsDefault == 1:
+				sSQL = "update task set default_version = 0 where original_task_id = '" + sOTID + "' and task_id <> '" + sNewTaskID + "'"
+				if not db.tran_exec_noexcep(sSQL):
+					raise Exception(db.error)
+
+			db.tran_commit()
+			uiCommon.WriteObjectAddLog(db, uiGlobals.CatoObjectTypes.Task, self.ID, self.Name, "Copied from " + sSourceTaskID);
+
+			return sNewTaskID
+		except Exception, ex:
+			raise ex
+		finally:
+			db.close()
 
 	def PopulateTask(self, dr, IncludeUserSettings):
 		try:
@@ -386,71 +544,85 @@ class Task(object):
 			self.ConcurrentInstances = (dr["concurrent_instances"] if dr["concurrent_instances"] else "")
 			self.QueueDepth = (dr["queue_depth"] if dr["queue_depth"] else "")
 			self.UseConnectorSystem = (True if dr["use_connector_system"] == 1 else False)
-			"""
+			
 			#parameters
-			if not str.IsNullOrEmpty(dr["parameter_xml"]):
-				xParameters = XDocument.Parse(dr["parameter_xml"])
-				if xParameters != None:
+			if dr["parameter_xml"]:
+				xParameters = ET.fromstring(dr["parameter_xml"])
+				if xParameters is not None:
 					self.ParameterXDoc = xParameters
 			# 
 			# * ok, this is important.
 			# * there are some rules for the process of 'Approving' a task and other things.
 			# * so, we'll need to know some count information
 			# 
-			sSQL = "select count(*) from task" + " where original_task_id = '" + self.OriginalTaskID + "'" + " and task_status = 'Approved'"
-			iCount = 0
-			if not dc.sqlGetSingleInteger(, sSQL, ):
-				return None
+			db = catocommon.new_conn()
+			
+			sSQL = "select count(*) from task" \
+				" where original_task_id = '" + self.OriginalTaskID + "'" \
+				" and task_status = 'Approved'"
+			iCount = db.select_col_noexcep(sSQL)
+			if db.error:
+				return "Error counting Approved versions:" + db.error
 			self.NumberOfApprovedVersions = iCount
-			sSQL = "select count(*) from task" + " where original_task_id = '" + self.OriginalTaskID + "'"
-			if not dc.sqlGetSingleInteger(, sSQL, ):
-				return None
+
+			sSQL = "select count(*) from task where original_task_id = '" + self.OriginalTaskID + "'"
+			iCount = db.select_col_noexcep(sSQL)
+			if db.error:
+				return "Error counting Approved versions:" + db.error
 			self.NumberOfOtherVersions = iCount
+
 			#now, the fun stuff
 			#1 get all the codeblocks and populate that dictionary
 			#2 then get all the steps... ALL the steps in one sql
 			#..... and while spinning them put them in the appropriate codeblock
 			#GET THE CODEBLOCKS
-			sSQL = "select codeblock_name" + " from task_codeblock" + " where task_id = '" + self.ID + "'" + " order by codeblock_name"
-			dt = DataTable()
-			if not dc.sqlGetDataTable(, sSQL, ):
-				return None
-			if dt.Rows.Count > 0:
-				enumerator = dt.Rows.GetEnumerator()
-				while enumerator.MoveNext():
-					drCB = enumerator.Current
-					self.Codeblocks.Add(drCB["codeblock_name"], Codeblock(drCB["codeblock_name"]))
+			sSQL = "select codeblock_name from task_codeblock where task_id = '" + self.ID + "' order by codeblock_name"
+			dtCB = db.select_all_dict(sSQL)
+			if dtCB:
+				for drCB in dtCB:
+					cb = Codeblock(drCB["codeblock_name"])
+					self.Codeblocks[cb.Name] = cb
 			else:
 				#uh oh... there are no codeblocks!
 				#since all tasks require a MAIN codeblock... if it's missing,
 				#we can just repair it right here.
 				sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + self.ID + "', 'MAIN')"
-				if not dc.sqlExecuteUpdate(sSQL, ):
-					return None
-				self.Codeblocks.Add("MAIN", Codeblock("MAIN"))
+				if not db.exec_db_noexcep(sSQL):
+					return db.error
+				self.Codeblocks["MAIN"] = Codeblock("MAIN")
+
 			#GET THE STEPS
 			#we need the userID to get the user settings in some cases
 			if IncludeUserSettings:
-				sUserID = ui.GetSessionUserID()
+				sUserID = uiCommon.GetSessionUserID()
 				#NOTE: it may seem like sorting will be an issue, but it shouldn't.
 				#sorting ALL the steps by their ID here will ensure they get added to their respective 
 				# codeblocks in the right order.
-				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," + " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," + " us.visible, us.breakpoint, us.skip, us.button" + " from task_step s" + " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" + " where s.task_id = '" + self.ID + "'" + " order by s.step_order"
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
+					" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+					" us.visible, us.breakpoint, us.skip, us.button" \
+					" from task_step s" \
+					" left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
+					" where s.task_id = '" + self.ID + "'" \
+					" order by s.step_order"
 			else:
-				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," + " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," + " 0 as visible, 0 as breakpoint, 0 as skip, '' as button" + " from task_step s" + " where s.task_id = '" + self.ID + "'" + " order by s.step_order"
-			dtSteps = DataTable()
-			if not dc.sqlGetDataTable(, sSQL, ):
-				sErr += "Database Error: " + sErr
-			if dtSteps.Rows.Count > 0:
-				enumerator = dtSteps.Rows.GetEnumerator()
-				while enumerator.MoveNext():
-					drSteps = enumerator.Current
-					oStep = Step(drSteps, self)
-					if oStep != None:
+				sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
+    				" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+    				" 0 as visible, 0 as breakpoint, 0 as skip, '' as button" \
+    				" from task_step s" \
+    				" where s.task_id = '" + self.ID + "'" \
+    				" order by s.step_order"
+
+			dtSteps = db.select_all_dict(sSQL)
+			if dtSteps:
+				for drSteps in dtSteps:
+					oStep = Step.FromRow(drSteps, self)
+					if oStep:
 						#a 'REAL' codeblock will be in this collection
 						# (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
-						if self.Codeblocks.ContainsKey(oStep.Codeblock):
-							self.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep)
+						if self.Codeblocks.has_key(oStep.Codeblock):
+							self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
+							#print self.Codeblocks[oStep.Codeblock].Steps
 						else:
 							#so, what do we do if we found a step that's not in a 'real' codeblock?
 							#well, the gui will take care of drawing those embedded steps...
@@ -459,17 +631,19 @@ class Task(object):
 							#so, we'll go ahead and create codeblocks for them.
 							#this is terrible, but part of the problem with this embedded stuff.
 							#we'll tweak the gui so GUID named codeblocks don't show.
-							self.Codeblocks.Add(oStep.Codeblock, Codeblock(oStep.Codeblock))
-							self.Codeblocks[oStep.Codeblock].Steps.Add(oStep.ID, oStep)
+							self.Codeblocks[oStep.Codeblock] = Codeblock(oStep.Codeblock)
+							self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
 			#maybe one day we'll do the full recusrive loading of all embedded steps here
 			# but not today... it's a big deal and we need to let these changes settle down first.
-			"""
+			
 		except Exception, ex:
 			raise ex
+		finally:
+			db.close()
 
 class Codeblock(object):
-	def __init__(self):
-		self.Name = ""
+	def __init__(self, sName):
+		self.Name = sName
 		self.Steps = {}
 		
 	#a codeblock contains a dictionary collection of steps
@@ -481,7 +655,7 @@ class Codeblock(object):
 		
 		#STEPS
 		xSteps = xCB.findall("steps/step")
-		print "Number of Steps in [" +self.Name + "]: " + str(len(xSteps))
+		uiCommon.log("Number of Steps in [" +self.Name + "]: " + str(len(xSteps)), 4)
 		for xStep in xSteps:
 			newstep = Step()
 			newstep.FromXML(ET.tostring(xStep), self.Name)
@@ -496,6 +670,22 @@ class Step(object):
 		self.Commented = False
 		self.Locked = False
 		self.OutputParseType = 0
+		self.OutputRowDelimiter = 0
+		self.OutputColumnDelimiter = 0
+		self.FunctionXML = None
+		self.FunctionXDoc = None
+		self.VariableXML = None
+		self.VariableXDoc = None
+		self.FunctionName = ""
+		self.UserSettings = StepUserSettings()
+		# this property isn't added by the "Populate" methods - but can be added manually.
+		# this is because of xml import/export - where the function details aren't required.
+		# but they are in the UI when drawing steps.
+		self.Function = None 
+		# Very rarely does a single Step object have an associated parent Task.
+		# usually, we're working on steps within the context of already knowing the Task.
+		# but if it's needed, it will have been explicitly populated.
+		self.Task = None
 
 	def FromXML(self, sStepXML="", sCodeblockName=""):
 		if sStepXML == "": return None
@@ -506,5 +696,108 @@ class Step(object):
 		#attributes of the <step> node
 		self.ID = xStep.get("id", str(uuid.uuid4()))
 		self.Codeblock = sCodeblockName
+
+	@staticmethod
+	def FromRow(dr, task):
+		s = Step()
+		s.PopulateStep(dr, task)
+		return s
+		
+	@staticmethod
+	def ByIDWithSettings(sStepID, sUserID):
+		"""
+		Gets a single step object, including user settings.  Does NOT have an associated parent Task object.
+		This is called by the AddStep methods, and other functions *on* the task page where we don't need
+		the associated task object
+		"""
+		try:
+			"""	            string sSQL = "select t.task_name, t.version," +
+		                " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
+		                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
+		                " from task_step s" +
+		                " join task t on s.task_id = t.task_id" +
+		                " where s.step_id = '" + sStepID + "' limit 1";
+			"""
+			sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name," \
+				" s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+				" us.visible, us.breakpoint, us.skip, us.button" \
+				" from task_step s" \
+				" left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
+				" where s.step_id = '" + sStepID + "' limit 1"
+			db = catocommon.new_conn()
+			row = db.select_row_dict(sSQL)
+			if row:
+				oStep = Step.FromRow(row, None)
+				return oStep
+
+			if db.error:
+				uiCommon.log("Error getting Step by ID: " + db.error, 2)
+			
+			return None
+		except Exception, ex:
+			raise ex
+		finally:
+			db.close()
+		
+	def PopulateStep(self, dr, oTask):
+		try:
+			self.ID = dr["step_id"]
+			self.Codeblock = ("" if not dr["codeblock_name"] else dr["codeblock_name"])
+			self.Order = dr["step_order"]
+			self.Description = ("" if not dr["step_desc"] else dr["step_desc"])
+			self.Commented = (True if dr["commented"] == "1" else False)
+			self.Locked = (True if dr["locked"] == "1" else False)
+			self.OutputParseType = dr["output_parse_type"]
+			self.OutputRowDelimiter = dr["output_row_delimiter"]
+			self.OutputColumnDelimiter = dr["output_column_delimiter"]
+			self.FunctionXML = ("" if not dr["function_xml"] else dr["function_xml"])
+			self.VariableXML = ("" if not dr["variable_xml"] else dr["variable_xml"])
+			#once parsed, it's cleaner.  update the object with the cleaner xml
+			if self.FunctionXML:
+				self.FunctionXDoc = ET.fromstring(self.FunctionXML)
+			if self.VariableXML:
+				self.VariableXDoc = ET.fromstring(self.VariableXML)
+
+			#this.Function = Function.GetFunctionByName(dr["function_name"]);
+			self.FunctionName = dr["function_name"]
+
+			# user settings, if available
+			if dr["button"] is not None:
+				self.UserSettings.Button = dr["button"]
+			if dr["skip"] is not None:
+				self.UserSettings.Skip = (True if dr["skip"] == 1 else False)
+			if dr["visible"] is not None:
+				self.UserSettings.Visible = (True if dr["visible"] == 1 else False)
+			
+			#NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
+			#if it's null, it will not populate the parent object.
+			#this happens all over the place in the HTMLTemplates stuff, and we don't need the extra overhead of the same task
+			#object being created hundreds of times.
+			if oTask:
+				self.Task = oTask
+			else:
+				#NOTE HACK TODO - this is bad and wrong
+				#we shouldn't assume the datarow was a join to the task table... but in a few places it was.
+				#so we're populating some stuff here.
+				#the right approach is to create a full Task object from the ID, but we need to analyze
+				#how it's working, so we don't create a bunch more database hits.
+				#I THINK THIS is only happening on GetSingleStep and taskStepVarsEdit, but double check.
+				self.Task = Task()
+				if dr.has_key("task_id"):
+					self.Task.ID = dr["task_id"]
+				if dr.has_key("task_name"):
+					self.Task.Name = dr["task_name"]
+				if dr.has_key("version"):
+					self.Task.Version = dr["version"]
+			return self
+		except Exception, ex:
+			raise ex
+		
+class StepUserSettings(object):
+	def __init__(self):
+		self.Visible = True
+		self.Breakpoint= False
+		self.Skip = False
+		self.Button = ""
 
 

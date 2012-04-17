@@ -76,7 +76,7 @@ function GetItems() {
     $.ajax({
         type: "POST",
         async: true,
-        url: "uiMethods/wmGetTasks",
+        url: "taskMethods/wmGetTasks",
         data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",
@@ -131,21 +131,14 @@ function ShowItemCopy() {
 
     $.ajax({
         type: "POST",
-        url: "taskMethods.asmx/wmGetTaskCodeFromID",
+        url: "taskMethods/wmGetTaskCodeFromID",
         data: '{"sOriginalTaskID":"' + task_copy_original_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-
-            if (msg.d.length == 0) {
-
-                showAlert('No task code returned.');
-
-            } else {
-
-                //showAlert(msg.d);
-                task_code = msg.d;
-                $("#lblTaskCopy").html('<b>Copying task ' + task_code + '</b><br />&nbsp;<br />');
+        success: function (response) {
+            if (response.code) {
+                task_code = response.code;
+                $("#lblTaskCopy").html('<b>Copying Task ' + task_code + '</b><br />&nbsp;<br />');
                 $("#copy_dialog").dialog('open');
                 $("[tag='chk']").attr("checked", false);
                 $("#hidSelectedArray").val('');
@@ -153,6 +146,8 @@ function ShowItemCopy() {
                 $("#lblItemsSelected").html("0");
                 $("#txtCopyTaskName").val('');
                 $("#txtCopyTaskCode").val('');
+            } else {
+                showAlert('No task code returned.');
             }
         },
         error: function (response) {
@@ -163,20 +158,15 @@ function ShowItemCopy() {
     // load the copy from versions drop down
     $.ajax({
         type: "POST",
-        url: "taskMethods.asmx/wmGetTaskVersionsDropdown",
+        url: "taskMethods/wmGetTaskVersionsDropdown",
         data: '{"sOriginalTaskID":"' + task_copy_original_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (msg) {
-
-            if (msg.d.length == 0) {
-
+            if (msg.length == 0) {
                 showAlert('No versions found for this task?');
-
             } else {
-
-                $("#divTaskVersions").html(msg.d);
-
+                $("#ddlTaskVersions").html(msg);
             }
         },
         error: function (response) {
@@ -189,8 +179,6 @@ function ShowItemCopy() {
 
 }
 function CopyTask() {
-
-
     var sNewTaskName = $("#txtCopyTaskName").val();
     var sNewTaskCode = $("#txtCopyTaskCode").val();
     var sCopyTaskID = $("#ddlTaskVersions").val();
@@ -208,21 +196,23 @@ function CopyTask() {
 
     $.ajax({
         type: "POST",
-        url: "taskMethods.asmx/wmCopyTask",
+        url: "taskMethods/wmCopyTask",
         data: '{"sCopyTaskID":"' + sCopyTaskID + '","sTaskCode":"' + sNewTaskCode + '","sTaskName":"' + sNewTaskName + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 36) {
+        success: function (response) {
+        	if (response.error) {
+        		showAlert(response.error);
+        	} else if (response.info) {
+        		showInfo(response.info);
+        	} else if (response.id) {
                 $("#copy_dialog").dialog('close');
-                // clear the search field and fire a search click, should reload the grid
                 $("#txtSearch").val("");
-                $("#ctl00_phDetail_btnSearch").click();
-
+                GetItems();
                 hidePleaseWait();
                 showInfo('Task Copy Successful.');
             } else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {
@@ -351,9 +341,13 @@ function SaveNewTask() {
         data: '{"sTaskName":"' + sTaskName + '","sTaskCode":"' + sTaskCode + '","sTaskDesc":"' + sTaskDesc + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (task) {
+        success: function (response) {
 	       try {
-		        if (task) {
+		        if (response.error) {
+	        		showAlert(response.error);
+	        	} else if (response.info) {
+	        		showInfo(response.info);
+	        	} else if (response.id) {
 	                location.href = "/taskEdit?" + task.id;
 		        } else {
 		            showAlert(response.d);

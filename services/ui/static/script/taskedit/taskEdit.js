@@ -159,59 +159,122 @@ $(document).ready(function () {
     //$().ajaxStop($.unblockUI);
 
 
-    //set the help text on hover over a category
-    $("#toolbox .category").hover(function () {
-        $("#te_help_box_detail").html($("#help_text_" + $(this).attr("name")).html());
-    }, function () {
-        $("#te_help_box_detail").html("");
-    });
-
-    //toggle categories
-    $("#toolbox .category").click(function () {
-        //unselect all the categories
-        $("#toolbox .category").removeClass("category_selected");
-
-        //and select this one you clicked
-        //alert($(this).attr("id"));
-        $(this).addClass("category_selected");
-
-        //hide 'em all
-        $("#toolbox .functions").addClass("hidden");
-
-        //show the one you clicked
-        $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
-    });
 
 	//get the details
 	doGetDetails();
+	//get the commands
+	doGetCommands();
 	//get the codeblocks
-	//doGetCodeblocks();
+	doGetCodeblocks();
 	//get the steps
-	//doGetSteps();
-
-    //finally, init the draggable items (commands and the clipboard)
-    //this will also be called when items are added/removed from the clipboard.
-    initDraggable();
+	doGetSteps();
 });
 
 function doGetDetails() {
 	$.ajax({
         type: "POST",
-        async: false,
+        async: true,
         url: "taskMethods/wmGetTask",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (task) {
 	       try {
-	       		$("#hidOriginalTaskID").val(task.OriginalTaskID);
-	       		$("#txtTaskCode").val(task.Code);
-	       		$("#txtTaskName").val(task.Name);
-	       		$("#txtDescription").val(task.Description);
-	       		$("#txtConcurrentInstances").val(task.ConcurrentInstances);
-	       		$("#txtQueueDepth").val(task.QueueDepth);
+				$("#hidOriginalTaskID").val(task.OriginalTaskID);
+				$("#txtTaskCode").val(task.Code);
+				$("#txtTaskName").val(task.Name);
+				$("#txtDescription").val(task.Description);
+				$("#txtConcurrentInstances").val(task.ConcurrentInstances);
+				$("#txtQueueDepth").val(task.QueueDepth);
+	       		
+                //ATTENTION!
+                //Approved tasks CANNOT be edited.  So, if the status is approved... we redirect to the
+                //task 'view' page.
+                //this is to prevent any sort of attempts on the client to load an approved or otherwise 'locked' 
+                // version into the edit page.
+                if (task.Status == "Approved")
+                {
+                    location.href = "taskView.aspx?task_id=" + g_task_id;
+                }
+
+                $("#lblVersion").text(task.Version);
+                $("#lblCurrentVersion").text(task.Version);
+				$("#lblStatus2").text(task.Status);
+
+                /*                    
+                 * ok, this is important.
+                 * there are some rules for the process of 'Approving' a task.
+                 * specifically:
+                 * -- if there are no other approved tasks in this family, this one will become the default.
+                 * -- if there is another approved task in this family, we show the checkbox
+                 * -- allowing the user to decide whether or not to make this one the default
+                 */
+                if (task.NumberOfApprovedVersions > "0")
+                    $("#chkMakeDefault").show();
+                else
+                    $("#chkMakeDefault").hide();
+
+                //the header
+                $("#lblTaskNameHeader").text(task.Name);
+                $("#lblVersionHeader").text(task.Version + (task.IsDefaultVersion ? " (default)" : ""));
+	       		
 			} catch (ex) {
 				showAlert(response.d);
+			}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+
+}
+
+function doGetCommands() {
+	$.ajax({
+        type: "GET",
+        async: true,
+        url: "taskMethods/wmGetCommands",
+        dataType: "json",
+        success: function (response) {
+			try {
+				if (response.error) {
+					showAlert(response.error);
+				}
+				if (response.categories) {
+					cats_html = unpackJSON(response.categories)
+					$("#div_commands #categories").html(cats_html);
+
+				    //set the help text on hover over a category
+				    $("#toolbox .category").hover(function () {
+				        $("#te_help_box_detail").html($("#help_text_" + $(this).attr("name")).html());
+				    }, function () {
+				        $("#te_help_box_detail").html("");
+				    });
+				
+				    //toggle categories
+				    $("#toolbox .category").click(function () {
+				        //unselect all the categories
+				        $("#toolbox .category").removeClass("category_selected");
+				
+				        //and select this one you clicked
+				        //alert($(this).attr("id"));
+				        $(this).addClass("category_selected");
+				
+				        //hide 'em all
+				        $("#toolbox .functions").addClass("hidden");
+				
+				        //show the one you clicked
+				        $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
+				    });
+				}
+				if (response.functions) {
+					$("#div_commands #category_functions").html(unpackJSON(response.functions));
+				    //init the draggable items (commands and the clipboard)
+				    //this will also be called when items are added/removed from the clipboard.
+				    initDraggable();
+				}
+			} catch (ex) {
+				showAlert(response);
 			}
         },
         error: function (response) {
@@ -228,18 +291,18 @@ function doGetSteps() {
 
 	$.ajax({
         type: "POST",
-        async: false,
-        url: "taskMethods.asmx/wmGetSteps",
+        async: true,
+        url: "taskMethods/wmGetSteps",
         data: '{"sTaskID":"' + g_task_id + '","sCodeblockName":"' + codeblock_name + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (response) {
 	       try {
 				//the result is an html snippet
 				//we have to redo the sortable for the new content
 				$("#steps").empty();
 			    $("#steps").sortable("destroy");
-			    $("#steps").append(response.d);
+			    $("#steps").append(response);
 				initSortable();
 				validateStep();
 				$("#codeblock_steps_title").text(codeblock_name);
@@ -278,24 +341,32 @@ function doDetailFieldUpdate(ctl) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmUpdateTaskDetail",
+            url: "taskMethods/wmUpdateTaskDetail",
             data: '{"sTaskID":"' + g_task_id + '","sColumn":"' + column + '","sValue":"' + value + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
-            success: function (msg) {
-
-                if (msg.d != '') {
-                    $("#update_success_msg").text("Update Failed").fadeOut(2000);
-                    showInfo(msg.d);
-                }
-                else {
-                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-                    // bugzilla 1037 Change the name in the header
-                    if (column == "task_name") { $("#lblTaskNameHeader").html(unpackJSON(value)); };
-                }
-
-
+            success: function (response) {
+				try {
+					if (response.error) {
+						showAlert(response.error);
+					}
+					if (response.info) {
+						showInfo(response.info);
+					}
+					if (response.result) {
+		                if (response.result == "success") {
+		                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
+		                    // bugzilla 1037 Change the name in the header
+		                    if (column == "task_name") { $("#lblTaskNameHeader").html(unpackJSON(value)); };
+		                }
+		                else {
+		                    $("#update_success_msg").text("Update Failed").fadeOut(2000);
+		                    showInfo(msg);
+		                }
+	               }
+				} catch (ex) {
+					showAlert(response);
+				}
             },
             error: function (response) {
                 $("#update_success_msg").fadeOut(2000);
@@ -413,18 +484,6 @@ function getStep(step_id, target, init) {
     });
 }
 
-// Callback function invoked on successful completion of the MS AJAX page method.
-function OnSuccess(result, userContext, methodName) {
-    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-}
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnFailure(error, userContext, methodName) {
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
-}
-
 function doDropZoneEnable($ctl) {
     $ctl.html("Drag a command from the toolbox and drop it here now, or <span class=\"step_nested_drop_target_cancel_btn\" onclick=\"doDropZoneDisable('" + $ctl.attr("id") + "');\">click " +
         "here to cancel</span> add add it later.");
@@ -474,15 +533,6 @@ function doDropZoneDisable(id) {
     $("#" + id).removeClass("step_nested_drop_target_active");
     $("#" + id).droppable("destroy");
     initSortable();
-}
-
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnUpdateFailure(error, userContext, methodName) {
-    //alert('failure');
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
 }
 
 function doClearClipboard(id) {

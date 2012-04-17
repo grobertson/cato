@@ -1,12 +1,23 @@
 import urllib
 import uiGlobals
+import os
 import sys
 import json
 import uuid
 import base64
+import cgi
+import re
+import pickle
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import providers
+
+# writes to stdout using the catocommon.server output function
+# also prints to the console.
+def log(msg, debuglevel = 2):
+    if debuglevel >= uiGlobals.debuglevel:
+        uiGlobals.server.output(msg)
+        print msg
 
 def getAjaxArg(sArg):
     data = uiGlobals.web.data()
@@ -16,14 +27,36 @@ def getAjaxArg(sArg):
 def NewGUID():
     return str(uuid.uuid1())
 
+def IsGUID(s):
+    p = re.compile("^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$")
+    m = p.match(s)
+    if m:
+        return True
+    else:
+        return False
+
+def IsTrue(var):
+    # not just regular python truth testing - certain string values are also "true"
+    # but false if the string has length but isn't a "true" statement
+    # since any object could be passed here (we only want bools, ints or strs)
+    # we just cast it to a str
+    s = str(var).lower()
+    if len(s) > 0 and str(var).lower() in "true,yes,on,enable,enabled":
+        return True
+    else:
+        # wasn't an explicit string match, return the regular python truth value
+        if var:
+            return True
+        else:
+            return False
+         
 def TickSlash(s):
     return s.replace("'", "''").replace("\\", "\\\\")
 
 def packJSON(sIn):
     if not sIn:
         return sIn
-    
-    sOut = base64.b64decode(sIn)
+    sOut = base64.b64encode(sIn)
     return sOut.replace("/", "%2F").replace("+", "%2B")
 
 def unpackJSON(sIn):
@@ -41,6 +74,42 @@ def QuoteUp(sString):
     
     return retval[:-1] #whack the last comma 
 
+def GetSnip(sString, iMaxLength):
+    # helpful for short notes or long notes with a short title line.
+    
+    # odd behavior, but web forms seems to put just a \n as the newline entered in a textarea.
+    # so I'll test for both just to be safe.
+    sReturn = ""
+    if sString:
+        bShowElipse = False
+        
+        iLength = sString.find("\\n")
+        if iLength < 0:
+            iLength = sString.find("\\r\\n")
+        if iLength < 0:
+            iLength = sString.find("\\r")
+        if iLength < 0:
+            iLength = iMaxLength
+            
+        # now, if what we are showing is shorter than the entire field, show an elipse
+        # if it is the entire field, set the length
+        if iLength < len(sString):
+            bShowElipse = True
+        else:
+            iLength = len(sString)
+
+        sReturn += sString[0:iLength]
+        if bShowElipse:
+            sReturn += " ... "
+
+    return SafeHTML(sReturn)
+
+def SafeHTML(sInput):
+    return cgi.escape(sInput)
+
+def FixBreaks(sInput):
+    return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+
 def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessage):
     sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip()
     if sTrimmedLog:
@@ -49,7 +118,7 @@ def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessag
     sSQL = "insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg) \
         values ('" + LogType + "', '" + Action + "', '" + sUserID + "', now(), " + str(ObjectType) + ", '" + ObjectID + "', '" + sTrimmedLog + "')"
     if not db.exec_db_noexcep(sSQL):
-        print __name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error
+        log(__name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error, 2)
 
 def WriteObjectAddLog(db, oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
@@ -89,8 +158,10 @@ def ForceLogout(sMsg):
     if not sMsg:
         sMsg = "Session Ended"
     
-    uiGlobals.session.user = None
-    print "forcing logout with message: " + sMsg
+    # logging out kills the session
+    uiGlobals.session.kill()
+    
+    log("Forcing logout with message: " + sMsg, 0)
     raise uiGlobals.web.seeother('/login?msg=' + urllib.quote(sMsg))
 
 def GetSessionUserID():
@@ -132,24 +203,128 @@ def SetSessionObject(key, obj, category=""):
     
 def GetCloudProviders(): #These were put in the session at login
     try:
-        cp = GetSessionObject("", "cloud_providers")
+        #cp = GetSessionObject("", "cloud_providers")
+        f = open("datacache/_providers.pickle", 'rb')
+        if not f:
+            log("ERROR: Providers pickle missing.", 0)
+
+        cp = pickle.load(f)
+        f.close()
         if cp:
             return cp
         else:
-            ForceLogout("Server Session has expired (1). Please log in again.")
-    except Exception as ex:
-        raise ex
+            log("ERROR: Providers pickle could not be read.", 0)
+    except Exception, ex:
+        log("ERROR: Providers pickle could not be read." + ex.__str__(), 0)
+        
+    return None
 
 #this one takes a modified Cloud Providers class and puts it into the session
 def UpdateCloudProviders(cp):
-    SetSessionObject("cloud_providers", cp, "")
+    #SetSessionObject("cloud_providers", cp, "")
+    f = open("datacache/_providers.pickle", 'wb')
+    pickle.dump(cp, f, pickle.HIGHEST_PROTOCOL)
+    f.close()
     
 #put the cloud providers and object types from a file into the session
 def SetCloudProviders():
     x = ET.parse("../../conf/cloud_providers.xml")
     if x:
         cp = providers.CloudProviders(x)
-        uiGlobals.session.cloud_providers = cp
+        # uiGlobals.session.cloud_providers = cp
+        f = open("datacache/_providers.pickle", 'wb')
+        pickle.dump(cp, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
     else:
         raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
+
+#this one returns a list of Categories from the FunctionCategories class
+def GetTaskFunctionCategories():
+    try:
+        f = open("datacache/_categories.pickle", 'rb')
+        if not f:
+            log("ERROR: Categories pickle missing.", 0)
+        obj = pickle.load(f)
+        f.close()
+        if obj:
+            print obj
+            return obj.Categories
+        else:
+            log("ERROR: Categories pickle could not be read.", 0)
+    except Exception, ex:
+        log("ERROR: Categories pickle could not be read." + ex.__str__(), 0)
+        
+    return None
+        
+    # return GetSessionObject("", "function_categories")
+
+#this one returns the Functions dict containing all functions
+def GetTaskFunctions():
+    try:
+        f = open("datacache/_categories.pickle", 'rb')
+        if not f:
+            log("ERROR: Categories pickle missing.", 0)
+        obj = pickle.load(f)
+        f.close()
+        if obj:
+            return obj.Functions
+        else:
+            log("ERROR: Categories pickle could not be read.", 0)
+    except Exception, ex:
+        log("ERROR: Categories pickle could not be read." + ex.__str__(), 0)
+        
+    return None
+    # return GetSessionObject("", "functions")
+
+#this one returns just one specific function
+def GetTaskFunction(sFunctionName):
+    funcs = GetTaskFunctions()
+    if funcs:
+        try:
+            fn = funcs[sFunctionName]
+            if fn:
+                return fn
+            else:
+                return None
+        except Exception:
+            return None
+    else:
+        return None
+#put the cloud providers and object types from a file into the session
+def SetTaskCommands():
+    try:
+        from taskCommands import FunctionCategories
+        #we load two classes here...
+        #first, the category/function hierarchy
+        cats = FunctionCategories()
+        bCoreSuccess = cats.Load("task_commands.xml")
+        if not bCoreSuccess:
+            raise Exception("Critical: Unable to read/parse task_commands.xml.")
+
+        #try to append any extension files
+        #this will read all the xml files in /extensions
+        #and append to sErr if it failed, but not crash or die.
+        for root, subdirs, files in os.walk("extensions"):
+            for f in files:
+                ext = os.path.splitext(f)[-1]
+                if ext == ".xml":
+                    fullpath = os.path.join(root, f)
+                    if not cats.Append(fullpath):
+                        log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
+
+        #put the categories list in the session...
+        #uiGlobals.session.function_categories = cats.Categories
+        #then the dict of all functions for fastest lookups
+        #uiGlobals.session.functions = cats.Functions
+
+        # was told not to put big objects in the session, so since this can actually be shared by all users,
+        # lets try saving a pickle
+        # it will get created every time a user logs in, but can be read by all.
+        f = open("datacache/_categories.pickle", 'wb')
+        pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
+        
+        return True
+    except Exception, ex:
+        raise Exception("Unable to load Task Commands XML." + ex.__str__())
 

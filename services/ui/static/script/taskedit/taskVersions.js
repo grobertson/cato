@@ -63,14 +63,22 @@ function CloseVersionDialog() {
 
 function doGetVersions() {
     $.ajax({
-        async: false,
+        async: true,
         type: "POST",
-        url: "taskMethods.asmx/wmGetTaskVersions",
+        url: "taskMethods/wmGetTaskVersions",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#versions").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#versions").html(response);
+		    //VERSION TOOLBOX
+		    $("#versions .version").disableSelection();
+		    //the onclick event of the 'version' elements
+		    $("#versions .version").click(function () {
+		        location.href = "taskEdit?task_id=" + $(this).attr("task_id") + "&tab=versions";
+		    });
+		    //whatever the current version is... change it's class in the list
+		    $("#v_" + g_task_id).addClass("version_selected");
         },
         error: function (response) {
             showAlert(response.responseText);

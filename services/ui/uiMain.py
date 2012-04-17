@@ -106,6 +106,10 @@ if __name__ == "__main__":
     uiGlobals.session = session
     uiGlobals.server = server
     
+    # the debug level (0-4 with 0 being 'none' and 4 being 'verbose')    
+    uiGlobals.debuglevel = 3 # change as needed for debugging
+    
+    # setting this to True seems to show a lot more detail in UI exceptions
     web.config.debug = False
     
     app.run()

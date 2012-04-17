@@ -38,7 +38,6 @@ class CloudProviders(object):
                         #region is an optional attribute
                         sRegion = xCloud.get("region", "")
                             
-                        #print ET.tostring(xCloud)
                         c = cloud.Cloud()
                         c.FromArgs(pv, False, xCloud.get("id", None), xCloud.get("name", None), xCloud.get("api_url", None), xCloud.get("api_protocol", None), sRegion)
                         if c.ID:

@@ -10,6 +10,9 @@ dbconn = None
 # "server" is the running web service
 server = None
 
+# the debug level (0-4 with 0 being 'none' and 4 being 'verbose')
+debuglevel = 2 #defaults to 2
+
 class SecurityLogTypes(object):
     Object = "Object"
     Security = "Security"
