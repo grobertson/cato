@@ -17,7 +17,7 @@ body
 {
 	padding-top: 20px;
 	height: 220px;
-	background-image: url(static/images/login-banner.gif);
+	background-image: url(../images/login-banner.gif);
 	background-repeat: no-repeat;
 	background-position: -175px 54%; /* shorten it a bit */
 	box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);

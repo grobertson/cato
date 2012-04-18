@@ -58,7 +58,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmGetParameters",
+            url: "taskMethods/wmGetParameters",
             data: '{"sType":"task","sID":"' + task_id + '","bEditable":"false","bSnipValues":"true"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -146,7 +146,7 @@ function doAddIfSection(step_id, idx) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmFnIfAddSection",
+        url: "taskMethods/wmFnIfAddSection",
         data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -176,7 +176,7 @@ function doRemoveIfSection(step_id, idx) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnIfRemoveSection",
+            url: "taskMethods/wmFnIfRemoveSection",
             data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -208,7 +208,7 @@ $(document).ready(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "taskMethods.asmx/wmFnRemovePair",
+                url: "taskMethods/wmFnRemovePair",
                 data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -233,7 +233,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnAddPair",
+            url: "taskMethods/wmFnAddPair",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -319,7 +319,7 @@ $(document).ready(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "taskMethods.asmx/wmFnVarRemoveVar",
+                url: "taskMethods/wmFnVarRemoveVar",
                 data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -344,7 +344,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnSetvarAddVar",
+            url: "taskMethods/wmFnSetvarAddVar",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -370,7 +370,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnClearvarAddVar",
+            url: "taskMethods/wmFnClearvarAddVar",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -402,7 +402,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnExistsAddVar",
+            url: "taskMethods/wmFnExistsAddVar",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -434,7 +434,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnWaitForTasksAddHandle",
+            url: "taskMethods/wmFnWaitForTasksAddHandle",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -462,7 +462,7 @@ $(document).ready(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "taskMethods.asmx/wmFnWaitForTasksRemoveHandle",
+                url: "taskMethods/wmFnWaitForTasksRemoveHandle",
                 data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -494,7 +494,7 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmFnNodeArrayAdd",
+            url: "taskMethods/wmFnNodeArrayAdd",
             data: '{"sStepID":"' + step_id + '","sGroupNode":"' + xpath + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -522,7 +522,7 @@ $(document).ready(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "taskMethods.asmx/wmFnNodeArrayRemove",
+                url: "taskMethods/wmFnNodeArrayRemove",
                 data: '{"sStepID":"' + step_id + '","sXPathToDelete":"' + xpath_to_delete + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -549,7 +549,7 @@ function ShowRunTaskParameterEdit() {
 	    $.ajax({
 	        async: false,
 	        type: "POST",
-	        url: "taskMethods.asmx/wmGetParameterXML",
+	        url: "taskMethods/wmGetParameterXML",
 	        data: '{"sType":"runtask","sID":"' + rt_step_id + '","sFilterByEcosystemID":"' + rt_task_id + '"}',
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
@@ -600,7 +600,7 @@ function SaveRunTaskParameters() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmSaveDefaultParameterXML",
+        url: "uiMethods/wmSaveDefaultParameterXML",
         data: '{"args":' + args + '}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",

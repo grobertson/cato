@@ -464,12 +464,12 @@ function getStep(step_id, target, init) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetStep",
+        url: "taskMethods/wmGetStep",
         data: '{"sStepID":"' + step_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (retval) {
-            $("#" + target).replaceWith(retval.d);
+            $("#" + target).replaceWith(retval);
 
             if (init)
                 initSortable();
