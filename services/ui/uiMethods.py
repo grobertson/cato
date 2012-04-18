@@ -85,17 +85,7 @@ class login:
                 uiGlobals.session.site_master_xml = x
             else:
                 uiGlobals.request.Messages.append("Critical: Unable to read/parse site.master.xml.")
-    
-    
-            uiCommon.log("Refreshing datacache...", 3)
-            #put the cloud providers and object types in a pickle
-            # also a big performance boost
-            uiCommon.SetCloudProviders()
-            
-            #put the task commands in a pickle
-            # another big performance boost
-            uiCommon.SetTaskCommands()
-            
+                
             raise uiGlobals.web.seeother('/home')
         except Exception, ex:
             uiGlobals.request.Messages.append(ex.__str__())

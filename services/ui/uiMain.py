@@ -4,6 +4,7 @@ import web
 import os
 import sys
 import urllib
+import pickle
 import xml.etree.ElementTree as ET
 
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
@@ -66,6 +67,107 @@ def auth_app_processor(handle):
     
     return handle()
 
+
+def SetTaskCommands():
+    try:
+        from taskCommands import FunctionCategories
+        #we load two classes here...
+        #first, the category/function hierarchy
+        cats = FunctionCategories()
+        bCoreSuccess = cats.Load("task_commands.xml")
+        if not bCoreSuccess:
+            raise Exception("Critical: Unable to read/parse task_commands.xml.")
+
+        #try to append any extension files
+        #this will read all the xml files in /extensions
+        #and append to sErr if it failed, but not crash or die.
+        for root, subdirs, files in os.walk("extensions"):
+            for f in files:
+                ext = os.path.splitext(f)[-1]
+                if ext == ".xml":
+                    fullpath = os.path.join(root, f)
+                    if not cats.Append(fullpath):
+                        uiCommon.log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
+
+        #put the categories list in the session...
+        #uiGlobals.session.function_categories = cats.Categories
+        #then the dict of all functions for fastest lookups
+        #uiGlobals.session.functions = cats.Functions
+
+        # was told not to put big objects in the session, so since this can actually be shared by all users,
+        # lets try saving a pickle
+        # it will get created every time a user logs in, but can be read by all.
+        f = open("datacache/_categories.pickle", 'wb')
+        pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
+        
+        #rebuild the cache html files
+        CacheTaskCommands()
+
+        return True
+    except Exception, ex:
+        uiCommon.log("Unable to load Task Commands XML." + ex.__str__(), 0)
+
+def CacheTaskCommands():
+    #creates the html cache file
+    try:
+        sCatHTML = ""
+        sFunHTML = ""
+
+        # so, we will use the FunctionCategories class in the session that was loaded at login, and build the list items for the commands tab.
+        cats = uiCommon.GetTaskFunctionCategories()
+        if not cats:
+            print "Error: Task Function Categories class is not in the datacache."
+        else:
+            for cat in cats:
+                sCatHTML += "<li class=\"ui-widget-content ui-corner-all command_item category\""
+                sCatHTML += " id=\"cat_" + cat.Name + "\""
+                sCatHTML += " name=\"" + cat.Name + "\">"
+                sCatHTML += "<div>"
+                sCatHTML += "<img class=\"category_icon\" src=\"" + cat.Icon + "\" alt=\"\" />"
+                sCatHTML += "<span>" + cat.Label + "</span>"
+                sCatHTML += "</div>"
+                sCatHTML += "<div id=\"help_text_" + cat.Name + "\" class=\"hidden\">"
+                sCatHTML += cat.Description
+                sCatHTML += "</div>"
+                sCatHTML += "</li>"
+                
+                sFunHTML += "<div class=\"functions hidden\" id=\"cat_" + cat.Name + "_functions\">"
+                # now, let's work out the functions.
+                # we can just draw them all... they are hidden and will display on the client as clicked
+                for fn in cat.Functions:
+                    sFunHTML += "<div class=\"ui-widget-content ui-corner-all command_item function\""
+                    sFunHTML += " id=\"fn_" + fn.Name + "\""
+                    sFunHTML += " name=\"" + fn.Name + "\">"
+                    sFunHTML += "<img class=\"function_icon\" src=\"" + fn.Icon + "\" alt=\"\" />"
+                    sFunHTML += "<span>" + fn.Label + "</span>"
+                    sFunHTML += "<div id=\"help_text_" + fn.Name + "\" class=\"hidden\">"
+                    sFunHTML += fn.Description
+                    sFunHTML += "</div>"
+                    sFunHTML += "</div>"
+
+                sFunHTML += "</div>"
+
+        with open("static/_categories.html", 'w') as f_out:
+            if not f_out:
+                print "ERROR: unable to create datacache/_categories.html."
+            f_out.write(sCatHTML)
+
+        with open("static/_functions.html", 'w') as f_out:
+            if not f_out:
+                print "ERROR: unable to create datacache/_functions.html."
+            f_out.write(sFunHTML)
+
+    except Exception, ex:
+        uiCommon.log(ex.__str__(), 0)
+
+
+"""
+    Main Startup
+"""
+
+
+
 if __name__ == "__main__":
     #this is a service, which has a db connection.
     # but we're not gonna use that for gui calls - we'll make our own when needed.
@@ -111,5 +213,22 @@ if __name__ == "__main__":
     
     # setting this to True seems to show a lot more detail in UI exceptions
     web.config.debug = False
+    
+    # we need to build some static html here...
+    # caching in the session is a bad idea, and this stuff very very rarely changes.
+    # so, when the service is started it will update the files, and the ui 
+    # will simply pull in the files when requested.
+    
+    # put the task commands in a pickle for our lookups
+    # and cache the html in a flat file
+    uiCommon.log("Generating static html...", 3)
+    SetTaskCommands()
+    
+        
+    uiCommon.log("Refreshing datacache...", 3)
+    #put the cloud providers and object types in a pickle
+    # also a big performance boost
+    uiCommon.SetCloudProviders()
+
     
     app.run()

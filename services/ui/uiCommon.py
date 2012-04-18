@@ -261,7 +261,6 @@ def GetTaskFunctionCategories():
         obj = pickle.load(f)
         f.close()
         if obj:
-            print obj
             return obj.Categories
         else:
             log("ERROR: Categories pickle could not be read.", 0)
@@ -304,43 +303,4 @@ def GetTaskFunction(sFunctionName):
             return None
     else:
         return None
-#put the cloud providers and object types from a file into the session
-def SetTaskCommands():
-    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-    
-    try:
-        from taskCommands import FunctionCategories
-        #we load two classes here...
-        #first, the category/function hierarchy
-        cats = FunctionCategories()
-        bCoreSuccess = cats.Load("task_commands.xml")
-        if not bCoreSuccess:
-            raise Exception("Critical: Unable to read/parse task_commands.xml.")
-
-        #try to append any extension files
-        #this will read all the xml files in /extensions
-        #and append to sErr if it failed, but not crash or die.
-        for root, subdirs, files in os.walk("extensions"):
-            for f in files:
-                ext = os.path.splitext(f)[-1]
-                if ext == ".xml":
-                    fullpath = os.path.join(root, f)
-                    if not cats.Append(fullpath):
-                        log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
-
-        #put the categories list in the session...
-        #uiGlobals.session.function_categories = cats.Categories
-        #then the dict of all functions for fastest lookups
-        #uiGlobals.session.functions = cats.Functions
-
-        # was told not to put big objects in the session, so since this can actually be shared by all users,
-        # lets try saving a pickle
-        # it will get created every time a user logs in, but can be read by all.
-        f = open("datacache/_categories.pickle", 'wb')
-        pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
-        f.close()
-        
-        return True
-    except Exception, ex:
-        uiGlobals.request.Messages.append("Unable to load Task Commands XML." + ex.__str__())
 

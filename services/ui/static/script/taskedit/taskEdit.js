@@ -230,58 +230,35 @@ function doGetDetails() {
 }
 
 function doGetCommands() {
-	$.ajax({
-        type: "GET",
-        async: true,
-        url: "taskMethods/wmGetCommands",
-        dataType: "json",
-        success: function (response) {
-			try {
-				if (response.error) {
-					showAlert(response.error);
-				}
-				if (response.categories) {
-					cats_html = unpackJSON(response.categories)
-					$("#div_commands #categories").html(cats_html);
-
-				    //set the help text on hover over a category
-				    $("#toolbox .category").hover(function () {
-				        $("#te_help_box_detail").html($("#help_text_" + $(this).attr("name")).html());
-				    }, function () {
-				        $("#te_help_box_detail").html("");
-				    });
-				
-				    //toggle categories
-				    $("#toolbox .category").click(function () {
-				        //unselect all the categories
-				        $("#toolbox .category").removeClass("category_selected");
-				
-				        //and select this one you clicked
-				        //alert($(this).attr("id"));
-				        $(this).addClass("category_selected");
-				
-				        //hide 'em all
-				        $("#toolbox .functions").addClass("hidden");
-				
-				        //show the one you clicked
-				        $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
-				    });
-				}
-				if (response.functions) {
-					$("#div_commands #category_functions").html(unpackJSON(response.functions));
-				    //init the draggable items (commands and the clipboard)
-				    //this will also be called when items are added/removed from the clipboard.
-				    initDraggable();
-				}
-			} catch (ex) {
-				showAlert(response);
-			}
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
-
+	$("#div_commands #categories").load("static/_categories.html", function() {
+	    //set the help text on hover over a category
+	    $("#toolbox .category").hover(function () {
+	        $("#te_help_box_detail").html($("#help_text_" + $(this).attr("name")).html());
+	    }, function () {
+	        $("#te_help_box_detail").html("");
+	    });
+	
+	    //toggle categories
+	    $("#toolbox .category").click(function () {
+	        //unselect all the categories
+	        $("#toolbox .category").removeClass("category_selected");
+	
+	        //and select this one you clicked
+	        //alert($(this).attr("id"));
+	        $(this).addClass("category_selected");
+	
+	        //hide 'em all
+	        $("#toolbox .functions").addClass("hidden");
+	
+	        //show the one you clicked
+	        $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
+	    });
+	});
+	$("#div_commands #category_functions").load("static/_functions.html", function() {
+	    //init the draggable items (commands and the clipboard)
+	    //this will also be called when items are added/removed from the clipboard.
+	    initDraggable();
+	});
 }
 
 function doGetSteps() {
