@@ -9,20 +9,23 @@ import cgi
 import re
 import pickle
 import xml.etree.ElementTree as ET
-from catocommon import catocommon
 import providers
 
 # writes to stdout using the catocommon.server output function
 # also prints to the console.
 def log(msg, debuglevel = 2):
-    if debuglevel >= uiGlobals.debuglevel:
+    if debuglevel <= uiGlobals.debuglevel:
         uiGlobals.server.output(msg)
         print msg
 
-def getAjaxArg(sArg):
+def getAjaxArg(sArg, sDefault=""):
     data = uiGlobals.web.data()
     dic = json.loads(data)
-    return dic[sArg]
+    
+    if dic.has_key(sArg):
+        return dic[sArg]
+    else:
+        return sDefault
 
 def NewGUID():
     return str(uuid.uuid1())
@@ -119,48 +122,50 @@ def SafeHTML(sInput):
 def FixBreaks(sInput):
     return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
 
-def AddSecurityLog(db, sUserID, LogType, Action, ObjectType, ObjectID, LogMessage):
+def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
+    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+    
     sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip()
     if sTrimmedLog:
         if len(sTrimmedLog) > 7999:
             sTrimmedLog = sTrimmedLog[:7998]
     sSQL = "insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg) \
-        values ('" + LogType + "', '" + Action + "', '" + sUserID + "', now(), " + str(ObjectType) + ", '" + ObjectID + "', '" + sTrimmedLog + "')"
-    if not db.exec_db_noexcep(sSQL):
-        log(__name__ + "." + sys._getframe().f_code.co_name + ":: " + db.error, 2)
+        values ('" + LogType + "', '" + Action + "', '" + GetSessionUserID() + "', now(), " + str(ObjectType) + ", '" + ObjectID + "', '" + sTrimmedLog + "')"
+    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+        uiGlobals.request.Messages.append(uiGlobals.request.db.error)
 
-def WriteObjectAddLog(db, oType, sObjectID, sObjectName, sLog = ""):
+def WriteObjectAddLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
         if not sLog:
             sLog = "Created: [" + TickSlash(sObjectName) + "]."
         else:
             sLog = "Created: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
 
-        AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+        AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
 
-def WriteObjectDeleteLog(db, oType, sObjectID, sObjectName, sLog = ""):
+def WriteObjectDeleteLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
         if not sLog:
             sLog = "Deleted: [" + TickSlash(sObjectName) + "]."
         else:
             sLog = "Deleted: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
 
-        AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectDelete, oType, sObjectID, sLog)
+        AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectDelete, oType, sObjectID, sLog)
 
-def WriteObjectChangeLog(db, oType, sObjectID, sObjectName, sLog = ""):
+def WriteObjectChangeLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
         if not sObjectName:
             sObjectName = "[" + TickSlash(sObjectName) + "]."
         else:
             sLog = "Changed: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
 
-        AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+        AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
 
-def WriteObjectPropertyChangeLog(db, oType, sObjectID, sLabel, sFrom, sTo):
+def WriteObjectPropertyChangeLog(oType, sObjectID, sLabel, sFrom, sTo):
     if sFrom and sTo:
         if sFrom != sTo:
             sLog = "Changed: " + sLabel + " from [" + TickSlash(sFrom) + "] to [" + TickSlash(sTo) + "]."
-            AddSecurityLog(db, GetSessionUserID(), uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+            AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
 
 
 def ForceLogout(sMsg):
@@ -301,6 +306,8 @@ def GetTaskFunction(sFunctionName):
         return None
 #put the cloud providers and object types from a file into the session
 def SetTaskCommands():
+    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+    
     try:
         from taskCommands import FunctionCategories
         #we load two classes here...
@@ -335,5 +342,5 @@ def SetTaskCommands():
         
         return True
     except Exception, ex:
-        raise Exception("Unable to load Task Commands XML." + ex.__str__())
+        uiGlobals.request.Messages.append("Unable to load Task Commands XML." + ex.__str__())
 

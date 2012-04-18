@@ -1,14 +1,18 @@
-import uiCommon
+import sys
 from uiCommon import log
 import uiCommon
 from catocommon import catocommon
 import xml.etree.ElementTree as ET
 import providers
 from uiGlobals import ConnectionTypes
+import uiGlobals
+import task
 
 # LIKE uiCommon - this isn't a class that gets instantiated ... it's just a collection of 
 # all the functions used to draw the Task Steps.
-
+def GetSingleStep(sStepID, sUserID):
+    return task.Step.ByIDWithSettings(sStepID, sUserID)
+    
 def DrawFullStep(oStep):
     sStepID = oStep.ID
     
@@ -141,385 +145,385 @@ def DrawFullStep(oStep):
     return sMainHTML
 
 def GetStepTemplate(oStep):
-        sFunction = oStep.FunctionName
-        sHTML = ""
-        sOptionHTML = ""
-        sVariableHTML = ""
+    sFunction = oStep.FunctionName
+    sHTML = ""
+    sOptionHTML = ""
+    sVariableHTML = ""
 
-        # NOTE: If you are adding a new command type, be aware that
-        # you MIGHT need to modify the code in taskMethods for the wmAddStep function.
-        # (depending on how your new command works)
-        # 
-        # IF the command populates variables, it will need a case statement added to that function
-        # to ensure the output_parse_type field is properly set.
-        # 
+    # NOTE: If you are adding a new command type, be aware that
+    # you MIGHT need to modify the code in taskMethods for the wmAddStep function.
+    # (depending on how your new command works)
+    # 
+    # IF the command populates variables, it will need a case statement added to that function
+    # to ensure the output_parse_type field is properly set.
+    # 
 
 
-        # Special Commands have their own render functions.
-        # What makes 'em special?  Basically they have dynamic content, or hardcoded rules.
-        # several commands have 'embedded' content, and draw a 'drop zone'
-        # if a command "populates variables", it currently has to be hardcoded
-        # in some cases, they even update the db on render to keep certain values clean
-        
-        ## PERSONAL NOTE - while converting the hardcoded ones, make use of the Draw Field function
-        ## at least then things will be more consistent, and less html in the hardcoding.
-        
-        ## AND MAKE SURE to reference the old code when building out the xml, to make sure nothing is missed
-        # (styles, etc.)
+    # Special Commands have their own render functions.
+    # What makes 'em special?  Basically they have dynamic content, or hardcoded rules.
+    # several commands have 'embedded' content, and draw a 'drop zone'
+    # if a command "populates variables", it currently has to be hardcoded
+    # in some cases, they even update the db on render to keep certain values clean
+    
+    ## PERSONAL NOTE - while converting the hardcoded ones, make use of the Draw Field function
+    ## at least then things will be more consistent, and less html in the hardcoding.
+    
+    ## AND MAKE SURE to reference the old code when building out the xml, to make sure nothing is missed
+    # (styles, etc.)
 
-        if sFunction.lower() == "new_connection":
-            sHTML = NewConnection(oStep)
-        elif sFunction.lower() == "if":
-            sHTML = If(oStep)
-        elif sFunction.lower() == "loop":
-            sHTML = "Not Yet Available" #Loop(oStep)
-        elif sFunction.lower() == "while":
-            sHTML = "Not Yet Available" #While(oStep)
-        elif sFunction.lower() == "sql_exec":
-            sHTML = "Not Yet Available" #SqlExec(oStep)
-        elif sFunction.lower() == "set_variable":
-            sHTML = "Not Yet Available" #SetVariable(oStep)
-        elif sFunction.lower() == "clear_variable":
-            sHTML = "Not Yet Available" #ClearVariable(oStep)
-        elif sFunction.lower() == "wait_for_tasks":
-            sHTML = "Not Yet Available" #WaitForTasks(oStep)
-        elif sFunction.lower() == "dataset":
-            sHTML = "Not Yet Available" #Dataset(oStep)
-        elif sFunction.lower() == "subtask":
-            sHTML = "Not Yet Available" #Subtask(oStep)
-        elif sFunction.lower() == "set_asset_registry":
-            sHTML = "Not Yet Available" #SetAssetRegistry(oStep)
-        elif sFunction.lower() == "run_task":
-            sHTML = "Not Yet Available" #RunTask(oStep)
-        elif sFunction.lower() == "transfer":
-            sHTML = "Not Yet Available" #Transfer(oStep)
-        elif sFunction.lower() == "exists":
-            sHTML = "Not Yet Available" #Exists(oStep)
-        elif sFunction.lower() == "get_ecosystem_objects":
-            sHTML = "Not Yet Available" #GetEcosystemObjects(oStep)
-        else:
-            # We didn't find one of our built in commands.  That's ok - most commands are drawn from their XML.
-            sHTML, sOptionHTML = DrawStepFromXMLDocument(oStep)
-        
-        # IF a command "populates variables" it will be noted in the command xml
-        # is the variables xml attribute true?
-        xd = oStep.FunctionXDoc
-        if xd is not None:
-            sPopulatesVars = xd.get("variables", "")
-            log("Populates Variables?" + sPopulatesVars, 4)
-            if uiCommon.IsTrue(sPopulatesVars):
-                sVariableHTML += "## WOULD DRAW VARSECTION ##" #DrawVariableSectionForDisplay(oStep, true)
-        
-        # This returns a Tuple with three values.
-        return sHTML, sOptionHTML, sVariableHTML
+    if sFunction.lower() == "new_connection":
+        sHTML = NewConnection(oStep)
+    elif sFunction.lower() == "if":
+        sHTML = If(oStep)
+    elif sFunction.lower() == "loop":
+        sHTML = "Not Yet Available" #Loop(oStep)
+    elif sFunction.lower() == "while":
+        sHTML = "Not Yet Available" #While(oStep)
+    elif sFunction.lower() == "sql_exec":
+        sHTML = "Not Yet Available" #SqlExec(oStep)
+    elif sFunction.lower() == "set_variable":
+        sHTML = SetVariable(oStep)
+    elif sFunction.lower() == "clear_variable":
+        sHTML = "Not Yet Available" #ClearVariable(oStep)
+    elif sFunction.lower() == "wait_for_tasks":
+        sHTML = "Not Yet Available" #WaitForTasks(oStep)
+    elif sFunction.lower() == "dataset":
+        sHTML = "Not Yet Available" #Dataset(oStep)
+    elif sFunction.lower() == "subtask":
+        sHTML = "Not Yet Available" #Subtask(oStep)
+    elif sFunction.lower() == "set_asset_registry":
+        sHTML = "Not Yet Available" #SetAssetRegistry(oStep)
+    elif sFunction.lower() == "run_task":
+        sHTML = "Not Yet Available" #RunTask(oStep)
+    elif sFunction.lower() == "transfer":
+        sHTML = "Not Yet Available" #Transfer(oStep)
+    elif sFunction.lower() == "exists":
+        sHTML = "Not Yet Available" #Exists(oStep)
+    elif sFunction.lower() == "get_ecosystem_objects":
+        sHTML = "Not Yet Available" #GetEcosystemObjects(oStep)
+    else:
+        # We didn't find one of our built in commands.  That's ok - most commands are drawn from their XML.
+        sHTML, sOptionHTML = DrawStepFromXMLDocument(oStep)
+    
+    # IF a command "populates variables" it will be noted in the command xml
+    # is the variables xml attribute true?
+    xd = oStep.FunctionXDoc
+    if xd is not None:
+        sPopulatesVars = xd.get("variables", "")
+        log("Populates Variables?" + sPopulatesVars, 4)
+        if uiCommon.IsTrue(sPopulatesVars):
+            sVariableHTML += "## WOULD DRAW VARSECTION ##" #DrawVariableSectionForDisplay(oStep, true)
+    
+    # This returns a Tuple with three values.
+    return sHTML, sOptionHTML, sVariableHTML
 
 def DrawStepFromXMLDocument(oStep):
-        sStepID = oStep.ID
-        sFunction = oStep.FunctionName
-        xd = oStep.FunctionXDoc
-        # 
-        # * This block reads the XML for a step and uses certain node attributes to determine how to draw the step.
-        # *
-        # * attributes include the type of input control to draw
-        # * the size of the field,
-        # * whether or not to HTML break after
-        # * etc
-        # *
-        # 
-        sHTML = ""
-        sOptionHTML = ""
-        log("Command XML:", 4)
-        log(ET.tostring(xd), 4)
-        if xd is not None:
-            # for each node in the function element
-            # each node will become a field on the step.
-            # some fields may be defined to go on an "options tab", in which case they will come back as sNodeOptionHTML
-            # you'll never get back both NodeHTML and OptionHTML - one will always be blank.
-            for xe in xd:
-                log("Drawing [" + xe.tag + "]", 4)
-                sNodeHTML, sNodeOptionHTML = DrawNode(xe, xe.tag, sStepID, sFunction)
-                sHTML += sNodeHTML
-                sOptionHTML += sNodeOptionHTML
-                
-        return sHTML, sOptionHTML
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+    # 
+    # * This block reads the XML for a step and uses certain node attributes to determine how to draw the step.
+    # *
+    # * attributes include the type of input control to draw
+    # * the size of the field,
+    # * whether or not to HTML break after
+    # * etc
+    # *
+    # 
+    sHTML = ""
+    sOptionHTML = ""
+    log("Command XML:", 4)
+    log(ET.tostring(xd), 4)
+    if xd is not None:
+        # for each node in the function element
+        # each node will become a field on the step.
+        # some fields may be defined to go on an "options tab", in which case they will come back as sNodeOptionHTML
+        # you'll never get back both NodeHTML and OptionHTML - one will always be blank.
+        for xe in xd:
+            log("Drawing [" + xe.tag + "]", 4)
+            sNodeHTML, sNodeOptionHTML = DrawNode(xe, xe.tag, sStepID, sFunction)
+            sHTML += sNodeHTML
+            sOptionHTML += sNodeOptionHTML
+            
+    return sHTML, sOptionHTML
     
 def DrawNode(xeNode, sXPath, sStepID, sFunction):
-        sHTML = ""
-        sNodeName = xeNode.tag
-
-        sNodeLabel = xeNode.get("label", "")
-        sIsEditable = xeNode.get("is_array", "")
-        bIsEditable = uiCommon.IsTrue(sIsEditable)
-
-        sOptionTab = xeNode.get("option_tab", "")
-
-        #TODO 4-12-12: this is problematic - there's no easy way in elementtree to reference a parent
-        # this may require iterating the tree again.
-        # or rethink how we know a node is "removable"
-        sIsRemovable = "" #xeNode.PARENT.get("is_array", "")
-        bIsRemovable = uiCommon.IsTrue(sIsRemovable)
-
-        log("-- Label: " + sNodeLabel, 4)
-        log("-- Editable: " + sIsEditable + " - " + str(bIsEditable), 4)
-        log("-- Removable: " + sIsRemovable + " - " + str(bIsRemovable), 4)
-        log("-- Elements: " + str(len(xeNode)), 4)
-        
-        #if a node has children we'll draw it with some hierarchical styling.
-        #AND ALSO if it's editable, even if it has no children, we'll still draw it as a container.
-
-        # this dict holds the nodes that have the same name
-        # meaning they are part of an array
-        dictNodes = {}
-
-        if len(xeNode) > 0 or bIsEditable:
-            #if there is only one child, AND it's not part of an array
-            #don't draw the header or the bounding box, just a composite field label.
-            if len(xeNode) == 1 and not bIsEditable:
-                log("-- no more children ... drawing ... ", 4)
-                #get the first (and only) node
-                xeOnlyChild = xeNode.find("*[1]")
-                
-                #call DrawNode just on the off chance it actually has children
-                sChildXPath = sXPath + "/" + xeOnlyChild.tag
-                # DrawNode returns a tuple, but here we only care about the first value
-                # because "editable" nodes shouldn't be options.
-                sNodeHTML, sOptionHTML = DrawNode(xeOnlyChild, sChildXPath, sStepID, sFunction)
-                if sOptionTab:
-                    sHTML += sNodeName + "." + sOptionHTML
-                else:
-                    sHTML += sNodeName + "." + sNodeHTML
-                
-                #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
-                if bIsRemovable:
-                    sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
-                    sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
-            else: #there is more than one child... business as usual
-                log("-- more children ... drawing and drilling down ... ", 4)
-                sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
-                sHTML += "  <div class=\"ui-state-default step_group_header\">" #header
-                sHTML += "      <div class=\"step_header_title\">" + sNodeLabel + "</div>"
-                #look, I know this next bit is crazy... but not really.
-                #if THIS NODE is an editable array, it means you can ADD CHILDREN to it.
-                #so, it gets an add link.
-                sHTML += "<div class=\"step_header_icons\">" #step header icons
-                if bIsEditable:
-                    sHTML += "<div class=\"fn_nodearray_add_btn pointer\"" + " step_id=\"" + sStepID + "\"" \
-                        " xpath=\"" + sXPath + "\">" \
-                        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-                        " alt=\"\" title=\"Add another...\" /></div>"
-   
-                #BUT, if this nodes PARENT is editable, that means THIS NODE can be deleted.
-                #so, it gets a delete link
-                #you can't remove unless there are more than one
-                if bIsRemovable:
-                    sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
-                    sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
-                sHTML += "</div>" #end step header icons
-                sHTML += "  </div>" #end header
-
-                for xeChildNode in xeNode:
-                    sChildNodeName = xeChildNode.tag
-                    sChildXPath = sXPath + "/" + sChildNodeName
-
-                    #here's the magic... are there any children nodes here with the SAME NAME?
-                    #if so they need an index on the xpath
-                    if len(xeNode.find(sChildNodeName)) > 1:
-                        print "1"
-                        #since the document won't necessarily be in perfect order,
-                        #we need to keep track of same named nodes and their indexes.
-                        #so, stick each array node up in a lookup table.
-                        #is it already in my lookup table?
-                        iLastIndex = 0
-                        if dictNodes.has_key(sChildNodeName):
-                            print "2"
-                            #not there, add it
-                            iLastIndex = 1
-                            dictNodes[sChildNodeName] = iLastIndex
-                        else:
-                            print "3"
-                            #there, increment it and set it
-                            iLastIndex += 1
-                            dictNodes[sChildNodeName] = iLastIndex
-                        sChildXPath = sChildXPath + "[" + str(iLastIndex) + "]"
-                        
-                    # it's not possible for an 'editable' node to be in the options tab if it's parents aren't,
-                    # so here we ignore the options return
-                    sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, sStepID, sFunction)
-                    if sBunk:
-                        log("WARNING: This shouldn't have returned 'option' html.", 2)
-                    sHTML += sNodeHTML
-
-                sHTML += "</div>"
-        else: #end section
-            sHTML += DrawField(xeNode, sXPath, sStepID, sFunction)
-            #it may be that these fields themselves are removable
+    sHTML = ""
+    sNodeName = xeNode.tag
+    
+    sNodeLabel = xeNode.get("label", "")
+    sIsEditable = xeNode.get("is_array", "")
+    bIsEditable = uiCommon.IsTrue(sIsEditable)
+    
+    sOptionTab = xeNode.get("option_tab", "")
+    
+    #TODO 4-12-12: this is problematic - there's no easy way in elementtree to reference a parent
+    # this may require iterating the tree again.
+    # or rethink how we know a node is "removable"
+    sIsRemovable = "" #xeNode.PARENT.get("is_array", "")
+    bIsRemovable = uiCommon.IsTrue(sIsRemovable)
+    
+    log("-- Label: " + sNodeLabel, 4)
+    log("-- Editable: " + sIsEditable + " - " + str(bIsEditable), 4)
+    log("-- Removable: " + sIsRemovable + " - " + str(bIsRemovable), 4)
+    log("-- Elements: " + str(len(xeNode)), 4)
+    
+    #if a node has children we'll draw it with some hierarchical styling.
+    #AND ALSO if it's editable, even if it has no children, we'll still draw it as a container.
+    
+    # this dict holds the nodes that have the same name
+    # meaning they are part of an array
+    dictNodes = {}
+    
+    if len(xeNode) > 0 or bIsEditable:
+        #if there is only one child, AND it's not part of an array
+        #don't draw the header or the bounding box, just a composite field label.
+        if len(xeNode) == 1 and not bIsEditable:
+            log("-- no more children ... drawing ... ", 4)
+            #get the first (and only) node
+            xeOnlyChild = xeNode.find("*[1]")
+            
+            #call DrawNode just on the off chance it actually has children
+            sChildXPath = sXPath + "/" + xeOnlyChild.tag
+            # DrawNode returns a tuple, but here we only care about the first value
+            # because "editable" nodes shouldn't be options.
+            sNodeHTML, sOptionHTML = DrawNode(xeOnlyChild, sChildXPath, sStepID, sFunction)
+            if sOptionTab:
+                sHTML += sNodeName + "." + sOptionHTML
+            else:
+                sHTML += sNodeName + "." + sNodeHTML
+            
+            #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
             if bIsRemovable:
                 sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
                 sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
-        
-        #ok, now that we've drawn it, it might be intended to go on the "options tab".
-        #if so, stick it there
-        if sOptionTab:
-            return "", sHTML
-        else:
-            return sHTML, ""
+        else: #there is more than one child... business as usual
+            log("-- more children ... drawing and drilling down ... ", 4)
+            sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
+            sHTML += "  <div class=\"ui-state-default step_group_header\">" #header
+            sHTML += "      <div class=\"step_header_title\">" + sNodeLabel + "</div>"
+            #look, I know this next bit is crazy... but not really.
+            #if THIS NODE is an editable array, it means you can ADD CHILDREN to it.
+            #so, it gets an add link.
+            sHTML += "<div class=\"step_header_icons\">" #step header icons
+            if bIsEditable:
+                sHTML += "<div class=\"fn_nodearray_add_btn pointer\"" + " step_id=\"" + sStepID + "\"" \
+                    " xpath=\"" + sXPath + "\">" \
+                    "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+                    " alt=\"\" title=\"Add another...\" /></div>"
+    
+            #BUT, if this nodes PARENT is editable, that means THIS NODE can be deleted.
+            #so, it gets a delete link
+            #you can't remove unless there are more than one
+            if bIsRemovable:
+                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
+                sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+            sHTML += "</div>" #end step header icons
+            sHTML += "  </div>" #end header
+    
+            for xeChildNode in xeNode:
+                sChildNodeName = xeChildNode.tag
+                sChildXPath = sXPath + "/" + sChildNodeName
+    
+                #here's the magic... are there any children nodes here with the SAME NAME?
+                #if so they need an index on the xpath
+                if len(xeNode.find(sChildNodeName)) > 1:
+                    print "1"
+                    #since the document won't necessarily be in perfect order,
+                    #we need to keep track of same named nodes and their indexes.
+                    #so, stick each array node up in a lookup table.
+                    #is it already in my lookup table?
+                    iLastIndex = 0
+                    if dictNodes.has_key(sChildNodeName):
+                        print "2"
+                        #not there, add it
+                        iLastIndex = 1
+                        dictNodes[sChildNodeName] = iLastIndex
+                    else:
+                        print "3"
+                        #there, increment it and set it
+                        iLastIndex += 1
+                        dictNodes[sChildNodeName] = iLastIndex
+                    sChildXPath = sChildXPath + "[" + str(iLastIndex) + "]"
+                    
+                # it's not possible for an 'editable' node to be in the options tab if it's parents aren't,
+                # so here we ignore the options return
+                sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, sStepID, sFunction)
+                if sBunk:
+                    log("WARNING: This shouldn't have returned 'option' html.", 2)
+                sHTML += sNodeHTML
+    
+            sHTML += "</div>"
+    else: #end section
+        sHTML += DrawField(xeNode, sXPath, sStepID, sFunction)
+        #it may be that these fields themselves are removable
+        if bIsRemovable:
+            sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
+            sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+    
+    #ok, now that we've drawn it, it might be intended to go on the "options tab".
+    #if so, stick it there
+    if sOptionTab:
+        return "", sHTML
+    else:
+        return sHTML, ""
         
 def DrawField(xe, sXPath, sStepID, sFunction):
-        sHTML = ""
-        sNodeValue = (xe.text if xe.text else "")
-        log("---- Value :" + sNodeValue, 4)
+    sHTML = ""
+    sNodeValue = (xe.text if xe.text else "")
+    log("---- Value :" + sNodeValue, 4)
+    
+    sNodeLabel = xe.get("label", xe.tag)
+    sLabelClasses = xe.get("label_class", "")
+    sLabelStyle = xe.get("label_style", "")
+    sNodeLabel = "<span class=\"" + sLabelClasses + "\" style=\"" + sLabelStyle + "\">" + sNodeLabel + ": </span>"
+
+    sBreakBefore = xe.get("break_before", "")
+    sBreakAfter = xe.get("break_after", "")
+    sHRBefore = xe.get("hr_before", "")
+    sHRAfter = xe.get("hr_after", "")
+    sHelp = xe.get("help", "")
+    sCSSClasses = xe.get("class", "")
+    sStyle = xe.get("style", "")
+    sInputType = xe.get("input_type", "")
+    sRequired = xe.get("required", "")
+    bRequired = uiCommon.IsTrue(sRequired)
+
+    log("---- Input Type :" + sInputType, 4)
+
+
+    #some getting started layout possibilities
+    if sBreakBefore == uiCommon.IsTrue(sBreakBefore):
+        sHTML += "<br />"
+    if sHRBefore == uiCommon.IsTrue(sHRBefore):
+        sHTML += "<hr />"
+    if sInputType == "textarea":
+        #textareas have additional properties
+        sRows = xe.get("rows", "2")
+        sTextareaID = uiCommon.NewGUID()
+        sHTML += sNodeLabel + " <textarea rows=\"" + sRows + "\"" + \
+            CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sTextareaID, sCSSClasses) + \
+            " style=\"" + sStyle + "\"" \
+            " help=\"" + sHelp + "\"" \
+            ">" + sNodeValue + "</textarea>"
+        #big box button
+        sHTML += "<img class=\"big_box_btn pointer\" alt=\"\" src=\"static/images/icons/edit_16.png\" link_to=\"" + sTextareaID + "\" /><br />"
+    elif sInputType == "dropdown":
+        # the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
+        # there is no "default" datasource... if nothing is available, it draws an empty picker
+        sDatasource = xe.get("datasource", "")
+        sDataSet = xe.get("dataset", "")
+        sFieldStyle = xe.get("style", "")
+
+        sHTML += sNodeLabel + " <select " + CommonAttribs(sStepID, sFunction, False, sXPath, sFieldStyle) + ">\n"
         
-        sNodeLabel = xe.get("label", xe.tag)
-        sLabelClasses = xe.get("label_class", "")
-        sLabelStyle = xe.get("label_style", "")
-        sNodeLabel = "<span class=\"" + sLabelClasses + "\" style=\"" + sLabelStyle + "\">" + sNodeLabel + ": </span>"
+        # empty one
+        sHTML += "<option " + SetOption("", sNodeValue) + " value=\"\"></option>\n"
+        
+        # if it's a combo, it's possible we may have a value that isn't actually in the list.
+        # but we will need to add it to the list otherwise we can't select it!
+        # so, first let's keep track of if we find the value anywhere in the various datasets.
+        bValueWasInData = False
+        
+        if sDatasource == "":
+            log("---- 'datasource' attribute not found, defaulting to 'local'.", 4)
+        if sDatasource == "file":
+            log("---- File datasource ... reading [" + sDataSet + "] ...", 4)
+            try:
+                # sDataset is a file name.
+                # sFormat is the type of data
+                # sTable is the parent node in the XML containing the data
+                sFormat = xe.get("format", "")
 
-        sBreakBefore = xe.get("break_before", "")
-        sBreakAfter = xe.get("break_after", "")
-        sHRBefore = xe.get("hr_before", "")
-        sHRAfter = xe.get("hr_after", "")
-        sHelp = xe.get("help", "")
-        sCSSClasses = xe.get("class", "")
-        sStyle = xe.get("style", "")
-        sInputType = xe.get("input_type", "")
-        sRequired = xe.get("required", "")
-        bRequired = uiCommon.IsTrue(sRequired)
-
-        log("---- Input Type :" + sInputType, 4)
-
-
-        #some getting started layout possibilities
-        if sBreakBefore == uiCommon.IsTrue(sBreakBefore):
-            sHTML += "<br />"
-        if sHRBefore == uiCommon.IsTrue(sHRBefore):
-            sHTML += "<hr />"
-        if sInputType == "textarea":
-            #textareas have additional properties
-            sRows = xe.get("rows", "2")
-            sTextareaID = uiCommon.NewGUID()
-            sHTML += sNodeLabel + " <textarea rows=\"" + sRows + "\"" + \
-                CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sTextareaID, sCSSClasses) + \
-                " style=\"" + sStyle + "\"" \
-                " help=\"" + sHelp + "\"" \
-                ">" + sNodeValue + "</textarea>"
-            #big box button
-            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\" src=\"static/images/icons/edit_16.png\" link_to=\"" + sTextareaID + "\" /><br />"
-        elif sInputType == "dropdown":
-            # the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
-            # there is no "default" datasource... if nothing is available, it draws an empty picker
-            sDatasource = xe.get("datasource", "")
-            sDataSet = xe.get("dataset", "")
-            sFieldStyle = xe.get("style", "")
-
-            sHTML += sNodeLabel + " <select " + CommonAttribs(sStepID, sFunction, False, sXPath, sFieldStyle) + ">\n"
+                if sFormat == "":
+                    log("---- 'format' attribute not found, defaulting to 'flat'.", 4)
             
-            # empty one
-            sHTML += "<option " + SetOption("", sNodeValue) + " value=\"\"></option>\n"
-            
-            # if it's a combo, it's possible we may have a value that isn't actually in the list.
-            # but we will need to add it to the list otherwise we can't select it!
-            # so, first let's keep track of if we find the value anywhere in the various datasets.
-            bValueWasInData = False
-            
-            if sDatasource == "":
-                log("---- 'datasource' attribute not found, defaulting to 'local'.", 4)
-            if sDatasource == "file":
-                log("---- File datasource ... reading [" + sDataSet + "] ...", 4)
-                try:
-                    # sDataset is a file name.
-                    # sFormat is the type of data
-                    # sTable is the parent node in the XML containing the data
-                    sFormat = xe.get("format", "")
-
-                    if sFormat == "":
-                        log("---- 'format' attribute not found, defaulting to 'flat'.", 4)
-                
-                    if sFormat.lower() == "xml":
-                        sTable = xe.get("table", "")
-                        sValueNode = xe.get("valuenode", "")
-                        
-                        if sTable == "":
-                            log("---- 'table' attribute not found, defaulting to 'values'.", 4)
-                        if sValueNode == "":
-                            log("---- 'valuenode' attribute not found, defaulting to 'value'.", 4)
-                        
-                        xml = ET.parse("extensions/" + sDataSet)
-                        if xml:
-                            nodes = xml.findall(".//" + sValueNode)
-                            if len(nodes) > 0:
-                                log("---- Found data ... parsing ...", 4)
-                                for node in nodes:
-                                    sHTML += "<option " + SetOption(node.text, sNodeValue) + " value=\"" + node.text + "\">" + node.text + "</option>\n"
-                                    if node.text == sNodeValue: bValueWasInData = True
-                            else:
-                                log("---- Dataset found but cannot find values in [" + sValueNode + "].", 4)
+                if sFormat.lower() == "xml":
+                    sTable = xe.get("table", "")
+                    sValueNode = xe.get("valuenode", "")
+                    
+                    if sTable == "":
+                        log("---- 'table' attribute not found, defaulting to 'values'.", 4)
+                    if sValueNode == "":
+                        log("---- 'valuenode' attribute not found, defaulting to 'value'.", 4)
+                    
+                    xml = ET.parse("extensions/" + sDataSet)
+                    if xml:
+                        nodes = xml.findall(".//" + sValueNode)
+                        if len(nodes) > 0:
+                            log("---- Found data ... parsing ...", 4)
+                            for node in nodes:
+                                sHTML += "<option " + SetOption(node.text, sNodeValue) + " value=\"" + node.text + "\">" + node.text + "</option>\n"
+                                if node.text == sNodeValue: bValueWasInData = True
                         else:
-                            log("---- Dataset file not found or unable to read.", 4)
-                        
+                            log("---- Dataset found but cannot find values in [" + sValueNode + "].", 4)
                     else:
-                        log("---- opening [" + sDataSet + "].", 4)
-                        f = open("extensions/" + sDataSet, 'rb')
-                        if not f:
-                            log("ERROR: extensions/" + sDataSet + " not found", 0)
+                        log("---- Dataset file not found or unable to read.", 4)
+                    
+                else:
+                    log("---- opening [" + sDataSet + "].", 4)
+                    f = open("extensions/" + sDataSet, 'rb')
+                    if not f:
+                        log("ERROR: extensions/" + sDataSet + " not found", 0)
 
-                        for line in f:
-                            val = line.strip()
-                            sHTML += "<option " + SetOption(val, sNodeValue) + " value=\"" + val + "\">" + val + "</option>\n"
-                            if val == sNodeValue: bValueWasInData = True
-                            
-                        f.close()
-                except Exception, ex:
-                    return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.__str__()
-            elif sDatasource == "function":
-                log("---- Function datasource ... executing [" + sDataSet + "] ...", 4)
-                # this executes a function to populate the drop down
-                # at this time, the function must exist in this namespace
-                # we expect the function to return a dictionary
-                try:
-                    if sDataSet:
-                        data = globals()[sDataSet]()
-                        if data:
-                            for key, val in data.iteritems():
-                                sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
-                                if key == sNodeValue: bValueWasInData = True
-                except Exception as ex:
-                    raise ex
-            else: # default is "local"
-                log("---- Inline datasource ... reading my own 'dataset' attribute ...", 4)
-                # data is pipe delimited
-                aValues = sDataSet.split('|')
-                for sVal in aValues:
-                    sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>\n"
+                    for line in f:
+                        val = line.strip()
+                        sHTML += "<option " + SetOption(val, sNodeValue) + " value=\"" + val + "\">" + val + "</option>\n"
+                        if val == sNodeValue: bValueWasInData = True
+                        
+                    f.close()
+            except Exception, ex:
+                return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.__str__()
+        elif sDatasource == "function":
+            log("---- Function datasource ... executing [" + sDataSet + "] ...", 4)
+            # this executes a function to populate the drop down
+            # at this time, the function must exist in this namespace
+            # we expect the function to return a dictionary
+            try:
+                if sDataSet:
+                    data = globals()[sDataSet]()
+                    if data:
+                        for key, val in data.iteritems():
+                            sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
+                            if key == sNodeValue: bValueWasInData = True
+            except Exception as ex:
+                uiGlobals.request.Messages.append(ex.__str__())
+        else: # default is "local"
+            log("---- Inline datasource ... reading my own 'dataset' attribute ...", 4)
+            # data is pipe delimited
+            aValues = sDataSet.split('|')
+            for sVal in aValues:
+                sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>\n"
 
-                    if sVal == sNodeValue: bValueWasInData = True
-            
-            # NOTE: If it has the "combo" style and a value, that means we're allowing the user to enter a value that may not be 
-            # in the dataset.  If that's the case, we must add the actual saved value to the list too. 
-            if not bValueWasInData: # we didn't find it in the data ..
-                if "combo" in sFieldStyle and sNodeValue:   # and it's a combo and not empty
-                    sHTML += "<option " + SetOption(sNodeValue, sNodeValue) + " value=\"" + sNodeValue + "\">" + sNodeValue + "</option>\n";            
+                if sVal == sNodeValue: bValueWasInData = True
+        
+        # NOTE: If it has the "combo" style and a value, that means we're allowing the user to enter a value that may not be 
+        # in the dataset.  If that's the case, we must add the actual saved value to the list too. 
+        if not bValueWasInData: # we didn't find it in the data ..
+            if "combo" in sFieldStyle and sNodeValue:   # and it's a combo and not empty
+                sHTML += "<option " + SetOption(sNodeValue, sNodeValue) + " value=\"" + sNodeValue + "\">" + sNodeValue + "</option>\n";            
 
-            sHTML += "</select>"
-        else: #input is the default
-            sElementID = uiCommon.NewGUID() #some special cases below may need this.
-            sHTML += sNodeLabel + " <input type=\"text\" " + \
-                CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sCSSClasses) + \
-                " style=\"" + sStyle + "\"" \
-                " help=\"" + sHelp + "\"" \
-                " value=\"" + sNodeValue + "\" />"
-            #might this be a conn_name field?  If so, we can show the picker.
-            sConnPicker = xe.get("connection_picker", "")
-            if uiCommon.IsTrue(sConnPicker):
-                sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\" src=\"static/images/icons/search.png\" link_to=\"" + sElementID + "\" />"
+        sHTML += "</select>"
+    else: #input is the default
+        sElementID = uiCommon.NewGUID() #some special cases below may need this.
+        sHTML += sNodeLabel + " <input type=\"text\" " + \
+            CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sCSSClasses) + \
+            " style=\"" + sStyle + "\"" \
+            " help=\"" + sHelp + "\"" \
+            " value=\"" + sNodeValue + "\" />"
+        #might this be a conn_name field?  If so, we can show the picker.
+        sConnPicker = xe.get("connection_picker", "")
+        if uiCommon.IsTrue(sConnPicker):
+            sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\" src=\"static/images/icons/search.png\" link_to=\"" + sElementID + "\" />"
 
-        #some final layout possibilities
-        if sBreakAfter == uiCommon.IsTrue(sBreakAfter):
-            sHTML += "<br />"
-        if sHRAfter == uiCommon.IsTrue(sHRAfter):
-            sHTML += "<hr />"
+    #some final layout possibilities
+    if sBreakAfter == uiCommon.IsTrue(sBreakAfter):
+        sHTML += "<br />"
+    if sHRAfter == uiCommon.IsTrue(sHRAfter):
+        sHTML += "<hr />"
 
-        log("---- ... done", 4)
-        return sHTML
+    log("---- ... done", 4)
+    return sHTML
 
 def CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sAdditionalClasses):
     # requires a guid ID passed in - this one will be referenced client side
@@ -634,48 +638,193 @@ def ddDataSource_GetAWSClouds():
 
     return data
 
+def AddToCommandXML(sStepID, sXPath, sXMLToAdd):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+        if not uiCommon.IsGUID(sStepID):
+            uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "].")
+
+        sSQL = "select task_id, codeblock_name, function_name, step_order from task_step where step_id = '" + sStepID + "'"
+        dr = uiGlobals.request.db.select_row_dict(sSQL)
+        if uiGlobals.request.db.error:
+            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+        if dr is not None:
+            AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sXPath, sXMLToAdd)
+
+            # log it
+            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], dr["function_name"],
+                "Added a new property to Command Type:" + dr["function_name"] + \
+                " Codeblock:" + dr["codeblock_name"] + \
+                " Step Order:" + str(dr["step_order"]))
+
+        return
+    except Exception, ex:
+        uiGlobals.request.Messages.append(ex.__str__())
+
+def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
+    # BE WARNED! this function is shared by many things, and should not be enhanced
+    # with sorting or other niceties.  If you need that stuff, build your own function.
+    # AddRegistry:Node is a perfect example... we wanted sorting on the registries, and also we don't allow array.
+    # but parameters for example are by definition arrays of parameter nodes.
+    uiCommon.log("Adding node [%s] to [%s] in [%s.%s where %s]." % (sXMLToAdd, sXPath, sTable, sXMLColumn, sWhereClause), 4)
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+        if not sXML:
+            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
+        else:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                uiGlobals.request.Messages.append("Error: Unable to parse XML.")
+
+            # get the specified node from the doc, IF IT'S NOT THE ROOT
+            if xd.tag == sXPath:
+                xNodeToEdit = xd
+            else:
+                xNodeToEdit = xd.find(sXPath)
+            
+            if xNodeToEdit is None:
+                uiGlobals.request.Messages.append("Error: XML does not contain path [" + sXPath + "].")
+
+            # now parse the new section from the text passed in
+            xNew = ET.fromstring(sXMLToAdd)
+            if xNew is None:
+                uiGlobals.request.Messages.append("Error: XML to be added cannot be parsed.")
+
+            # if the node we are adding to has a text value, sadly it has to go.
+            # we can't detect that, as the Value property shows the value of all children.
+            # but this works, even if it seems backwards.
+            # if the node does not have any children, then clear it.  that will safely clear any
+            # text but not stomp the text of the children.
+            if len(xNodeToEdit) == 0:
+                xNodeToEdit.text = ""
+            # add it to the doc
+            xNodeToEdit.append(xNew)
+
+
+            # then send the whole doc back to the database
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
+                " where " + sWhereClause
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
+
+        return
+    except Exception, ex:
+        uiGlobals.request.Messages.append(ex.__str__())
+
 def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
     try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
         if not uiCommon.IsGUID(sStepID):
-            raise Exception("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
+            uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
 
         SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sValue)
 
         return
     except Exception, ex:
-        raise ex
+        uiGlobals.request.Messages.append(ex.__str__())
 
 def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue):
+    uiCommon.log("Setting node [%s] to [%s] in [%s.%s where %s]." % (sNodeToSet, sValue, sTable, sXMLColumn, sWhereClause), 4)
     try:
-        db = catocommon.new_conn()
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
         sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
-        sXML = db.select_col_noexcep(sSQL)
-
+        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
         if not sXML:
-            if db.error:
-                raise Exception("Unable to get task xml." + db.error)
-            else:
-                return
+            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
         else:
             # parse the doc from the table
             xd = ET.fromstring(sXML)
             if xd is None:
-                raise Exception("Error: Unable to parse XML.")
+                uiGlobals.request.Messages.append("Error: Unable to parse XML.")
 
-            # get the specified node from the doc and update it
-            xNodeToSet = xd.find(sNodeToSet)
+            # get the specified node from the doc, IF IT'S NOT THE ROOT
+            if xd.tag == sNodeToSet:
+                xNodeToSet = xd
+            else:
+                xNodeToSet = xd.find(sNodeToSet)
+
             if xNodeToSet is not None:
-                log("... setting [" + sNodeToSet + "] to [" + sValue + "].", 4)
                 xNodeToSet.text = sValue
 
-            # then send the whole doc back to the database
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "' where " + sWhereClause
-            if not db.exec_db_noexcep(sSQL):
-                raise Exception("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "].")
+                # then send the whole doc back to the database
+                sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "' where " + sWhereClause
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
+            else:
+                uiGlobals.request.Messages.append("Unable to update XML Column ... [" + sNodeToSet + "] not found.")
 
         return
     except Exception, ex:
-        raise ex
+        uiGlobals.request.Messages.append(ex.__str__())
+
+
+def RemoveFromCommandXML(sStepID, sNodeToRemove):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+        if not uiCommon.IsGUID(sStepID):
+            uiGlobals.request.Messages.append("Unable to modify step.<br />Invalid or missing Step ID. [" + sStepID + "]<br />")
+
+        sSQL = "select task_id, codeblock_name, function_name, step_order from task_step where step_id = '" + sStepID + "'"
+        dr = uiGlobals.request.db.select_row_dict(sSQL)
+        if uiGlobals.request.db.error:
+            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+        if dr is not None:
+            RemoveNodeFromXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToRemove)
+
+            # log it
+            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], dr["function_name"],
+                "Removed a property to Command Type:" + dr["function_name"] + \
+                " Codeblock:" + dr["codeblock_name"] + \
+                " Step Order:" + str(dr["step_order"]))
+
+        return
+    except Exception, ex:
+        uiGlobals.request.Messages.append(ex.__str__())
+
+def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
+    uiCommon.log("Removing node [%s] from [%s.%s where %s]." % (sNodeToRemove, sTable, sXMLColumn, sWhereClause), 4)
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+        if not sXML:
+            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
+        else:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                uiGlobals.request.Messages.append("Error: Unable to parse XML.")
+
+            # get the specified node from the doc
+            xNodeToWhack = xd.find(sNodeToRemove)
+            if xNodeToWhack is None:
+                # no worries... what you want to delete doesn't exist?  perfect!
+                return
+
+            # whack it
+            xd.remove(xNodeToWhack)
+
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
+                " where " + sWhereClause
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
+
+        return
+    except Exception, ex:
+        uiGlobals.request.Messages.append(ex.__str__())
+
+
 
 def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRequired):
     # drop zones are common for all the steps that can contain embedded steps.
@@ -721,8 +870,89 @@ def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRe
 """
 From here to the bottom are the hardcoded commands.
 """
+def SetVariable(oStep):
+    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+
+    sHTML = ""
+
+    sHTML += "<div id=\"v" + sStepID + "_vars\">"
+    sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\">\n"
+
+    xPairs = xd.findall("variable")
+    i = 1
+    for xe in xPairs:
+
+        sKey = xe.findtext("name", "")
+        sVal = xe.findtext("value", "")
+        sMod = xe.findtext("modifier", "")
+
+        # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
+        # hokey, but doing it here because the field update function is global.
+        if sKey.strip() != sKey:
+            SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
+
+        sHTML += "<tr>\n"
+        sHTML += "<td class=\"w1pct\">&nbsp;Variable:&nbsp;</td>\n"
+        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
+            " validate_as=\"variable\"" \
+            " value=\"" + sKey + "\"" \
+            " help=\"Enter a Variable name.\"" \
+            " /></td>\n"
+        sHTML += "<td class=\"w1pct\">&nbsp;Value:&nbsp;</td>"
+
+        #  we gotta get the field id first, but don't show the textarea until after
+        sValueFieldID = uiCommon.NewGUID()
+        sCommonAttribs = CommonAttribsWithID(sStepID, sFunction, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
+
+        sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"1\" style=\"height: 18px;\" " + sCommonAttribs + \
+            " help=\"Enter a value for the Variable.\"" \
+            ">" + uiCommon.SafeHTML(sVal) + "</textarea>\n"
+
+        # big box button
+        sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
+            " src=\"static/images/icons/edit_16.png\"" \
+            " link_to=\"" + sValueFieldID + "\" /></td>\n"
+
+
+        sHTML += "<td class=\"w1pct\">&nbsp;Modifier:&nbsp;</td>"
+        sHTML += "<td class=\"w75pct\">"
+        sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "variable[" + str(i) + "]/modifier", "") + ">\n"
+        sHTML += "  <option " + SetOption("", sMod) + " value=\"\">--None--</option>\n"
+        sHTML += "  <option " + SetOption("TO_UPPER", sMod) + " value=\"TO_UPPER\">UPPERCASE</option>\n"
+        sHTML += "  <option " + SetOption("TO_LOWER", sMod) + " value=\"TO_LOWER\">lowercase</option>\n"
+        sHTML += "  <option " + SetOption("TO_BASE64", sMod) + " value=\"TO_BASE64\">base64 encode</option>\n"
+        sHTML += "  <option " + SetOption("FROM_BASE64", sMod) + " value=\"FROM_BASE64\">base64 decode</option>\n"
+        sHTML += "  <option " + SetOption("TO_JSON", sMod) + " value=\"TO_JSON\">Write JSON</option>\n"
+        sHTML += "  <option " + SetOption("FROM_JSON", sMod) + " value=\"FROM_JSON\">Read JSON</option>\n"
+        sHTML += "</select></td>\n"
+
+        sHTML += "<td class=\"w1pct\"><span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+            " alt=\"\" title=\"Remove\" /></span></td>"
+
+        sHTML += "</tr>\n"
+
+        i += 1
+
+    sHTML += "</table>\n"
+
+    sHTML += "<div class=\"fn_setvar_add_btn pointer\"" \
+        " add_to_id=\"v" + sStepID + "_vars\"" \
+        " step_id=\"" + sStepID + "\">" \
+        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+    sHTML += "</div>"
+
+    return sHTML
+
 
 def NewConnection(oStep):
+    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
     log("New Connection command:", 4)
     sStepID = oStep.ID
     sFunction = oStep.FunctionName
@@ -792,12 +1022,10 @@ def NewConnection(oStep):
         #  make the sAssetName value be what's in sAssetID (a literal value in [[variable]] format)
         if uiCommon.IsGUID(sAssetID):
             sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
-            db = catocommon.new_conn()
-            sAssetName = db.select_col_noexcep(sSQL)
-            db.close()
+            sAssetName = uiGlobals.request.db.select_col_noexcep(sSQL)
             if not sAssetName:
-                if db.error:
-                    raise Exception("Unable to look up Asset name." + db.error)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to look up Asset name." + uiGlobals.request.db.error)
                 else:
                     SetNodeValueinCommandXML(sStepID, "asset", "")
         else:
@@ -838,6 +1066,8 @@ def NewConnection(oStep):
     return sHTML
 
 def If(oStep):
+    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
     sStepID = oStep.ID
     sFunction = oStep.FunctionName
     xd = oStep.FunctionXDoc

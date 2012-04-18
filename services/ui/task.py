@@ -15,6 +15,11 @@ print "User" , user.attrib["x"]
 ET.dump(user)
 """
 
+"""
+    THIS CLASS has it's own database connections.
+    Why?  Because it isn't only used by the UI.
+"""
+
 import uuid
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
@@ -242,8 +247,6 @@ class Task(object):
 							" where task_id = '" + self.ID + "'"
 						if not oTrans.ExecUpdate():
 							return False, db.error
-						#need to update this to work without session
-						#ui.WriteObjectChangeLog(Globals.acObjectTypes.Task, this.ID, this.Name, "Task Updated");
 						"""
 					elif self.OnConflict == "minor":					
 						"""						
@@ -310,8 +313,6 @@ class Task(object):
 					" now())"
 				if not db.tran_exec_noexcep(sSQL):
 					return False, db.error
-				# add security log
-				uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, self.ID, self.Name, "");
 
 			"""
 			#by the time we get here, there should for sure be a task row, either new or updated.				
@@ -520,7 +521,6 @@ class Task(object):
 					raise Exception(db.error)
 
 			db.tran_commit()
-			uiCommon.WriteObjectAddLog(db, uiGlobals.CatoObjectTypes.Task, self.ID, self.Name, "Copied from " + sSourceTaskID);
 
 			return sNewTaskID
 		except Exception, ex:
