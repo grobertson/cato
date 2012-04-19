@@ -1,4 +1,5 @@
 import sys
+import traceback
 import urllib
 import json
 import xml.etree.ElementTree as ET
@@ -81,7 +82,7 @@ class login:
                 
             raise uiGlobals.web.seeother('/home')
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
         finally:
             if uiGlobals.request:
                 if uiGlobals.request.db.conn.socket:
@@ -156,7 +157,7 @@ class uiMethods:
             """
             return "<option>NOT REAL!</option>"
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmUpdateHeartbeat(self):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -234,7 +235,7 @@ class uiMethods:
             return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
 
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetLog(self):
         try:
@@ -293,6 +294,6 @@ class uiMethods:
             return "{ \"log\" : [ %s ] }" % (sLog)
 
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
         

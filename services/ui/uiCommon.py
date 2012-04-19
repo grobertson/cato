@@ -2,6 +2,7 @@ import urllib
 import uiGlobals
 import os
 import sys
+import traceback
 import json
 import uuid
 import base64
@@ -186,7 +187,7 @@ def GetSessionUserID():
         else:
             ForceLogout("Server Session has expired (1). Please log in again.")
     except Exception as ex:
-        raise ex
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def GetSessionObject(category, key):
     try:
@@ -207,7 +208,7 @@ def GetSessionObject(category, key):
         
         return ""
     except Exception as ex:
-        raise ex
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def SetSessionObject(key, obj, category=""):
     if category:
@@ -229,7 +230,7 @@ def GetCloudProviders(): #These were put in the session at login
         else:
             log("ERROR: Providers pickle could not be read.", 0)
     except Exception, ex:
-        log("ERROR: Providers pickle could not be read." + ex.__str__(), 0)
+        log("ERROR: Providers pickle could not be read." + traceback.format_exc(), 0)
         
     return None
 
@@ -265,7 +266,7 @@ def GetTaskFunctionCategories():
         else:
             log("ERROR: Categories pickle could not be read.", 0)
     except Exception, ex:
-        log("ERROR: Categories pickle could not be read." + ex.__str__(), 0)
+        log("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
         
     return None
         
@@ -284,7 +285,7 @@ def GetTaskFunctions():
         else:
             log("ERROR: Categories pickle could not be read.", 0)
     except Exception, ex:
-        log("ERROR: Categories pickle could not be read." + ex.__str__(), 0)
+        log("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
         
     return None
     # return GetSessionObject("", "functions")

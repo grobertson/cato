@@ -322,12 +322,12 @@ $(document).ready(function() {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmTaskSearch",
+            url: "taskMethods/wmTaskSearch",
             data: '{"sSearchText":"' + search_text + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(retval) {
-                $("#task_picker_results").html(retval.d);
+            dataType: "html",
+            success: function(response) {
+                $("#task_picker_results").html(response);
                 //bind the onclick event for the new results
                 $("#task_picker_results .task_picker_value").disableSelection();
                 $("#task_picker_dialog").unblock();
@@ -335,7 +335,6 @@ $(document).ready(function() {
                 //gotta kill previously bound clicks or it will stack 'em! = bad.
                 $("#task_picker_results li[tag='task_picker_row']").die();
                 $("#task_picker_results li[tag='task_picker_row']").live("click", function() {
-
                     $("#task_steps").block({ message: null });
 
                     $("#task_picker_dialog").dialog('close');
@@ -343,7 +342,6 @@ $(document).ready(function() {
 
                     field.val($(this).attr("original_task_id"));
                     field.change();
-
                 });
 
                 //task description tooltips on the task picker dialog

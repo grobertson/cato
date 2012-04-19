@@ -1,4 +1,5 @@
 import sys
+import traceback
 import urllib
 import json
 import xml.etree.ElementTree as ET
@@ -105,7 +106,7 @@ class taskMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Task details for Task ID [" + sID + "].'}"
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetTaskCodeFromID(self):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -126,7 +127,7 @@ class taskMethods:
             else:
                 return "{\"code\" : \"%s\"}" % (sTaskCode)
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     
     def wmGetTaskVersionsDropdown(self):
@@ -149,7 +150,7 @@ class taskMethods:
 
                 return "".join(sbString)
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
     
     def wmGetTaskVersions(self):
         try:
@@ -183,7 +184,7 @@ class taskMethods:
 
             return sHTML
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetCommands(self):
         try:
@@ -228,7 +229,7 @@ class taskMethods:
 
             return "{\"categories\" : \"%s\", \"functions\" : \"%s\"}" % (uiCommon.packJSON(sCatHTML), uiCommon.packJSON(sFunHTML))
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmCreateTask(self):
         try:
@@ -256,7 +257,7 @@ class taskMethods:
 
                 return "{\"id\" : \"%s\"}" % (t.ID)
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmCopyTask(self):
         try:
@@ -277,7 +278,7 @@ class taskMethods:
             uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, t.ID, t.Name, "Copied from " + sCopyTaskID);
             return "{\"id\" : \"%s\"}" % (sNewTaskID)
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmDeleteTasks(self):
         try:
@@ -333,7 +334,7 @@ class taskMethods:
             return "{\"result\" : \"success\"}"
             
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmUpdateTaskDetail(self):
         try:
@@ -404,7 +405,7 @@ class taskMethods:
             return "{\"result\" : \"success\"}"
             
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())           
+            uiGlobals.request.Messages.append(traceback.format_exc())           
 
 
     def wmGetCodeblocks(self):
@@ -444,7 +445,7 @@ class taskMethods:
                 sCBHTML += "</li>"
             return sCBHTML
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
         
     def wmGetSteps(self):
         try:
@@ -481,7 +482,7 @@ class taskMethods:
                     
             return sHTML
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
         
     def wmGetStep(self):
         try:
@@ -509,7 +510,7 @@ class taskMethods:
             # return the html
             return sStepHTML
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmAddStep(self):
         try:
@@ -653,7 +654,7 @@ class taskMethods:
             else:
                 uiGlobals.request.Messages.append("Unable to add step.  No new step_id." + sErr)
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmReorderSteps(self):
         try:
@@ -674,7 +675,7 @@ class taskMethods:
 
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmDeleteStep(self):
         try:
@@ -734,7 +735,7 @@ class taskMethods:
             
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
     
     def wmUpdateStep(self):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -889,7 +890,7 @@ class taskMethods:
             else:
                 uiGlobals.request.Messages.append("Unable to toggle step button. Missing or invalid step_id.")
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
             
     def wmToggleStep(self):
         # no exceptions, just a log message if there are problems.
@@ -922,7 +923,7 @@ class taskMethods:
             else:
                 uiCommon.log("Unable to toggle step visibility. Missing or invalid step_id.", 2)
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnSetvarAddVar(self):
         try:
@@ -937,7 +938,7 @@ class taskMethods:
 
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnClearvarAddVar(self):
         try:
@@ -948,7 +949,7 @@ class taskMethods:
 
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnExistsAddVar(self):
         try:
@@ -961,7 +962,7 @@ class taskMethods:
 
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnVarRemoveVar(self):
         # NOTE: this function supports both the set_varible AND clear_variable commands
@@ -976,7 +977,7 @@ class taskMethods:
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnWaitForTasksRemoveHandle(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
@@ -988,7 +989,7 @@ class taskMethods:
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnWaitForTasksAddHandle(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
@@ -996,7 +997,7 @@ class taskMethods:
             ST.AddToCommandXML(sStepID, "function", "<handle><name input_type=\"text\"></name></handle>")
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnAddPair(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
@@ -1005,7 +1006,7 @@ class taskMethods:
 
             return ""
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnRemovePair(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
@@ -1018,4 +1019,70 @@ class taskMethods:
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
         except Exception, ex:
-            uiGlobals.request.Messages.append(ex.__str__())
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmTaskSearch(self):
+        sSearchText = uiCommon.getAjaxArg("sSearchText")
+        try:
+            sWhereString = ""
+
+            if sSearchText:
+                sWhereString = " and (a.task_name like '%%" + sSearchText + \
+                   "%%' or a.task_desc like '%%" + sSearchText + \
+                   "%%' or a.task_code like '%%" + sSearchText + "%%' ) "
+
+            sSQL = "select a.original_task_id, a.task_id, a.task_name, a.task_code," \
+                " left(a.task_desc, 255) as task_desc, a.version" \
+                   " from task a  " \
+                   " where default_version = 1" + \
+                   sWhereString + \
+                   " order by task_name, default_version desc, version"
+
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sHTML = "<hr />"
+
+            iRowsToGet = len(dt)
+
+            if iRowsToGet == 0:
+                sHTML += "No results found"
+            else:
+                if iRowsToGet >= 100:
+                    sHTML += "<div>Search found " + iRowsToGet + " results.  Displaying the first 100.</div>"
+                    iRowsToGet = 99
+                sHTML += "<ul id=\"search_task_ul\" class=\"search_dialog_ul\">"
+
+                i = 0
+                for row in dt:
+                    if i > iRowsToGet:
+                        break
+                    
+                    sTaskName = row["task_name"].replace("\"", "\\\"")
+                    sLabel = row["task_code"] + " : " + sTaskName
+                    sDesc = row["task_desc"].replace("\"", "").replace("'", "")
+
+                    sHTML += "<li class=\"ui-widget-content ui-corner-all search_dialog_value\" tag=\"task_picker_row\"" \
+                        " original_task_id=\"" + row["original_task_id"] + "\"" \
+                        " task_label=\"" + sLabel + "\"" \
+                        "\">"
+                    sHTML += "<div class=\"step_header_title search_dialog_value_name\">" + sLabel + "</div>"
+
+                    sHTML += "<div class=\"step_header_icons\">"
+
+                    # if there's a description, show a tooltip
+                    if sDesc:
+                        sHTML += "<img src=\"static/images/icons/info.png\" class=\"search_dialog_tooltip trans50\" title=\"" + sDesc + "\" />"
+
+                    sHTML += "</div>"
+                    sHTML += "<div class=\"clearfloat\"></div>"
+                    sHTML += "</li>"
+                    
+                    i += 1
+                    
+            sHTML += "</ul>"
+
+            return sHTML
+        except Exception, ex:
+            uiGlobals.request.Messages.append(traceback.format_exc())

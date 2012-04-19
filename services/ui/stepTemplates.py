@@ -1,4 +1,5 @@
 import sys
+import traceback
 from uiCommon import log
 import uiCommon
 from catocommon import catocommon
@@ -190,7 +191,8 @@ def GetStepTemplate(oStep):
     elif sFunction.lower() == "dataset":
         sHTML = Dataset(oStep)
     elif sFunction.lower() == "subtask":
-        sHTML = "Not Yet Available" #Subtask(oStep)
+        sHTML = Subtask(oStep)
+        print "@@@" + sHTML
     elif sFunction.lower() == "set_asset_registry":
         sHTML = "Not Yet Available" #SetAssetRegistry(oStep)
     elif sFunction.lower() == "run_task":
@@ -472,8 +474,9 @@ def DrawField(xe, sXPath, sStepID, sFunction):
                         if val == sNodeValue: bValueWasInData = True
                         
                     f.close()
-            except Exception, ex:
-                return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format." + ex.__str__()
+            except Exception:
+                uiGlobals.request.Messages.append(traceback.format_exc())
+                return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format."
         elif sDatasource == "function":
             log("---- Function datasource ... executing [" + sDataSet + "] ...", 4)
             # this executes a function to populate the drop down
@@ -487,7 +490,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
                             sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
                             if key == sNodeValue: bValueWasInData = True
             except Exception as ex:
-                uiGlobals.request.Messages.append(ex.__str__())
+                uiGlobals.request.Messages.append(traceback.format_exc())
         else: # default is "local"
             log("---- Inline datasource ... reading my own 'dataset' attribute ...", 4)
             # data is pipe delimited
@@ -662,7 +665,7 @@ def AddToCommandXML(sStepID, sXPath, sXMLToAdd):
 
         return
     except Exception, ex:
-        uiGlobals.request.Messages.append(ex.__str__())
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
     # BE WARNED! this function is shared by many things, and should not be enhanced
@@ -716,7 +719,7 @@ def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
 
         return
     except Exception, ex:
-        uiGlobals.request.Messages.append(ex.__str__())
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
     try:
@@ -729,7 +732,7 @@ def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
 
         return
     except Exception, ex:
-        uiGlobals.request.Messages.append(ex.__str__())
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue):
     uiCommon.log("Setting node [%s] to [%s] in [%s.%s where %s]." % (sNodeToSet, sValue, sTable, sXMLColumn, sWhereClause), 4)
@@ -764,7 +767,7 @@ def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue
 
         return
     except Exception, ex:
-        uiGlobals.request.Messages.append(ex.__str__())
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def RemoveFromCommandXML(sStepID, sNodeToRemove):
     try:
@@ -789,7 +792,7 @@ def RemoveFromCommandXML(sStepID, sNodeToRemove):
 
         return
     except Exception, ex:
-        uiGlobals.request.Messages.append(ex.__str__())
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
     uiCommon.log("Removing node [%s] from [%s.%s where %s]." % (sNodeToRemove, sTable, sXMLColumn, sWhereClause), 4)
@@ -824,7 +827,7 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
 
         return
     except Exception, ex:
-        uiGlobals.request.Messages.append(ex.__str__())
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRequired):
     # drop zones are common for all the steps that can contain embedded steps.
@@ -951,6 +954,119 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
 From here to the bottom are the hardcoded commands.
 """
 
+def Subtask(oStep):
+    try:
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+    
+        sActualTaskID = ""
+        sLabel = ""
+        sHTML = ""
+    
+        sOriginalTaskID = xd.findtext("original_task_id", "")
+        sVersion = xd.findtext("version", "")
+    
+        # get the name and code for belonging to this otid and version
+        if uiCommon.IsGUID(sOriginalTaskID):
+            print 1
+            sSQL = "select task_id, task_code, task_name from task" \
+                " where original_task_id = '" + sOriginalTaskID + "'" + \
+                (" and default_version = 1" if not sVersion else " and version = '" + sVersion + "'")
+    
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append("Error retrieving subtask.(1)<br />" + uiGlobals.request.db.error)
+                return "Error retrieving subtask.(1)<br />" + uiGlobals.request.db.error
+            print dr
+            if dr is not None:
+                sLabel = dr["task_code"] + " : " + dr["task_name"]
+                sActualTaskID = dr["task_id"]
+            else:
+                # It's possible that the user changed the task from the picker but had 
+                # selected a version, which is still there now but may not apply to the new task.
+                # so, if the above SQL failed, try: again by resetting the version box to the default.
+                sSQL = "select task_id, task_code, task_name from task" \
+                    " where original_task_id = '" + sOriginalTaskID + "'" \
+                    " and default_version = 1"
+    
+                dr = uiGlobals.request.db.select_row_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Error retrieving subtask.(2)<br />" + uiGlobals.request.db.error)
+                    return "Error retrieving subtask.(2)<br />" + uiGlobals.request.db.error
+    
+                if dr is not None:
+                    sLabel = dr["task_code"] + " : " + dr["task_name"]
+                    sActualTaskID = dr["task_id"]
+    
+                    # oh yeah, and set the version field to null since it was wrong.
+                    SetNodeValueinCommandXML(sStepID, "version", "")
+                else:
+                    # a default doesnt event exist, really fail...
+                    uiGlobals.request.Messages.append("Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "].")
+                    return "Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "]."
+    
+        # all good, draw the widget
+        sOTIDField = uiCommon.NewGUID()
+    
+        sHTML += "<input type=\"text\" " + \
+            CommonAttribsWithID(sStepID, sFunction, True, "original_task_id", sOTIDField, "hidden") + \
+            " value=\"" + sOriginalTaskID + "\" reget_on_change=\"true\" />\n"
+    
+        sHTML += "Task: \n"
+        sHTML += "<input type=\"text\"" \
+            " onkeydown=\"return false;\"" \
+            " onkeypress=\"return false;\"" \
+            " is_required=\"true\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " class=\"code w75pct\"" \
+            " id=\"fn_subtask_taskname_" + sStepID + "\"" \
+            " value=\"" + sLabel + "\" />\n"
+        sHTML += "<img class=\"task_picker_btn pointer\" alt=\"\"" \
+            " target_field_id=\"" + sOTIDField + "\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " src=\"static/images/icons/search.png\" />\n"
+        if sActualTaskID != "":
+            sHTML += "<img class=\"task_open_btn pointer\" alt=\"Edit Task\"" \
+                " task_id=\"" + sActualTaskID + "\"" \
+                " src=\"static/images/icons/kedit_16.png\" />\n"
+            sHTML += "<img class=\"task_print_btn pointer\" alt=\"View Task\"" \
+                " task_id=\"" + sActualTaskID + "\"" \
+                " src=\"static/images/icons/printer.png\" />\n"
+        # versions
+        if uiCommon.IsGUID(sOriginalTaskID):
+            sHTML += "<br />"
+            sHTML += "Version: \n"
+            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "version", "") + \
+                " reget_on_change=\"true\">\n"
+            # default
+            sHTML += "<option " + SetOption("", sVersion) + " value=\"\">Default</option>\n"
+    
+            sSQL = "select version from task" \
+                " where original_task_id = '" + sOriginalTaskID + "'" \
+                " order by version"
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            if dt:
+                for dr in dt:
+                    sHTML += "<option " + SetOption(str(dr["version"]), sVersion) + " value=\"" + str(dr["version"]) + "\">" + str(dr["version"]) + "</option>\n"
+            else:
+                return "Unable to continue - no connection types defined in the database."
+    
+            sHTML += "</select></span>\n"
+    
+        # let's display a div for the parameters
+        sHTML += "<div class=\"subtask_view_parameters pointer\" id=\"stvp_" + sActualTaskID + "\">"
+        sHTML += "<img src=\"static/images/icons/kedit_16.png\" alt=\"Parameters\"> ( click to view parameters )"
+        sHTML += "</div>"
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
 def WaitForTasks(oStep):
     sStepID = oStep.ID
     sFunction = oStep.FunctionName
@@ -1006,7 +1122,6 @@ def ClearVariable(oStep):
 
     xPairs = xd.findall("variable")
     i = 1
-### CHECK NEXT LINE for type declarations !!!
     for xe in xPairs:
         sKey = xe.findtext("name", "")
 
