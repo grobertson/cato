@@ -112,20 +112,15 @@ with open("convert.in", 'r') as f_in:
         
         
         
-        #these now need a db connection passed in
-        line = line.replace("WriteObjectChangeLog(", "WriteObjectChangeLog(db, ")
-        line = line.replace("WriteObjectAddLog(", "WriteObjectAddLog(db, ")
-        line = line.replace("WriteObjectDeleteLog(", "WriteObjectDeleteLog(db, ")
-        
         # this will *usually work
-        line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not db.exec_db_noexcep(sSQL):")
+        line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not uiGlobals.request.db.exec_db_noexcep(sSQL):")
         if "!dc.sqlGetSingleString" in line:
-            line = sINDENT + "00000 = db.select_col_noexcep(sSQL)\n" + sINDENT + "if db.error:\n"
-        line = line.replace("+ sErr", "+ db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
-        line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not db.tran_exec_noexcep(sSQL):")
+            line = sINDENT + "00000 = uiGlobals.request.db.select_col_noexcep(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+        line = line.replace("+ sErr", "+ uiGlobals.request.db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
+        line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not uiGlobals.request.db.tran_exec_noexcep(sSQL):")
         line = line.replace("oTrans.Command.CommandText", "sSQL") # transactions are different, regular sSQL variable
-        line = line.replace("oTrans.Commit()", "db.tran_commit()")
-        line = line.replace("oTrans.RollBack()", "db.tran_rollback()")
+        line = line.replace("oTrans.Commit()", "uiGlobals.request.db.tran_commit()")
+        line = line.replace("oTrans.RollBack()", "uiGlobals.request.db.tran_rollback()")
         line = line.replace("DataRow dr in dt.Rows", "dr in dt")
         line = line.replace("dt.Rows.Count > 0", "dt")
         line = line.replace("Step oStep", "oStep")
@@ -140,9 +135,9 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("== null", "is None")
         line = line.replace("!= null", "is not None")
         if line.strip() == "if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))":
-            line = sINDENT + "dr = db.select_row_dict(sSQL)\n" + sINDENT + "if db.error:\n" + sINDENTp4 + "raise Exception(db.error)\n"
+            line = sINDENT + "dr = uiGlobals.request.db.select_row_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
         if line.strip() == "if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))":
-            line = sINDENT + "dt = db.select_all_dict(sSQL)\n" + sINDENT + "if db.error:\n" + sINDENTp4 + "raise Exception(db.error)\n"
+            line = sINDENT + "dt = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
         # xml/Linq stuff
         line = line.replace(".Attribute(", ".get(")
 
@@ -159,7 +154,7 @@ with open("convert.in", 'r') as f_in:
         line = line.replace(".XPathSelectElements", ".findall").replace(".XPathSelectElement", ".find") 
         line = line.replace(".SetValue", ".text")
         
-        line = line.replace("ex.Message", "ex.__str__()")
+        line = line.replace("ex.Message", "traceback.format_exc()")
 
         #!!! this has to be done after the database stuff, because they all use a "ref sErr" and we're matching on that!
         # passing arguments by "ref" doesn't work in python, mark that code obviously
@@ -167,7 +162,7 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("ref ", "0000BYREF_ARG0000")
 
         # the new way of doing exceptions - not raising them, appending them to an output object
-        line = line.replace("raise ex", "uiGlobals.request.Messages.append(ex.__str__())")
+        line = line.replace("raise ex", "uiGlobals.request.Messages.append(traceback.format_exc())")
         line = line.replace("raise Exception(", "uiGlobals.request.Messages.append(")
         
 
