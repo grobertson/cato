@@ -150,16 +150,75 @@ def CacheTaskCommands():
 
         with open("static/_categories.html", 'w') as f_out:
             if not f_out:
-                print "ERROR: unable to create datacache/_categories.html."
+                print "ERROR: unable to create static/_categories.html."
             f_out.write(sCatHTML)
 
         with open("static/_functions.html", 'w') as f_out:
             if not f_out:
-                print "ERROR: unable to create datacache/_functions.html."
+                print "ERROR: unable to create static/_functions.html."
             f_out.write(sFunHTML)
 
     except Exception, ex:
         uiCommon.log(ex.__str__(), 0)
+
+def CacheMenu():
+    #put the site.master.xml in the session here
+    # this is a significant boost to performance
+    xRoot = ET.parse("site.master.xml")
+    if not xRoot:
+        raise Exception("Critical: Unable to read/parse site.master.xml.")
+        
+    xMenus = xRoot.findall("mainmenu/menu") 
+
+    sHTML = ""
+    for xMenu in xMenus:
+        sLabel = xMenu.get("label", "No Label Defined")
+        sHref = " href=\"" + xMenu.get("href", "") + "\""
+        sOnClick = " onclick=\"" + xMenu.get("onclick", "") + "\""
+        sTarget = xMenu.get("target", "")
+        sIcon = "<img src=\"" + xMenu.get("icon", "") + "\" alt=\"\" />"
+        sClass = xMenu.get("class", "")
+        
+        sHTML += "<li class=\"" + sClass + "\" style=\"cursor: pointer;\">"
+        sHTML += "<a"
+        sHTML += sOnClick
+        sHTML += sHref
+        sHTML += sTarget
+        sHTML += ">"
+        sHTML += sIcon
+        sHTML += sLabel
+        sHTML += "</a>"
+        
+        xItems = xMenu.findall("item")
+        if str(len(xItems)) > 0:
+            sHTML += "<ul>"
+            for xItem in xItems:
+                sLabel = xItem.get("label", "No Label Defined")
+                sHref = " href=\"" + xItem.get("href", "") + "\""
+                sOnClick = " onclick=\"" + xItem.get("onclick", "") + "\""
+                sTarget = xItem.get("target", "")
+                sIcon = "<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />"
+                sClass = xItem.get("class", "")
+
+                sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">"
+                sHTML += "<a"
+                sHTML += sOnClick 
+                sHTML += sHref 
+                sHTML += sTarget 
+                sHTML += ">"
+                sHTML += sIcon
+                sHTML += sLabel
+                sHTML += "</a>"
+                sHTML += "</li>"
+            sHTML += "</ul>"
+            
+        #wrap up the outer menu
+        sHTML += "</li>"
+    
+    with open("static/_menu.html", 'w') as f_out:
+        if not f_out:
+            print "ERROR: unable to create static/_menu.html."
+        f_out.write(sHTML)
 
 
 """
@@ -223,7 +282,7 @@ if __name__ == "__main__":
     # and cache the html in a flat file
     uiCommon.log("Generating static html...", 3)
     SetTaskCommands()
-    
+    CacheMenu()
         
     uiCommon.log("Refreshing datacache...", 3)
     #put the cloud providers and object types in a pickle

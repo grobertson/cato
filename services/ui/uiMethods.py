@@ -78,13 +78,6 @@ class login:
                 "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
     
             uiCommon.log("Creating session...", 3)
-            #put the site.master.xml in the session here
-            # this is a significant boost to performance
-            x = ET.parse("site.master.xml")
-            if x:
-                uiGlobals.session.site_master_xml = x
-            else:
-                uiGlobals.request.Messages.append("Critical: Unable to read/parse site.master.xml.")
                 
             raise uiGlobals.web.seeother('/home')
         except Exception, ex:
@@ -141,60 +134,6 @@ class uiMethods:
                 if uiGlobals.request.db.conn.socket:
                     uiGlobals.request.db.close()
                 uiCommon.log(uiGlobals.request.DumpMessages(), 0)
-
-    def wmGetMenu(self):
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-        sHTML = ""
-        xRoot = uiCommon.GetSessionObject("", "site_master_xml")
-        if not xRoot:
-            raise Exception("Critical: site_master_xml not cached in session.")
-        xMenus = xRoot.findall("mainmenu/menu") 
-        for xMenu in xMenus:
-            sLabel = xMenu.get("label", "No Label Defined")
-            sHref = " href=\"" + xMenu.get("href", "") + "\""
-            sOnClick = " onclick=\"" + xMenu.get("onclick", "") + "\""
-            sTarget = xMenu.get("target", "")
-            sIcon = "<img src=\"" + xMenu.get("icon", "") + "\" alt=\"\" />"
-            sClass = xMenu.get("class", "")
-            
-            sHTML += "<li class=\"" + sClass + "\" style=\"cursor: pointer;\">"
-            sHTML += "<a"
-            sHTML += sOnClick
-            sHTML += sHref
-            sHTML += sTarget
-            sHTML += ">"
-            sHTML += sIcon
-            sHTML += sLabel
-            sHTML += "</a>"
-            
-            xItems = xMenu.findall("item")
-            if str(len(xItems)) > 0:
-                sHTML += "<ul>"
-                for xItem in xItems:
-                    sLabel = xItem.get("label", "No Label Defined")
-                    sHref = " href=\"" + xItem.get("href", "") + "\""
-                    sOnClick = " onclick=\"" + xItem.get("onclick", "") + "\""
-                    sTarget = xItem.get("target", "")
-                    sIcon = "<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />"
-                    sClass = xItem.get("class", "")
-    
-                    sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">"
-                    sHTML += "<a"
-                    sHTML += sOnClick 
-                    sHTML += sHref 
-                    sHTML += sTarget 
-                    sHTML += ">"
-                    sHTML += sIcon
-                    sHTML += sLabel
-                    sHTML += "</a>"
-                    sHTML += "</li>"
-                sHTML += "</ul>"
-                
-            #wrap up the outer menu
-            sHTML += "</li>"
-        
-        return sHTML
 
     def wmGetCloudAccountsForHeader(self):
         try:
