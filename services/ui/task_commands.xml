@@ -11,7 +11,7 @@
 			</command>
 			<command name="drop_connection" label="Drop Connection" description="Drops the connection to an Asset." help="&lt;b&gt;Drop Connection&lt;/b&gt;&lt;br&gt;Drop Connection will close the a named connection made earlier in the execution of the task. Select the connection name either by clicking the icon to the right of the Connection Name box or typing the name in." icon="static/images/icons/connect_no_32.png">
 				<function command_type="drop_connection">
-					<conn_name input_type="text" />
+					<conn_name input_type="text" label="Connection" />
 				</function>
 			</command>
 		</commands>
@@ -20,8 +20,8 @@
 		<commands>
 			<command name="end" label="End" description="End Task execution." help="&lt;b&gt;End&lt;/b&gt;&lt;br&gt;The End command halts the execution of the task. Use the 'End with Status' drop down selector to choose the status that the task should be set to when it exits. The Log Message box can be used to specify a reason for the ending of the task." icon="static/images/icons/player_stop_32.png">
 				<function command_type="end">
-					<status input_type="select">Completed</status>
-					<message input_type="text" />
+					<status input_type="select" label="Status">Completed</status>
+					<message input_type="textarea" rows="3" label="Message" class="w95pct" label_style="display: block;" />
 				</function>
 			</command>
 			<command name="run_task" label="Run Task" description="Run Task executes launches another task." help="&lt;b&gt;Run Task&lt;/b&gt;&lt;br&gt;&lt;br&gt;Run task is used to launch a task in a seperate execution stream. Select the task to be run and optionally select the asset on which is to be executed against. The task will get scheduled for immediate execution and will run independently from the calling task." icon="static/images/icons/player_play_32.png">
@@ -39,12 +39,12 @@
 			</command>
 			<command name="sleep" label="Sleep" description="Sleeps for a selected number of seconds." help="&lt;b&gt;Sleep&lt;/b&gt;&lt;br&gt;Sleep is used to pause task execution for the number of seconds entered." icon="static/images/icons/player_pause_32.png">
 				<function command_type="sleep">
-					<seconds input_type="text" />
+					<seconds input_type="text" label="Sleep"/>
 				</function>
 			</command>
 			<command name="cancel_task" label="Cancel Task" description="Cancels one or more running Tasks." help="&lt;b&gt;Sleep&lt;/b&gt;&lt;br&gt;Cancel Task is used to force task execution to stop on one or more running Tasks." icon="static/images/icons/stop_32.png">
 				<function command_type="cancel_task">
-					<task_instance input_type="text" />
+					<task_instance input_type="text" label="Task Instance ID(s)" />
 				</function>
 			</command>
 			<command name="wait_for_tasks" label="Wait For Tasks" description="Waits for one or more Tasks to complete." help="&lt;b&gt;Wait For Task&lt;/b&gt;&lt;p&gt;Waits for one or more processing Tasks to complete.  Enter one or more Task Handles, and the command will wait until all of them have completed processing.&lt;/p&gt;&lt;p&gt;A Task will be considered 'completed' if it is in any of the non-running statuses, including Canceled, Error, and Completed.&lt;/p&gt;&lt;p style='font-style: italic;'&gt;Note: Enter Handle names as text, such as MYHANDLE, not in variable reference syntax [[MYHANDLE]].&lt;/p&gt;" icon="static/images/icons/wait_32.png">
@@ -62,7 +62,7 @@
 			</command>
 			<command name="set_debug_level" label="Set Logging Level" description="Changes the logging level of the running Task." help="&lt;b&gt;Set Logging Level&lt;/b&gt;&lt;br&gt;Set Logging Level is used to change the output logging level of the Task currently executing.&lt;br /&gt;&lt;br /&gt;Useful for turning logging off in high transaction Tasks, then enabling the output of just a few key statements needed for debugging.&lt;br /&gt;&lt;br /&gt;``variables`` are permitted." icon="static/images/icons/debug_level_32.png">
 				<function command_type="set_debug_level">
-					<debug_level input_type="text">2</debug_level>
+					<debug_level input_type="dropdown" label="Logging Level" datasource="function" dataset="ddDataSource_GetDebugLevels">2</debug_level>
 				</function>
 			</command>
 		</commands>
@@ -129,17 +129,17 @@
 			</command>
 			<command name="cmd_line" label="Command Line" description="A command issued to the Asset via a Command Line." help="&lt;b&gt;Command Line Interface&lt;/b&gt;&lt;br&gt;Used to communicate with a remote system over ssh or telnet connection types.&lt;br&gt;First select the connection name that will be used. Next enter the command that should be sent to the remote system. Prior to the command being sent, variable substitution will occur. After the command is sent, the Command Engine will wait for the command line prompt to appear.&lt;br&gt;&lt;br&gt;Options: The options button has three options overrides. &lt;br&gt;Timeout value in seconds, this is the number of seconds the command engine will wait for the command line prompt to return until it timeouts out the process. &lt;br&gt;Positive Response overrides the set of characters that the Command Engine waits for to determine that the command is finished running. Accepts regular expressions .&lt;br&gt;Negative Response is a set of characters that the Command Engine looks for and will error out if it sees them respond from the remote system.&lt;br&gt;&lt;br&gt;Variables can be populated via the Command Line Interface command. Click the icon next to the word Variables to name the variables and configure how they are set." icon="static/images/icons/konsole_32.png">
 				<function command_type="cmd_line" variables="true" parse_method="2">
-					<conn_name input_type="text" />
-					<command input_type="text" />
-					<timeout input_type="text" />
-					<positive_response input_type="text" />
-					<negative_response input_type="text" />
+					<conn_name input_type="text" connection_picker="true" label="Connection" break_after="true" required="true" />
+					<command input_type="textarea" rows="3" label="Command" class="w95pct" required="true" label_style="display: block;" />
+					<timeout input_type="text" option_tab="Options" label="Timeout" break_after="true" />
+					<positive_response input_type="text" option_tab="Options" label="Positive Response" break_after="true" />
+					<negative_response input_type="text" option_tab="Options" label="Negative Response" break_after="true" />
 				</function>
 			</command>
 			<command name="winrm_cmd" label="Windows Remote Management" description="A command issued via the WinRM tool for interaction with Windows hosts." help="&lt;b&gt;Windows Remote Management Command&lt;/b&gt;&lt;br&gt;Can connect to an instance of the WinRM service running on a Windows host and issue commands. Enter the command that should be executed. Prior to the command being executed, variable substitution will occur. &lt;br&gt;&lt;br&gt;Options:&lt;br&gt;Timeout value in seconds, this is the number of seconds the command engine will wait for the command prompt to return until it timeouts out the process." icon="static/images/icons/konsole_32.png">
 				<function command_type="winrm_cmd" variables="true" parse_method="2">
 					<command input_type="textarea" rows="3" label="Command" class="w95pct" style="display: block;" />
-					<timeout input_type="text" is_option="true" label="Timeout" break_after="true" />
+					<timeout input_type="text" option_tab="Options" label="Timeout" break_after="true" />
 				</function>
 			</command>
 			<command name="send_email" label="Send Email" description="Sends an email to the specified list of recipients." help="&lt;b&gt;Send Email&lt;/b&gt;&lt;br&gt;Send Email is used to send email messages. Enter the email addresses in the To: field, comma seperated. The Subject field takes the subject and the Message field accepts the body of the message. Html formatting is allowed in the message field only." icon="static/images/icons/mail_send_32.png">

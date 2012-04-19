@@ -150,7 +150,7 @@ def GetStepTemplate(oStep):
     sHTML = ""
     sOptionHTML = ""
     sVariableHTML = ""
-
+    bShowVarButton = True
     # NOTE: If you are adding a new command type, be aware that
     # you MIGHT need to modify the code in taskMethods for the wmAddStep function.
     # (depending on how your new command works)
@@ -176,12 +176,8 @@ def GetStepTemplate(oStep):
         sHTML = NewConnection(oStep)
     elif sFunction.lower() == "if":
         sHTML = If(oStep)
-    elif sFunction.lower() == "loop":
-        sHTML = "Not Yet Available" #Loop(oStep)
-    elif sFunction.lower() == "while":
-        sHTML = "Not Yet Available" #While(oStep)
     elif sFunction.lower() == "sql_exec":
-        sHTML = "Not Yet Available" #SqlExec(oStep)
+        sHTML, bShowVarButton = SqlExec(oStep)
     elif sFunction.lower() == "set_variable":
         sHTML = SetVariable(oStep)
     elif sFunction.lower() == "clear_variable":
@@ -192,29 +188,33 @@ def GetStepTemplate(oStep):
         sHTML = Dataset(oStep)
     elif sFunction.lower() == "subtask":
         sHTML = Subtask(oStep)
-        print "@@@" + sHTML
-    elif sFunction.lower() == "set_asset_registry":
-        sHTML = "Not Yet Available" #SetAssetRegistry(oStep)
     elif sFunction.lower() == "run_task":
-        sHTML = "Not Yet Available" #RunTask(oStep)
+        sHTML = RunTask(oStep)
+    elif sFunction.lower() == "get_ecosystem_objects":
+        sHTML = GetEcosystemObjects(oStep)
     elif sFunction.lower() == "transfer":
         sHTML = "Not Yet Available" #Transfer(oStep)
+    elif sFunction.lower() == "set_asset_registry":
+        sHTML = "Not Yet Available" #SetAssetRegistry(oStep)
+    elif sFunction.lower() == "loop":
+        sHTML = "Not Yet Available" #Loop(oStep)
+    elif sFunction.lower() == "while":
+        sHTML = "Not Yet Available" #While(oStep)
     elif sFunction.lower() == "exists":
         sHTML = "Not Yet Available" #Exists(oStep)
-    elif sFunction.lower() == "get_ecosystem_objects":
-        sHTML = "Not Yet Available" #GetEcosystemObjects(oStep)
     else:
         # We didn't find one of our built in commands.  That's ok - most commands are drawn from their XML.
         sHTML, sOptionHTML = DrawStepFromXMLDocument(oStep)
     
-    # IF a command "populates variables" it will be noted in the command xml
-    # is the variables xml attribute true?
-    xd = oStep.FunctionXDoc
-    if xd is not None:
-        sPopulatesVars = xd.get("variables", "")
-        log("Populates Variables?" + sPopulatesVars, 4)
-        if uiCommon.IsTrue(sPopulatesVars):
-            sVariableHTML += "## WOULD DRAW VARSECTION ##" #DrawVariableSectionForDisplay(oStep, true)
+    if bShowVarButton:
+        # IF a command "populates variables" it will be noted in the command xml
+        # is the variables xml attribute true?
+        xd = oStep.FunctionXDoc
+        if xd is not None:
+            sPopulatesVars = xd.get("variables", "false")
+            log("Populates Variables?" + sPopulatesVars, 4)
+            if uiCommon.IsTrue(sPopulatesVars):
+                sVariableHTML += DrawVariableSectionForDisplay(oStep, True)
     
     # This returns a Tuple with three values.
     return sHTML, sOptionHTML, sVariableHTML
@@ -234,8 +234,8 @@ def DrawStepFromXMLDocument(oStep):
     # 
     sHTML = ""
     sOptionHTML = ""
-    log("Command XML:", 4)
-    log(ET.tostring(xd), 4)
+    #log("Command XML:", 4)
+    #log(ET.tostring(xd), 4)
     if xd is not None:
         # for each node in the function element
         # each node will become a field on the step.
@@ -269,6 +269,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
     log("-- Editable: " + sIsEditable + " - " + str(bIsEditable), 4)
     log("-- Removable: " + sIsRemovable + " - " + str(bIsRemovable), 4)
     log("-- Elements: " + str(len(xeNode)), 4)
+    log("-- Option Field?: " + sOptionTab, 4)
     
     #if a node has children we'll draw it with some hierarchical styling.
     #AND ALSO if it's editable, even if it has no children, we'll still draw it as a container.
@@ -392,6 +393,9 @@ def DrawField(xe, sXPath, sStepID, sFunction):
     bRequired = uiCommon.IsTrue(sRequired)
 
     log("---- Input Type :" + sInputType, 4)
+    log("---- Break Before/After : %s/%s" % (sBreakBefore, sBreakAfter), 4)
+    log("---- HR Before/After : %s/%s" % (sHRBefore, sHRAfter), 4)
+    log("---- Required : %s" % (str(bRequired)), 4)
 
 
     #some getting started layout possibilities
@@ -520,9 +524,9 @@ def DrawField(xe, sXPath, sStepID, sFunction):
             sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\" src=\"static/images/icons/search.png\" link_to=\"" + sElementID + "\" />"
 
     #some final layout possibilities
-    if sBreakAfter == uiCommon.IsTrue(sBreakAfter):
+    if uiCommon.IsTrue(sBreakAfter):
         sHTML += "<br />"
-    if sHRAfter == uiCommon.IsTrue(sHRAfter):
+    if uiCommon.IsTrue(sHRAfter):
         sHTML += "<hr />"
 
     log("---- ... done", 4)
@@ -625,6 +629,9 @@ def SetCheckRadio(s1, s2):
 # NOTE: the following functions are internal, but support dynamic dropdowns on step functions.
 # the function name is referenced by the "dataset" value of a dropdown type of input, where the datasource="function"
 # dropdowns expect a Dictionary<string,string> object return
+
+def ddDataSource_GetDebugLevels():
+    return {"0": "None", "1": "Minimal", "2": "Normal", "3": "Enhanced", "4": "Verbose", }
 
 def ddDataSource_GetAWSClouds():
     data = {}
@@ -949,13 +956,508 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
 
     return sHTML
 
+def RemoveStepVars(sStepID):
+    sSQL = "update task_step set variable_xml = '' where step_id = '" + sStepID + "'"
+
+    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+        uiGlobals.request.Messages.append("Unable to modify step [" + sStepID + "]." + uiGlobals.request.db.error)
+
+def DrawVariableSectionForDisplay(oStep, bShowEditLink):
+    sStepID = oStep.ID
+
+    # we go check if there are vars first, so that way we don't waste space displaying nothing
+    # if there are none
+    # BUT only hide this empty section on the 'view' page.
+    # if it's an edit page, we still show the empty table!
+
+    sVariableHTML = GetVariablesForStepForDisplay(oStep)
+
+    if not bShowEditLink and not sVariableHTML:
+        return ""
+
+    iParseType = oStep.OutputParseType
+    iRowDelimiter = oStep.OutputRowDelimiter
+    iColumnDelimiter = oStep.OutputColumnDelimiter
+
+    sHTML = ""
+    if bShowEditLink:
+        sHTML += "<span class=\"variable_popup_btn\" step_id=\"" + sStepID + "\">" \
+            "<img src=\"static/images/icons/kedit_16.png\"" \
+            " title=\"Manage Variables\" alt=\"\" /> Manage Variables</span>"
+
+    # some types may only have one of the delimiters
+    bRowDelimiterVisibility = (True if iParseType == 2 else False)
+    bColDelimiterVisibility = (True if iParseType == 2 else False)
+
+    if bRowDelimiterVisibility:
+        sHTML += "<br />Row Break Indicator: " \
+            " <span class=\"code 100px\">" + LabelNonprintable(iRowDelimiter) + "</span>"
+
+    if bColDelimiterVisibility:
+        sHTML += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Field Break Indicator: " \
+            " <span class=\"code 100px\">" + LabelNonprintable(iColumnDelimiter) + "</span>"
+
+    sHTML += sVariableHTML
+
+    return sHTML
+
+def GetVariablesForStepForDisplay(oStep):
+    sStepID = oStep.ID
+    xDoc = oStep.VariableXDoc
+
+    sHTML = ""
+    if xDoc is not None:
+        # uiCommon.log("Command Variable XML:\n%s" % ET.tostring(xDoc), 4)
+        xVars = xDoc.findall("variable")
+        if xVars is None:
+            return "Variable XML data for step [" + sStepID + "] does not contain any 'variable' elements."
+        
+        if len(xVars) > 0:
+            uiCommon.log("-- Rendering [%d] variables ..." % len(xVars), 4)
+            # build the HTML
+            sHTML += "<table class=\"step_variables\" width=\"99%\" border=\"0\">\n"
+            sHTML += "<tbody>"
+            
+            # loop
+            for xVar in xVars:
+                sName = uiCommon.SafeHTML(xVar.findtext("name", ""))
+                sType = xVar.findtext("type", "").lower()
+                
+                uiCommon.log("---- Variable [%s] is type [%s]" % (sName, sType), 4)
+                
+                sHTML += "<tr>"
+                sHTML += "<td class=\"row\"><span class=\"code\">" + sName + "</span></td>"
+                
+                if sType == "range":
+                    sLProp = ""
+                    sRProp = ""
+                    # the markers can be a range indicator or a string.
+                    if xVar.find("range_begin") is not None:
+                        sLProp = " Position [" + xVar.findtext("range_begin", "") + "]"
+                    elif xVar.find("prefix") is not None:
+                        sLProp = " Prefix [" + xVar.findtext("prefix", "") + "]"
+                    else:
+                        return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker."
+
+                    if xVar.find("range_end") is not None:
+                        sRProp = " Position [" + xVar.findtext("range_end", "") + "]"
+                    elif xVar.find("suffix") is not None:
+                        sRProp = " Suffix [" + xVar.findtext("suffix", "") + "]"
+                    else:
+                        return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker."
+
+                    sHTML += "<td class=\"row\">Characters in Range:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(sLProp) + " - " + uiCommon.SafeHTML(sRProp) + "</span></td>"
+                elif sType == "delimited":
+                    sHTML += "<td class=\"row\">Value at Index Position:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(xVar.findtext("position", "")) + "</span></td>"
+                elif sType == "regex":
+                    sHTML += "<td class=\"row\">Regular Expression:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(xVar.findtext("regex", "")) + "</span></td>"
+                    break
+                elif sType == "xpath":
+                    sHTML += "<td class=\"row\">Xpath:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(xVar.findtext("xpath", "")) + "</span></td>"
+                    break
+                else:
+                    sHTML += "INVALID TYPE"
+                    break
+                
+                sHTML += "</tr>"
+                 
+            # close it out
+            sHTML += "</tbody></table>\n"
+        return sHTML
+    else:
+        # yes this is valid. "null" in the database may translate to having no xml.  That's ok.
+        return ""
+
+
+def LabelNonprintable(iVal):
+    if iVal == 0:
+        return "N/A"
+    elif iVal == 9:
+        return "TAB"
+    elif iVal == 10:
+        return "LF"
+    elif iVal == 12:
+        return "FF"
+    elif iVal == 13:
+        return "CR"
+    elif iVal == 27:
+        return "ESC"
+    elif iVal == 32:
+        return "SP"
+    else:
+        return "&#" + str(iVal) + ";"
+
+    
 
 """
 From here to the bottom are the hardcoded commands.
 """
 
+def GetEcosystemObjects(oStep):
+    """
+        This one could easily be moved out of hardcode and into the commands.xml using a function based lookup.
+    """
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+
+        sObjectType = xd.findtext("object_type", "")
+        sHTML = ""
+
+        sHTML += "Select Object Type:\n"
+        sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "object_type", "") + ">\n"
+        sHTML += "  <option " + SetOption("", sObjectType) + " value=\"\"></option>\n"
+
+        
+        cp = uiCommon.GetCloudProviders()
+        if cp is not None:
+            for p_name, p in cp.Providers.iteritems():
+                cots = p.GetAllObjectTypes()
+                for cot_name, cot in cots.iteritems():
+                    sHTML += "<option " + SetOption(cot.ID, sObjectType) + " value=\"" + cot.ID + "\">" + p.Name + " - " + cot.Label + "</option>\n";            
+        
+        sHTML += "</select>\n"
+
+        sCloudFilter = xd.findtext("cloud_filter", "")
+        sHTML += "Cloud Filter: \n" + "<input type=\"text\" " + \
+        CommonAttribs(sStepID, sFunction, False, "cloud_filter", "") + \
+        " help=\"Enter all or part of a cloud name to filter the results.\" value=\"" + sCloudFilter + "\" />\n"
+
+        sResultName = xd.findtext("result_name", "")
+        sHTML += "<br />Result Variable: \n" + "<input type=\"text\" " + \
+        CommonAttribs(sStepID, sFunction, False, "result_name", "") + \
+        " help=\"This variable array will contain the ID of each Ecosystem Object.\" value=\"" + sResultName + "\" />\n"
+
+        sCloudName = xd.findtext("cloud_name", "")
+        sHTML += " Cloud Name Variable: \n" + "<input type=\"text\" " + \
+        CommonAttribs(sStepID, sFunction, False, "cloud_name", "") + \
+        " help=\"This variable array will contain the name of the Cloud for each Ecosystem Object.\" value=\"" + sCloudName + "\" />\n"
+
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
+def SqlExec(oStep):
+    """
+        This should return a tuple, the html and a flag of whether or not to draw the variable button
+    """
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+
+        """TAKE NOTE:
+        * 
+        * Similar to the windows command...
+        * ... we are updating a record here when we GET the data.
+        * 
+        * Why?  Because this command has modes.
+        * The data has different meaning depending on the 'mode'.
+        * 
+        * So, on the client if the user changes the 'mode', the new command may not need all the fields
+        * that the previous selection needed.
+        * 
+        * So, we just wipe any unused fields based on the current mode.
+        * """
+        sCommand = xd.findtext("sql", "")
+        sConnName = xd.findtext("conn_name", "")
+        sMode = xd.findtext("mode", "")
+        sHandle = xd.findtext("handle", "")
+
+        sHTML = ""
+        sElementID = uiCommon.NewGUID()
+        sFieldID = uiCommon.NewGUID()
+        bDrawVarButton = False
+        bDrawSQLBox = False
+        bDrawHandle = False
+        bDrawKeyValSection = False
+
+        sHTML += "Connection:\n"
+        sHTML += "<input type=\"text\" " + CommonAttribsWithID(sStepID, sFunction, True, "conn_name", sElementID, "")
+        sHTML += " help=\"Enter an active connection where this SQL will be executed.\" value=\"" + sConnName + "\" />"
+        sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\"" \
+            " src=\"static/images/icons/search.png\"" \
+            " link_to=\"" + sElementID + "\" />\n"
+
+        sHTML += "Mode:\n"
+        sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "mode", "") + " reget_on_change=\"true\">\n"
+        sHTML += "  <option " + SetOption("SQL", sMode) + " value=\"SQL\">SQL</option>\n"
+        sHTML += "  <option " + SetOption("BEGIN", sMode) + " value=\"BEGIN\">BEGIN</option>\n"
+        sHTML += "  <option " + SetOption("COMMIT", sMode) + " value=\"COMMIT\">COMMIT</option>\n"
+        # sHTML += "  <option " + SetOption("COMMIT / BEGIN", sMode) + " value=\"COMMIT / BEGIN\">COMMIT / BEGIN</option>\n"
+        sHTML += "  <option " + SetOption("ROLLBACK", sMode) + " value=\"ROLLBACK\">ROLLBACK</option>\n"
+        sHTML += "  <option " + SetOption("EXEC", sMode) + " value=\"EXEC\">EXEC</option>\n"
+        sHTML += "  <option " + SetOption("PL/SQL", sMode) + " value=\"PL/SQL\">PL/SQL</option>\n"
+        sHTML += "  <option " + SetOption("PREPARE", sMode) + " value=\"PREPARE\">PREPARE</option>\n"
+        sHTML += "  <option " + SetOption("RUN", sMode) + " value=\"RUN\">RUN</option>\n"
+        sHTML += "</select>\n"
+
+
+        # here we go!
+        # certain modes show different fields.
+
+        if sMode == "BEGIN" or sMode == "COMMIT" or sMode == "ROLLBACK":
+            # these modes have no SQL or pairs or variables
+            SetNodeValueinCommandXML(sStepID, "sql", "")
+            SetNodeValueinCommandXML(sStepID, "handle", "")
+            RemoveFromCommandXML(sStepID, "pair")
+            RemoveStepVars(sStepID)
+        elif sMode == "PREPARE":
+            bDrawSQLBox = True
+            bDrawHandle = True
+
+            # this mode has no pairs or variables
+            RemoveFromCommandXML(sStepID, "pair")
+            RemoveStepVars(sStepID)
+        elif sMode == "RUN":
+            bDrawVarButton = True
+            bDrawHandle = True
+            bDrawKeyValSection = True
+
+            # this mode has no SQL
+            SetNodeValueinCommandXML(sStepID, "sql", "")
+        else:
+            bDrawVarButton = True
+            bDrawSQLBox = True
+
+            SetNodeValueinCommandXML(sStepID, "handle", "")
+            # the default mode has no pairs
+            RemoveFromCommandXML(sStepID, "pair")
+
+        if bDrawHandle:
+            sHTML += "Handle:\n"
+            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle", "")
+            sHTML += " help=\"Enter a handle for this prepared statement.\" value=\"" + sHandle + "\" />"
+
+        if bDrawKeyValSection:
+            sHTML += DrawKeyValueSection(oStep, False, False, "Bind", "Value")
+
+        if bDrawSQLBox:
+            #  we gotta get the field id first, but don't show the textarea until after
+            sCommonAttribsForTA = CommonAttribsWithID(sStepID, sFunction, True, "sql", sFieldID, "")
+
+            sHTML += "<br />SQL:\n"
+            # big box button
+            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
+                " src=\"static/images/icons/edit_16.png\"" \
+                " link_to=\"" + sFieldID + "\" /><br />\n"
+
+            sHTML += "<textarea " + sCommonAttribsForTA + " help=\"Enter a SQL query or procedure.\">" + sCommand + "</textarea>"
+        return sHTML, bDrawVarButton
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
+def RunTask(oStep):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+    
+        sActualTaskID = ""
+        # sOnSuccess = ""
+        # sOnError = ""
+        sAssetID = ""
+        sAssetName = ""
+        sLabel = ""
+        sHTML = ""
+        
+        sOriginalTaskID = xd.findtext("original_task_id", "")
+        sVersion = xd.findtext("version")
+        sHandle = xd.findtext("handle", "")
+        sTime = xd.findtext("time_to_wait", "")
+        sAssetID = xd.findtext("asset_id", "")
+    
+        # xSuccess = xd.find("# on_success")
+        # if xSuccess is None) return "Error: XML does not contain on_success:
+        # sOnSuccess = xSuccess.findtext(value, "")
+    
+        # xError = xd.find("# on_error")
+        # if xError is None) return "Error: XML does not contain on_error:
+        # sOnError = xError.findtext(value, "")
+    
+        # get the name and code for belonging to this otid and version
+        if uiCommon.IsGUID(sOriginalTaskID):
+            sSQL = "select task_id, task_code, task_name from task" \
+                " where original_task_id = '" + sOriginalTaskID + "'" + \
+                (" and default_version = 1" if not sVersion else " and version = '" + sVersion + "'")
+    
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                return "Error retrieving target Task.(1)" + uiGlobals.request.db.error
+    
+            if dr is not None:
+                sLabel = dr["task_code"] + " : " + dr["task_name"]
+                sActualTaskID = dr["task_id"]
+            else:
+                # It's possible that the user changed the task from the picker but had 
+                # selected a version, which is still there now but may not apply to the new task.
+                # so, if the above SQL failed, try: again by resetting the version box to the default.
+                sSQL = "select task_id, task_code, task_name from task" \
+                    " where original_task_id = '" + sOriginalTaskID + "'" \
+                    " and default_version = 1"
+    
+                dr = uiGlobals.request.db.select_row_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                    return "Error retrieving target Task.(2)<br />" + uiGlobals.request.db.error
+    
+                if dr is not None:
+                    sLabel = dr["task_code"] + " : " + dr["task_name"]
+                    sActualTaskID = dr["task_id"]
+    
+                    # oh yeah, and set the version field to null since it was wrong.
+                    SetNodeValueinCommandXML(sStepID, "//version", "")
+                else:
+                    # a default doesnt event exist, really fail...
+                    return "Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "]." + uiGlobals.request.db.error
+    
+    
+        # IF IT's A GUID...
+        #  get the asset name belonging to this asset_id
+        #  OTHERWISE
+        #  make the sAssetName value be what's in sAssetID (a literal value in [[variable]] format)
+        if uiCommon.IsGUID(sAssetID):
+            sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
+    
+            sAssetName = uiGlobals.request.db.select_col_noexcep(sSQL)
+            if uiGlobals.request.db.error:
+                return "Error retrieving Run Task Asset Name." + uiGlobals.request.db.error
+    
+            if sAssetName == "":
+                return "Unable to find Asset by ID - [" + sAssetID + "]." + uiGlobals.request.db.error
+        else:
+            sAssetName = sAssetID
+    
+    
+    
+    
+        # all good, draw the widget
+        sOTIDField = uiCommon.NewGUID()
+    
+        sHTML += "<input type=\"text\" " + \
+            CommonAttribsWithID(sStepID, sFunction, True, "original_task_id", sOTIDField, "hidden") + \
+            " value=\"" + sOriginalTaskID + "\"" + " reget_on_change=\"true\" />"
+    
+        sHTML += "Task: \n"
+        sHTML += "<input type=\"text\"" \
+            " onkeydown=\"return false;\"" \
+            " onkeypress=\"return false;\"" \
+            " is_required=\"true\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " class=\"code w75pct\"" \
+            " id=\"fn_run_task_taskname_" + sStepID + "\"" \
+            " value=\"" + sLabel + "\" />\n"
+        sHTML += "<img class=\"task_picker_btn pointer\" alt=\"\"" \
+            " target_field_id=\"" + sOTIDField + "\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " src=\"static/images/icons/search.png\" />\n"
+        if sActualTaskID != "":
+            sHTML += "<img class=\"task_open_btn pointer\" alt=\"Edit Task\"" \
+                " task_id=\"" + sActualTaskID + "\"" \
+                " src=\"static/images/icons/kedit_16.png\" />\n"
+            sHTML += "<img class=\"task_print_btn pointer\" alt=\"View Task\"" \
+                " task_id=\"" + sActualTaskID + "\"" \
+                " src=\"static/images/icons/printer.png\" />\n"
+    
+        # versions
+        if uiCommon.IsGUID(sOriginalTaskID):
+            sHTML += "<br />"
+            sHTML += "Version: \n"
+            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "version", "") + " reget_on_change=\"true\">\n"
+            # default
+            sHTML += "<option " + SetOption("", sVersion) + " value=\"\">Default</option>\n"
+    
+            sSQL = "select version from task" \
+                " where original_task_id = '" + sOriginalTaskID + "'" \
+                " order by version"
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                return "Database Error:" + uiGlobals.request.db.error
+    
+            if dt:
+                for dr in dt:
+                    sHTML += "<option " + SetOption(str(dr["version"]), sVersion) + " value=\"" + str(dr["version"]) + "\">" + str(dr["version"]) + "</option>\n"
+            else:
+                return "Unable to continue - Cannot find Version for Task [" + sOriginalTaskID + "]."
+    
+            sHTML += "</select></span>\n"
+    
+    
+    
+        sHTML += "<br />"
+        print sAssetID
+        #  asset
+        sHTML += "<input type=\"text\" " + \
+            CommonAttribsWithID(sStepID, sFunction, False, "asset_id", sOTIDField, "hidden") + \
+            " value=\"" + sAssetID + "\" />"
+    
+        sHTML += "Asset: \n"
+        sHTML += "<input type=\"text\"" \
+            " help=\"Select an Asset or enter a variable.\"" + \
+            ("" if uiCommon.IsGUID(sAssetID) else " syntax=\"variable\"") + \
+            " step_id=\"" + sStepID + "\"" \
+            " class=\"code w75pct\"" \
+            " id=\"fn_run_task_assetname_" + sStepID + "\"" + \
+            (" disabled=\"disabled\"" if uiCommon.IsGUID(sAssetID) else "") + \
+            " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sOTIDField + "');\"" \
+            " value=\"" + sAssetName + "\" />\n"
+    
+        sHTML += "<img class=\"fn_field_clear_btn pointer\" clear_id=\"fn_run_task_assetname_" + sStepID + "\"" \
+            " style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+            " alt=\"\" title=\"Clear\" />"
+    
+        sHTML += "<img class=\"asset_picker_btn pointer\" alt=\"\"" \
+            " link_to=\"" + sOTIDField + "\"" \
+            " target_field_id=\"fn_run_task_assetname_" + sStepID + "\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " src=\"static/images/icons/search.png\" />\n"
+    
+        sHTML += "<br />"
+        sHTML += "Task Handle: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle", "") + \
+            " value=\"" + sHandle + "\" />\n"
+    
+        sHTML += "Time to Wait: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, False, "time_to_wait", "") + \
+            " value=\"" + sTime + "\" />\n"
+    
+        # sHTML += "<br />"
+        # sHTML += "The following Command will be executed on Success:<br />\n"
+        # # enable the dropzone for the Success action
+        # sHTML += DrawDropZone(sStepID, sOnSuccess, sFunction, "on_success", "", False)
+    
+        # sHTML += "The following Command will be executed on Error:<br />\n"
+        # # enable the dropzone for the Error action
+        # sHTML += DrawDropZone(sStepID, sOnError, sFunction, "on_error", "", False)
+        
+        
+        # edit parameters link - not available unless a task is selected
+        if sActualTaskID:
+            sHTML += "<hr />"
+            sHTML += "<div class=\"fn_runtask_edit_parameters_btn pointer\"" \
+                " task_id=\"" + sActualTaskID + "\"" \
+                " step_id=\"" + sStepID + "\">" \
+                "<img src=\"static/images/icons/edit_16.png\"" \
+                " alt=\"\" title=\"Edit Parameters\" /> Edit Parameters</div>"
+        
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
 def Subtask(oStep):
     try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
         sStepID = oStep.ID
         sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
@@ -1068,375 +1570,399 @@ def Subtask(oStep):
         return "Unable to draw Step - see log for details."
 
 def WaitForTasks(oStep):
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
-    xd = oStep.FunctionXDoc
-
-    sHTML = ""
-
-    sHTML += "<div id=\"v" + sStepID + "_handles\">"
-    sHTML += "Task Handles:<br />"
-
-    xPairs = xd.findall("handle")
-    i = 1
-    for xe in xPairs:
-        sKey = xe.findtext("name", "")
-
-        sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle[" + str(i) + "]/name", "") + \
-            " validate_as=\"variable\"" \
-            " value=\"" + sKey + "\"" \
-            " help=\"Enter a Handle name.\"" \
-            " />\n"
-
-        sHTML += "<span class=\"fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-            " alt=\"\" title=\"Remove\" /></span>"
-
-        # break it every three fields
-        if i % 3 == 0 and i >= 3:
-            sHTML += "<br />"
-
-        i += 1
-
-    sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
-        " add_to_id=\"v" + sStepID + "_handles\"" \
-        " step_id=\"" + sStepID + "\">" \
-        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
-    sHTML += "</div>"
-
-    return sHTML
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+    
+        sHTML = ""
+    
+        sHTML += "<div id=\"v" + sStepID + "_handles\">"
+        sHTML += "Task Handles:<br />"
+    
+        xPairs = xd.findall("handle")
+        i = 1
+        for xe in xPairs:
+            sKey = xe.findtext("name", "")
+    
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle[" + str(i) + "]/name", "") + \
+                " validate_as=\"variable\"" \
+                " value=\"" + sKey + "\"" \
+                " help=\"Enter a Handle name.\"" \
+                " />\n"
+    
+            sHTML += "<span class=\"fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+                " alt=\"\" title=\"Remove\" /></span>"
+    
+            # break it every three fields
+            if i % 3 == 0 and i >= 3:
+                sHTML += "<br />"
+    
+            i += 1
+    
+        sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
+            " add_to_id=\"v" + sStepID + "_handles\"" \
+            " step_id=\"" + sStepID + "\">" \
+            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+        sHTML += "</div>"
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
 
 def Dataset(oStep):
     return DrawKeyValueSection(oStep, True, True, "Key", "Value")
 
 def ClearVariable(oStep):
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
-    xd = oStep.FunctionXDoc
-
-    sHTML = ""
-
-    sHTML += "<div id=\"v" + sStepID + "_vars\">"
-    sHTML += "Variables to Clear:<br />"
-
-    xPairs = xd.findall("variable")
-    i = 1
-    for xe in xPairs:
-        sKey = xe.findtext("name", "")
-
-        # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
-        # hokey, but doing it here because the field update function is global.
-        if sKey.strip() != sKey:
-            SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
-
-        sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
-            " validate_as=\"variable\"" \
-            " value=\"" + sKey + "\"" \
-            " help=\"Enter a Variable name.\"" \
-            " />\n"
-
-        sHTML += "<span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-            " alt=\"\" title=\"Remove\" /></span>"
-
-        # break it every three fields
-        if i % 3 == 0 and i >= 3:
-            sHTML += "<br />"
-
-        i += 1
-
-    sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
-        " add_to_id=\"v" + sStepID + "_vars\"" \
-        " step_id=\"" + sStepID + "\">" \
-        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
-    sHTML += "</div>"
-
-    return sHTML
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+    
+        sHTML = ""
+    
+        sHTML += "<div id=\"v" + sStepID + "_vars\">"
+        sHTML += "Variables to Clear:<br />"
+    
+        xPairs = xd.findall("variable")
+        i = 1
+        for xe in xPairs:
+            sKey = xe.findtext("name", "")
+    
+            # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
+            # hokey, but doing it here because the field update function is global.
+            if sKey.strip() != sKey:
+                SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
+    
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
+                " validate_as=\"variable\"" \
+                " value=\"" + sKey + "\"" \
+                " help=\"Enter a Variable name.\"" \
+                " />\n"
+    
+            sHTML += "<span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+                " alt=\"\" title=\"Remove\" /></span>"
+    
+            # break it every three fields
+            if i % 3 == 0 and i >= 3:
+                sHTML += "<br />"
+    
+            i += 1
+    
+        sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
+            " add_to_id=\"v" + sStepID + "_vars\"" \
+            " step_id=\"" + sStepID + "\">" \
+            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+        sHTML += "</div>"
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
 
 def SetVariable(oStep):
-    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
-    xd = oStep.FunctionXDoc
-
-    sHTML = ""
-
-    sHTML += "<div id=\"v" + sStepID + "_vars\">"
-    sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\">\n"
-
-    xPairs = xd.findall("variable")
-    i = 1
-    for xe in xPairs:
-
-        sKey = xe.findtext("name", "")
-        sVal = xe.findtext("value", "")
-        sMod = xe.findtext("modifier", "")
-
-        # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
-        # hokey, but doing it here because the field update function is global.
-        if sKey.strip() != sKey:
-            SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
-
-        sHTML += "<tr>\n"
-        sHTML += "<td class=\"w1pct\">&nbsp;Variable:&nbsp;</td>\n"
-        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
-            " validate_as=\"variable\"" \
-            " value=\"" + sKey + "\"" \
-            " help=\"Enter a Variable name.\"" \
-            " /></td>\n"
-        sHTML += "<td class=\"w1pct\">&nbsp;Value:&nbsp;</td>"
-
-        #  we gotta get the field id first, but don't show the textarea until after
-        sValueFieldID = uiCommon.NewGUID()
-        sCommonAttribs = CommonAttribsWithID(sStepID, sFunction, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
-
-        sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"1\" style=\"height: 18px;\" " + sCommonAttribs + \
-            " help=\"Enter a value for the Variable.\"" \
-            ">" + uiCommon.SafeHTML(sVal) + "</textarea>\n"
-
-        # big box button
-        sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
-            " src=\"static/images/icons/edit_16.png\"" \
-            " link_to=\"" + sValueFieldID + "\" /></td>\n"
-
-
-        sHTML += "<td class=\"w1pct\">&nbsp;Modifier:&nbsp;</td>"
-        sHTML += "<td class=\"w75pct\">"
-        sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "variable[" + str(i) + "]/modifier", "") + ">\n"
-        sHTML += "  <option " + SetOption("", sMod) + " value=\"\">--None--</option>\n"
-        sHTML += "  <option " + SetOption("TO_UPPER", sMod) + " value=\"TO_UPPER\">UPPERCASE</option>\n"
-        sHTML += "  <option " + SetOption("TO_LOWER", sMod) + " value=\"TO_LOWER\">lowercase</option>\n"
-        sHTML += "  <option " + SetOption("TO_BASE64", sMod) + " value=\"TO_BASE64\">base64 encode</option>\n"
-        sHTML += "  <option " + SetOption("FROM_BASE64", sMod) + " value=\"FROM_BASE64\">base64 decode</option>\n"
-        sHTML += "  <option " + SetOption("TO_JSON", sMod) + " value=\"TO_JSON\">Write JSON</option>\n"
-        sHTML += "  <option " + SetOption("FROM_JSON", sMod) + " value=\"FROM_JSON\">Read JSON</option>\n"
-        sHTML += "</select></td>\n"
-
-        sHTML += "<td class=\"w1pct\"><span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-            " alt=\"\" title=\"Remove\" /></span></td>"
-
-        sHTML += "</tr>\n"
-
-        i += 1
-
-    sHTML += "</table>\n"
-
-    sHTML += "<div class=\"fn_setvar_add_btn pointer\"" \
-        " add_to_id=\"v" + sStepID + "_vars\"" \
-        " step_id=\"" + sStepID + "\">" \
-        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
-    sHTML += "</div>"
-
-    return sHTML
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+    
+        sHTML = ""
+    
+        sHTML += "<div id=\"v" + sStepID + "_vars\">"
+        sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\">\n"
+    
+        xPairs = xd.findall("variable")
+        i = 1
+        for xe in xPairs:
+    
+            sKey = xe.findtext("name", "")
+            sVal = xe.findtext("value", "")
+            sMod = xe.findtext("modifier", "")
+    
+            # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
+            # hokey, but doing it here because the field update function is global.
+            if sKey.strip() != sKey:
+                SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
+    
+            sHTML += "<tr>\n"
+            sHTML += "<td class=\"w1pct\">&nbsp;Variable:&nbsp;</td>\n"
+            sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
+                " validate_as=\"variable\"" \
+                " value=\"" + sKey + "\"" \
+                " help=\"Enter a Variable name.\"" \
+                " /></td>\n"
+            sHTML += "<td class=\"w1pct\">&nbsp;Value:&nbsp;</td>"
+    
+            #  we gotta get the field id first, but don't show the textarea until after
+            sValueFieldID = uiCommon.NewGUID()
+            sCommonAttribs = CommonAttribsWithID(sStepID, sFunction, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
+    
+            sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"1\" style=\"height: 18px;\" " + sCommonAttribs + \
+                " help=\"Enter a value for the Variable.\"" \
+                ">" + uiCommon.SafeHTML(sVal) + "</textarea>\n"
+    
+            # big box button
+            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
+                " src=\"static/images/icons/edit_16.png\"" \
+                " link_to=\"" + sValueFieldID + "\" /></td>\n"
+    
+    
+            sHTML += "<td class=\"w1pct\">&nbsp;Modifier:&nbsp;</td>"
+            sHTML += "<td class=\"w75pct\">"
+            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "variable[" + str(i) + "]/modifier", "") + ">\n"
+            sHTML += "  <option " + SetOption("", sMod) + " value=\"\">--None--</option>\n"
+            sHTML += "  <option " + SetOption("TO_UPPER", sMod) + " value=\"TO_UPPER\">UPPERCASE</option>\n"
+            sHTML += "  <option " + SetOption("TO_LOWER", sMod) + " value=\"TO_LOWER\">lowercase</option>\n"
+            sHTML += "  <option " + SetOption("TO_BASE64", sMod) + " value=\"TO_BASE64\">base64 encode</option>\n"
+            sHTML += "  <option " + SetOption("FROM_BASE64", sMod) + " value=\"FROM_BASE64\">base64 decode</option>\n"
+            sHTML += "  <option " + SetOption("TO_JSON", sMod) + " value=\"TO_JSON\">Write JSON</option>\n"
+            sHTML += "  <option " + SetOption("FROM_JSON", sMod) + " value=\"FROM_JSON\">Read JSON</option>\n"
+            sHTML += "</select></td>\n"
+    
+            sHTML += "<td class=\"w1pct\"><span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+                " alt=\"\" title=\"Remove\" /></span></td>"
+    
+            sHTML += "</tr>\n"
+    
+            i += 1
+    
+        sHTML += "</table>\n"
+    
+        sHTML += "<div class=\"fn_setvar_add_btn pointer\"" \
+            " add_to_id=\"v" + sStepID + "_vars\"" \
+            " step_id=\"" + sStepID + "\">" \
+            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+        sHTML += "</div>"
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
 
 def NewConnection(oStep):
-    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-    log("New Connection command:", 4)
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
-    xd = oStep.FunctionXDoc
-    xAsset = xd.find("asset")
-    xConnName = xd.find("conn_name")
-    xConnType = xd.find("conn_type")
-    xCloudName = xd.find("cloud_name")
-    sAssetID = ("" if xAsset is None else ("" if xAsset.text is None else xAsset.text))
-    sConnName = ("" if xConnName is None else ("" if xConnName.text is None else xConnName.text))
-    sConnType = ("" if xConnType is None else ("" if xConnType.text is None else xConnType.text))
-    sCloudName = ("" if xCloudName is None else ("" if xCloudName.text is None else xCloudName.text))
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        log("New Connection command:", 4)
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+        xAsset = xd.find("asset")
+        xConnName = xd.find("conn_name")
+        xConnType = xd.find("conn_type")
+        xCloudName = xd.find("cloud_name")
+        sAssetID = ("" if xAsset is None else ("" if xAsset.text is None else xAsset.text))
+        sConnName = ("" if xConnName is None else ("" if xConnName.text is None else xConnName.text))
+        sConnType = ("" if xConnType is None else ("" if xConnType.text is None else xConnType.text))
+        sCloudName = ("" if xCloudName is None else ("" if xCloudName.text is None else xCloudName.text))
+    
+        sHTML = ""
+        sHTML += "Connect via: \n"
+        sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "conn_type", "") + " reget_on_change=\"true\">\n"
+    
+        for ct in ConnectionTypes:
+            sHTML += "<option " + SetOption(ct, sConnType) + " value=\"" + ct + "\">" + ct + "</option>\n"
+    
+        sHTML += "</select>\n"
+    
+        # now, based on the type, we might show or hide certain things
+        if sConnType == "ssh - ec2":
+            # if the assetid is a guid, it means the user switched from another connection type... wipe it.
+            if uiCommon.IsGUID(sAssetID):
+                SetNodeValueinCommandXML(sStepID, "asset", "")
+                sAssetID = ""
+            
+            sHTML += " to Instance \n"
+            sHTML += "<input type=\"text\" " + \
+                CommonAttribs(sStepID, sFunction, True, "asset", "w300px code") + \
+                " is_required=\"true\"" \
+                " value=\"" + sAssetID + "\"" + " /><br />\n"
+    
+            sHTML += " in Cloud \n"
+            
+            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "cloud_name", "combo") + ">\n"
+            # empty one
+            sHTML += "<option " + SetOption("", sCloudName) + " value=\"\"></option>\n"
+            
+            bValueWasInData = False
+            data = ddDataSource_GetAWSClouds()
 
-    sHTML = ""
-    sHTML += "Connect via: \n"
-    sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "conn_type", "") + " reget_on_change=\"true\">\n"
-
-    for ct in ConnectionTypes:
-        sHTML += "<option " + SetOption(ct, sConnType) + " value=\"" + ct + "\">" + ct + "</option>\n"
-
-    sHTML += "</select>\n"
-
-    # now, based on the type, we might show or hide certain things
-    if sConnType == "ssh - ec2":
-        # if the assetid is a guid, it means the user switched from another connection type... wipe it.
-        if uiCommon.IsGUID(sAssetID):
-            SetNodeValueinCommandXML(sStepID, "asset", "")
-            sAssetID = ""
-        
-        sHTML += " to Instance \n"
-        sHTML += "<input type=\"text\" " + \
-            CommonAttribs(sStepID, sFunction, True, "asset", "w300px code") + \
-            " is_required=\"true\"" \
-            " value=\"" + sAssetID + "\"" + " /><br />\n"
-
-        sHTML += " in Cloud \n"
-        
-        sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "cloud_name", "combo") + ">\n"
-        # empty one
-        sHTML += "<option " + SetOption("", sCloudName) + " value=\"\"></option>\n"
-        
-        bValueWasInData = False
-        data = ddDataSource_GetAWSClouds()
-        
-        if data is not None:
-            for k, v in data:
-                sHTML += "<option " + SetOption(k, sCloudName) + " value=\"" + k + "\">" + v + "</option>\n"
-
-                if k ==sCloudName: bValueWasInData = True
-        
-        # NOTE: we're allowing the user to enter a value that may not be 
-        # in the dataset.  If that's the case, we must add the actual saved value to the list too. 
-        if not bValueWasInData: #we didn't find it in the data ..:
-            if sCloudName: #and it's a combo and not empty
-                sHTML += "<option " + SetOption(sCloudName, sCloudName) + " value=\"" + sCloudName + "\">" + sCloudName + "</option>\n";            
-        
-        sHTML += "</select>"
-
-    else:
-        # clear out the cloud_name property... it's not relevant for these types
-        SetNodeValueinCommandXML(sStepID, "cloud_name", "")
-        
-        # ASSET
-        # IF IT's A GUID...
-        #  get the asset name belonging to this asset_id
-        #  OTHERWISE
-        #  make the sAssetName value be what's in sAssetID (a literal value in [[variable]] format)
-        if uiCommon.IsGUID(sAssetID):
-            sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
-            sAssetName = uiGlobals.request.db.select_col_noexcep(sSQL)
-            if not sAssetName:
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append("Unable to look up Asset name." + uiGlobals.request.db.error)
-                else:
-                    SetNodeValueinCommandXML(sStepID, "asset", "")
+            if data is not None:
+                for k, v in data.iteritems():
+                    sHTML += "<option " + SetOption(k, sCloudName) + " value=\"" + k + "\">" + v + "</option>\n"
+    
+                    if k ==sCloudName: bValueWasInData = True
+            
+            # NOTE: we're allowing the user to enter a value that may not be 
+            # in the dataset.  If that's the case, we must add the actual saved value to the list too. 
+            if not bValueWasInData: #we didn't find it in the data ..:
+                if sCloudName: #and it's a combo and not empty
+                    sHTML += "<option " + SetOption(sCloudName, sCloudName) + " value=\"" + sCloudName + "\">" + sCloudName + "</option>\n";            
+            
+            sHTML += "</select>"
+    
         else:
-            sAssetName = sAssetID
-
-        sElementID = uiCommon.NewGUID()
-
-        sHTML += " to Asset \n"
-        sHTML += "<input type=\"text\" " + \
-            CommonAttribsWithID(sStepID, sFunction, False, "asset", sElementID, "hidden") + \
-            " value=\"" + sAssetID + "\"" + " />\n"
-        sHTML += "<input type=\"text\"" \
-            " help=\"Select an Asset or enter a variable.\"" \
-            " step_id=\"" + sStepID + "\"" \
-            " class=\"code w400px\"" \
-            " is_required=\"true\"" \
-            " id=\"fn_new_connection_assetname_" + sStepID + "\"" \
-            " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sElementID + "');\"" \
-            " value=\"" + sAssetName + "\" />\n"
-
-        
-        sHTML += "<img class=\"fn_field_clear_btn pointer\" clear_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
-            " style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-            " alt=\"\" title=\"Clear\" />"
-
-        sHTML += "<img class=\"asset_picker_btn pointer\" alt=\"\"" \
-            " link_to=\"" + sElementID + "\"" \
-            " target_field_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
-            " step_id=\"" + sStepID + "\"" \
-            " src=\"static/images/icons/search.png\" />\n"
-        
-    sHTML += " as \n"
-    sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "conn_name", "w200px") + \
-        " help=\"Name this connection for reference in the Task.\" value=\"" + sConnName + "\" />\n"
-    sHTML += "\n"
-
-
-    return sHTML
+            # clear out the cloud_name property... it's not relevant for these types
+            SetNodeValueinCommandXML(sStepID, "cloud_name", "")
+            
+            # ASSET
+            # IF IT's A GUID...
+            #  get the asset name belonging to this asset_id
+            #  OTHERWISE
+            #  make the sAssetName value be what's in sAssetID (a literal value in [[variable]] format)
+            if uiCommon.IsGUID(sAssetID):
+                sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
+                sAssetName = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if not sAssetName:
+                    if uiGlobals.request.db.error:
+                        uiGlobals.request.Messages.append("Unable to look up Asset name." + uiGlobals.request.db.error)
+                    else:
+                        SetNodeValueinCommandXML(sStepID, "asset", "")
+            else:
+                sAssetName = sAssetID
+    
+            sElementID = uiCommon.NewGUID()
+    
+            sHTML += " to Asset \n"
+            sHTML += "<input type=\"text\" " + \
+                CommonAttribsWithID(sStepID, sFunction, False, "asset", sElementID, "hidden") + \
+                " value=\"" + sAssetID + "\"" + " />\n"
+            sHTML += "<input type=\"text\"" \
+                " help=\"Select an Asset or enter a variable.\"" \
+                " step_id=\"" + sStepID + "\"" \
+                " class=\"code w400px\"" \
+                " is_required=\"true\"" \
+                " id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+                " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sElementID + "');\"" \
+                " value=\"" + sAssetName + "\" />\n"
+    
+            
+            sHTML += "<img class=\"fn_field_clear_btn pointer\" clear_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+                " style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+                " alt=\"\" title=\"Clear\" />"
+    
+            sHTML += "<img class=\"asset_picker_btn pointer\" alt=\"\"" \
+                " link_to=\"" + sElementID + "\"" \
+                " target_field_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+                " step_id=\"" + sStepID + "\"" \
+                " src=\"static/images/icons/search.png\" />\n"
+            
+        sHTML += " as \n"
+        sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "conn_name", "w200px") + \
+            " help=\"Name this connection for reference in the Task.\" value=\"" + sConnName + "\" />\n"
+        sHTML += "\n"
+    
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
 
 def If(oStep):
-    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
-    xd = oStep.FunctionXDoc
-
-    sHTML = ""
-
-    xTests = xd.findall("tests/test")
-    sHTML += "<div id=\"if_" + sStepID + "_conditions\" number=\"" + str(len(xTests)) + "\">"
-
-    i = 1 # because XPath starts at "1"
-
-    for xTest in xTests:
-        sEval = xTest.findtext("eval", None)
-        sAction = xTest.findtext("action", None)
-
-        #  we gotta get the field id first, but don't show the textarea until after
-        sFieldID = uiCommon.NewGUID()
-        sCol = "tests/test[" + str(i) + "]/eval"
-        sCommonAttribsForTA = CommonAttribsWithID(sStepID, sFunction, True, sCol, sFieldID, "")
-
-        # a way to delete the section you just added
-        if i == 1:
-            xGlobals = ET.parse("luCompareTemplates.xml")
-
-            if xGlobals is None:
-                sHTML += "(No Compare templates file available)<br />"
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        sStepID = oStep.ID
+        sFunction = oStep.FunctionName
+        xd = oStep.FunctionXDoc
+    
+        sHTML = ""
+    
+        xTests = xd.findall("tests/test")
+        sHTML += "<div id=\"if_" + sStepID + "_conditions\" number=\"" + str(len(xTests)) + "\">"
+    
+        i = 1 # because XPath starts at "1"
+    
+        for xTest in xTests:
+            sEval = xTest.findtext("eval", None)
+            sAction = xTest.findtext("action", None)
+    
+            #  we gotta get the field id first, but don't show the textarea until after
+            sFieldID = uiCommon.NewGUID()
+            sCol = "tests/test[" + str(i) + "]/eval"
+            sCommonAttribsForTA = CommonAttribsWithID(sStepID, sFunction, True, sCol, sFieldID, "")
+    
+            # a way to delete the section you just added
+            if i == 1:
+                xGlobals = ET.parse("luCompareTemplates.xml")
+    
+                if xGlobals is None:
+                    sHTML += "(No Compare templates file available)<br />"
+                else:
+                    sHTML += "Comparison Template: <select class=\"compare_templates\" textarea_id=\"" + sFieldID + "\">\n"
+                    sHTML += "  <option value=\"\"></option>\n"
+    
+                    xTemplates = xGlobals.findall("template")
+                    for xEl in xTemplates:
+                        sHTML += "  <option value=\"" + xEl.findtext("value", "") + "\">" + xEl.findtext("name", "") + "</option>\n"
+                    sHTML += "</select> <br />\n"
+    
+    
+                sHTML += "If:<br />"
             else:
-                sHTML += "Comparison Template: <select class=\"compare_templates\" textarea_id=\"" + sFieldID + "\">\n"
-                sHTML += "  <option value=\"\"></option>\n"
-
-                xTemplates = xGlobals.findall("template")
-                for xEl in xTemplates:
-                    sHTML += "  <option value=\"" + xEl.findtext("value", "") + "\">" + xEl.findtext("name", "") + "</option>\n"
-                sHTML += "</select> <br />\n"
-
-
-            sHTML += "If:<br />"
-        else:
-            sHTML += "<div id=\"if_" + sStepID + "_else_" + str(i) + "\" class=\"fn_if_else_section\">"
-            sHTML += "<span class=\"fn_if_remove_btn pointer\" number=\"" + str(i) + "\" step_id=\"" + sStepID + "\">" \
-                "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else If condition.\" /></span> "
-            sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
-
-
-        print sEval
-        if sEval is not None:
-            sHTML += "<textarea " + sCommonAttribsForTA + " help=\"Enter a test condition.\">" + sEval + "</textarea><br />\n"
-        else:
-            sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
-
-
-        # here's the embedded content
-        sCol = "tests/test[" + str(i) + "]/action"
-
-        if sAction is not None:
-            sHTML += DrawDropZone(sStepID, sAction, sFunction, sCol, "Action:<br />", True)
-        else:
-            sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
-
-
-        if i != 1:
-            sHTML += "</div>"
-
-        i += i
-
-    sHTML += "</div>"
-
-
-    # draw an add link.  The rest will happen on the client.
-    sHTML += "<div class=\"fn_if_add_btn pointer\" add_to_id=\"if_" + sStepID + "_conditions\" step_id=\"" + sStepID + "\" next_index=\"" + str(i) + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add another Else If section.\" />( click to add another 'Else If' section )</div>"
-
-
-    sHTML += "<div id=\"if_" + sStepID + "_else\" class=\"fn_if_else_section\">"
-
-    # the final 'else' area
-    sElse = xd.findtext("else", "")
-    if sElse is not None:
-        sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\">" \
-           "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else condition.\" /></span> "
-        sHTML += "Else (no 'If' conditions matched):"
-        sHTML += DrawDropZone(sStepID, sElse, sFunction, "else", "", True)
-    else:
+                sHTML += "<div id=\"if_" + sStepID + "_else_" + str(i) + "\" class=\"fn_if_else_section\">"
+                sHTML += "<span class=\"fn_if_remove_btn pointer\" number=\"" + str(i) + "\" step_id=\"" + sStepID + "\">" \
+                    "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else If condition.\" /></span> "
+                sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
+    
+    
+            print sEval
+            if sEval is not None:
+                sHTML += "<textarea " + sCommonAttribsForTA + " help=\"Enter a test condition.\">" + sEval + "</textarea><br />\n"
+            else:
+                sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
+    
+    
+            # here's the embedded content
+            sCol = "tests/test[" + str(i) + "]/action"
+    
+            if sAction is not None:
+                sHTML += DrawDropZone(sStepID, sAction, sFunction, sCol, "Action:<br />", True)
+            else:
+                sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
+    
+    
+            if i != 1:
+                sHTML += "</div>"
+    
+            i += i
+    
+        sHTML += "</div>"
+    
+    
         # draw an add link.  The rest will happen on the client.
-        sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add an Else section.\" />( click to add a final 'Else' section )</div>"
-
-    sHTML += "</div>"
-
-    return sHTML
+        sHTML += "<div class=\"fn_if_add_btn pointer\" add_to_id=\"if_" + sStepID + "_conditions\" step_id=\"" + sStepID + "\" next_index=\"" + str(i) + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add another Else If section.\" />( click to add another 'Else If' section )</div>"
+    
+    
+        sHTML += "<div id=\"if_" + sStepID + "_else\" class=\"fn_if_else_section\">"
+    
+        # the final 'else' area
+        sElse = xd.findtext("else", "")
+        if sElse is not None:
+            sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\">" \
+               "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else condition.\" /></span> "
+            sHTML += "Else (no 'If' conditions matched):"
+            sHTML += DrawDropZone(sStepID, sElse, sFunction, "else", "", True)
+        else:
+            # draw an add link.  The rest will happen on the client.
+            sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add an Else section.\" />( click to add a final 'Else' section )</div>"
+    
+        sHTML += "</div>"
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
