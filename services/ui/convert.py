@@ -55,6 +55,7 @@ with open("convert.in", 'r') as f_in:
         line = line.replace(";\n", "\n")
 
         # Fixing line wrapped string concatenations
+        line = line.replace(") +\n", ") + \\\n") # lines that had an inline if still need the +
         line = line.replace("+\n", "\\\n")
 
         
@@ -88,11 +89,9 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("throw", "raise")
         
         
-        # no longer needed
-        if line.strip() == "dataAccess dc = new dataAccess()":
-            continue
-
         #these commonly appear on a line alone, and we aren't using them any more
+        if line.strip() == "dataAccess dc = new dataAccess()": continue
+        if line.strip() == "FunctionTemplates.HTMLTemplates ft": continue
         if line.strip() == "acUI.acUI ui = new acUI.acUI()": continue
         if line.strip() == "sErr = \"\"": continue
         if line.lower().strip() == "ssql = \"\"": continue # there's mixed case usage of "sSql"
@@ -104,8 +103,13 @@ with open("convert.in", 'r') as f_in:
         # a whole bunch of common phrases from Cato C# code
         line = line.replace("Globals.acObjectTypes", "uiGlobals.CatoObjectTypes")
         line = line.replace("ui.", "uiCommon.")
+        line = line.replace("ft.", "ST.") # "FunctionTemplates ft is now import stepTemplates as sST"
         line = line.replace("dc.IsTrue", "uiCommon.IsTrue")
         line = line.replace("../images", "static/images")
+        
+        #99% of the time we won't want a None return
+        line = line.replace("return\n", "return \"\"\n")
+        
         
         
         #these now need a db connection passed in
@@ -124,9 +128,12 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("oTrans.RollBack()", "db.tran_rollback()")
         line = line.replace("DataRow dr in dt.Rows", "dr in dt")
         line = line.replace("dt.Rows.Count > 0", "dt")
+        line = line.replace("Step oStep", "oStep")
+        line = line.replace("+ i +", "+ str(i) +")
+        line = line.replace("i+\\", "i += 1")
         
         # this will be helpful
-        if "CommonAttribs" in line:
+        if " CommonAttribs" in line:
             line = "### CommonAttribsWithID ????\nuiCommon.NewGUID()\n" + line
         
         # random stuff that may or may not work
@@ -158,6 +165,11 @@ with open("convert.in", 'r') as f_in:
         # passing arguments by "ref" doesn't work in python, mark that code obviously
         # because it need attention
         line = line.replace("ref ", "0000BYREF_ARG0000")
+
+        # the new way of doing exceptions - not raising them, appending them to an output object
+        line = line.replace("raise ex", "uiGlobals.request.Messages.append(ex.__str__())")
+        line = line.replace("raise Exception(", "uiGlobals.request.Messages.append(")
+        
 
         # if this is a function declaration and it's a "wm" web method, 
         # throw the new argument getter line on there

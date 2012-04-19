@@ -977,3 +977,45 @@ class taskMethods:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
         except Exception, ex:
             uiGlobals.request.Messages.append(ex.__str__())
+
+    def wmFnWaitForTasksRemoveHandle(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        iIndex = uiCommon.getAjaxArg("iIndex")
+        try:
+            if iIndex > 0:
+                ST.RemoveFromCommandXML(sStepID, "handle[" + iIndex + "]")
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
+        except Exception, ex:
+            uiGlobals.request.Messages.append(ex.__str__())
+
+    def wmFnWaitForTasksAddHandle(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        try:
+            ST.AddToCommandXML(sStepID, "function", "<handle><name input_type=\"text\"></name></handle>")
+            return ""
+        except Exception, ex:
+            uiGlobals.request.Messages.append(ex.__str__())
+
+    def wmFnAddPair(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        try:
+            ST.AddToCommandXML(sStepID, "function", "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
+
+            return ""
+        except Exception, ex:
+            uiGlobals.request.Messages.append(ex.__str__())
+
+    def wmFnRemovePair(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        iIndex = uiCommon.getAjaxArg("iIndex")
+        try:
+            if iIndex > 0:
+                ST.RemoveFromCommandXML(sStepID, "pair[" + iIndex + "]")
+
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
+        except Exception, ex:
+            uiGlobals.request.Messages.append(ex.__str__())

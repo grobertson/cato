@@ -184,11 +184,11 @@ def GetStepTemplate(oStep):
     elif sFunction.lower() == "set_variable":
         sHTML = SetVariable(oStep)
     elif sFunction.lower() == "clear_variable":
-        sHTML = "Not Yet Available" #ClearVariable(oStep)
+        sHTML = ClearVariable(oStep)
     elif sFunction.lower() == "wait_for_tasks":
-        sHTML = "Not Yet Available" #WaitForTasks(oStep)
+        sHTML = WaitForTasks(oStep)
     elif sFunction.lower() == "dataset":
-        sHTML = "Not Yet Available" #Dataset(oStep)
+        sHTML = Dataset(oStep)
     elif sFunction.lower() == "subtask":
         sHTML = "Not Yet Available" #Subtask(oStep)
     elif sFunction.lower() == "set_asset_registry":
@@ -622,6 +622,7 @@ def SetCheckRadio(s1, s2):
 # NOTE: the following functions are internal, but support dynamic dropdowns on step functions.
 # the function name is referenced by the "dataset" value of a dropdown type of input, where the datasource="function"
 # dropdowns expect a Dictionary<string,string> object return
+
 def ddDataSource_GetAWSClouds():
     data = {}
     
@@ -765,7 +766,6 @@ def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue
     except Exception, ex:
         uiGlobals.request.Messages.append(ex.__str__())
 
-
 def RemoveFromCommandXML(sStepID, sNodeToRemove):
     try:
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -801,6 +801,7 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
         if not sXML:
             uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
         else:
+            uiCommon.log(sXML, 4)
             # parse the doc from the table
             xd = ET.fromstring(sXML)
             if xd is None:
@@ -809,6 +810,7 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
             # get the specified node from the doc
             xNodeToWhack = xd.find(sNodeToRemove)
             if xNodeToWhack is None:
+                uiCommon.log("INFO: attempt to remove [%s] - the element was not found." % sNodeToRemove, 3)
                 # no worries... what you want to delete doesn't exist?  perfect!
                 return
 
@@ -823,8 +825,6 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
         return
     except Exception, ex:
         uiGlobals.request.Messages.append(ex.__str__())
-
-
 
 def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRequired):
     # drop zones are common for all the steps that can contain embedded steps.
@@ -867,9 +867,179 @@ def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRe
     sHTML += sDropZone # THIS IS FOR TESTING ONLY, REMOVE IT WHEN YOU UNCOMMENT THE PREVIOUS BLOCK
     return sHTML
 
+def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLabel):
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+
+    sElementID = uiCommon.NewGUID()
+    sValueFieldID = uiCommon.NewGUID()
+    sHTML = ""
+
+    sHTML += "<div id=\"" + sStepID + "_pairs\">"
+
+
+    xPairs = xd.findall("pair")
+    i = 1
+    for xe in xPairs:
+        sKey = xe.findtext("key")
+        sVal = xe.findtext("value", "")
+        sMask = xe.findtext("mask", "")
+
+        sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\"><tr>\n"
+        sHTML += "<td class=\"w1pct\">&nbsp;" + sKeyLabel + ":&nbsp;</td>\n"
+
+        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribsWithID(sStepID, sFunction, True, "pair[" + str(i) + "]/key", sElementID, "") + \
+            " validate_as=\"variable\"" \
+            " value=\"" + uiCommon.SafeHTML(sKey) + "\"" \
+            " help=\"Enter a name.\"" \
+            " /></td>"
+
+        if bShowPicker:
+            sHTML += "<td class=\"w1pct\"><img class=\"key_picker_btn pointer\" alt=\"\"" \
+                " src=\"static/images/icons/search.png\"" \
+                " function=\"" + sFunction + "\"" \
+                " target_field_id=\"" + sElementID + "\"" \
+                " link_to=\"" + sElementID + "\" />\n"
+
+            sHTML += "</td>\n"
+
+        sHTML += "<td class=\"w1pct\">&nbsp;" + sValueLabel + ":&nbsp;</td>"
+
+        #  we gotta get the field id first, but don't show the textarea until after
+        sCommonAttribs = CommonAttribsWithID(sStepID, sFunction, True, "pair[" + str(i) + "]/value", sValueFieldID, "w90pct")
+
+        sHTML += "<td class=\"w50pct\"><input type=\"text\" " + sCommonAttribs + \
+            " value=\"" + uiCommon.SafeHTML(sVal) + "\"" \
+            " help=\"Enter a value.\"" \
+            " />\n"
+
+        # big box button
+        sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
+            " src=\"static/images/icons/edit_16.png\"" \
+            " link_to=\"" + sValueFieldID + "\" /></td>\n"
+
+        # optional mask option
+        if bShowMaskOption:
+            sHTML += "<td>"
+
+            sHTML += "&nbsp;Mask?: <input type=\"checkbox\" " + \
+                CommonAttribs(sStepID, sFunction, True, "pair[" + str(i) + "]/mask", "") + " " + SetCheckRadio("1", sMask) + " />\n"
+
+
+            sHTML += "</td>\n"
+
+        sHTML += "<td class=\"w1pct\" align=\"right\"><span class=\"fn_pair_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+            " alt=\"\" title=\"Remove\" /></span></td>"
+
+        sHTML += "</tr></table>\n"
+
+        i += 1
+
+    sHTML += "<div class=\"fn_pair_add_btn pointer\"" \
+        " add_to_id=\"" + sStepID + "_pairs\"" \
+        " step_id=\"" + sStepID + "\">" \
+        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+    sHTML += "</div>"
+
+    return sHTML
+
+
 """
 From here to the bottom are the hardcoded commands.
 """
+
+def WaitForTasks(oStep):
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+
+    sHTML = ""
+
+    sHTML += "<div id=\"v" + sStepID + "_handles\">"
+    sHTML += "Task Handles:<br />"
+
+    xPairs = xd.findall("handle")
+    i = 1
+    for xe in xPairs:
+        sKey = xe.findtext("name", "")
+
+        sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle[" + str(i) + "]/name", "") + \
+            " validate_as=\"variable\"" \
+            " value=\"" + sKey + "\"" \
+            " help=\"Enter a Handle name.\"" \
+            " />\n"
+
+        sHTML += "<span class=\"fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+            " alt=\"\" title=\"Remove\" /></span>"
+
+        # break it every three fields
+        if i % 3 == 0 and i >= 3:
+            sHTML += "<br />"
+
+        i += 1
+
+    sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
+        " add_to_id=\"v" + sStepID + "_handles\"" \
+        " step_id=\"" + sStepID + "\">" \
+        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+    sHTML += "</div>"
+
+    return sHTML
+
+def Dataset(oStep):
+    return DrawKeyValueSection(oStep, True, True, "Key", "Value")
+
+def ClearVariable(oStep):
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+
+    sHTML = ""
+
+    sHTML += "<div id=\"v" + sStepID + "_vars\">"
+    sHTML += "Variables to Clear:<br />"
+
+    xPairs = xd.findall("variable")
+    i = 1
+### CHECK NEXT LINE for type declarations !!!
+    for xe in xPairs:
+        sKey = xe.findtext("name", "")
+
+        # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
+        # hokey, but doing it here because the field update function is global.
+        if sKey.strip() != sKey:
+            SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
+
+        sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
+            " validate_as=\"variable\"" \
+            " value=\"" + sKey + "\"" \
+            " help=\"Enter a Variable name.\"" \
+            " />\n"
+
+        sHTML += "<span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+            " alt=\"\" title=\"Remove\" /></span>"
+
+        # break it every three fields
+        if i % 3 == 0 and i >= 3:
+            sHTML += "<br />"
+
+        i += 1
+
+    sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
+        " add_to_id=\"v" + sStepID + "_vars\"" \
+        " step_id=\"" + sStepID + "\">" \
+        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+    sHTML += "</div>"
+
+    return sHTML
+
 def SetVariable(oStep):
     uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
@@ -948,7 +1118,6 @@ def SetVariable(oStep):
     sHTML += "</div>"
 
     return sHTML
-
 
 def NewConnection(oStep):
     uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
