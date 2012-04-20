@@ -215,7 +215,7 @@ def GetStepTemplate(oStep):
         xd = oStep.FunctionXDoc
         if xd is not None:
             sPopulatesVars = xd.get("variables", "false")
-            log("Populates Variables?" + sPopulatesVars, 4)
+            log("Populates Variables? " + sPopulatesVars, 4)
             if uiCommon.IsTrue(sPopulatesVars):
                 sVariableHTML += DrawVariableSectionForDisplay(oStep, True)
     
@@ -1054,13 +1054,10 @@ def GetVariablesForStepForDisplay(oStep):
                     sHTML += "<td class=\"row\">Value at Index Position:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(xVar.findtext("position", "")) + "</span></td>"
                 elif sType == "regex":
                     sHTML += "<td class=\"row\">Regular Expression:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(xVar.findtext("regex", "")) + "</span></td>"
-                    break
                 elif sType == "xpath":
                     sHTML += "<td class=\"row\">Xpath:</td><td class=\"row\"><span class=\"code\">" + uiCommon.SafeHTML(xVar.findtext("xpath", "")) + "</span></td>"
-                    break
                 else:
                     sHTML += "INVALID TYPE"
-                    break
                 
                 sHTML += "</tr>"
                  
@@ -1071,6 +1068,179 @@ def GetVariablesForStepForDisplay(oStep):
         # yes this is valid. "null" in the database may translate to having no xml.  That's ok.
         return ""
 
+def DrawVariableSectionForEdit(oStep):
+    sHTML = ""
+    # sStepID = drStep["step_id"]
+    # sFunction = drStep["function_name"]
+    sParseType = oStep.OutputParseType
+    iRowDelimiter = oStep.OutputRowDelimiter
+    iColumnDelimiter = oStep.OutputColumnDelimiter
+
+    # now, some sections or items may or may not be available.
+    sDelimiterSectionVisiblity = ""
+    # only 'parsed' types show delimiter pickers.  The hardcoded "delimited" (1) 
+    # type does not allow changes to the delimiter.
+    sRowDelimiterVisibility = ("" if sParseType == 2 else "hidden")
+    sColDelimiterVisibility = ("" if sParseType == 2 else "hidden")
+
+    # some code here will replace non-printable delimiters with a token string
+    sRowDelimiterLabel = LabelNonprintable(iRowDelimiter)
+    sColumnDelimiterLabel = LabelNonprintable(iColumnDelimiter)
+
+    sHTML += "<div class=\"" + sDelimiterSectionVisiblity + "\" id=\"div_delimiters\">"
+    sHTML += "<span id=\"row_delimiter\" class=\"" + sRowDelimiterVisibility + "\">"
+    sHTML += "Row Break Indicator: " \
+        " <span id=\"output_row_delimiter_label\"" \
+        " class=\"delimiter_label code\">" + sRowDelimiterLabel + "</span>"
+    sHTML += "<img class=\"pointer\" src=\"static/images/icons/search.png\" alt=\"\" title=\"Select a Delimiter\" name=\"delimiter_picker_btn\" target=\"row\" />"
+    sHTML += "<img class=\"pointer\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Clear this Delimiter\" name=\"delimiter_clear_btn\" target=\"row\" style=\"width:12px;height:12px;\" />"; sHTML += "</span>"
+
+    sHTML += "<span id=\"col_delimiter\" class=\"" + sColDelimiterVisibility + "\">"
+    sHTML += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Field Break Indicator: " \
+        " <span id=\"output_col_delimiter_label\"" \
+        " class=\"delimiter_label code\">" + sColumnDelimiterLabel + "</span>"
+    sHTML += "<img class=\"pointer\" src=\"static/images/icons/search.png\" alt=\"\" title=\"Select a Delimiter\" name=\"delimiter_picker_btn\" target=\"col\" />"
+    sHTML += "<img class=\"pointer\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Clear this Delimiter\" name=\"delimiter_clear_btn\" target=\"col\" style=\"width:12px;height:12px;\" />"; sHTML += "</span>"
+    sHTML += "</span>"
+    sHTML += "</div>"
+
+    sHTML += "</div>"
+    # END DELIMITER SECTION
+
+
+    sHTML += "<div id=\"div_variables\">"
+    sHTML += "<div><span id=\"variable_add_btn\">" \
+        "<img src=\"static/images/icons/bookmark_add_32.png\" width=\"16\" height=\"16\"" \
+        " alt=\"Add Variable\" title=\"Add Variable\"/> Add a Variable</span><span id=\"variable_clearall_btn\">" \
+        "<img src=\"static/images/icons/bookmark_delete_32.png\" width=\"16\" height=\"16\"" \
+        " alt=\"Clear All Variables\" title=\"Clear All Variables\"/> Clear All Variables</span></div><hr />"
+    sHTML += GetVariablesForStepForEdit(oStep)
+    sHTML += "</div>"
+
+    return sHTML
+
+def GetVariablesForStepForEdit(oStep):
+    sStepID = oStep.ID
+
+    sHTML = ""
+    
+    # build the HTML
+    sHTML += "<ul id=\"edit_variables\" class=\"variables\">"
+    
+    # if the xml is empty, we still need to return the UL so the gui will work.
+    xDoc = oStep.VariableXDoc
+    if xDoc is None:
+        return sHTML + "</ul>\n"
+
+    # if the document is missing the root node, we still need to return the UL.
+    xVars = xDoc.findall("variable")
+    if xVars is None:
+        return sHTML + "</ul>\n"
+    
+    if len(xVars) > 0:
+        # loop
+        for xVar in xVars:
+            sName = xVar.findtext("name", "")
+            sType = xVar.findtext("type", "").lower()
+            sVarStrip = sName
+            sDetailStrip = ""
+            sLProp = ""
+            sRProp = ""
+            sLIdxChecked = ""
+            sRIdxChecked = ""
+            sLPosChecked = ""
+            sRPosChecked = ""
+            sVarGUID = "v" + uiCommon.NewGUID()
+            
+            if sType == "range":
+                # the markers can be a range indicator or a string.
+                if xVar.findtext("range_begin") is not None:
+                    sLProp = uiCommon.SafeHTML(xVar.findtext("range_begin", ""))
+                    sLIdxChecked = " checked=\"checked\""
+                elif xVar.findtext("prefix") is not None:
+                    sLProp = uiCommon.SafeHTML(xVar.findtext("prefix", ""))
+                    sLPosChecked = " checked=\"checked\""
+                else:
+                    return "Variable XML data for step [" + sStepID + "] does not contain a valid begin marker."
+                if xVar.findtext("range_end") is not None:
+                    sRProp = uiCommon.SafeHTML(xVar.findtext("range_end", ""))
+                    sRIdxChecked = " checked=\"checked\""
+                elif xVar.findtext("suffix") is not None:
+                    sRProp = uiCommon.SafeHTML(xVar.findtext("suffix", ""))
+                    sRPosChecked = " checked=\"checked\""
+                else:
+                    return "Variable XML data for step [" + sStepID + "] does not contain a valid end marker."
+                sVarStrip = "Variable: " \
+                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" \
+                        " validate_as=\"variable\"" \
+                        " value=\"" + sName + "\" />"
+                sDetailStrip = " will contain the output found between <br />" \
+                    "<input type=\"radio\" name=\"" + sVarGUID + "_l_mode\" value=\"index\" " + sLIdxChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" \
+                        " position / " \
+                        " <input type=\"radio\" name=\"" + sVarGUID + "_l_mode\" value=\"string\" " + sLPosChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" \
+                        " prefix " \
+                        " <input type=\"text\" class=\"w100px code prop\" id=\"" + sVarGUID + "_l_prop\"" \
+                        " value=\"" + sLProp + "\" refid=\"" + sVarGUID + "\" />" \
+                        " and " \
+                        "<input type=\"radio\" name=\"" + sVarGUID + "_r_mode\" value=\"index\" " + sRIdxChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" \
+                        " position / " \
+                        " <input type=\"radio\" name=\"" + sVarGUID + "_r_mode\" value=\"string\" " + sRPosChecked + " class=\"prop\" refid=\"" + sVarGUID + "\" />" \
+                        " suffix " \
+                        " <input type=\"text\" class=\"w100px code prop\" id=\"" + sVarGUID + "_r_prop\"" \
+                        " value=\"" + sRProp + "\" refid=\"" + sVarGUID + "\" />."
+                
+            elif sType == "delimited":
+                sLProp = xVar.findtext("position", "")
+                sVarStrip = "Variable: " \
+                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" \
+                        " validate_as=\"variable\"" \
+                        " value=\"" + sName + "\" />"
+                sDetailStrip += "" \
+                    " will contain the data from column position" \
+                        " <input type=\"text\" class=\"w100px code\" id=\"" + sVarGUID + "_l_prop\"" \
+                        " value=\"" + sLProp + "\" validate_as=\"posint\" />."
+                
+            elif sType ==  "regex":
+                sLProp = uiCommon.SafeHTML(xVar.findtext("regex", ""))
+                sVarStrip = "Variable: " \
+                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" \
+                        " validate_as=\"variable\"" \
+                        " value=\"" + sName + "\" />"
+                sDetailStrip += "" \
+                    " will contain the result of the following regular expression: " \
+                        " <br /><input type=\"text\" class=\"w98pct code\"" \
+                        " id=\"" + sVarGUID + "_l_prop\"" \
+                        " value=\"" + sLProp + "\" />."
+            elif sType ==  "xpath":
+                sLProp = uiCommon.SafeHTML(xVar.findtext("xpath", ""))
+                sVarStrip = "Variable: " \
+                    " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" \
+                        " validate_as=\"variable\"" \
+                        " value=\"" + sName + "\" />"
+                sDetailStrip += "" \
+                    " will contain the Xpath: " \
+                        " <br /><input type=\"text\" class=\"w98pct code\"" \
+                        " id=\"" + sVarGUID + "_l_prop\"" \
+                        " value=\"" + sLProp + "\" />."
+            else:
+                sHTML += "INVALID TYPE"
+            
+            
+            sHTML += "<li id=\"" + sVarGUID + "\" class=\"variable\" var_type=\"" + sType + "\">"
+            sHTML += "<span class=\"variable_name\">" + sVarStrip + "</span>"
+            sHTML += "<span class=\"variable_delete_btn\" remove_id=\"" + sVarGUID + "\">" \
+                " <img src=\"static/images/icons/fileclose.png\"" \
+                    "  alt=\"Delete Variable\" title=\"Delete Variable\" /></span>"
+            sHTML += "<span class=\"variable_detail\">" + sDetailStrip + "</span>"
+            # an error message placeholder
+            sHTML += "<br /><span id=\"" + sVarGUID + "_msg\" class=\"var_error_msg\"></span>"
+            
+            sHTML += "</li>\n"
+            
+
+    sHTML += "</ul>\n"
+
+    return sHTML
 
 def LabelNonprintable(iVal):
     if iVal == 0:

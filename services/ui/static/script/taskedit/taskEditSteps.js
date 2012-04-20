@@ -151,12 +151,6 @@ $(document).ready(function() {
         $("#" + field).change();
     });
 
-    //the onclick event of the 'popout' icon of each step
-    $("#steps .variable_popup_btn").live("click", function() {
-        var url = "taskStepVarsEdit.aspx?step_id=" + $(this).attr("step_id");
-        openWindow(url, "stepedit", "location=no,status=no,scrollbars=yes,width=800,height=700");
-    });
-
     //the onclick event of the 'delete' link of each step
     $("#steps .step_delete_btn").live("click", function() {
         $("#hidStepDelete").val($(this).attr("remove_id"));

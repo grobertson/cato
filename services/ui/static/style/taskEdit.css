@@ -602,6 +602,51 @@ tr.row td
 {
 }
 
+/* Step Variable edit dialog */
+.delimiter_label
+{
+    list-style: none;
+    display: inline-block;
+    width: 28px;
+    border: 1px solid #CCC;
+    text-align: center;
+    border-radius: 6px;
+}
+#delimiter_picker_dialog .delimiter
+{
+    font-family: Courier New;
+    font-size: 8pt;
+    color: #11A;
+    list-style: none;
+    display: inline-block;
+    width: 28px;
+    border: 1px solid #CCC;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 6px;
+}
+#edit_variables
+{
+    list-style: none;
+}
+#edit_variables .variable
+{
+    border: 1px solid #CCC;
+    list-style: none;
+    border-radius: 6px;
+    padding: 2px;
+    margin: 2px;
+}
+#edit_variables .conflicted_value
+{
+    border: solid 1px red;
+}
+#edit_variables .var_error_msg
+{
+    color: Red;
+    font-size: .75em;
+}
+
 /*Debug Panel*/
 .debug_btn
 {

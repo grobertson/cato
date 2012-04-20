@@ -105,7 +105,7 @@ class taskMethods:
             
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Task details for Task ID [" + sID + "].'}"
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetTaskCodeFromID(self):
@@ -126,7 +126,7 @@ class taskMethods:
                     return ""
             else:
                 return "{\"code\" : \"%s\"}" % (sTaskCode)
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     
@@ -149,7 +149,7 @@ class taskMethods:
                     sbString.append("<option value=\"" + dr["task_id"] + "\">" + sLabel + "</option>")
 
                 return "".join(sbString)
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
     
     def wmGetTaskVersions(self):
@@ -183,7 +183,7 @@ class taskMethods:
                         sHTML += "</li>"
 
             return sHTML
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetCommands(self):
@@ -228,7 +228,7 @@ class taskMethods:
                     sFunHTML += "</div>"
 
             return "{\"categories\" : \"%s\", \"functions\" : \"%s\"}" % (uiCommon.packJSON(sCatHTML), uiCommon.packJSON(sFunHTML))
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmCreateTask(self):
@@ -256,7 +256,7 @@ class taskMethods:
                 uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, t.ID, t.Name, "");
 
                 return "{\"id\" : \"%s\"}" % (t.ID)
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmCopyTask(self):
@@ -277,7 +277,7 @@ class taskMethods:
             
             uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, t.ID, t.Name, "Copied from " + sCopyTaskID);
             return "{\"id\" : \"%s\"}" % (sNewTaskID)
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmDeleteTasks(self):
@@ -333,7 +333,7 @@ class taskMethods:
             
             return "{\"result\" : \"success\"}"
             
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmUpdateTaskDetail(self):
@@ -404,7 +404,7 @@ class taskMethods:
 
             return "{\"result\" : \"success\"}"
             
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())           
 
 
@@ -444,7 +444,7 @@ class taskMethods:
                 sCBHTML += "</div>"
                 sCBHTML += "</li>"
             return sCBHTML
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
         
     def wmGetSteps(self):
@@ -481,7 +481,7 @@ class taskMethods:
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>"
                     
             return sHTML
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
         
     def wmGetStep(self):
@@ -509,7 +509,7 @@ class taskMethods:
 
             # return the html
             return sStepHTML
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmAddStep(self):
@@ -522,7 +522,6 @@ class taskMethods:
             sUserID = uiCommon.GetSessionUserID()
 
             sStepHTML = ""
-            sErr = ""
             sSQL = ""
             sNewStepID = ""
             
@@ -600,47 +599,47 @@ class taskMethods:
                 sOPM = "0"
 
                 # gotta do a few things to the templatexml
-                xdTemplate = ET.fromstring(func.TemplateXML)
-                if xdTemplate is not None:
-                    xe = xdTemplate.find("function")
-                    if xe is not None:
-                        # get the OPM
-                        sOPM = xe.get("parse_method", "0")
-                        # it's possible that variables=true and parse_method=0..
-                        # (don't know why you'd do that on purpose, but whatever.)
-                        # but if there's NO parse method attribute, and yet there is a 'variables=true' attribute
-                        # well, we can't let the absence of a parse_method negate it,
-                        # so the default is "2".
-                        sPopVars = xe.get("variables", "false")
-                        if uiCommon.IsTrue(sPopVars) and sOPM == "0":
-                            sOPM = "2"
-                        
-                        
-                        # there may be some provided values ... so alter the func.TemplateXML accordingly
-                        for sXPath, sValue in dValues.iteritems():
-                            xNode = xe.find(sXPath)
-                            if xNode is not None:
-                                xNode.text = dValues[sXPath]
+                xe = ET.fromstring(func.TemplateXML)
+                if xe is not None:
+                    # get the OPM
+                    sOPM = xe.get("parse_method", "0")
+                    # it's possible that variables=true and parse_method=0..
+                    # (don't know why you'd do that on purpose, but whatever.)
+                    # but if there's NO parse method attribute, and yet there is a 'variables=true' attribute
+                    # well, we can't let the absence of a parse_method negate it,
+                    # so the default is "2".
+                    sPopVars = xe.get("variables", "false")
+                    print sPopVars
+                    print sOPM
+                    if uiCommon.IsTrue(sPopVars) and sOPM == "0":
+                        sOPM = "2"
+                    
+                    
+                    # there may be some provided values ... so alter the func.TemplateXML accordingly
+                    for sXPath, sValue in dValues.iteritems():
+                        xNode = xe.find(sXPath)
+                        if xNode is not None:
+                            xNode.text = dValues[sXPath]
                 
-                sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
-                    " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
-                    " function_name, function_xml)" \
-                    " values (" \
-                    "'" + sNewStepID + "'," \
-                    "'" + sTaskID + "'," + \
-                    ("'" + sCodeblockName + "'" if sCodeblockName else "null") + "," \
-                    "-1," \
-                    "0,0," + sOPM + ",0,0," \
-                    "'" + func.Name + "'," \
-                    "'" + ET.tostring(xdTemplate) + "'" \
-                    ")"
-
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiGlobals.request.Messages.append("Unable to add step." + uiGlobals.request.db.error)
-
-                uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
-                    "Added Command Type:" + sItem + " to Codeblock:" + sCodeblockName)
-
+                    sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
+                        " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
+                        " function_name, function_xml)" \
+                        " values (" \
+                        "'" + sNewStepID + "'," \
+                        "'" + sTaskID + "'," + \
+                        ("'" + sCodeblockName + "'" if sCodeblockName else "null") + "," \
+                        "-1," \
+                        "0,0," + sOPM + ",0,0," \
+                        "'" + func.Name + "'," \
+                        "'" + ET.tostring(xe) + "'" \
+                        ")"
+                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                        uiGlobals.request.Messages.append("Unable to add step." + uiGlobals.request.db.error)
+    
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
+                        "Added Command Type:" + sItem + " to Codeblock:" + sCodeblockName)
+                else:
+                    uiGlobals.request.Messages.append("Unable to add step.  No template xml.")
             if sNewStepID:
                 # now... get the newly inserted step and draw it's HTML
                 oNewStep = task.Step.ByIDWithSettings(sNewStepID, sUserID)
@@ -652,8 +651,8 @@ class taskMethods:
                 # return the html
                 return "{\"step_id\":\"" + sNewStepID + "\",\"step_html\":\"" + uiCommon.packJSON(sStepHTML) + "\"}"
             else:
-                uiGlobals.request.Messages.append("Unable to add step.  No new step_id." + sErr)
-        except Exception, ex:
+                uiGlobals.request.Messages.append("Unable to add step.  No new step_id.")
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmReorderSteps(self):
@@ -674,7 +673,7 @@ class taskMethods:
                 i += 1
 
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmDeleteStep(self):
@@ -734,7 +733,7 @@ class taskMethods:
             uiGlobals.request.db.tran_commit()
             
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
     
     def wmUpdateStep(self):
@@ -889,7 +888,7 @@ class taskMethods:
                 return ""
             else:
                 uiGlobals.request.Messages.append("Unable to toggle step button. Missing or invalid step_id.")
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             
     def wmToggleStep(self):
@@ -922,7 +921,7 @@ class taskMethods:
                 return ""
             else:
                 uiCommon.log("Unable to toggle step visibility. Missing or invalid step_id.", 2)
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnSetvarAddVar(self):
@@ -937,7 +936,7 @@ class taskMethods:
                 "</variable>")
 
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnClearvarAddVar(self):
@@ -948,7 +947,7 @@ class taskMethods:
             ST.AddToCommandXML(sStepID, "function", "<variable><name input_type=\"text\"></name></variable>")
 
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnExistsAddVar(self):
@@ -961,7 +960,7 @@ class taskMethods:
                 "</variable>")
 
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnVarRemoveVar(self):
@@ -976,7 +975,7 @@ class taskMethods:
                 return ""
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnWaitForTasksRemoveHandle(self):
@@ -988,7 +987,7 @@ class taskMethods:
                 return ""
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnWaitForTasksAddHandle(self):
@@ -996,7 +995,7 @@ class taskMethods:
         try:
             ST.AddToCommandXML(sStepID, "function", "<handle><name input_type=\"text\"></name></handle>")
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnAddPair(self):
@@ -1005,7 +1004,7 @@ class taskMethods:
             ST.AddToCommandXML(sStepID, "function", "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
 
             return ""
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmFnRemovePair(self):
@@ -1018,7 +1017,7 @@ class taskMethods:
                 return ""
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmTaskSearch(self):
@@ -1084,5 +1083,131 @@ class taskMethods:
             sHTML += "</ul>"
 
             return sHTML
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetStepVarsEdit(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        sUserID = uiCommon.GetSessionUserID()
+
+        oStep = ST.GetSingleStep(sStepID, sUserID)
+        fn = uiCommon.GetTaskFunction(oStep.FunctionName)
+        if fn is None:
+            uiGlobals.request.Messages.append("Error - Unable to get the details for the Command type '" + oStep.FunctionName + "'.")
+        
+        # we will return some key values, and the html for the dialog
+        sHTML = ST.DrawVariableSectionForEdit(oStep)
+        
+        if not sHTML:
+            sHTML = "<span class=\"red_text\">Unable to get command variables.</span>"
+
+        return '{"parse_type":"%d","row_delimiter":"%d","col_delimiter":"%d","html":"%s"}' % \
+            (oStep.OutputParseType, oStep.OutputRowDelimiter, oStep.OutputColumnDelimiter, uiCommon.packJSON(sHTML))
+
+    def wmUpdateVars(self):
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sOPM = uiCommon.getAjaxArg("sOPM")
+            sRowDelimiter = uiCommon.getAjaxArg("sRowDelimiter")
+            sColDelimiter = uiCommon.getAjaxArg("sColDelimiter")
+            oVarArray = uiCommon.getAjaxArg("oVarArray")
+            
+            # if every single variable is delimited, we can sort them!
+            bAllDelimited = True
+            
+            # # update the processing method
+            # sOutputProcessingType = sOutputProcessingType.replace("'", "''")
+    
+            # we might need to do something special for some function types
+    
+            # removed this on 10/6/09 because we are hiding "output type"
+            #                 " output_parse_type = '" + sOutputProcessingType + "'," \
+    
+            sSQL = "update task_step set " \
+                " output_row_delimiter = '" + sRowDelimiter + "'," \
+                " output_column_delimiter = '" + sColDelimiter + "'" \
+                " where step_id = '" + sStepID + "';"
+    
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+    
+            # 1 - create a new xdocument
+            # 2 - spin thru adding the variables
+            # 3 - commit the whole doc at once to the db
+    
+            xVars = ET.Element("variables")
+    
+            # spin thru the variable array from the client
+            for oVar in oVarArray:
+                # [0 - var type], [1 - var_name], [2 - left property], [3 - right property], [4 - left property type], [5 - right property type]
+    
+                # I'm just declaring named variable here for readability
+                sVarName = str(oVar[0])  # no case conversion
+                sVarType = str(oVar[1]).lower()
+                sLProp = str(uiCommon.unpackJSON(oVar[2]))
+                sRProp = str(uiCommon.unpackJSON(oVar[3]))
+                sLType = str(oVar[4])
+                sRType = str(oVar[5])
+    
+                xVar = ET.SubElement(xVars, "variable")
+                xVarName = ET.SubElement(xVar, "name")
+                xVarName.text = sVarName
+                xVarType = ET.SubElement(xVar, "type")
+                xVarType.text = sVarType
+    
+                # now that we've added it, based on the type let's add the custom properties
+                if sVarType == "delimited":
+                    x = ET.SubElement(xVar, "position")
+                    x.text = sLProp
+                elif sVarType == "regex":
+                    bAllDelimited = False
+                    x = ET.SubElement(xVar, "regex")
+                    x.text = sLProp
+                elif sVarType == "range":
+                    bAllDelimited = False
+                    # we favor the 'string' mode over the index.  If a person selected 'index' that's fine
+                    # but if something went wrong, we default to prefix/suffix.
+                    if sLType == "index":
+                        x = ET.SubElement(xVar, "range_begin")
+                        x.text = sLProp
+                    else:
+                        x = ET.SubElement(xVar, "prefix")
+                        x.text = sLProp
+    
+                    if sRType == "index":
+                        x = ET.SubElement(xVar, "range_end")
+                        x.text = sRProp
+                    else:
+                        x = ET.SubElement(xVar, "suffix")
+                        x.text = sRProp
+                elif sVarType == "xpath":
+                    bAllDelimited = False
+                    x = ET.SubElement(xVar, "xpath")
+                    x.text = sLProp
+    
+            # if it's delimited, sort it
+            if sOPM == "1" or bAllDelimited == True:
+                print "would sort"
+    #            List<XElement> ordered = xVars.Elements("variable")
+    #                .OrderBy(element => (int?)element.Element("position"))
+    #                    .ToList()
+    #            
+    #            xVars.RemoveAll()
+    #            xVars.Add(ordered)
+            
+            
+            uiCommon.log("Saving variables ...", 4)
+            uiCommon.log(ET.tostring(xVars), 4)
+            
+            sSQL = "update task_step set " \
+                " variable_xml = '" + uiCommon.TickSlash(ET.tostring(xVars)) + "'" \
+                " where step_id = '" + sStepID + "';"
+    
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+

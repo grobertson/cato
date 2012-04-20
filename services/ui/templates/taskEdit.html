@@ -1,5 +1,5 @@
 $def with ()
-$var jsfiles: taskedit/taskEdit.js 	taskedit/taskView.js taskedit/taskVersions.js taskedit/taskEditDebug.js taskedit/taskEditCodeblock.js taskedit/taskEditParams.js taskedit/taskEditSteps.js taskedit/taskEditCommandSpecific.js jquery/jquery.rightClick.js jquery/jquery.ui.ufd-0.6/jquery.ui.ufd.js toolbox.js validation.js objectTag.js registry.js parametersOnDialog.js taskLaunchDialog.js logViewDialog.js
+$var jsfiles: taskedit/taskEdit.js 	taskedit/taskView.js taskedit/taskVersions.js taskedit/taskEditDebug.js taskedit/taskEditCodeblock.js taskedit/taskEditParams.js taskedit/taskEditSteps.js taskedit/taskEditCommandSpecific.js taskedit/taskStepVarsEdit.js jquery/jquery.rightClick.js jquery/jquery.ui.ufd-0.6/jquery.ui.ufd.js toolbox.js validation.js objectTag.js registry.js parametersOnDialog.js taskLaunchDialog.js logViewDialog.js
 	
 $var cssfiles: registry.css taskEdit.css taskView.css
 
@@ -58,9 +58,9 @@ $var cssfiles: registry.css taskEdit.css taskView.css
         </div>
         <div id="div_versions" class="toolbox_panel hidden">
             <span class="detail_label">Selected Version:</span>
-            <asp:Label ID="lblVersion" class="code"></asp:Label><br />
+            <span id="lblVersion" class="code"></span><br />
             <span class="detail_label">Status: </span>
-            <asp:Label ID="lblStatus2" class="code"></asp:Label><br />
+            <span id="lblStatus2" class="code"></span><br />
             <input type="button" id="approve_btn" value="Approve" />
             <hr />
             <span class="detail_label">All Versions:</span>
@@ -96,10 +96,10 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             </p>-->
             <p>
                 Last Run Time:
-                <asp:Label ID="lblLastRunDT"></asp:Label><br />
+                <span id="lblLastRunDT"></span><br />
                 Last Run Status:
-                <asp:Label ID="lblLastRunStatus"></asp:Label>
-                <asp:Image ID="debug_view_latest_log" class="debug_btn" ImageUrl="static/images/icons/view_text_16.png"
+                <span id="lblLastRunStatus"></span>
+                <span id="debug_view_latest_log" class="debug_btn" ImageUrl="static/images/icons/view_text_16.png"
                     />
             </p>
             <br />
@@ -107,7 +107,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             <br />
             <p style="text-align: center;">
                 Current Status:
-                <asp:Label ID="lblCurrentStatus"></asp:Label>
+                <span id="lblCurrentStatus"></span>
                 <br />
                 <img id="debug_stop_btn" class="debug_btn" src="static/images/icons/player_stop_32.png"
                     alt="" />
@@ -159,9 +159,9 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 <div id="content_te">
     <center>
         <h3>
-            <asp:Label ID="lblTaskNameHeader"></asp:Label>
+            <span id="lblTaskNameHeader"></span>
             <span id="version_tag">Version:
-                <asp:Label ID="lblVersionHeader"></asp:Label></span></h3>
+                <span id="lblVersionHeader"></span></span></h3>
     </center>
     <div class="te_help_box">
         <img src="static/images/icons/about_24.png" height="16px" width="16px" alt="" />
@@ -293,12 +293,12 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 </div>
 <div id="addVersion_dialog" class="hidden" title="Create Another Version">
     Current Version Number:
-    <asp:Label ID="lblCurrentVersion" Text="" />
+    <span id="lblCurrentVersion" Text="" />
     <center>
         <input id="rbMinor" checked="checked" name="rbMinorMajor" value="Minor" type="radio" />
-        <asp:Label ID="lblNewMinor" Text="New Minor Version" /><br />
+        <span id="lblNewMinor" Text="New Minor Version" /><br />
         <input id="rbMajor" name="rbMinorMajor" value="Major" type="radio" />
-        <asp:Label ID="lblNewMajor" Text="New Major Version" /><br />
+        <span id="lblNewMajor" Text="New Major Version" /><br />
         <input type="button" value="Create New Version" onclick="CreateNewVersion();return false;" />
         <input type="button" value="Cancel" onclick="CloseVersionDialog();return false;" />
     </center>
@@ -361,3 +361,201 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 </div>
 <!-- End Registry dialogs.-->
 <input type="hidden" id="reg_type" value="task" />
+<!-- Step Variable Edit dialog. -->
+<div id="step_var_edit_dialog" title="Edit Command Variables">
+    <div id="phVars" runat="server"></div>
+    <div class="hidden">
+        <input type="hidden" id="hidStepID" />
+        <input type="hidden" id="hidOutputParseType" />
+        <input type="hidden" id="hidRowDelimiter" />
+        <input type="hidden" id="hidColDelimiter" />
+        <input type="hidden" id="delimiter_picker_target" />
+    </div>
+</div>
+<div id="delimiter_picker_dialog" title="Select a Delimiter">
+    <ol id="ol_delimiters">
+        <li id="d_9" class="delimiter" val="9">TAB</li>
+        <li id="d_10" class="delimiter" val="10">LF</li>
+        <li id="d_27" class="delimiter" val="27">ESC</li>
+        <li id="d_32" class="delimiter" val="32">SP</li>
+        <li id="d_33" class="delimiter" val="33">&#33;</li>
+        <li id="d_34" class="delimiter" val="34">&#34;</li>
+        <li id="d_35" class="delimiter" val="35">&#35;</li>
+        <li id="d_36" class="delimiter" val="36">&#36;</li>
+        <li id="d_37" class="delimiter" val="37">&#37;</li>
+        <li id="d_38" class="delimiter" val="38">&#38;</li>
+        <li id="d_39" class="delimiter" val="39">&#39;</li>
+        <li id="d_40" class="delimiter" val="40">&#40;</li>
+        <li id="d_41" class="delimiter" val="41">&#41;</li>
+        <li id="d_42" class="delimiter" val="42">&#42;</li>
+        <li id="d_43" class="delimiter" val="43">&#43;</li>
+        <li id="d_44" class="delimiter" val="44">&#44;</li>
+        <li id="d_45" class="delimiter" val="45">&#45;</li>
+        <li id="d_46" class="delimiter" val="46">&#46;</li>
+        <li id="d_47" class="delimiter" val="47">&#47;</li>
+        <li id="d_48" class="delimiter" val="48">&#48;</li>
+        <li id="d_49" class="delimiter" val="49">&#49;</li>
+        <li id="d_50" class="delimiter" val="50">&#50;</li>
+        <li id="d_51" class="delimiter" val="51">&#51;</li>
+        <li id="d_52" class="delimiter" val="52">&#52;</li>
+        <li id="d_53" class="delimiter" val="53">&#53;</li>
+        <li id="d_54" class="delimiter" val="54">&#54;</li>
+        <li id="d_55" class="delimiter" val="55">&#55;</li>
+        <li id="d_56" class="delimiter" val="56">&#56;</li>
+        <li id="d_57" class="delimiter" val="57">&#57;</li>
+        <li id="d_58" class="delimiter" val="58">&#58;</li>
+        <li id="d_59" class="delimiter" val="59">&#59;</li>
+        <li id="d_60" class="delimiter" val="60">&#60;</li>
+        <li id="d_61" class="delimiter" val="61">&#61;</li>
+        <li id="d_62" class="delimiter" val="62">&#62;</li>
+        <li id="d_63" class="delimiter" val="63">&#63;</li>
+        <li id="d_64" class="delimiter" val="64">&#64;</li>
+        <li id="d_65" class="delimiter" val="65">&#65;</li>
+        <li id="d_66" class="delimiter" val="66">&#66;</li>
+        <li id="d_67" class="delimiter" val="67">&#67;</li>
+        <li id="d_68" class="delimiter" val="68">&#68;</li>
+        <li id="d_69" class="delimiter" val="69">&#69;</li>
+        <li id="d_70" class="delimiter" val="70">&#70;</li>
+        <li id="d_71" class="delimiter" val="71">&#71;</li>
+        <li id="d_72" class="delimiter" val="72">&#72;</li>
+        <li id="d_73" class="delimiter" val="73">&#73;</li>
+        <li id="d_74" class="delimiter" val="74">&#74;</li>
+        <li id="d_75" class="delimiter" val="75">&#75;</li>
+        <li id="d_76" class="delimiter" val="76">&#76;</li>
+        <li id="d_77" class="delimiter" val="77">&#77;</li>
+        <li id="d_78" class="delimiter" val="78">&#78;</li>
+        <li id="d_79" class="delimiter" val="79">&#79;</li>
+        <li id="d_80" class="delimiter" val="80">&#80;</li>
+        <li id="d_81" class="delimiter" val="81">&#81;</li>
+        <li id="d_82" class="delimiter" val="82">&#82;</li>
+        <li id="d_83" class="delimiter" val="83">&#83;</li>
+        <li id="d_84" class="delimiter" val="84">&#84;</li>
+        <li id="d_85" class="delimiter" val="85">&#85;</li>
+        <li id="d_86" class="delimiter" val="86">&#86;</li>
+        <li id="d_87" class="delimiter" val="87">&#87;</li>
+        <li id="d_88" class="delimiter" val="88">&#88;</li>
+        <li id="d_89" class="delimiter" val="89">&#89;</li>
+        <li id="d_90" class="delimiter" val="90">&#90;</li>
+        <li id="d_91" class="delimiter" val="91">&#91;</li>
+        <li id="d_92" class="delimiter" val="92">&#92;</li>
+        <li id="d_93" class="delimiter" val="93">&#93;</li>
+        <li id="d_94" class="delimiter" val="94">&#94;</li>
+        <li id="d_95" class="delimiter" val="95">&#95;</li>
+        <li id="d_96" class="delimiter" val="96">&#96;</li>
+        <li id="d_97" class="delimiter" val="97">&#97;</li>
+        <li id="d_98" class="delimiter" val="98">&#98;</li>
+        <li id="d_99" class="delimiter" val="99">&#99;</li>
+        <li id="d_100" class="delimiter" val="100">&#100;</li>
+        <li id="d_101" class="delimiter" val="101">&#101;</li>
+        <li id="d_102" class="delimiter" val="102">&#102;</li>
+        <li id="d_103" class="delimiter" val="103">&#103;</li>
+        <li id="d_104" class="delimiter" val="104">&#104;</li>
+        <li id="d_105" class="delimiter" val="105">&#105;</li>
+        <li id="d_106" class="delimiter" val="106">&#106;</li>
+        <li id="d_107" class="delimiter" val="107">&#107;</li>
+        <li id="d_108" class="delimiter" val="108">&#108;</li>
+        <li id="d_109" class="delimiter" val="109">&#109;</li>
+        <li id="d_110" class="delimiter" val="110">&#110;</li>
+        <li id="d_111" class="delimiter" val="111">&#111;</li>
+        <li id="d_112" class="delimiter" val="112">&#112;</li>
+        <li id="d_113" class="delimiter" val="113">&#113;</li>
+        <li id="d_114" class="delimiter" val="114">&#114;</li>
+        <li id="d_115" class="delimiter" val="115">&#115;</li>
+        <li id="d_116" class="delimiter" val="116">&#116;</li>
+        <li id="d_117" class="delimiter" val="117">&#117;</li>
+        <li id="d_118" class="delimiter" val="118">&#118;</li>
+        <li id="d_119" class="delimiter" val="119">&#119;</li>
+        <li id="d_120" class="delimiter" val="120">&#120;</li>
+        <li id="d_121" class="delimiter" val="121">&#121;</li>
+        <li id="d_122" class="delimiter" val="122">&#122;</li>
+        <li id="d_123" class="delimiter" val="123">&#123;</li>
+        <li id="d_124" class="delimiter" val="124">&#124;</li>
+        <li id="d_125" class="delimiter" val="125">&#125;</li>
+        <li id="d_126" class="delimiter" val="126">&#126;</li>
+    </ol>
+</div>
+<div id="variable_add_dialog_delimited" title="Define Variable" class="ui-state-highlight">
+    <table class="w100pct" border="0">
+        <tr>
+            <td width="40%">
+                Variable:
+            </td>
+            <td>
+                <input type="text" id="new_delimited_var_name" class="var_name w100pct code" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Column Position:
+            </td>
+            <td>
+                <input type="text" id="new_delimited_position" class="w100pct code" />
+            </td>
+        </tr>
+        <tr>
+            <td align="center" colspan="2">
+                <span id="delimited_msg" class="var_error_msg"></span>
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="variable_add_dialog_parsed" title="Define Variable" class="ui-state-highlight">
+    <table class="w100pct" border="0">
+        <tr>
+            <td colspan="3" align="center">
+                <input type="radio" name="parsed_type" value="delimited" />
+                Delimited&nbsp;
+                <input type="radio" name="parsed_type" value="range" checked="checked" />
+                Range&nbsp;
+                <input type="radio" name="parsed_type" value="regex" />
+                Regex&nbsp;
+                <input type="radio" name="parsed_type" value="xpath" />
+                Xpath&nbsp;
+                <hr />
+            </td>
+        </tr>
+        <tr>
+            <td width="40%">
+                Variable:
+            </td>
+            <td colspan="2">
+                <input type="text" id="new_parsed_var_name" class="var_name w100pct code" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span id="new_parsed_l_label">Begin Position:</span>
+            </td>
+            <td>
+                <div id="parsed_lmode_div">
+                    <input type="radio" name="parsed_lmode_rb" value="index" checked="checked" />Position
+                    <br />
+                    <input type="radio" name="parsed_lmode_rb" value="string" />Prefix
+                </div>
+            </td>
+            <td valign="middle">
+                <input type="text" id="new_parsed_l_val" class="w100pct code" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span id="new_parsed_r_label">End Position:</span>
+            </td>
+            <td>
+                <div id="parsed_rmode_div">
+                    <input type="radio" name="parsed_rmode_rb" value="index" checked="checked" />Position
+                    <br />
+                    <input type="radio" name="parsed_rmode_rb" value="string" />Suffix
+                </div>
+            </td>
+            <td valign="middle">
+                <input type="text" id="new_parsed_r_val" class="w100pct code" />
+            </td>
+        </tr>
+        <tr>
+            <td align="center" colspan="3">
+                <span id="parsed_msg" class="var_error_msg"></span>
+            </td>
+        </tr>
+    </table>
+</div>

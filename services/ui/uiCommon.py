@@ -32,7 +32,6 @@ def log(msg, debuglevel = 2):
             print user_id + " :"
             print msg
 
-
 def getAjaxArg(sArg, sDefault=""):
     data = uiGlobals.web.data()
     dic = json.loads(data)
@@ -76,18 +75,27 @@ def IsTrue(var):
     # but false if the string has length but isn't a "true" statement
     # since any object could be passed here (we only want bools, ints or strs)
     # we just cast it to a str
+    
+    # JUST BE AWARE, this isn't standard python truth testing.
+    # So, "foo" will be false... where if "foo" would be true in pure python
     s = str(var).lower()
-    if len(s) > 0 and str(var).lower() in "true,yes,on,enable,enabled":
-        return True
-    else:
-        # wasn't an explicit string match, return the regular python truth value
-        if var:
+    if len(s) > 0:
+        if str(var).lower() in "true,yes,on,enable,enabled":
             return True
         else:
-            return False
+            # let's see if it was a number, in which case we can just test it
+            try:
+                int(s)
+                if s > 0:
+                    return True
+            except Exception:
+                """no exception, it just wasn't parseable into an int"""
+                
+    return False
          
 def TickSlash(s):
-    return s.replace("'", "''").replace("\\", "\\\\")
+    """ Prepares string values for string concatenation, or insertion into MySql. """
+    return s.replace("'", "''").replace("\\", "\\\\").replace("%", "%%")
 
 def packJSON(sIn):
     if not sIn:
