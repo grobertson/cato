@@ -2,7 +2,9 @@ $(document).ready(function () {
     //any page that includes this script will get the following dialog inner code
     //but the page requires a placeholder div... called "storm_run_dialog"
     var d = 'Filter: <input type="text" id="log_view_dialog_search" />' +
-    	'<span id="lblMaxRows"># of Results <input id="log_view_dialog_records" /></span>' +
+    	'<span># of Results <input id="log_view_dialog_records" /></span>' +
+    	'<br /><span style="z-index: 1200;">Begin Date<input id="log_view_dialog_from" class="datepicker" /></span>' +
+    	'<span style="z-index: 1200;">End Date<input id="log_view_dialog_to" class="datepicker" /></span>' +
     	'<span id="log_search_btn">Search</span>' +
 		'<table class="jtable" cellspacing="1" cellpadding="1" width="100%" style="font-size: 0.8em;">' +
 		'<thead><tr>' +
@@ -14,6 +16,9 @@ $(document).ready(function () {
         '</tbody>';
 
     $("#log_view_dialog").prepend(d);
+
+	//init the datepickers
+	$(".datepicker").datepicker({ clickInput: true });
 
     //init the dialogs
     $("#log_view_dialog").dialog({
@@ -69,8 +74,8 @@ function GetLog() {
 	
 	search = $("#log_view_dialog_search").val();
 	// will come from the pickers.
-	from = "";
-	to = "";
+	from = $("#log_view_dialog_from").val();;
+	to = $("#log_view_dialog_to").val();
 	records = $("#log_view_dialog_records").val();
     
     $.ajax({
@@ -86,7 +91,7 @@ function GetLog() {
         	} else if (response.log) {
 	            //spin the json and build a table
 	            $.each(response.log, function() {
-                	$("#log_view_dialog_results").append("<tr><td>" + this[0] + "</td><td>" + this[1] + "</td><td>" + this[2] + "</td></tr>");
+                	$("#log_view_dialog_results").append("<tr><td>" + this[0] + "</td><td>" + unpackJSON(this[1]) + "</td><td>" + unpackJSON(this[2]) + "</td></tr>");
             	});
             	initJtable(true, false);
         	} else {
