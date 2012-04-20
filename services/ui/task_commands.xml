@@ -56,8 +56,8 @@
 			</command>
 			<command name="get_instance_handle" label="Get Task Instance" description="Gets a handle on a running Task Instance." help="&lt;b&gt;Wait For Task&lt;/b&gt;&lt;p&gt;Get a handle on a running Task Instance.  Enter a Task Instance number, and the command will return variable handle exposing all the properties of the running Task.&lt;/p&gt;&lt;p&gt;Note: Enter Handle names as text, such as MYHANDLE, not in variable reference syntax [[MYHANDLE]].&lt;/p&gt;" icon="static/images/icons/get_instance_32.png">
 				<function command_type="get_instance_handle">
-					<instance input_type="text" />
-					<handle input_type="text" />
+					<instance input_type="text" label="Task Instance" />
+					<handle input_type="text" label="Handle" />
 				</function>
 			</command>
 			<command name="set_debug_level" label="Set Logging Level" description="Changes the logging level of the running Task." help="&lt;b&gt;Set Logging Level&lt;/b&gt;&lt;br&gt;Set Logging Level is used to change the output logging level of the Task currently executing.&lt;br /&gt;&lt;br /&gt;Useful for turning logging off in high transaction Tasks, then enabling the output of just a few key statements needed for debugging.&lt;br /&gt;&lt;br /&gt;``variables`` are permitted." icon="static/images/icons/debug_level_32.png">
