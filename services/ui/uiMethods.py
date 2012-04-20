@@ -1,11 +1,10 @@
 import sys
 import traceback
 import urllib
-import json
-import xml.etree.ElementTree as ET
 import uiGlobals
 import uiCommon
 from catocommon import catocommon
+import cloud
 
 # unlike uiCommon, which is used for shared ui elements
 # this is a methods class mapped to urls for web.py
@@ -81,7 +80,7 @@ class login:
             uiCommon.log("Creating session...", 3)
                 
             raise uiGlobals.web.seeother('/home')
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
         finally:
             if uiGlobals.request:
@@ -138,25 +137,21 @@ class uiMethods:
 
     def wmGetCloudAccountsForHeader(self):
         try:
-            #Gotta get this list from the list stored in the session.
-            # or, quit using session and read from the db each time (preferred)
-            
-            #this should select the active one in the session
-            """sHTML = ""
+            sSelected = uiCommon.GetCookie("selected_cloud_account")
+
+            sHTML = ""
             ca = cloud.CloudAccounts()
             ca.Fill("")
-            print ca.DataTable
             if ca.DataTable:
                 for row in ca.DataTable:
-                    sHTML +=  "<option value=\"%s\">%s</option>" % (row[0], row[1])
+                    sSelectClause = ("selected=\"selected\"" if sSelected == row["account_id"] else "")
+                    sHTML +=  "<option value=\"%s\" provider=\"%s\" %s>%s</option>" % (row["account_id"], row["provider"], sSelectClause, row["account_name"])
 
                 return sHTML
             
             #should not get here if all is well
             return "<option>ERROR</option>"
-            """
-            return "<option>NOT REAL!</option>"
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmUpdateHeartbeat(self):
@@ -234,7 +229,7 @@ class uiMethods:
             
             return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
 
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetLog(self):
@@ -245,6 +240,8 @@ class uiMethods:
             sObjectType = uiCommon.getAjaxArg("sObjectType")
             sSearch = uiCommon.getAjaxArg("sSearch")
             sRecords = uiCommon.getAjaxArg("sRecords", "100")
+            sFrom = uiCommon.getAjaxArg("sFrom", "")
+            sTo = uiCommon.getAjaxArg("sTo", "")
             
             sWhereString = "(1=1)"
             if sObjectID:
@@ -261,6 +258,11 @@ class uiMethods:
                     "or u.full_name like '%%" + sSearch.replace("'", "''") + "%%' " \
                     "or usl.log_msg like '%%" + sSearch.replace("'", "''") + "%%') "
             
+            if sFrom:
+                sDateSearchString += " and usl.log_dt >= str_to_date('" + sFrom + "', '%%m/%%d/%%Y')"
+            if sTo:
+                sDateSearchString += " and usl.log_dt <= str_to_date('" + sTo + "', '%%m/%%d/%%Y')"
+                
             sSQL = "select usl.log_msg as log_msg," \
                 " convert(usl.log_dt, CHAR(20)) as log_dt, u.full_name" \
                 " from user_security_log usl" \
@@ -279,8 +281,8 @@ class uiMethods:
                 for row in rows:
                     sb.append("[")
                     sb.append("\"%s\", " % (row["log_dt"]))
-                    sb.append("\"%s\", " % (row["full_name"]))
-                    sb.append("\"%s\"" % (row["log_msg"]))
+                    sb.append("\"%s\", " % (uiCommon.packJSON(row["full_name"])))
+                    sb.append("\"%s\"" % (uiCommon.packJSON(row["log_msg"])))
                     sb.append("]")
                 
                     #the last one doesn't get a trailing comma
@@ -293,7 +295,16 @@ class uiMethods:
 
             return "{ \"log\" : [ %s ] }" % (sLog)
 
-        except Exception, ex:
+        except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmGetDatabaseTime(self):
+        sNow = uiGlobals.request.db.select_col_noexcep("select now()")
+        if uiGlobals.request.db.error:
+            return uiGlobals.request.db.error
+        
+        if sNow:
+            return str(sNow)
+        else:
+            return "Unable to get system time."
         

@@ -16,8 +16,22 @@ import providers
 # also prints to the console.
 def log(msg, debuglevel = 2):
     if debuglevel <= uiGlobals.debuglevel:
-        uiGlobals.server.output(msg)
-        print msg
+        user_id = ""
+        try:
+            user_id = GetSessionUserID()
+        except:
+            """ do nothing if there's no user - it may be pre-login """
+            
+        try:
+            uiGlobals.server.output(user_id + " : " + str(msg))
+            print user_id + " :" + str(msg)
+        except:
+            # maybe they couldn't be concatenated? if so, do them on separate lines
+            uiGlobals.server.output(user_id + " : ")
+            uiGlobals.server.output(msg)
+            print user_id + " :"
+            print msg
+
 
 def getAjaxArg(sArg, sDefault=""):
     data = uiGlobals.web.data()
@@ -27,6 +41,21 @@ def getAjaxArg(sArg, sDefault=""):
         return dic[sArg]
     else:
         return sDefault
+
+def GetCookie(sCookie):
+    cookie=uiGlobals.web.cookies().get(sCookie)
+    if cookie:
+        return cookie
+    else:
+        log("Warning: Attempt to retrieve cookie [%s] failed - cookie doesn't exist." % sCookie, 2)
+        return ""
+
+def SetCookie(sCookie, sValue):
+    try:
+        uiGlobals.web.setcookie(sCookie, sValue)
+    except Exception:
+        log("Warning: Attempt to set cookie [%s] failed." % sCookie, 2)
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 def NewGUID():
     return str(uuid.uuid1())

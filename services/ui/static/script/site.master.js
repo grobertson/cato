@@ -5,7 +5,7 @@ $(document).ready(function () {
 
     //use this to define constants, set up jQuery objects, etc.
 
-    $('#main-menu').load("static/_menu.html", function() {
+    $("#main-menu").load("static/_menu.html", function() {
 	    $("ul.sf-menu").supersubs({
 	        minWidth: 18,   // minimum width of sub-menus in em units 
 	        maxWidth: 27,   // maximum width of sub-menus in em units 
@@ -16,37 +16,12 @@ $(document).ready(function () {
 	    // containing tabs for same reason.
 	});
 
-    $('#header_cloud_accounts').load("uiMethods/wmGetCloudAccountsForHeader");
-
-    //the cloud accounts dropdown updates the server session
+	getCloudAccounts();
+	
+    //note the selected one for other functions
     $("#header_cloud_accounts").change(function () {
-        $("#update_success_msg").text("Updating...").show();
-
-        var account_id = $(this).val();
-        $.ajax({
-            type: "POST",
-            async: false,
-            url: "uiMethods.asmx/wmSetActiveCloudAccount",
-            data: '{"sAccountID":"' + account_id + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-                //some pages have cloud content, but they are all different.
-                //This expects a page to have the following function...
-                //if it doesn't, nothing really happens after the ajax call.
-                //if it does, it will do some sort of nice clean refresh logic.
-                CloudAccountWasChanged();
-
-                if (msg.length > 0) {
-                    showInfo(msg);
-                }
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
+    	$.cookie("selected_cloud_account", $(this).val());
+    	$.cookie("selected_cloud_provider", $("#header_cloud_accounts option:selected").attr("provider"));
     });
 });
 
@@ -83,6 +58,23 @@ function updateHeartbeat() {
         error: function (response) {
             //nothing to do here but throw you back to the login page.
             location.href = "/logout?msg=heartbeat failed"
+        }
+    });
+}
+
+function getCloudAccounts() {
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "uiMethods/wmGetCloudAccountsForHeader",
+        data: '{"sSelected":"' + $("#selected_cloud_account").val() + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+            $("#header_cloud_accounts").empty().append(response)
+        },
+        error: function (response) {
+            showAlert(response.responseText);
         }
     });
 }

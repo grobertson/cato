@@ -169,7 +169,7 @@ class CloudAccounts(object):
             " where 1=1 " + sWhereString + " order by is_default desc, account_name"
         
         db = catocommon.new_conn()
-        self.DataTable = db.select_all(sSQL)
+        self.DataTable = db.select_all_dict(sSQL)
         db.close()
 
     def AsJSON(self):
