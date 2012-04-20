@@ -146,6 +146,9 @@ def DrawFullStep(oStep):
     return sMainHTML
 
 def GetStepTemplate(oStep):
+    if oStep.IsValid == False:
+        return "This step is damaged.  Check the log file for details.  It may be necessary to delete and recreate it.", "", ""
+
     sFunction = oStep.FunctionName
     sHTML = ""
     sOptionHTML = ""
