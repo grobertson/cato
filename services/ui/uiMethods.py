@@ -308,3 +308,153 @@ class uiMethods:
         else:
             return "Unable to get system time."
         
+    def wmGetActionPlans(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sActionID = uiCommon.getAjaxArg("sActionID")
+        sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+        try:
+            sHTML = ""
+
+            sSQL = "select plan_id, date_format(ap.run_on_dt, '%%m/%%d/%%Y %%H:%%i') as run_on_dt, ap.source, ap.action_id, ap.ecosystem_id," \
+                " ea.action_name, e.ecosystem_name, ap.source, ap.schedule_id" \
+                " from action_plan ap" \
+                " left outer join ecotemplate_action ea on ap.action_id = ea.action_id" \
+                " left outer join ecosystem e on ap.ecosystem_id = e.ecosystem_id" \
+                " where ap.task_id = '" + sTaskID + "'" + \
+                (" and ap.action_id = '" + sActionID + "'" if sActionID else "") + \
+                (" and ap.ecosystem_id = '" + sEcosystemID + "'" if sEcosystemID else "") + \
+                " order by ap.run_on_dt"
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            else:
+                for dr in dt:
+                    sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_plan\"" \
+                        " id=\"ap_" + str(dr["plan_id"]) + "\"" \
+                        " plan_id=\"" + str(dr["plan_id"]) + "\"" \
+                        " eco_id=\"" + dr["ecosystem_id"] + "\"" \
+                        " run_on=\"" + str(dr["run_on_dt"]) + "\"" \
+                        " source=\"" + dr["source"] + "\"" \
+                        " schedule_id=\"" + str(dr["schedule_id"]) + "\"" \
+                    ">"
+                    sHTML += " <div class=\"floatleft action_plan_name\">"
+
+                    # an icon denotes if it's manual or scheduled
+                    if dr["source"] == "schedule":
+                        sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator\" title=\"Scheduled\"></span>"
+                    else:
+                        sHTML += "<span class=\"floatleft ui-icon ui-icon-document\" title=\"Run Later\"></span>"
+
+                    sHTML += dr["run_on_dt"]
+
+                    # show the action and ecosystem if it's in the results but NOT passed in
+                    # that means we are looking at this from a TASK
+                    if not sActionID:
+                        if dr["ecosystem_name"]:
+                            sHTML += " " + dr["ecosystem_name"]
+
+                        if dr["action_name"]:
+                            sHTML += " (" + dr["action_name"] + ")"
+                    sHTML += " </div>"
+
+                    sHTML += " <div class=\"floatright\">"
+                    sHTML += "<span class=\"ui-icon ui-icon-trash action_plan_remove_btn\" title=\"Delete Plan\"></span>"
+                    sHTML += " </div>"
+
+
+                    sHTML += " </div>"
+
+            return sHTML
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetActionSchedules(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sActionID = uiCommon.getAjaxArg("sActionID")
+        sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+        try:
+            sHTML = ""
+
+            sSQL = "select s.schedule_id, s.label, s.descr, e.ecosystem_name, a.action_name" \
+                " from action_schedule s" \
+                " left outer join ecotemplate_action a on s.action_id = a.action_id" \
+                " left outer join ecosystem e on s.ecosystem_id = e.ecosystem_id" \
+                " where s.task_id = '" + sTaskID + "'"
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            else:
+                for dr in dt:
+                    sToolTip = ""
+                    # show the action and ecosystem if it's in the results but NOT passed in
+                    # that means we are looking at this from a TASK
+                    if not sActionID:
+                        sToolTip += "Ecosystem: " + (dr["ecosystem_name"] if dr["ecosystem_name"] else "None") + "<br />"
+
+                        if dr["action_name"]:
+                            sToolTip += "Action: " + dr["action_name"] + "<br />"
+
+                    sToolTip += (dr["descr"] if dr["descr"] else "")
+
+                    # draw it
+                    sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_schedule\"" \
+                        " id=\"as_" + dr["schedule_id"] + "\"" \
+                    ">"
+                    sHTML += " <div class=\"floatleft schedule_name\">"
+
+                    sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator schedule_tip\" title=\"" + sToolTip + "\"></span>"
+
+                    sHTML += (dr["schedule_id"] if not dr["label"] else dr["label"])
+
+                    sHTML += " </div>"
+
+                    sHTML += " <div class=\"floatright\">"
+                    sHTML += "<span class=\"ui-icon ui-icon-trash schedule_remove_btn\" title=\"Delete Schedule\"></span>"
+                    sHTML += " </div>"
+
+
+                    sHTML += " </div>"
+
+            return sHTML
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetRecurringPlan(self):
+        sScheduleID = uiCommon.getAjaxArg("sScheduleID")
+        # tracing this backwards, if the action_plan table has a row marked "schedule" but no schedule_id, problem.
+        if not sScheduleID:
+            uiGlobals.request.Messages.append("Unable to retrieve Reccuring Plan - schedule id argument not provided.")
+        
+        sb = []
+
+        # now we know the details, go get the timetable for that specific schedule
+        sSQL = "select schedule_id, months, days, hours, minutes, days_or_weeks, label" \
+            " from action_schedule" \
+            " where schedule_id = '" + sScheduleID + "'"
+        dt = uiGlobals.request.db.select_all_dict(sSQL)
+        if uiGlobals.request.db.error:
+            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+        if dt:
+            for dr in dt:
+                sMo = dr["months"]
+                sDa = dr["days"]
+                sHo = dr["hours"]
+                sMi = dr["minutes"]
+                sDW = dr["days_or_weeks"]
+                sDesc = (dr["schedule_id"] if not dr["label"] else dr["label"])
+    
+                sb.append("{")
+                sb.append("\"sDescription\" : \"%s\"," % sDesc)
+                sb.append("\"sMonths\" : \"%s\"," % sMo)
+                sb.append("\"sDays\" : \"%s\"," % sDa)
+                sb.append("\"sHours\" : \"%s\"," % sHo)
+                sb.append("\"sMinutes\" : \"%s\"," % sMi)
+                sb.append("\"sDaysOrWeeks\" : \"%s\"" % sDW)
+                sb.append("}")
+        else:
+            uiGlobals.request.Messages.append("Unable to find details for Recurring Action Plan. " + uiGlobals.request.db.error + " ScheduleID [" + sScheduleID + "]")
+
+        return "".join(sb)

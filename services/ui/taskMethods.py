@@ -1211,3 +1211,338 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+
+    def wmGetAccountEcosystems(self):
+        sAccountID = uiCommon.getAjaxArg("sAccountID")
+        sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+
+        sHTML = ""
+
+        try:
+            # if the ecosystem passed in isn't really there, make it "" so we can compare below.
+            if not sEcosystemID:
+                sEcosystemID = ""
+
+            if sAccountID:
+                sSQL = "select ecosystem_id, ecosystem_name from ecosystem" \
+                     " where account_id = '" + sAccountID + "'" \
+                     " order by ecosystem_name"; 
+
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+    
+            if dt:
+                sHTML += "<option value=''></option>"
+
+                for dr in dt:
+                    sSelected = ("selected=\"selected\"" if sEcosystemID == dr["ecosystem_id"] else "")
+                    sHTML += "<option value=\"" + dr["ecosystem_id"] + "\" " + sSelected + ">" + dr["ecosystem_name"] + "</option>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+
+    """
+        PARAMETER WEB METHODS and supporting static methods.
+        
+        The following group of parameter web methods all just call static methods in this class.  Why?
+        Because there is an interplay between them, where they call one another depending on the context.
+    """
+    def wmGetParameterXML(self):
+        sType = uiCommon.getAjaxArg("sType")
+        sID = uiCommon.getAjaxArg("sID")
+        sFilterByEcosystemID = uiCommon.getAjaxArg("sFilterByEcosystemID")
+        return taskMethods.GetParameterXML(sType, sID, sFilterByEcosystemID)
+
+    @staticmethod
+    def GetParameterXML(sType, sID, sFilterByEcosystemID):
+        if sType == "task":
+            return taskMethods.GetObjectParameterXML(sType, sID, "")
+        else:
+            return taskMethods.GetMergedParameterXML(sType, sID, sFilterByEcosystemID); # Merging is happening here!
+
+    # """
+    #  This method simply gets the XML directly from the db for the type.
+    #  It may be different by type!
+    
+    #  The schema should be the same, but some documents (task) are complete, while
+    #  others (action, instance) are JUST VALUES, not the complete document.
+    # """
+    def wmGetObjectParameterXML(self):
+        sType = uiCommon.getAjaxArg("sType")
+        sID = uiCommon.getAjaxArg("sID")
+        sFilterByEcosystemID = uiCommon.getAjaxArg("sFilterByEcosystemID")
+        return taskMethods.GetObjectParameterXML(sType, sID, sFilterByEcosystemID)
+
+    @staticmethod
+    def GetObjectParameterXML(sType, sID, sFilterByEcosystemID):
+        try:
+            if sType == "instance":
+                # if sID is a guid, it's a task_id ... get the most recent run
+                # otherwise assume it's a task_instance and try: that.
+                if uiCommon.IsGUID(sID):
+                    sSQL = "select parameter_xml from task_instance_parameter where task_instance = " \
+                        "(select max(task_instance) from task_instance where task_id = '" + sID + "')"
+                elif uiCommon.IsGUID(sFilterByEcosystemID):  # but if there's an ecosystem_id, limit it to tha:
+                    sSQL = "select parameter_xml from task_instance_parameter where task_instance = " \
+                        "(select max(task_instance) from task_instance where task_id = '" + sID + "')" \
+                        " and ecosystem_id = '" + sFilterByEcosystemID + "'"
+                else:
+                    sSQL = "select parameter_xml from task_instance_parameter where task_instance = '" + sID + "'"
+            elif sType == "runtask":
+                #  in this case, sID is actually a *step_id* !
+                # sucks that MySql doesn't have decent XML functions... we gotta do manipulation grr...
+                sSQL = "select substring(function_xml," \
+                    " locate('<parameters>', function_xml)," \
+                    " locate('</parameters>', function_xml) - locate('<parameters>', function_xml) + 13)" \
+                    " as parameter_xml" \
+                    " from task_step where step_id = '" + sID + "'"
+    
+            elif sType == "action":
+                sSQL = "select parameter_defaults from ecotemplate_action where action_id = '" + sID + "'"
+            elif sType == "plan":
+                sSQL = "select parameter_xml from action_plan where plan_id = " + sID
+            elif sType == "schedule":
+                sSQL = "select parameter_xml from action_schedule where schedule_id = '" + sID + "'"
+            elif sType == "task":
+                sSQL = "select parameter_xml from task where task_id = '" + sID + "'"
+    
+            sParameterXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            if sParameterXML:
+                xParams = ET.fromstring(sParameterXML)
+                if xParams is None:
+                    uiGlobals.request.Messages.append("Parameter XML data for [" + sType + ":" + sID + "] is invalid.")
+    
+                # NOTE: some values on this document may have a "encrypt" attribute.
+                # If so, we will:
+                #  1) obscure the ENCRYPTED value and make it safe to be an html attribute
+                #  2) return some stars so the user will know a value is there.
+                for xEncryptedValue in xParams.findall("parameter[@encrypt='true']/values/value"):
+                    # if the value is empty, it still gets an oev attribute
+                    sVal = ("" if not xEncryptedValue.text else uiCommon.packJSON(xEncryptedValue.text))
+                    xEncryptedValue.attrib["oev"] = sVal
+                    # but it only gets stars if it has a value
+                    if sVal:
+                        xEncryptedValue.text = "********"
+    
+                resp = ET.tostring(xParams)
+                if resp:
+                    return resp
+
+            # nothing found
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+    
+        # it may just be there are no parameters
+        return ""
+
+    def wmGetMergedParameterXML(self):
+        sType = uiCommon.getAjaxArg("sType")
+        sID = uiCommon.getAjaxArg("sID")
+        sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+        return taskMethods.GetMergedParameterXML(sType, sID, sEcosystemID)
+
+    # """
+    #  * This method does MERGING!
+    #  * 
+    #  * It gets the XML for the Task, and additionally get the XML for the other record,
+    #  * and merges them together, using the values from one to basically select values in 
+    #  * the master task XML.
+    #  * 
+    #  * """
+    @staticmethod
+    def GetMergedParameterXML(sType, sID, sEcosystemID):
+        try:
+            if not sID:
+                uiGlobals.request.Messages.append("ID required to look up default Parameter values.")
+        
+            # what is the task associated with this action?
+            # and get the XML for it
+            sDefaultsXML = ""
+            sTaskID = ""
+        
+            if sType == "action":
+                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+        
+                sSQL = "select t.task_id" \
+                     " from ecotemplate_action ea" \
+                     " join task t on ea.original_task_id = t.original_task_id" \
+                     " and t.default_version = 1" \
+                     " where ea.action_id = '" + sID + "'"
+            elif sType == "runtask":
+                # RunTask is actually a command type
+                # but it's very very similar to an Action.
+                # so... it handles it's params like an action... more or less.
+                
+                # HACK ALERT!  Since we are dealing with a unique case here where we have and need both the 
+                # step_id AND the target task_id, we're piggybacking a value in.
+                # the sID is the STEP_ID (which is kindof equivalient to the action)
+                # the sEcosystemID is the target TASK_ID
+                # yes, it's a hack I know... but better than adding another argument everywhere... sue me.
+                
+                # NOTE: plus, don't get confused... yes, run task references tasks by original id and version, but we already worked that out.
+                # the sEcosystemID passed in to this function is already resolved to an explicit task_id... it's the right one.
+        
+                # get the parameters off the step itself.
+                # which is also goofy, as they are embedded *inside* the function xml of the step.
+                # but don't worry that's handled in here
+                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+                
+                # now, we will want to get the parameters for the task *referenced by the command* down below
+                # but no sql is necessary to get the ID... we already know it!
+                sTaskID = sEcosystemID
+                
+            elif sType == "instance":
+                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, sEcosystemID)
+        
+                # IMPORTANT!!! if the ID is not a guid, it's a specific instance ID, and we'll need to get the task_id
+                # but if it is a GUID, but the type is "instance", taht means the most recent INSTANCE for this TASK_ID
+                if uiCommon.IsGUID(sID):
+                    sTaskID = sID
+                else:
+                    sSQL = "select task_id" \
+                         " from task_instance" \
+                         " where task_instance = '" + sID + "'"
+            elif sType == "plan":
+                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+        
+                sSQL = "select task_id" \
+                    " from action_plan" \
+                    " where plan_id = '" + sID + "'"
+            elif sType == "schedule":
+                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+        
+                sSQL = "select task_id" \
+                    " from action_schedule" \
+                    " where schedule_id = '" + sID + "'"
+        
+        
+            # if we didn't get a task id directly, use the SQL to look it up
+            if not sTaskID:
+                sTaskID = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        
+            if not uiCommon.IsGUID(sTaskID):
+                uiGlobals.request.Messages.append("Unable to find Task ID for record.")
+        
+        
+            # get the parameter XML from the TASK
+            sTaskParamXML = taskMethods.GetParameterXML("task", sTaskID, "")
+            if sTaskParamXML:
+                xTPParams = ET.fromstring(sTaskParamXML)
+                if xTPParams is None:
+                    uiGlobals.request.Messages.append("Task Parameter XML data is invalid.")
+        
+            # we populated this up above too
+            if sDefaultsXML:
+                xDefParams = ET.fromstring(sDefaultsXML)
+                if xDefParams is None:
+                    uiGlobals.request.Messages.append("Defaults XML data is invalid.")
+        
+            # spin the nodes in the DEFAULTS xml, then dig in to the task XML and UPDATE the value if found.
+            # (if the node no longer exists, delete the node from the defaults xml IF IT WAS AN ACTION)
+            # and default "values" take precedence over task values.
+            for xDefault in xDefParams.findall("parameter"):
+                # nothing to do if it's empty
+                if xDefault is None:
+                    break
+        
+                # look it up in the task param xml
+                sDefName = xDefault.findtext("name", "")
+                xDefValues = xDefault.find("values")
+                
+                # nothing to do if there is no values node...
+                if xDefValues is None:
+                    break
+                # or if it contains no values.
+                if not len(xDefValues):
+                    break
+                # or if there is no parameter name
+                if not sDefName:
+                    break
+                
+                
+                # so, we have some valid data in the defaults xml... let's merge!
+
+                # NOTE! elementtree doesn't track parents of nodes.  We need to build a parent map...
+                parent_map = dict((c, p) for p in xTPParams.getiterator() for c in p)
+                
+                # we have the name of the parameter... go spin and find the matching node in the TASK param XML
+                xTaskParam = None
+                for node in xTPParams.findall("parameter/name"):
+                    if node.text == sDefName:
+                        # now we have the "name" node, what's the parent?
+                        xTaskParam = parent_map[node]
+                        
+                        
+                # if it doesn't exist in the task params, remove it from this document, permanently
+                # but only for action types... instance data is historical and can't be munged
+
+                if xTaskParam is None and sType == "action":
+                    uiCommon.log("INFO: A parameter exists on the Action that no longer exists on the Task.  Removing it...", 4)
+                    # BUT! in order to be able to delete it, we need enough xpath information to identify it.
+                    # it has an 'id' attribute ... use that.
+                    sIdToDelete = xTaskParam.get("id", None)
+                    if sIdToDelete:
+                        ST.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sIdToDelete + "']")           
+                    continue
+        
+                if xTaskParam is not None:
+                    # is this an encrypted parameter?
+                    sEncrypt = ""
+                    if xTaskParam.get("encrypt") is not None:
+                        sEncrypt = xTaskParam.get("encrypt", "")
+            
+            
+                    # and the "values" collection will be the 'next' node
+                    xTaskParamValues = xTaskParam.find("values")
+            
+                    sPresentAs = xTaskParamValues.get("present_as", "")
+                    if sPresentAs == "dropdown":
+                        # dropdowns get a "selected" indicator
+                        sValueToSelect = xDefValues.findtext("value", "")
+            
+                        # find the right one by value and give it the "selected" attribute.
+                        xVal = xTaskParamValues.find("value[. = '" + sValueToSelect + "']")
+                        if xVal is not None:
+                            xVal.attrib["selected"] = "true"
+                    elif sPresentAs == "list":
+                        # first, a list gets ALL the values replaced...
+                        xTaskParamValues.replaceNodes(xDefValues)
+                    else:
+                        # IMPORTANT NOTE:
+                        # remember... both these XML documents came from wmGetObjectParameterXML...
+                        # so any encrypted data IS ALREADY OBFUSCATED and base64'd in the oev attribute.
+                        
+                        # it's a single value, so just replace it with the default.
+                        xVal = xTaskParamValues.find("value[1]")
+                        if xVal is not None:
+                            # if this is an encrypted parameter, we'll be replacing (if a default exists) the oev attribute
+                            # AND the value... don't want them to get out of sync!
+                            if uiCommon.IsTrue(sEncrypt):
+                                if xDefValues.find("value") is not None:
+                                    xVal.attrib["oev"] = xDefValues.find("value").get("oev", "")
+                                    xVal.text = xDefValues.findtext("value", "")
+                            else:
+                                # not encrypted, just replace the value.
+                                if xDefValues.find("value") is not None:
+                                    xVal.text = xDefValues.findtext("value", "")
+        
+                
+            resp = ET.tostring(xTPParams)
+            if resp:
+                return resp
+
+            # nothing found
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+    
+    """
+        END OF PARAMETER METHODS
+    """

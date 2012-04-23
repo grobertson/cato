@@ -350,17 +350,20 @@ function checkRequiredParams() {
 //get rid of run on, change ecosystemID to "filterbyecosystemid"
 function getParamXML(id, type, eco_id) {
     var task_parameter_xml = "";
+    
+    if (eco_id === undefined || eco_id === null)
+    	eco_id = ""
 
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetParameterXML",
+        url: "taskMethods/wmGetParameterXML",
         data: '{"sType":"' + type + '","sID":"' + id + '","sFilterByEcosystemID":"' + eco_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            if (retval.d != "")
-                task_parameter_xml = $.parseXML(retval.d);
+        dataType: "xml",
+        success: function (response) {
+            if (response != "")
+                task_parameter_xml = response;
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -435,12 +438,12 @@ function ShowTaskLaunchDialog(jsonargs) {
         $.ajax({
             async: true,
             type: "POST",
-            url: "taskMethods.asmx/wmGetAccountEcosystems",
+            url: "taskMethods/wmGetAccountEcosystems",
             data: '{"sAccountID":"' + args.account_id + '","sEcosystemID":"' + eco_id + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
-                $("#task_launch_dialog_ecosystem").html(retval.d);
+            dataType: "html",
+            success: function (response) {
+                $("#task_launch_dialog_ecosystem").html(response);
             },
             error: function (response) {
                 showAlert(response.responseText);
@@ -549,7 +552,7 @@ function LaunchTask() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmRunTask",
+        url: "taskMethods/wmRunTask",
         data: '{"sTaskID":"' + task_id + '","sAssetID":"","sAccountID":"' + account_id + '","sEcosystemID":"' + ecosystem_id + '","sParameterXML":"' + parameter_xml + '","iDebugLevel":"' + debug_level + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -677,7 +680,7 @@ function RunRepeatedly() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmRunRepeatedly",
+        url: "uiMethods/wmRunRepeatedly",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -757,7 +760,7 @@ function SaveRecurringPlan() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmSaveSchedule",
+        url: "uiMethods/wmSaveSchedule",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -785,7 +788,7 @@ function SavePlan() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmSavePlan",
+        url: "uiMethods/wmSavePlan",
         data: '{"iPlanID":"' + plan_id + '","sParameterXML":"' + parameter_xml + '","iDebugLevel":"' + debug_level + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -811,12 +814,12 @@ function getPlans() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "uiMethods.asmx/wmGetActionPlans",
+        url: "uiMethods/wmGetActionPlans",
         data: '{"sTaskID":"' + task_id + '","sActionID":"' + action_id + '","sEcosystemID":"' + eco_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#task_launch_dialog_plans").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#task_launch_dialog_plans").html(response);
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -825,12 +828,12 @@ function getPlans() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "uiMethods.asmx/wmGetActionSchedules",
+        url: "uiMethods/wmGetActionSchedules",
         data: '{"sTaskID":"' + task_id + '","sActionID":"' + action_id + '","sEcosystemID":"' + eco_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#task_launch_dialog_schedules").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#task_launch_dialog_schedules").html(response);
             //schedule icon tooltips
             $("#task_launch_dialog_schedules .schedule_tip").tipTip({
                 defaultPosition: "right",
@@ -960,16 +963,15 @@ function loadRecurringPlan(schedule_id) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmGetRecurringPlan",
+        url: "uiMethods/wmGetRecurringPlan",
         data: '{"sScheduleID":"' + schedule_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-            if (response.d.length == 0) {
+            if (response.length == 0) {
                 showAlert('error no response');
             } else {
-                var oResultData = jQuery.parseJSON(response.d);
-                populateTimetable(oResultData);
+                populateTimetable(response);
 
                 //move it to the edit dialog
                 $("#run_repeatedly_content").appendTo("#plan_edit_schedule");
