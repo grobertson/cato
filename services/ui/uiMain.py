@@ -11,6 +11,8 @@ base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.
 lib_path = os.path.join(base_path, "services", "lib")
 sys.path.append(lib_path)
 
+# DON'T REMOVE these that Aptana shows as "unused".
+# they are used, just in the URL mapping for web.py down below.
 from catocommon import catocommon
 from uiMethods import uiMethods
 from uiMethods import logout

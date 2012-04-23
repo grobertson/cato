@@ -99,8 +99,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
                 <span id="lblLastRunDT"></span><br />
                 Last Run Status:
                 <span id="lblLastRunStatus"></span>
-                <span id="debug_view_latest_log" class="debug_btn" ImageUrl="static/images/icons/view_text_16.png"
-                    />
+                <span id="debug_view_latest_log" class="debug_btn" ImageUrl="static/images/icons/view_text_16.png"></span>
             </p>
             <br />
             <hr />
@@ -140,7 +139,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             <span id="clear_clipboard_btn">Clear All</span>
             <hr />
             <ul id="clipboard">
-                <asp:PlaceHolder ID="phClipboard"></asp:PlaceHolder>
+                <div id="phClipboard"></div>
             </ul>
         </div>
         <div id="div_tags" class="toolbox_panel hidden">
@@ -293,12 +292,12 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 </div>
 <div id="addVersion_dialog" class="hidden" title="Create Another Version">
     Current Version Number:
-    <span id="lblCurrentVersion" Text="" />
+    <span id="lblCurrentVersion" Text=""></span>
     <center>
         <input id="rbMinor" checked="checked" name="rbMinorMajor" value="Minor" type="radio" />
-        <span id="lblNewMinor" Text="New Minor Version" /><br />
+        <span id="lblNewMinor" Text="New Minor Version"></span><br />
         <input id="rbMajor" name="rbMinorMajor" value="Major" type="radio" />
-        <span id="lblNewMajor" Text="New Major Version" /><br />
+        <span id="lblNewMajor" Text="New Major Version"></span><br />
         <input type="button" value="Create New Version" onclick="CreateNewVersion();return false;" />
         <input type="button" value="Cancel" onclick="CloseVersionDialog();return false;" />
     </center>
@@ -331,7 +330,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
     <p>
         Are you sure you wish to Approve this Version?</p>
     <p style="text-align: center;">
-        <asp:CheckBox ID="chkMakeDefault" Text="Mark as the 'Default' Version?" />
+        <input type="checkbox" id="chkMakeDefault" /><label for="chkMakeDefault">Mark as the 'Default' Version?</label>
     </p>
 </div>
 <div id="codeblock_edit_dialog" title="Codeblock" class="hidden">

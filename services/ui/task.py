@@ -596,7 +596,7 @@ class Task(object):
             if IncludeUserSettings:
                 sUserID = uiCommon.GetSessionUserID()
                 #NOTE: it may seem like sorting will be an issue, but it shouldn't.
-                #sorting ALL the steps by their ID here will ensure they get added to their respective 
+                #sorting ALL the steps by their order here will ensure they get added to their respective 
                 # codeblocks in the right order.
                 sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
                     " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
@@ -617,6 +617,10 @@ class Task(object):
             if dtSteps:
                 for drSteps in dtSteps:
                     oStep = Step.FromRow(drSteps, self)
+                    # the steps dictionary for each codeblock uses the ORDER, not the STEP ID, as the key
+                    # this way, we can order the dictionary.
+                    
+                    # maybe this should just be a list?
                     if oStep:
                         #a 'REAL' codeblock will be in this collection
                         # (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
