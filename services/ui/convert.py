@@ -79,6 +79,9 @@ with open("convert.in", 'r') as f_in:
         line = line.replace(".Trim()", ".strip()")
         line = line.replace("HttpContext.Current.Server.MapPath(", "") # this will leave a trailing paren !
         line = line.replace(".Value", ".findtext(value, \"\")") #should work most of the time for Cato code
+        line = line.replace("else if", "elif")
+        line = line.replace("!string.IsNullOrEmpty(", "")
+        line = line.replace("string.IsNullOrEmpty(", "not ")
         
 
         # Try/Catch blocks
