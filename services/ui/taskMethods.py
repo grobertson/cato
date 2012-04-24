@@ -565,12 +565,12 @@ class taskMethods:
                 # copy from the clipboard (using the root_step_id to get ALL associated steps)
                 sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
                     " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
-                    " function_name, function_xml, variable_xml)" \
+                    " function_name, function_xml)" \
                     " select step_id, '" + sTaskID + "'," \
                     " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
                     "-1,step_desc," \
                     "0,0,output_parse_type,output_row_delimiter,output_column_delimiter," \
-                    "function_name,function_xml,variable_xml" \
+                    "function_name,function_xml" \
                     " from task_step_clipboard" \
                     " where user_id = '" + sUserID + "'" \
                     " and root_step_id = '" + sItem + "'"
@@ -1136,7 +1136,7 @@ class taskMethods:
             # 2 - spin thru adding the variables
             # 3 - commit the whole doc at once to the db
     
-            xVars = ET.Element("variables")
+            xVars = ET.Element("step_variables")
     
             # spin thru the variable array from the client
             for oVar in oVarArray:
@@ -1196,17 +1196,13 @@ class taskMethods:
     #            xVars.RemoveAll()
     #            xVars.Add(ordered)
             
-            
             uiCommon.log("Saving variables ...", 4)
             uiCommon.log(ET.tostring(xVars), 4)
             
-            sSQL = "update task_step set " \
-                " variable_xml = '" + uiCommon.TickSlash(ET.tostring(xVars)) + "'" \
-                " where step_id = '" + sStepID + "';"
-    
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-    
+            # add and remove using the xml wrapper functions
+            ST.RemoveFromCommandXML(sStepID, "step_variables")
+            ST.AddToCommandXML(sStepID, "function", uiCommon.TickSlash(ET.tostring(xVars)))
+
             return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())

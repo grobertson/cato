@@ -74,11 +74,11 @@ def DrawFullStep(oStep):
         sSnip = uiCommon.GetSnip(oStep.Description, 75)
         #special words get in indicator icon, but only one in highest order
         if "IMPORTANT" in sSnip:
-            sSnip = "<img src=\"static/images/icons/flag_red.png\" />" + sSnip.replace("IMPORTANT","")
+            sSnip = "<img src=\"static/images/icons/flag_red.png\" />" + sSnip.replace("IMPORTANT", "")
         elif "TODO" in sSnip:
-            sSnip = "<img src=\"static/images/icons/flag_yellow.png\" />" + sSnip.replace("TODO","")
+            sSnip = "<img src=\"static/images/icons/flag_yellow.png\" />" + sSnip.replace("TODO", "")
         elif "NOTE" in sSnip or "INFO" in sSnip:
-            sSnip = "<img src=\"static/images/icons/flag_blue.png\" />" + sSnip.replace("NOTE","").replace("INFO","")
+            sSnip = "<img src=\"static/images/icons/flag_blue.png\" />" + sSnip.replace("NOTE", "").replace("INFO", "")
     #else:
     #    sSnip = uiCommon.GetSnip(GetValueSnip(oStep), 75)
 
@@ -245,6 +245,14 @@ def DrawStepFromXMLDocument(oStep):
         # some fields may be defined to go on an "options tab", in which case they will come back as sNodeOptionHTML
         # you'll never get back both NodeHTML and OptionHTML - one will always be blank.
         for xe in xd:
+            # PAY ATTENTION!
+            # there are a few xml nodes inside the function_xml that are reserved for internal features.
+            # these nodes WILL NOT BE DRAWN as part of the step editing area.
+            
+            # "variables" is a reserved node name
+            if xe.tag == "step_variables": 
+                continue
+            
             log("Drawing [" + xe.tag + "]", 4)
             sNodeHTML, sNodeOptionHTML = DrawNode(xe, xe.tag, sStepID, sFunction)
             sHTML += sNodeHTML
@@ -960,10 +968,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
     return sHTML
 
 def RemoveStepVars(sStepID):
-    sSQL = "update task_step set variable_xml = '' where step_id = '" + sStepID + "'"
-
-    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-        uiGlobals.request.Messages.append("Unable to modify step [" + sStepID + "]." + uiGlobals.request.db.error)
+    ST.RemoveFromCommandXML(sStepID, "variables")
 
 def DrawVariableSectionForDisplay(oStep, bShowEditLink):
     sStepID = oStep.ID
@@ -1006,12 +1011,12 @@ def DrawVariableSectionForDisplay(oStep, bShowEditLink):
 
 def GetVariablesForStepForDisplay(oStep):
     sStepID = oStep.ID
-    xDoc = oStep.VariableXDoc
+    xDoc = oStep.FunctionXDoc
 
     sHTML = ""
     if xDoc is not None:
         # uiCommon.log("Command Variable XML:\n%s" % ET.tostring(xDoc), 4)
-        xVars = xDoc.findall("variable")
+        xVars = xDoc.findall("step_variables/variable")
         if xVars is None:
             return "Variable XML data for step [" + sStepID + "] does not contain any 'variable' elements."
         
@@ -1128,12 +1133,12 @@ def GetVariablesForStepForEdit(oStep):
     sHTML += "<ul id=\"edit_variables\" class=\"variables\">"
     
     # if the xml is empty, we still need to return the UL so the gui will work.
-    xDoc = oStep.VariableXDoc
+    xDoc = oStep.FunctionXDoc
     if xDoc is None:
         return sHTML + "</ul>\n"
 
     # if the document is missing the root node, we still need to return the UL.
-    xVars = xDoc.findall("variable")
+    xVars = xDoc.findall("step_variables/variable")
     if xVars is None:
         return sHTML + "</ul>\n"
     
@@ -1200,7 +1205,7 @@ def GetVariablesForStepForEdit(oStep):
                         " <input type=\"text\" class=\"w100px code\" id=\"" + sVarGUID + "_l_prop\"" \
                         " value=\"" + sLProp + "\" validate_as=\"posint\" />."
                 
-            elif sType ==  "regex":
+            elif sType == "regex":
                 sLProp = uiCommon.SafeHTML(xVar.findtext("regex", ""))
                 sVarStrip = "Variable: " \
                     " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" \
@@ -1211,7 +1216,7 @@ def GetVariablesForStepForEdit(oStep):
                         " <br /><input type=\"text\" class=\"w98pct code\"" \
                         " id=\"" + sVarGUID + "_l_prop\"" \
                         " value=\"" + sLProp + "\" />."
-            elif sType ==  "xpath":
+            elif sType == "xpath":
                 sLProp = uiCommon.SafeHTML(xVar.findtext("xpath", ""))
                 sVarStrip = "Variable: " \
                     " <input type=\"text\" class=\"var_name code var_unique\" id=\"" + sVarGUID + "_name\"" \
@@ -1977,7 +1982,7 @@ def NewConnection(oStep):
                 for k, v in data.iteritems():
                     sHTML += "<option " + SetOption(k, sCloudName) + " value=\"" + k + "\">" + v + "</option>\n"
     
-                    if k ==sCloudName: bValueWasInData = True
+                    if k == sCloudName: bValueWasInData = True
             
             # NOTE: we're allowing the user to enter a value that may not be 
             # in the dataset.  If that's the case, we must add the actual saved value to the list too. 

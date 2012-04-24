@@ -138,6 +138,7 @@ class Task(object):
             self.Codeblocks[newcb.Name] = newcb
 
     def AsXML(self):
+        # NOTE!!! this was just a hand coded test... it needs to be pulled in from the C# version
         root=ET.fromstring('<task />')
         
         root.set("id", self.ID)
@@ -468,7 +469,7 @@ class Task(object):
             sSQL = "create temporary table _copy_task_step" \
                 " select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," \
                 " locked, function_name, function_xml, step_desc, output_parse_type, output_row_delimiter," \
-                " output_column_delimiter, variable_xml" \
+                " output_column_delimiter" \
                 " from task_step where task_id = '" + self.ID + "'"
             if not db.tran_exec_noexcep(sSQL):
                 raise Exception(db.error)
@@ -599,7 +600,7 @@ class Task(object):
                 #sorting ALL the steps by their order here will ensure they get added to their respective 
                 # codeblocks in the right order.
                 sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
-                    " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+                    " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter," \
                     " us.visible, us.breakpoint, us.skip, us.button" \
                     " from task_step s" \
                     " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
@@ -607,7 +608,7 @@ class Task(object):
                     " order by s.step_order"
             else:
                 sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
-                    " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+                    " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter," \
                     " 0 as visible, 0 as breakpoint, 0 as skip, '' as button" \
                     " from task_step s" \
                     " where s.task_id = '" + self.ID + "'" \
@@ -678,8 +679,6 @@ class Step(object):
         self.OutputColumnDelimiter = 0
         self.FunctionXML = None
         self.FunctionXDoc = None
-        self.VariableXML = None
-        self.VariableXDoc = None
         self.FunctionName = ""
         self.UserSettings = StepUserSettings()
         # this property isn't added by the "Populate" methods - but can be added manually.
@@ -719,15 +718,8 @@ class Step(object):
         the associated task object
         """
         try:
-            """                string sSQL = "select t.task_name, t.version," +
-                        " s.step_id, s.task_id, s.step_order, s.codeblock_name, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked," +
-                        " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" +
-                        " from task_step s" +
-                        " join task t on s.task_id = t.task_id" +
-                        " where s.step_id = '" + sStepID + "' limit 1";
-            """
             sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name," \
-                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml," \
+                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter," \
                 " us.visible, us.breakpoint, us.skip, us.button" \
                 " from task_step s" \
                 " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
@@ -759,7 +751,6 @@ class Step(object):
             self.OutputRowDelimiter = dr["output_row_delimiter"]
             self.OutputColumnDelimiter = dr["output_column_delimiter"]
             self.FunctionXML = ("" if not dr["function_xml"] else dr["function_xml"])
-            self.VariableXML = ("" if not dr["variable_xml"] else dr["variable_xml"])
             #once parsed, it's cleaner.  update the object with the cleaner xml
             if self.FunctionXML:
                 try:
@@ -767,13 +758,6 @@ class Step(object):
                 except Exception:
                     self.IsValid = False
                     print "CRITICAL: Unable to parse function xml in step [%s]." % self.ID
-                    print traceback.format_exc()    
-            if self.VariableXML:
-                try:
-                    self.VariableXDoc = ET.fromstring(self.VariableXML)
-                except Exception:
-                    self.IsValid = False
-                    print "CRITICAL: Unable to parse variable xml in step [%s]." % self.ID
                     print traceback.format_exc()    
 
             #this.Function = Function.GetFunctionByName(dr["function_name"]);
