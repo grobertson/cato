@@ -1546,3 +1546,316 @@ class taskMethods:
     """
         END OF PARAMETER METHODS
     """
+    
+    # This one is normal, just returns html for the Parameters toolbox
+    # But, it's shared by several pages.
+    def wmGetParameters(self):
+        sType = uiCommon.getAjaxArg("sType")
+        sID = uiCommon.getAjaxArg("sID")
+        bEditable = uiCommon.getAjaxArg("bEditable")
+        bSnipValues = uiCommon.getAjaxArg("bSnipValues")
+
+        try:
+            if not sType:
+                uiCommon.log("ERROR: Type was not passed to wmGetParameters.", 0)
+                return "ERROR: Type was not passed to wmGetParameters."
+            
+            sTable = ""
+
+            if sType == "ecosystem":
+                sTable = "ecosystem"
+            elif sType == "task":
+                sTable = "task"
+
+            sSQL = "select parameter_xml from " + sTable + " where " + sType + "_id = '" + sID + "'"
+
+            sParameterXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            if sParameterXML:
+                xParams = ET.fromstring(sParameterXML)
+                if xParams is None:
+                    uiGlobals.request.Messages.append("Parameter XML data for " + sType + " [" + sID + "] is invalid.")
+
+                sHTML = ""
+
+                for xParameter in xParams.findall("parameter"):
+                    sPID = xParameter.get("id", "")
+                    sName = xParameter.findtext("name", "")
+                    sDesc = xParameter.findtext("desc", "")
+
+                    bEncrypt = uiCommon.IsTrue(xParameter.get("encrypt", ""))
+
+                    sHTML += "<div class=\"parameter\">"
+                    sHTML += "  <div class=\"ui-state-default parameter_header\">"
+
+                    sHTML += "<div class=\"step_header_title\"><span class=\"parameter_name"
+                    sHTML += (" pointer" if bEditable else "") # make the name a pointer if it's editable
+                    sHTML += "\" id=\"" + sPID + "\">"
+                    sHTML += sName
+                    sHTML += "</span></div>"
+
+                    sHTML += "<div class=\"step_header_icons\">"
+                    sHTML += "<img class=\"parameter_help_btn pointer trans50\"" \
+                        " src=\"static/images/icons/info.png\" alt=\"\" style=\"width: 12px; height: 12px;\"" \
+                        " title=\"" + sDesc.replace("\"", "") + "\" />"
+
+                    if bEditable:
+                        sHTML += "<img class=\"parameter_remove_btn pointer\" remove_id=\"" + sPID + "\"" \
+                            " src=\"static/images/icons/fileclose.png\" alt=\"\" style=\"width: 12px; height: 12px;\" />"
+
+                    sHTML += "</div>"
+                    sHTML += "</div>"
+
+
+                    sHTML += "<div class=\"ui-widget-content ui-corner-bottom clearfloat parameter_detail\">"
+
+                    # desc - a short snip is shown here... 75 chars.
+
+                    # if sDesc):
+                    #     if bSnipValues:
+                    #         sDesc = uiCommon.GetSnip(sDesc, 75)
+                    #     else
+                    #         sDesc = uiCommon.FixBreaks(sDesc)
+                    # sHTML += "<div class=\"parameter_desc hidden\">" + sDesc + "</div>"
+
+
+                    # values
+                    xValues = xParameter.find("values")
+                    if xValues is not None:
+                        for xValue in xValues.findall("value"):
+                            sValue = ("" if not xValue.text else xValue.text)
+
+                            # only show stars IF it's encrypted, but ONLY if it has a value
+                            if bEncrypt and sValue:
+                                sValue = "********"
+                            else:
+                                if bSnipValues:
+                                    sValue = uiCommon.GetSnip(sValue, 64)
+                                else:
+                                    sValue = uiCommon.FixBreaks(sValue, "")
+
+                            sHTML += "<div class=\"ui-widget-content ui-corner-tl ui-corner-bl parameter_value\">" + sValue + "</div>"
+
+                    sHTML += "</div>"
+                    sHTML += "</div>"
+
+                return sHTML
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+        # it may just be there are no parameters
+        return ""
+
+    def wmGetTaskParam(self):
+        try:
+            sID = uiCommon.getAjaxArg("sID")
+            sType = uiCommon.getAjaxArg("sType")
+            sParamID = uiCommon.getAjaxArg("sParamID")
+    
+            if not uiCommon.IsGUID(sID):
+                uiGlobals.request.Messages.append("Invalid or missing ID.")
+                return "Invalid or missing ID."
+
+            sTable = ""
+
+            if sType == "ecosystem":
+                sTable = "ecosystem"
+            elif sType == "task":
+                sTable = "task"
+
+            # default values if adding - get overridden if there is a record
+            sName = ""
+            sDesc = ""
+            sRequired = "false"
+            sPrompt = "true"
+            sEncrypt = "false"
+            sValuesHTML = ""
+            sPresentAs = "value"
+            sConstraint = ""
+            sConstraintMsg = "";                                        
+            sMinLength = ""
+            sMaxLength = ""
+            sMinValue = ""
+            sMaxValue = ""
+
+            if sParamID:
+                sXML = ""
+                sSQL = "select parameter_xml" \
+                        " from " + sTable + \
+                        " where " + sType + "_id = '" + sID + "'"
+
+                sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get parameter_xml.  " + uiGlobals.request.db.error)
+                    return "Unable to get parameter_xml.  See log for details."
+
+                if sXML:
+                    xd = ET.fromstring(sXML)
+                    if xd is None: uiGlobals.request.Messages.append("XML parameter data is invalid.")
+                    print sXML
+                    xParameter = xd.find("parameter[@id='" + sParamID + "']")
+                    if xParameter is None: return "Error: XML does not contain parameter."
+
+                    sName = xParameter.findtext("name", "")
+                    if sName is None: return "Error: XML does not contain parameter name."
+
+                    sDesc = xParameter.findtext("desc", "")
+
+                    sRequired = xParameter.get("required", "")
+                    sPrompt = xParameter.get("prompt", "")
+                    sEncrypt = xParameter.get("encrypt", "")
+                    sMaxLength = xParameter.get("maxlength", "")
+                    sMaxValue = xParameter.get("maxvalue", "")
+                    sMinLength = xParameter.get("minlength", "")
+                    sMinValue = xParameter.get("minvalue", "")
+                    sConstraint = xParameter.get("constraint", "")
+                    sConstraintMsg = xParameter.get("constraint_msg", "")
+
+
+                    xValues = xParameter.find("values")
+                    if xValues is not None:
+                        sPresentAs = xValues.get("present_as", "")
+
+                        i = 0
+                        xVals = xValues.findall("value")
+                        for xVal in xVals:
+                            # since we can delete each item from the page it needs a unique id.
+                            sPID = "pv" + uiCommon.NewGUID()
+
+                            sValue = xVal.text
+                            sObscuredValue = ""
+                            
+                            if uiCommon.IsTrue(sEncrypt):
+                                #  1) obscure the ENCRYPTED value and make it safe to be an html attribute
+                                #  2) return some stars so the user will know a value is there.
+                                sObscuredValue = "oev=\"" + uiCommon.packJSON(sValue) + "\""
+                                sValue = ("" if not sValue else "********")
+
+                            sValuesHTML += "<div id=\"" + sPID + "\">" \
+                                "<textarea class=\"param_edit_value\" rows=\"1\" " + sObscuredValue + ">" + sValue + "</textarea>"
+
+                            if i > 0:
+                                sHideDel = ("dropdown" if sPresentAs == "list" or sPresentAs == "dropdown" else " hidden")
+                                sValuesHTML += " <img class=\"param_edit_value_remove_btn pointer " + sHideDel + "\" remove_id=\"" + sPID + "\"" \
+                                    " src=\"static/images/icons/fileclose.png\" alt=\"\" />"
+
+                            sValuesHTML += "</div>"
+
+                            i += 1
+                    else:
+                        # if, when getting the parameter, there are no values... add one.  We don't want a parameter with no values
+                        # AND - no remove button on this only value
+                        sValuesHTML += "<div id=\"pv" + uiCommon.NewGUID() + "\">" \
+                            "<textarea class=\"param_edit_value\" rows=\"1\"></textarea></div>"
+                else:
+                    uiGlobals.request.Messages.append("Unable to get parameter details. Not found.")
+            else:
+                # if, when getting the parameter, there are no values... add one.  We don't want a parameter with no values
+                # AND - no remove button on this only value
+                sValuesHTML += "<div id=\"pv" + uiCommon.NewGUID() + "\">" \
+                    "<textarea class=\"param_edit_value\" rows=\"1\"></textarea></div>"
+
+            # this draws no matter what, if it's empty it's just an add dialog
+            sHTML = ""
+
+            sHTML += "Name: <input type=\"text\" class=\"w95pct\" id=\"param_edit_name\" validate_as=\"variable\" value=\"" + sName + "\" />"
+
+            sHTML += "Options:<div class=\"param_edit_options\">"
+            sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_required\"" + ("checked=\"checked\"" if sRequired == "true" else "") + " /> <label for=\"param_edit_required\">Required?</label></span>"
+            sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_prompt\"" + ("checked=\"checked\"" if sPrompt == "true" else "") + " /> <label for=\"param_edit_prompt\">Prompt?</label></span>"
+            sHTML += "<span class=\"ui-widget-content ui-corner-all param_edit_option\"><input type=\"checkbox\" id=\"param_edit_encrypt\"" + ("checked=\"checked\"" if sEncrypt == "true" else "") + " /> <label for=\"param_edit_encrypt\">Encrypt?</label></span>"
+
+            sHTML += "<hr />"
+
+            sHTML += "Min / Max Length: <input type=\"text\" class=\"w25px\" id=\"param_edit_minlength\"" \
+                " validate_as=\"posint\" value=\"" + sMinLength + "\" /> / " \
+                " <input type=\"text\" class=\"w25px\" id=\"param_edit_maxlength\"" \
+                " validate_as=\"posint\" value=\"" + sMaxLength + "\" />" \
+                "<br />"
+            sHTML += "Min / Max Value: <input type=\"text\" class=\"w25px\" id=\"param_edit_minvalue\"" \
+                " validate_as=\"number\" value=\"" + sMinValue + "\" /> / " \
+                " <input type=\"text\" class=\"w25px\" id=\"param_edit_maxvalue\"" \
+                " validate_as=\"number\" value=\"" + sMaxValue + "\" />" \
+                "<br />"
+            sHTML += "Constraint: <input type=\"text\" class=\"w95pct\" id=\"param_edit_constraint\"" \
+                " value=\"" + sConstraint + "\" /><br />"
+            sHTML += "Constraint Help: <input type=\"text\" class=\"w95pct\" id=\"param_edit_constraint_msg\"" \
+                " value=\"" + sConstraintMsg + "\" /><br />"
+
+            sHTML += "</div>"
+
+            sHTML += "<br />Description: <br /><textarea id=\"param_edit_desc\" rows=\"2\">" + sDesc + "</textarea>"
+
+            sHTML += "<div id=\"param_edit_values\">Values:<br />"
+            sHTML += "Present As: <select id=\"param_edit_present_as\">"
+            sHTML += "<option value=\"value\"" + ("selected=\"selected\"" if sPresentAs == "value" else "") + ">Value</option>"
+            sHTML += "<option value=\"list\"" + ("selected=\"selected\"" if sPresentAs == "list" else "") + ">List</option>"
+            sHTML += "<option value=\"dropdown\"" + ("selected=\"selected\"" if sPresentAs == "dropdown" else "") + ">Dropdown</option>"
+            sHTML += "</select>"
+
+            sHTML += "<hr />" + sValuesHTML + "</div>"
+
+            # if it's not available for this presentation type, it will get the "hidden" class but still be drawn
+            sHideAdd = ("" if sPresentAs == "list" or sPresentAs == "dropdown" else " hidden")
+            sHTML += "<div id=\"param_edit_value_add_btn\" class=\"pointer " + sHideAdd + "\">" \
+                "<img title=\"Add Another\" alt=\"\" src=\"static/images/icons/edit_add.png\" style=\"width: 10px;" \
+                "   height: 10px;\" />( click to add a value )</div>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmDeleteTaskParam(self):
+        try:
+            sType = uiCommon.getAjaxArg("sType")
+            sID = uiCommon.getAjaxArg("sID")
+            sParamID = uiCommon.getAjaxArg("sParamID")
+    
+            sTable = ""
+    
+            if sType == "ecosystem":
+                sTable = "ecosystem"
+            elif sType == "task":
+                sTable = "task"
+    
+            if sParamID and uiCommon.IsGUID(sID):
+                #  need the name and values for logging
+                sXML = ""
+    
+                # ALL OF THIS is just for logging ...
+                sSQL = "select parameter_xml" \
+                    " from " + sTable + \
+                    " where " + sType + "_id = '" + sID + "'"
+    
+                sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get parameter_xml.  " + uiGlobals.request.db.error)
+    
+                if sXML != "":
+                    xd = ET.fromstring(sXML)
+                    if xd is None:
+                        uiGlobals.request.Messages.append("XML parameter data is invalid.")
+    
+                    sName = xd.findtext("parameter[@id='" + sParamID + "']/name", "")
+                    sValues = xd.findtext("parameter[@id='" + sParamID + "']/values", "")
+    
+                    #  add security log
+                    uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Parameter, "", sID, "")
+    
+                    if sType == "task":
+                        uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sID, "Deleted Parameter:[" + sName + "]", sValues)
+                    if sType == "ecosystem":
+                        uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sID, "Deleted Parameter:[" + sName + "]", sValues)
+    
+    
+                # Here's the real work ... do the whack
+                ST.RemoveNodeFromXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "parameter[@id='" + sParamID + "']")
+    
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Invalid or missing Task or Parameter ID.")
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
