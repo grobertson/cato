@@ -50,6 +50,10 @@ with open("convert.in", 'r') as f_in:
         if line.strip()[:2] == "//":
             line = line.replace("//", "# ")
         line = line.replace("/*", "\"\"\"").replace("*/", "\"\"\"")
+        # some comments are at the end of a line
+        line = line.replace("; //", " # ")
+
+        
         
         # Fixing semicolon line endings (not otherwise, may be in a sql statement or something)
         line = line.replace(";\n", "\n")
@@ -78,7 +82,7 @@ with open("convert.in", 'r') as f_in:
         line = line.replace(".Replace", ".replace")
         line = line.replace(".Trim()", ".strip()")
         line = line.replace("HttpContext.Current.Server.MapPath(", "") # this will leave a trailing paren !
-        line = line.replace(".Value", ".findtext(value, \"\")") #should work most of the time for Cato code
+        line = line.replace(").Value", ", \"\") # WAS A .Value - confirm") #should work most of the time for Cato code
         line = line.replace("else if", "elif")
         line = line.replace("!string.IsNullOrEmpty(", "")
         line = line.replace("string.IsNullOrEmpty(", "not ")
@@ -94,13 +98,13 @@ with open("convert.in", 'r') as f_in:
         
         #these commonly appear on a line alone, and we aren't using them any more
         if line.strip() == "dataAccess dc = new dataAccess()": continue
-        if line.strip() == "FunctionTemplates.HTMLTemplates ft": continue
         if line.strip() == "acUI.acUI ui = new acUI.acUI()": continue
         if line.strip() == "sErr = \"\"": continue
         if line.lower().strip() == "ssql = \"\"": continue # there's mixed case usage of "sSql"
         if "dataAccess.acTransaction" in line: continue
         if line.strip() == "DataRow dr = null": continue
         if line.strip() == "DataTable dt = new DataTable()": continue
+        if "FunctionTemplates.HTMLTemplates ft" in line: continue
 
         
         # a whole bunch of common phrases from Cato C# code
@@ -143,6 +147,7 @@ with open("convert.in", 'r') as f_in:
             line = sINDENT + "dt = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
         # xml/Linq stuff
         line = line.replace(".Attribute(", ".get(")
+        line = line.replace(".Element(", ".find(")
 
         # true/false may be problematic, but these should be ok
         line = line.replace(", true", ", True").replace(", false", ", False")
@@ -211,20 +216,49 @@ with open("convert.in", 'r') as f_in:
             line = line[:-2] + ":\n"
             line = "### CHECK NEXT LINE for type declarations !!!\n" + line
 
+        # this is a crazy one.  Trying to convert inline 'if' statements
+        #first, does it look like a c# inline if?
+        p = re.compile("\(.*\?.*:.*\)")
+        m = p.search(line)
+        if m:
+            pre_munge = m.group()
+            
+            # ok, let's pick apart the pieces
+            p = re.compile("\(.*\?")
+            m = p.search(line)
+            if_part = m.group().replace("(", "").replace("?", "").strip()
+            
+            p = re.compile("\?.*:")
+            m = p.search(line)
+            then_part = m.group().replace(":", "").replace("?", "").strip()
+            
+            p = re.compile(":.*\)")
+            m = p.search(line)
+            else_part = m.group().replace(":", "").replace("?", "").replace(")", "").strip()
+            
+            #now reconstitute it (don't forget the rest of the line
+            post_munge = "(%s if %s else %s)" % (then_part, if_part, else_part)
+            line = line.replace(pre_munge, post_munge)
+            
         # && and || comparison operators in an "if" statement
         p = re.compile("^.*if.*&&")
-        m = p.match(line)
+        m = p.search(line)
         if m:
             line = line.replace("&&", "and")
-            line = "### VERIFY 'ANDs' !!!\n" + line
+            # line = "### VERIFY 'ANDs' !!!\n" + line
 
         p = re.compile("^.*if.*\|\|")
-        m = p.match(line)
+        m = p.search(line)
         if m:
             line = line.replace("||", "or")
-            line = "### VERIFY 'ORs' !!!\n" + line
+            # line = "### VERIFY 'ORs' !!!\n" + line
+        
         
 
+
+
+        
+        # ALL DONE!
         out += line
     
 with open("convert.out", 'w') as f_out:
