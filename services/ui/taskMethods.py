@@ -564,12 +564,12 @@ class taskMethods:
 
                 # copy from the clipboard (using the root_step_id to get ALL associated steps)
                 sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
-                    " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
+                    " commented, locked, output_row_delimiter, output_column_delimiter," \
                     " function_name, function_xml)" \
                     " select step_id, '" + sTaskID + "'," \
                     " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
                     "-1,step_desc," \
-                    "0,0,output_parse_type,output_row_delimiter,output_column_delimiter," \
+                    "0,0,output_row_delimiter,output_column_delimiter," \
                     "function_name,function_xml" \
                     " from task_step_clipboard" \
                     " where user_id = '" + sUserID + "'" \
@@ -622,14 +622,14 @@ class taskMethods:
                             xNode.text = dValues[sXPath]
                 
                     sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
-                        " commented, locked, output_parse_type, output_row_delimiter, output_column_delimiter," \
+                        " commented, locked, output_row_delimiter, output_column_delimiter," \
                         " function_name, function_xml)" \
                         " values (" \
                         "'" + sNewStepID + "'," \
                         "'" + sTaskID + "'," + \
                         ("'" + sCodeblockName + "'" if sCodeblockName else "null") + "," \
                         "-1," \
-                        "0,0," + sOPM + ",0,0," \
+                        "0,0,0,0," \
                         "'" + func.Name + "'," \
                         "'" + ET.tostring(xe) + "'" \
                         ")"
@@ -1087,22 +1087,25 @@ class taskMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetStepVarsEdit(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        sUserID = uiCommon.GetSessionUserID()
-
-        oStep = ST.GetSingleStep(sStepID, sUserID)
-        fn = uiCommon.GetTaskFunction(oStep.FunctionName)
-        if fn is None:
-            uiGlobals.request.Messages.append("Error - Unable to get the details for the Command type '" + oStep.FunctionName + "'.")
-        
-        # we will return some key values, and the html for the dialog
-        sHTML = ST.DrawVariableSectionForEdit(oStep)
-        
-        if not sHTML:
-            sHTML = "<span class=\"red_text\">Unable to get command variables.</span>"
-
-        return '{"parse_type":"%d","row_delimiter":"%d","col_delimiter":"%d","html":"%s"}' % \
-            (oStep.OutputParseType, oStep.OutputRowDelimiter, oStep.OutputColumnDelimiter, uiCommon.packJSON(sHTML))
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sUserID = uiCommon.GetSessionUserID()
+    
+            oStep = ST.GetSingleStep(sStepID, sUserID)
+            fn = uiCommon.GetTaskFunction(oStep.FunctionName)
+            if fn is None:
+                uiGlobals.request.Messages.append("Error - Unable to get the details for the Command type '" + oStep.FunctionName + "'.")
+            
+            # we will return some key values, and the html for the dialog
+            sHTML = ST.DrawVariableSectionForEdit(oStep)
+            
+            if not sHTML:
+                sHTML = "<span class=\"red_text\">Unable to get command variables.</span>"
+    
+            return '{"parse_type":"%d","row_delimiter":"%d","col_delimiter":"%d","html":"%s"}' % \
+                (oStep.OutputParseType, oStep.OutputRowDelimiter, oStep.OutputColumnDelimiter, uiCommon.packJSON(sHTML))
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmUpdateVars(self):
         try:
@@ -1115,14 +1118,6 @@ class taskMethods:
             # if every single variable is delimited, we can sort them!
             bAllDelimited = True
             
-            # # update the processing method
-            # sOutputProcessingType = sOutputProcessingType.replace("'", "''")
-    
-            # we might need to do something special for some function types
-    
-            # removed this on 10/6/09 because we are hiding "output type"
-            #                 " output_parse_type = '" + sOutputProcessingType + "'," \
-    
             sSQL = "update task_step set " \
                 " output_row_delimiter = '" + sRowDelimiter + "'," \
                 " output_column_delimiter = '" + sColDelimiter + "'" \

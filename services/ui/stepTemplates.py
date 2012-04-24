@@ -157,11 +157,6 @@ def GetStepTemplate(oStep):
     # NOTE: If you are adding a new command type, be aware that
     # you MIGHT need to modify the code in taskMethods for the wmAddStep function.
     # (depending on how your new command works)
-    # 
-    # IF the command populates variables, it will need a case statement added to that function
-    # to ensure the output_parse_type field is properly set.
-    # 
-
 
     # Special Commands have their own render functions.
     # What makes 'em special?  Basically they have dynamic content, or hardcoded rules.
