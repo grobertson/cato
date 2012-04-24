@@ -499,7 +499,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
                         for key, val in data.iteritems():
                             sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
                             if key == sNodeValue: bValueWasInData = True
-            except Exception as ex:
+            except Exception:
                 uiGlobals.request.Messages.append(traceback.format_exc())
         else: # default is "local"
             log("---- Inline datasource ... reading my own 'dataset' attribute ...", 4)
@@ -677,7 +677,7 @@ def AddToCommandXML(sStepID, sXPath, sXMLToAdd):
                 " Step Order:" + str(dr["step_order"]))
 
         return
-    except Exception, ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
@@ -731,7 +731,7 @@ def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
                 uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
 
         return
-    except Exception, ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
@@ -744,7 +744,7 @@ def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
         SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sValue)
 
         return
-    except Exception, ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue):
@@ -779,7 +779,70 @@ def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue
                 uiGlobals.request.Messages.append("Unable to update XML Column ... [" + sNodeToSet + "] not found.")
 
         return
-    except Exception, ex:
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+
+def SetNodeAttributeinCommandXML(sStepID, sNodeToSet, sAttribute, sValue):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+        if not uiCommon.IsGUID(sStepID):
+            uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
+
+        SetNodeAttributeinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sAttribute, sValue)
+
+        return
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+
+def SetNodeAttributeinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sAttribute, sValue):
+    # THIS ONE WILL do adds if the attribute doesn't exist, or update it if it does.
+    try:
+        uiCommon.log("Setting [%s] attribute [%s] to [%s] in [%s.%s where %s]" % (sNodeToSet, sAttribute, sValue, sTable, sXMLColumn, sWhereClause), 4 )
+
+        sXML = ""
+
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+        if uiGlobals.request.db.error:
+            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
+            return ""
+ 
+        if sXML:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                uiGlobals.request.Messages.append("Unable to parse xml." + uiGlobals.request.db.error)
+                return ""
+
+            # get the specified node from the doc
+            # here's the rub - the request might be or the "root" node,
+            # which "find" will not, er ... find.
+            # so let's first check if the root node is the name we want.
+            xNodeToSet = None
+            
+            if xd.tag == sNodeToSet:
+                xNodeToSet = xd
+            else:
+                xNodeToSet = xd.find(sNodeToSet)
+            
+            if xNodeToSet is None:
+            # do nothing if we didn't find the node
+                return ""
+            else:
+                # set it
+                xNodeToSet.attrib[sAttribute] = sValue
+
+
+            # then send the whole doc back to the database
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
+                " where " + sWhereClause
+            print sSQL
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
+
+        return ""
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def RemoveFromCommandXML(sStepID, sNodeToRemove):
@@ -804,7 +867,7 @@ def RemoveFromCommandXML(sStepID, sNodeToRemove):
                 " Step Order:" + str(dr["step_order"]))
 
         return
-    except Exception, ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
@@ -817,7 +880,7 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
         if not sXML:
             uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
         else:
-            uiCommon.log(sXML, 4)
+            # uiCommon.log(sXML, 4)
             # parse the doc from the table
             xd = ET.fromstring(sXML)
             if xd is None:
@@ -839,7 +902,7 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
                 uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
 
         return
-    except Exception, ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRequired):
@@ -963,7 +1026,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
     return sHTML
 
 def RemoveStepVars(sStepID):
-    ST.RemoveFromCommandXML(sStepID, "variables")
+    RemoveFromCommandXML(sStepID, "variables")
 
 def DrawVariableSectionForDisplay(oStep, bShowEditLink):
     sStepID = oStep.ID
@@ -981,6 +1044,7 @@ def DrawVariableSectionForDisplay(oStep, bShowEditLink):
     iParseType = oStep.OutputParseType
     iRowDelimiter = oStep.OutputRowDelimiter
     iColumnDelimiter = oStep.OutputColumnDelimiter
+    uiCommon.log("Parse Type [%d], Row Delimiter [%d], Col Delimiter [%d]" % (iParseType, iRowDelimiter, iColumnDelimiter), 4)
 
     sHTML = ""
     if bShowEditLink:

@@ -342,15 +342,13 @@ class Task(object):
                     s = enumerator.Current
                     iStepOrder = (-1 if bIsBogusCodeblock else iStepOrder)
                     oTrans.Command.CommandText = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
-                        " commented, locked, output_row_delimiter, output_column_delimiter," \
+                        " commented, locked," \
                         " function_name, function_xml)" \
                         " values (" + "'" + s.ID + "'," \
                         "'" + s.Task.ID + "'," \
                         ("NULL" if str.IsNullOrEmpty(s.Codeblock) else "'" + s.Codeblock + "'") + "," \
                         iStepOrder + "," \
                         "0,0," \
-                        s.OutputRowDelimiter + "," \
-                        s.OutputColumnDelimiter + "," \
                         "'" + s.FunctionName + "'," \
                         "'" + ui.TickSlash(s.FunctionXML) + "'" \
                         ")"
@@ -467,8 +465,7 @@ class Task(object):
             #steps temp table
             sSQL = "create temporary table _copy_task_step" \
                 " select step_id, '" + sNewTaskID + "' as task_id, codeblock_name, step_order, commented," \
-                " locked, function_name, function_xml, step_desc, output_row_delimiter," \
-                " output_column_delimiter" \
+                " locked, function_name, function_xml, step_desc" \
                 " from task_step where task_id = '" + self.ID + "'"
             if not db.tran_exec_noexcep(sSQL):
                 raise Exception(db.error)
@@ -599,7 +596,6 @@ class Task(object):
                 #sorting ALL the steps by their order here will ensure they get added to their respective 
                 # codeblocks in the right order.
                 sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
-                    " s.output_row_delimiter, s.output_column_delimiter," \
                     " us.visible, us.breakpoint, us.skip, us.button" \
                     " from task_step s" \
                     " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
@@ -607,7 +603,6 @@ class Task(object):
                     " order by s.step_order"
             else:
                 sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, codeblock_name," \
-                    " s.output_row_delimiter, s.output_column_delimiter," \
                     " 0 as visible, 0 as breakpoint, 0 as skip, '' as button" \
                     " from task_step s" \
                     " where s.task_id = '" + self.ID + "'" \
@@ -718,7 +713,6 @@ class Step(object):
         """
         try:
             sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name," \
-                " s.output_row_delimiter, s.output_column_delimiter," \
                 " us.visible, us.breakpoint, us.skip, us.button" \
                 " from task_step s" \
                 " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
@@ -746,8 +740,6 @@ class Step(object):
             self.Description = ("" if not dr["step_desc"] else dr["step_desc"])
             self.Commented = (True if dr["commented"] == "1" else False)
             self.Locked = (True if dr["locked"] == "1" else False)
-            self.OutputRowDelimiter = dr["output_row_delimiter"]
-            self.OutputColumnDelimiter = dr["output_column_delimiter"]
             self.FunctionXML = ("" if not dr["function_xml"] else dr["function_xml"])
             #once parsed, it's cleaner.  update the object with the cleaner xml
             if self.FunctionXML:
@@ -757,8 +749,12 @@ class Step(object):
                     # what's the output parse type?
                     self.OutputParseType = int(self.FunctionXDoc.get("parse_method", 0))
                     
-                    # we'll soon be getting the row and column delimiters from here too!
-                    
+                    # if the output parse type is "2", we need row and column delimiters too!
+                    #if self.OutputParseType == 2:
+                    # but hey! why bother checking, just read 'em anyway.  Won't hurt anything.
+                    self.OutputRowDelimiter = int(self.FunctionXDoc.get("row_delimiter", 0))
+                    self.OutputColumnDelimiter = int(self.FunctionXDoc.get("col_delimiter", 0))
+
                 except Exception:
                     self.IsValid = False
                     print "CRITICAL: Unable to parse function xml in step [%s]." % self.ID

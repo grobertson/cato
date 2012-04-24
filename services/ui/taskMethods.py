@@ -564,12 +564,12 @@ class taskMethods:
 
                 # copy from the clipboard (using the root_step_id to get ALL associated steps)
                 sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
-                    " commented, locked, output_row_delimiter, output_column_delimiter," \
+                    " commented, locked," \
                     " function_name, function_xml)" \
                     " select step_id, '" + sTaskID + "'," \
                     " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
                     "-1,step_desc," \
-                    "0,0,output_row_delimiter,output_column_delimiter," \
+                    "0,0," \
                     "function_name,function_xml" \
                     " from task_step_clipboard" \
                     " where user_id = '" + sUserID + "'" \
@@ -622,14 +622,14 @@ class taskMethods:
                             xNode.text = dValues[sXPath]
                 
                     sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
-                        " commented, locked, output_row_delimiter, output_column_delimiter," \
+                        " commented, locked," \
                         " function_name, function_xml)" \
                         " values (" \
                         "'" + sNewStepID + "'," \
                         "'" + sTaskID + "'," + \
                         ("'" + sCodeblockName + "'" if sCodeblockName else "null") + "," \
                         "-1," \
-                        "0,0,0,0," \
+                        "0,0," \
                         "'" + func.Name + "'," \
                         "'" + ET.tostring(xe) + "'" \
                         ")"
@@ -1118,13 +1118,9 @@ class taskMethods:
             # if every single variable is delimited, we can sort them!
             bAllDelimited = True
             
-            sSQL = "update task_step set " \
-                " output_row_delimiter = '" + sRowDelimiter + "'," \
-                " output_column_delimiter = '" + sColDelimiter + "'" \
-                " where step_id = '" + sStepID + "';"
-    
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            # update the function_xml attributes.
+            ST.SetNodeAttributeinCommandXML(sStepID, "function", "row_delimiter", sRowDelimiter)
+            ST.SetNodeAttributeinCommandXML(sStepID, "function", "col_delimiter", sColDelimiter)
     
     
             # 1 - create a new xdocument
