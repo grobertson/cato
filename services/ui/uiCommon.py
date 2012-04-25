@@ -23,14 +23,16 @@ def log(msg, debuglevel = 2):
             """ do nothing if there's no user - it may be pre-login """
             
         try:
-            uiGlobals.server.output(user_id + " : " + str(msg))
-            print user_id + " :" + str(msg)
+            if msg:
+                uiGlobals.server.output(user_id + " : " + str(msg))
+                print user_id + " :" + str(msg)
         except:
-            # maybe they couldn't be concatenated? if so, do them on separate lines
-            uiGlobals.server.output(user_id + " : ")
-            uiGlobals.server.output(msg)
-            print user_id + " :"
-            print msg
+            if msg:
+                # maybe they couldn't be concatenated? if so, do them on separate lines
+                uiGlobals.server.output(user_id + " : ")
+                uiGlobals.server.output(msg)
+                print user_id + " :"
+                print msg
 
 def getAjaxArg(sArg, sDefault=""):
     data = uiGlobals.web.data()
@@ -321,7 +323,7 @@ def GetTaskFunctions():
             return obj.Functions
         else:
             log("ERROR: Categories pickle could not be read.", 0)
-    except Exception, ex:
+    except Exception:
         log("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
         
     return None

@@ -550,7 +550,7 @@ class taskMethods:
             if sItem[:3] == "cb_":
                 # so, the sItem becomes "codeblock"
                 sCBName = sItem[3:]
-                dValues["//codeblock"] = sCBName
+                dValues["codeblock"] = sCBName
                 sItem = "codeblock"
 
             # NOTE: !! yes we are adding the step with an order of -1
@@ -655,6 +655,121 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmAddEmbeddedCommandToStep(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sDropXPath = uiCommon.getAjaxArg("sDropXPath")
+            sItem = uiCommon.getAjaxArg("sItem")
+            sUserID = uiCommon.GetSessionUserID()
+
+            sStepHTML = ""
+            
+            # in some cases, we'll have some special values to go ahead and set in the function_xml
+            # when it's added
+            # it's content will be xpath, value
+            dValues = {}
+
+            if not uiCommon.IsGUID(sTaskID):
+                uiGlobals.request.Messages.append("Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]")
+
+
+            # now, the sItem variable may have a function name (if it's a new command)
+            # or it may have a guid (if it's from the clipboard)
+
+            # so, if it's a guid after stripping off the prefix, it's from the clipboard
+
+            # the function has a fn_ or clip_ prefix on it from the HTML.  Strip it off.
+            # FIX... test the string to see if it BEGINS with fn_ or clip_
+            # IF SO... cut off the beginning... NOT a replace operation.
+            if sItem[:3] == "fn_": sItem = sItem[3:]
+            if sItem[:5] == "clip_": sItem = sItem[5:]
+
+            # could also beging with cb_, which means a codeblock was dragged and dropped.
+            # this special case will result in a codeblock command.
+            if sItem[:3] == "cb_":
+                # so, the sItem becomes "codeblock"
+                sCBName = sItem[3:]
+                dValues["codeblock"] = sCBName
+                sItem = "codeblock"
+
+            if uiCommon.IsGUID(sItem):
+                """"""
+                # PAY ATTENTION
+                # this won't work like this any more, but it's similar
+                
+                # get the command from the clipboard, and then update the XML of the parent step
+                # using ST.AddNodeToCommandXML (or maybe a new function that adds an xml object directly)
+                
+#                sNewStepID = sItem
+#
+#                # copy from the clipboard (using the root_step_id to get ALL associated steps)
+#                sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
+#                    " commented, locked," \
+#                    " function_name, function_xml)" \
+#                    " select step_id, '" + sTaskID + "'," \
+#                    " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
+#                    "-1,step_desc," \
+#                    "0,0," \
+#                    "function_name,function_xml" \
+#                    " from task_step_clipboard" \
+#                    " where user_id = '" + sUserID + "'" \
+#                    " and root_step_id = '" + sItem + "'"
+#
+#                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+#                    uiGlobals.request.Messages.append("Unable to add step." + uiGlobals.request.db.error)
+#
+#                uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
+#                    "Added Command from Clipboard to Codeblock:" + sCodeblockName)
+
+            else:
+                # 1) Get a Function object for the sItem (function_name)
+                # 2) update the parent step with the function objects xml
+                # 3) create a new "step"
+                # 4) draw it and return the html
+                
+                func = uiCommon.GetTaskFunction(sItem)
+                if not func:
+                    uiGlobals.request.Messages.append("Unable to add step.  Can't find a Function definition for [" + sItem + "]")
+                
+                # gotta do a few things to the templatexml
+                xe = ET.fromstring(func.TemplateXML)
+                if xe is not None:
+                    # there may be some provided values ... so alter the func.TemplateXML accordingly
+                    for sXPath, sValue in dValues.iteritems():
+                        xNode = xe.find(sXPath)
+                        if xNode is not None:
+                            xNode.text = dValues[sXPath]
+                
+                    # Add it!
+                    ST.AddToCommandXML(sStepID, sDropXPath, ET.tostring(xe))
+    
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
+                        "Added Command Type: " + sItem + " to Step: " + sStepID)
+
+                    # draw the embedded step and return the html
+                    # !!!!! This isn't a new step! ... It's an extension of the parent step.
+                    # but, since it's a different 'function', we'll treat it like a different step for now
+                    oEmbeddedStep = task.Step() # a new step object
+                    oEmbeddedStep.ID = sStepID 
+                    oEmbeddedStep.Function = func # a function object
+                    oEmbeddedStep.FunctionName = sItem
+                    oEmbeddedStep.FunctionXDoc = xe
+                    # THIS IS CRITICAL - this embedded step ... all fields in it will need an xpath prefix 
+                    oEmbeddedStep.XPathPrefix = sDropXPath + "/function"
+                    
+                    sStepHTML += ST.DrawEmbeddedStep(oEmbeddedStep)
+                
+                else:
+                    uiGlobals.request.Messages.append("Unable to add step.  No template xml.")
+
+                # return the html
+                return sStepHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
     def wmReorderSteps(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -735,36 +850,54 @@ class taskMethods:
             return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+        
+    def wmDeleteEmbeddedCommand(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sXPath = uiCommon.getAjaxArg("sXPath")
+            sParentID = uiCommon.getAjaxArg("sParentID")
+
+            ST.RemoveFromCommandXML(sParentID, sXPath)        
+                
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+    
     
     def wmUpdateStep(self):
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        sFunction = uiCommon.getAjaxArg("sFunction")
-        sXPath = uiCommon.getAjaxArg("sXPath")
-        sValue = uiCommon.getAjaxArg("sValue")
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sFunction = uiCommon.getAjaxArg("sFunction")
+            sXPath = uiCommon.getAjaxArg("sXPath")
+            sValue = uiCommon.getAjaxArg("sValue")
+    
+            # we encoded this in javascript before the ajax call.
+            # the safest way to unencode it is to use the same javascript lib.
+            # (sometimes the javascript and .net libs don't translate exactly, google it.)
+            sValue = uiCommon.unpackJSON(sValue)
+    
+            uiCommon.log("Updating step [%s (%s)] setting [%s] to [%s]." % (sFunction, sStepID, sXPath, sValue) , 4)
+            
+            # TODO - not gonna do this any more, do a web method for commenting instead
+            # if the function type is "_common" that means this is a literal column on the step table.
+#            if sFunction == "_common":
+#                sValue = uiCommon.TickSlash(sValue) # escape single quotes for the SQL insert
+#                sSQL = "update task_step set " + sXPath + " = '" + sValue + "' where step_id = '" + sStepID + "'"
+#    
+#                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+#                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+#    
+#            else:
 
-        # we encoded this in javascript before the ajax call.
-        # the safest way to unencode it is to use the same javascript lib.
-        # (sometimes the javascript and .net libs don't translate exactly, google it.)
-        sValue = uiCommon.unpackJSON(sValue)
-
-        uiCommon.log("Updating step [%s (%s)] setting [%s] to [%s]." % (sFunction, sStepID, sXPath, sValue) , 4)
-        # if the function type is "_common" that means this is a literal column on the step table.
-        if sFunction == "_common":
-            sValue = uiCommon.TickSlash(sValue) # escape single quotes for the SQL insert
-            sSQL = "update task_step set " + sXPath + " = '" + sValue + "' where step_id = '" + sStepID + "'"
-
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-
-        else:
             # XML processing
             # get the xml from the step table and update it
             sSQL = "select function_xml from task_step where step_id = '" + sStepID + "'"
 
             sXMLTemplate = uiGlobals.request.db.select_col_noexcep(sSQL)
-            print sXMLTemplate
+
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append("Unable to get XML data for step [" + sStepID + "].")
 
@@ -834,8 +967,7 @@ class taskMethods:
                     # xRoot.SetElementValue(sXPath, sValue)
                 except Exception, ex:
                     uiGlobals.request.Messages.append("Error Saving Step [" + sStepID + "].  Could not find and cannot create the [" + sXPath + "] property in the XML." + ex.__str__())
-
-
+                    return ""
 
             sSQL = "update task_step set " \
                 " function_xml = '" + uiCommon.TickSlash(ET.tostring(xDoc)) + "'" \
@@ -843,22 +975,24 @@ class taskMethods:
 
             if not uiGlobals.request.db.exec_db_noexcep(sSQL):
                 uiGlobals.request.Messages.append(uiGlobals.request.db)
-
-
-        sSQL = "select task_id, codeblock_name, step_order from task_step where step_id = '" + sStepID + "'"
-        dr = uiGlobals.request.db.select_row_dict(sSQL)
-        if uiGlobals.request.db.error:
-            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-
-        if dr is not None:
-            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], sFunction,
-                "Codeblock:" + dr["codeblock_name"] + \
-                " Step Order:" + str(dr["step_order"]) + \
-                " Command Type:" + sFunction + \
-                " Property:" + sXPath + \
-                " New Value: " + sValue)
-
-        return ""
+    
+    
+            sSQL = "select task_id, codeblock_name, step_order from task_step where step_id = '" + sStepID + "'"
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            if dr is not None:
+                uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], sFunction,
+                    "Codeblock:" + dr["codeblock_name"] + \
+                    " Step Order:" + str(dr["step_order"]) + \
+                    " Command Type:" + sFunction + \
+                    " Property:" + sXPath + \
+                    " New Value: " + sValue)
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmToggleStepCommonSection(self):
         # no exceptions, just a log message if there are problems.
@@ -1179,7 +1313,7 @@ class taskMethods:
     
             # if it's delimited, sort it
             if sOPM == "1" or bAllDelimited == True:
-                print "would sort"
+                print "would sort" # if I knew the best approach
     #            List<XElement> ordered = xVars.Elements("variable")
     #                .OrderBy(element => (int?)element.Element("position"))
     #                    .ToList()

@@ -17,7 +17,7 @@ def GetSingleStep(sStepID, sUserID):
 def DrawFullStep(oStep):
     sStepID = oStep.ID
     
-    # this uses a uiCommon function, because the functions were cached in the session
+    # this uses a uiCommon function, because the functions were cached
     fn = uiCommon.GetTaskFunction(oStep.FunctionName)
     if fn:
         oStep.Function = fn
@@ -90,12 +90,13 @@ def DrawFullStep(oStep):
     
     sMainHTML += "<li class=\"step " + sSkipStepClass + "\" id=\"" + sStepID + "\" " + sLockClause + ">"
     
+    # TODO - stop doing this as a special field and just do a web method for comment/uncomment
     # the "commented" property is just a common field on all steps - it's hidden in the header.
-    sCommentFieldID = uiCommon.NewGUID()
-    sMainHTML += "<input type=\"text\"" \
-        " value=\"" + ("1" if oStep.Commented else "0") + "\"" + \
-        CommonAttribsWithID(sStepID, "_common", False, "commented", sCommentFieldID, "hidden") + \
-        " />"
+#    sCommentFieldID = uiCommon.NewGUID()
+#    sMainHTML += "<input type=\"text\"" \
+#        " value=\"" + ("1" if oStep.Commented else "0") + "\"" + \
+#        CommonAttribsWithID(oStep, "_common", False, "commented", sCommentFieldID, "hidden") + \
+#        " />"
     
     
     # step expand image
@@ -120,8 +121,8 @@ def DrawFullStep(oStep):
     #this button is data enabled.  it controls the value of the hidden field at the top of the step.
     sMainHTML += "            <span><img id=\"step_skip_btn_" + sStepID + "\"" \
         " class=\"step_skip_btn\" step_id=\"" + sStepID + "\"" \
-        " datafield_id=\"" + sCommentFieldID + "\"" \
         " src=\"" + sSkipIcon + "\" alt=\"\" title=\"Skip this Step\"/></span>"
+# see above TODO        " datafield_id=\"" + sCommentFieldID + "\"" \
 
     sMainHTML += "            <span class=\"step_delete_btn\" remove_id=\"" + sStepID + "\">" \
         " <img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Delete Step\" /></span>"
@@ -218,8 +219,6 @@ def GetStepTemplate(oStep):
     return sHTML, sOptionHTML, sVariableHTML
 
 def DrawStepFromXMLDocument(oStep):
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
     xd = oStep.FunctionXDoc
     # 
     # * This block reads the XML for a step and uses certain node attributes to determine how to draw the step.
@@ -248,14 +247,17 @@ def DrawStepFromXMLDocument(oStep):
             if xe.tag == "step_variables": 
                 continue
             
-            log("Drawing [" + xe.tag + "]", 4)
-            sNodeHTML, sNodeOptionHTML = DrawNode(xe, xe.tag, sStepID, sFunction)
+            # now, for embedded content, the step may have an xpath "prefix"
+            sXPath = xe.tag
+            
+            log("Drawing [" + sXPath + "]", 4)
+            sNodeHTML, sNodeOptionHTML = DrawNode(xe, sXPath, oStep)
             sHTML += sNodeHTML
             sOptionHTML += sNodeOptionHTML
             
     return sHTML, sOptionHTML
     
-def DrawNode(xeNode, sXPath, sStepID, sFunction):
+def DrawNode(xeNode, sXPath, oStep):
     sHTML = ""
     sNodeName = xeNode.tag
     
@@ -296,7 +298,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
             sChildXPath = sXPath + "/" + xeOnlyChild.tag
             # DrawNode returns a tuple, but here we only care about the first value
             # because "editable" nodes shouldn't be options.
-            sNodeHTML, sOptionHTML = DrawNode(xeOnlyChild, sChildXPath, sStepID, sFunction)
+            sNodeHTML, sOptionHTML = DrawNode(xeOnlyChild, sChildXPath, oStep)
             if sOptionTab:
                 sHTML += sNodeName + "." + sOptionHTML
             else:
@@ -304,7 +306,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
             
             #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
             if bIsRemovable:
-                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
+                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\">"
                 sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
         else: #there is more than one child... business as usual
             log("-- more children ... drawing and drilling down ... ", 4)
@@ -316,7 +318,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
             #so, it gets an add link.
             sHTML += "<div class=\"step_header_icons\">" #step header icons
             if bIsEditable:
-                sHTML += "<div class=\"fn_nodearray_add_btn pointer\"" + " step_id=\"" + sStepID + "\"" \
+                sHTML += "<div class=\"fn_nodearray_add_btn pointer\"" + " step_id=\"" + oStep.ID + "\"" \
                     " xpath=\"" + sXPath + "\">" \
                     "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
                     " alt=\"\" title=\"Add another...\" /></div>"
@@ -325,7 +327,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
             #so, it gets a delete link
             #you can't remove unless there are more than one
             if bIsRemovable:
-                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
+                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\">"
                 sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
             sHTML += "</div>" #end step header icons
             sHTML += "  </div>" #end header
@@ -357,17 +359,17 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
                     
                 # it's not possible for an 'editable' node to be in the options tab if it's parents aren't,
                 # so here we ignore the options return
-                sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, sStepID, sFunction)
+                sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, oStep)
                 if sBunk:
                     log("WARNING: This shouldn't have returned 'option' html.", 2)
                 sHTML += sNodeHTML
     
             sHTML += "</div>"
     else: #end section
-        sHTML += DrawField(xeNode, sXPath, sStepID, sFunction)
+        sHTML += DrawField(xeNode, sXPath, oStep)
         #it may be that these fields themselves are removable
         if bIsRemovable:
-            sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + sStepID + "\">"
+            sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\">"
             sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
     
     #ok, now that we've drawn it, it might be intended to go on the "options tab".
@@ -377,7 +379,7 @@ def DrawNode(xeNode, sXPath, sStepID, sFunction):
     else:
         return sHTML, ""
         
-def DrawField(xe, sXPath, sStepID, sFunction):
+def DrawField(xe, sXPath, oStep):
     sHTML = ""
     sNodeValue = (xe.text if xe.text else "")
     log("---- Value :" + sNodeValue, 4)
@@ -414,7 +416,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
         sRows = xe.get("rows", "2")
         sTextareaID = uiCommon.NewGUID()
         sHTML += sNodeLabel + " <textarea rows=\"" + sRows + "\"" + \
-            CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sTextareaID, sCSSClasses) + \
+            CommonAttribsWithID(oStep, bRequired, sXPath, sTextareaID, sCSSClasses) + \
             " style=\"" + sStyle + "\"" \
             " help=\"" + sHelp + "\"" \
             ">" + sNodeValue + "</textarea>"
@@ -427,7 +429,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
         sDataSet = xe.get("dataset", "")
         sFieldStyle = xe.get("style", "")
 
-        sHTML += sNodeLabel + " <select " + CommonAttribs(sStepID, sFunction, False, sXPath, sFieldStyle) + ">\n"
+        sHTML += sNodeLabel + " <select " + CommonAttribs(oStep, False, sXPath, sFieldStyle) + ">\n"
         
         # empty one
         sHTML += "<option " + SetOption("", sNodeValue) + " value=\"\"></option>\n"
@@ -520,7 +522,7 @@ def DrawField(xe, sXPath, sStepID, sFunction):
     else: #input is the default
         sElementID = uiCommon.NewGUID() #some special cases below may need this.
         sHTML += sNodeLabel + " <input type=\"text\" " + \
-            CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sCSSClasses) + \
+            CommonAttribsWithID(oStep, bRequired, sXPath, sElementID, sCSSClasses) + \
             " style=\"" + sStyle + "\"" \
             " help=\"" + sHelp + "\"" \
             " value=\"" + sNodeValue + "\" />"
@@ -538,36 +540,135 @@ def DrawField(xe, sXPath, sStepID, sFunction):
     log("---- ... done", 4)
     return sHTML
 
-def CommonAttribsWithID(sStepID, sFunction, bRequired, sXPath, sElementID, sAdditionalClasses):
+def CommonAttribsWithID(oStep, bRequired, sXPath, sElementID, sAdditionalClasses):
+    # if it's embedded it will have a prefix
+    sXPath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "") + sXPath
+    
     # requires a guid ID passed in - this one will be referenced client side
     return " id=\"" + sElementID + "\"" \
-        " step_id=\"" + sStepID + "\"" \
-        " function=\"" + sFunction + "\"" \
+        " step_id=\"" + oStep.ID + "\"" \
+        " function=\"" + oStep.FunctionName + "\"" \
         " xpath=\"" + sXPath + "\"" \
         " te_group=\"step_fields\"" \
         " class=\"step_input code " + sAdditionalClasses + "\"" + \
         (" is_required=\"true\"" if bRequired else "") + \
-        " onchange=\"javascript:onStepFieldChange(this, '" + sStepID + "', '" + sXPath + "');\""
+        " onchange=\"javascript:onStepFieldChange(this, '" + oStep.ID + "', '" + sXPath + "');\""
 
-def CommonAttribs(sStepID, sFunction, bRequired, sXPath, sAdditionalClasses):
+def CommonAttribs(oStep, bRequired, sXPath, sAdditionalClasses):
+    # if it's embedded it will have a prefix
+    sXPath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "") + sXPath
+    
     # creates a new id
     return " id=\"x" + uiCommon.NewGUID() + "\"" \
-        " step_id=\"" + sStepID + "\"" \
-        " function=\"" + sFunction + "\"" \
+        " step_id=\"" + oStep.ID + "\"" \
+        " function=\"" + oStep.FunctionName + "\"" \
         " xpath=\"" + sXPath + "\"" \
         " te_group=\"step_fields\"" \
         " class=\"step_input code " + sAdditionalClasses + "\"" + \
         (" is_required=\"true\"" if bRequired else "") + \
-        " onchange=\"javascript:onStepFieldChange(this, '" + sStepID + "', '" + sXPath + "');\""
+        " onchange=\"javascript:onStepFieldChange(this, '" + oStep.ID + "', '" + sXPath + "');\""
 
-def DrawStepCommon(oStep, sOptionHTML, sVariableHTML):
+def DrawEmbeddedStep(oStep):
+    uiCommon.log("** Embedded Step: [%s] prefix [%s]" % (oStep.FunctionName, oStep.XPathPrefix), 4)
+    # JUST KNOW!
+    # this isn't a "real" step ... meaning it isn't in the task_step table as an individual row
+    # it's a step object we manually created.
+    # so, some properties will have no values.
     sStepID = oStep.ID
+    fn = oStep.Function
+    
+    # we need the full function, not just the inner part that's on the parent step xml.
+    if fn is None:
+        # the function doesn't exist (was probably deprecated)
+        # we need at least a basic strip with a delete button
+        sNoFunc = "<div class=\"embedded_step\">"
+        sNoFunc += "    <div class=\"ui-state-default ui-state-highlight step_header\">"
+        sNoFunc += "        <div class=\"step_header_title\"><img src=\"static/images/icons/status_unknown_16.png\" /></div>"
+        sNoFunc += "        <div class=\"step_header_icons\">"
+        sNoFunc += "            <span class=\"embedded_step_delete_btn\" remove_xpath=\"" + oStep.XPathPrefix + "\" parent_id=\"" + sStepID + "\"><img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove Command\" /></span>"
+        sNoFunc += "        </div>"
+        sNoFunc += "    </div>"
+        sNoFunc += "    <div class=\"ui-widget-content ui-state-highlight ui-corner-bottom step_detail\" >"
+        sNoFunc += "Error building Step - Unable to get the details for the command type '" + oStep.FunctionName + "'.<br />"
+        sNoFunc += "This command type may have been deprecated - check the latest Cato release notes.<br />"
+        sNoFunc += "    </div>"
+        sNoFunc += "</div>"
+
+        return sNoFunc
+    
+    # invalid for embedded
+    # sExpandedClass = ("step_collapsed" if oStep.UserSettings.Visible else "")
+
+    sMainHTML = ""
+    sVariableHTML = ""
+    sOptionHTML = ""
+
+    # labels are different here than in Full Steps.
+    sIcon = ("" if not fn.Icon else fn.Icon)
+    sLabel = "<img class=\"step_header_function_icon\" src=\"" + sIcon + "\" alt=\"\" /> " + \
+        fn.Category.Label + " - " + fn.Label
+
+    # invalid for embedded
+    # sSnip = uiCommon.GetSnip(oStep.Description, 75)
+    # sLabel += ("" if not oStep.Description) else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[" + sSnip + "]")
+
+    # sLockClause = (" onclick=\"return false;\"" if !oStep.Locked else "")
+
+
+    #  step expand image
+    #sExpandImage = "expand_down.png"
+    #if sExpandedClass == "step_collapsed":
+    #    sExpandImage = "expand_up.png"
+
+    sMainHTML += "<div class=\"embedded_step\">"
+    sMainHTML += "    <div class=\"ui-state-default step_header\">"
+    sMainHTML += "        <div class=\"step_header_title\">"
+#    sMainHTML += "            <span class=\"step_toggle_btn\"" \
+#        " step_id=\"" + sStepID + "\">" \
+#        " <img class=\"expand_image\" src=\"static/images/icons/" + sExpandImage + "\" alt=\"\" title=\"Hide/Show Step\" /></span>"
+    sMainHTML += "            <span>" + sLabel + "</span>"
+    sMainHTML += "        </div>"
+    sMainHTML += "        <div class=\"step_header_icons\">"
+
+    # this button will copy a step into the clipboard.
+#    sMainHTML += "            <span><img id=\"step_copy_btn_" + sStepID + "\"" \
+#        " class=\"step_copy_btn\" step_id=\"" + sStepID + "\"" \
+#        " src=\"static/images/icons/editcopy_16.png\" alt=\"\" title=\"Copy this Step to your Clipboard\"/></span>"
+
+    # for deleting, the codeblock_name is the step_id of the parent step.
+    sMainHTML += "            <span class=\"embedded_step_delete_btn\"" \
+        " remove_xpath=\"" + oStep.XPathPrefix + "\" parent_id=\"" + sStepID + "\">" \
+        " <img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove Command\" /></span>"
+    sMainHTML += "        </div>"
+    sMainHTML += "     </div>"
+    sMainHTML += "     <div class=\"ui-widget-content ui-corner-bottom step_detail\" >"
+
+    #!!! this returns a tuple with optional "options" and "variable" html
+    sStepHTML, sOptionHTML, sVariableHTML = GetStepTemplate(oStep)
+    sMainHTML += sStepHTML
+    
+    #comment steps don't have a common section - all others do
+    if oStep.FunctionName != "comment":
+        sMainHTML += DrawStepCommon(oStep, sOptionHTML, sVariableHTML, True)
+
+    sMainHTML += "    </div>"
+    sMainHTML += "</div>"
+
+    return sMainHTML
+
+def DrawStepCommon(oStep, sOptionHTML, sVariableHTML, bIsEmbedded = False):
+    sStepID = oStep.ID
+
+    # a certain combination of tests means we have nothing to draw at all
+    if bIsEmbedded and not sOptionHTML and not sVariableHTML:
+        return ""
     
     #this is the section that is common to all steps.
     sHTML = ""
     sHTML += "        <hr />"
     sHTML += "        <div class=\"step_common\" >"
     sHTML += "            <div class=\"step_common_header\">"
+    
     sShowOnLoad = oStep.UserSettings.Button
     
     #pill buttons
@@ -580,27 +681,37 @@ def DrawStepCommon(oStep, sOptionHTML, sVariableHTML):
         sHTML += "                <span class=\"step_common_button " + ("step_common_button_active" if sShowOnLoad == "options" else "") + "\"" \
             " id=\"btn_step_common_detail_" + sStepID + "_options\"" \
             " button=\"options\"" + " step_id=\"" + sStepID + "\">Options</span>"
-    sHTML += "                <span class=\"step_common_button " + ("step_common_button_active" if sShowOnLoad == "notes" else "") + "\"" \
-        " id=\"btn_step_common_detail_" + sStepID + "_notes\"" \
-        " button=\"notes\"" + " step_id=\"" + sStepID + "\">Notes</span>"
-    sHTML += "                <span class=\"step_common_button " + ("step_common_button_active" if sShowOnLoad == "help" else "") + "\"" \
-        " id=\"btn_step_common_detail_" + sStepID + "_help\"" \
-        " button=\"help\"" \
-        " step_id=\"" + sStepID + "\">Help</span>"
-    sHTML += "            </div>"
+
+    # embedded commands don't have a notes button (it's the description of the command, which doesn't apply)
+    if not bIsEmbedded:
+        sHTML += "                <span class=\"step_common_button " + ("step_common_button_active" if sShowOnLoad == "notes" else "") + "\"" \
+            " id=\"btn_step_common_detail_" + sStepID + "_notes\"" \
+            " button=\"notes\"" + " step_id=\"" + sStepID + "\">Notes</span>"
+
+        # not showing help either... too cluttered
+        sHTML += "                <span class=\"step_common_button " + ("step_common_button_active" if sShowOnLoad == "help" else "") + "\"" \
+            " id=\"btn_step_common_detail_" + sStepID + "_help\"" \
+            " button=\"help\"" \
+            " step_id=\"" + sStepID + "\">Help</span>"
+        sHTML += "            </div>"
     
     #sections
-    sHTML += "            <div id=\"step_common_detail_" + sStepID + "_notes\"" \
-        " class=\"step_common_detail " + ("" if sShowOnLoad == "notes" else "step_common_collapsed") + "\"" \
-        " style=\"height: 100px;\">"
-    sHTML += "                <textarea rows=\"4\" " + CommonAttribs(sStepID, "_common", False, "step_desc", "") + \
-        " help=\"Enter notes for this Command.\" reget_on_change=\"true\">" + oStep.Description + "</textarea>"
-    sHTML += "            </div>"
-    sHTML += "            <div id=\"step_common_detail_" + sStepID + "_help\"" \
-        " class=\"step_common_detail " + ("" if sShowOnLoad == "help" else "step_common_collapsed") + "\"" \
-        " style=\"height: 200px;\">"
-    sHTML += oStep.Function.Help
-    sHTML += "            </div>"
+    # embedded commands don't have notes (it's the description of the command, which doesn't apply)
+    if not bIsEmbedded:
+        sHTML += "            <div id=\"step_common_detail_" + sStepID + "_notes\"" \
+            " class=\"step_common_detail " + ("" if sShowOnLoad == "notes" else "step_common_collapsed") + "\"" \
+            " style=\"height: 100px;\">"
+#        sHTML += "                <textarea rows=\"4\" " + CommonAttribs(sStepID, "_common", False, "step_desc", "") + \
+#            " help=\"Enter notes for this Command.\" reget_on_change=\"true\">" + oStep.Description + "</textarea>"
+#        sHTML += "            </div>"
+
+        # embedded commands *could* show the help, but I don't like the look of it.
+        # it's cluttered
+        sHTML += "            <div id=\"step_common_detail_" + sStepID + "_help\"" \
+            " class=\"step_common_detail " + ("" if sShowOnLoad == "help" else "step_common_collapsed") + "\"" \
+            " style=\"height: 200px;\">"
+        sHTML += oStep.Function.Help
+        sHTML += "            </div>"
     
     #some steps generate custom options we want in this pane
     #but we don't show the panel if there aren't any
@@ -880,7 +991,6 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
         if not sXML:
             uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
         else:
-            # uiCommon.log(sXML, 4)
             # parse the doc from the table
             xd = ET.fromstring(sXML)
             if xd is None:
@@ -893,8 +1003,17 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
                 # no worries... what you want to delete doesn't exist?  perfect!
                 return
 
+            # OK, here's the deal...
+            # we have found the node we want to delete, but we found it using an xpath,
+            # ElementTree doesn't support deleting by xpath.
+            # so, we'll use a parent map to find the immediate parent of the node we found,
+            # and on the parent we can call ".remove"
+            parent_map = dict((c, p) for p in xd.getiterator() for c in p)
+            xParentOfNodeToWhack = parent_map[xNodeToWhack]
+            
             # whack it
-            xd.remove(xNodeToWhack)
+            if xParentOfNodeToWhack is not None:
+                xParentOfNodeToWhack.remove(xNodeToWhack)
 
             sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
                 " where " + sWhereClause
@@ -905,45 +1024,51 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
     except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
-def DrawDropZone(sParentStepID, sEmbeddedStepID, sFunction, sColumn, sLabel, bRequired):
+def DrawDropZone(oStep, xEmbeddedFunction, sXPath, sLabel, bRequired):
     # drop zones are common for all the steps that can contain embedded steps.
     # they are a div to drop on and a hidden field to hold the embedded step id.
     sHTML = ""
-    sElementID = uiCommon.NewGUID()
-
-    # a hidden field holds the embedded step_id as the data.
-    # Following this is a dropzone that actually gets the graphical representation of the embedded step.
-    sHTML += "<input type=\"text\" " + \
-        CommonAttribsWithID(sParentStepID, sFunction, False, sColumn, sElementID, "hidden") + \
-        " value=\"" + sEmbeddedStepID + "\" />\n"
-
     sHTML += sLabel
 
+    # an embedded step may actually be the child of another embedded step, so
+    # check for an xpath prefix
+    sXPath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "") + sXPath
+    
     # some of our 'columns' may be complex XPaths.  XPaths have invalid characters for use in 
     # an HTML ID attribute
     # but we need it to be unique... so just 'clean up' the column name
-    sColumn = sColumn.replace("[", "").replace("]", "").replace("/", "")
+    sXPathBasedID = sXPath.replace("[", "").replace("]", "").replace("/", "")
 
     # the dropzone
     sDropZone = "<div" + \
         (" is_required=\"true\" value=\"\"" if bRequired else "") + \
-        " id=\"" + sFunction + "_" + sParentStepID + "_" + sColumn + "_dropzone\"" \
-        " datafield_id=\"" + sElementID + "\"" \
-        " step_id=\"" + sParentStepID + "\"" \
+        " id=\"" + oStep.FunctionName + "_" + oStep.ID + "_" + sXPathBasedID + "_dropzone\"" \
+        " xpath=\"" + sXPath + "\"" \
+        " step_id=\"" + oStep.ID + "\"" \
         " class=\"step_nested_drop_target " + ("is_required" if bRequired else "") + "\">Click here to add a Command.</div>"
+#        " datafield_id=\"" + sElementID + "\"" \
 
-    # GONNA RETHINK THE WHOLE EMBEDDED THING
-    """
-    if uiCommon.IsGUID(sEmbeddedStepID):
-        oEmbeddedStep = GetSingleStep(sEmbeddedStepID, sUserID)
-        if oEmbeddedStep is not None:
-            sHTML += DrawEmbeddedStep(oEmbeddedStep)
-        else:
-            sHTML += "<span class=\"red_text\">" + db.error + "</span>"
+
+    # manually create a step object, which will basically only have the function_xml.
+    if xEmbeddedFunction is not None:
+        sFunctionName = xEmbeddedFunction.get("name", "")
+
+        fn = uiCommon.GetTaskFunction(sFunctionName)
+
+        # !!!!! This isn't a new step! ... It's an extension of the parent step.
+        # but, since it's a different 'function', we'll treat it like a different step for now
+        oEmbeddedStep = task.Step() # a new step object
+        oEmbeddedStep.ID = oStep.ID 
+        oEmbeddedStep.Function = fn # a function object
+        oEmbeddedStep.FunctionName = sFunctionName
+        oEmbeddedStep.FunctionXDoc = xEmbeddedFunction
+        # THIS IS CRITICAL - this embedded step ... all fields in it will need an xpath prefix 
+        oEmbeddedStep.XPathPrefix = sXPath + "/function"
+        
+        sHTML += DrawEmbeddedStep(oEmbeddedStep)
     else:
-        sHTML += sDropZone
-    """
-    sHTML += sDropZone # THIS IS FOR TESTING ONLY, REMOVE IT WHEN YOU UNCOMMENT THE PREVIOUS BLOCK
+        sHTML += sDropZone 
+       
     return sHTML
 
 def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLabel):
@@ -968,7 +1093,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\"><tr>\n"
         sHTML += "<td class=\"w1pct\">&nbsp;" + sKeyLabel + ":&nbsp;</td>\n"
 
-        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribsWithID(sStepID, sFunction, True, "pair[" + str(i) + "]/key", sElementID, "") + \
+        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribsWithID(oStep, True, "pair[" + str(i) + "]/key", sElementID, "") + \
             " validate_as=\"variable\"" \
             " value=\"" + uiCommon.SafeHTML(sKey) + "\"" \
             " help=\"Enter a name.\"" \
@@ -986,7 +1111,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         sHTML += "<td class=\"w1pct\">&nbsp;" + sValueLabel + ":&nbsp;</td>"
 
         #  we gotta get the field id first, but don't show the textarea until after
-        sCommonAttribs = CommonAttribsWithID(sStepID, sFunction, True, "pair[" + str(i) + "]/value", sValueFieldID, "w90pct")
+        sCommonAttribs = CommonAttribsWithID(oStep, True, "pair[" + str(i) + "]/value", sValueFieldID, "w90pct")
 
         sHTML += "<td class=\"w50pct\"><input type=\"text\" " + sCommonAttribs + \
             " value=\"" + uiCommon.SafeHTML(sVal) + "\"" \
@@ -1003,7 +1128,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
             sHTML += "<td>"
 
             sHTML += "&nbsp;Mask?: <input type=\"checkbox\" " + \
-                CommonAttribs(sStepID, sFunction, True, "pair[" + str(i) + "]/mask", "") + " " + SetCheckRadio("1", sMask) + " />\n"
+                CommonAttribs(oStep, True, "pair[" + str(i) + "]/mask", "") + " " + SetCheckRadio("1", sMask) + " />\n"
 
 
             sHTML += "</td>\n"
@@ -1345,7 +1470,7 @@ def GetEcosystemObjects(oStep):
         sHTML = ""
 
         sHTML += "Select Object Type:\n"
-        sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "object_type", "") + ">\n"
+        sHTML += "<select " + CommonAttribs(oStep, True, "object_type", "") + ">\n"
         sHTML += "  <option " + SetOption("", sObjectType) + " value=\"\"></option>\n"
 
         
@@ -1360,17 +1485,17 @@ def GetEcosystemObjects(oStep):
 
         sCloudFilter = xd.findtext("cloud_filter", "")
         sHTML += "Cloud Filter: \n" + "<input type=\"text\" " + \
-        CommonAttribs(sStepID, sFunction, False, "cloud_filter", "") + \
+        CommonAttribs(oStep, False, "cloud_filter", "") + \
         " help=\"Enter all or part of a cloud name to filter the results.\" value=\"" + sCloudFilter + "\" />\n"
 
         sResultName = xd.findtext("result_name", "")
         sHTML += "<br />Result Variable: \n" + "<input type=\"text\" " + \
-        CommonAttribs(sStepID, sFunction, False, "result_name", "") + \
+        CommonAttribs(oStep, False, "result_name", "") + \
         " help=\"This variable array will contain the ID of each Ecosystem Object.\" value=\"" + sResultName + "\" />\n"
 
         sCloudName = xd.findtext("cloud_name", "")
         sHTML += " Cloud Name Variable: \n" + "<input type=\"text\" " + \
-        CommonAttribs(sStepID, sFunction, False, "cloud_name", "") + \
+        CommonAttribs(oStep, False, "cloud_name", "") + \
         " help=\"This variable array will contain the name of the Cloud for each Ecosystem Object.\" value=\"" + sCloudName + "\" />\n"
 
         return sHTML
@@ -1416,14 +1541,14 @@ def SqlExec(oStep):
         bDrawKeyValSection = False
 
         sHTML += "Connection:\n"
-        sHTML += "<input type=\"text\" " + CommonAttribsWithID(sStepID, sFunction, True, "conn_name", sElementID, "")
+        sHTML += "<input type=\"text\" " + CommonAttribsWithID(oStep, True, "conn_name", sElementID, "")
         sHTML += " help=\"Enter an active connection where this SQL will be executed.\" value=\"" + sConnName + "\" />"
         sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\"" \
             " src=\"static/images/icons/search.png\"" \
             " link_to=\"" + sElementID + "\" />\n"
 
         sHTML += "Mode:\n"
-        sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "mode", "") + " reget_on_change=\"true\">\n"
+        sHTML += "<select " + CommonAttribs(oStep, True, "mode", "") + " reget_on_change=\"true\">\n"
         sHTML += "  <option " + SetOption("SQL", sMode) + " value=\"SQL\">SQL</option>\n"
         sHTML += "  <option " + SetOption("BEGIN", sMode) + " value=\"BEGIN\">BEGIN</option>\n"
         sHTML += "  <option " + SetOption("COMMIT", sMode) + " value=\"COMMIT\">COMMIT</option>\n"
@@ -1469,7 +1594,7 @@ def SqlExec(oStep):
 
         if bDrawHandle:
             sHTML += "Handle:\n"
-            sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle", "")
+            sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "handle", "")
             sHTML += " help=\"Enter a handle for this prepared statement.\" value=\"" + sHandle + "\" />"
 
         if bDrawKeyValSection:
@@ -1477,7 +1602,7 @@ def SqlExec(oStep):
 
         if bDrawSQLBox:
             #  we gotta get the field id first, but don't show the textarea until after
-            sCommonAttribsForTA = CommonAttribsWithID(sStepID, sFunction, True, "sql", sFieldID, "")
+            sCommonAttribsForTA = CommonAttribsWithID(oStep, True, "sql", sFieldID, "")
 
             sHTML += "<br />SQL:\n"
             # big box button
@@ -1582,7 +1707,7 @@ def RunTask(oStep):
         sOTIDField = uiCommon.NewGUID()
     
         sHTML += "<input type=\"text\" " + \
-            CommonAttribsWithID(sStepID, sFunction, True, "original_task_id", sOTIDField, "hidden") + \
+            CommonAttribsWithID(oStep, True, "original_task_id", sOTIDField, "hidden") + \
             " value=\"" + sOriginalTaskID + "\"" + " reget_on_change=\"true\" />"
     
         sHTML += "Task: \n"
@@ -1610,7 +1735,7 @@ def RunTask(oStep):
         if uiCommon.IsGUID(sOriginalTaskID):
             sHTML += "<br />"
             sHTML += "Version: \n"
-            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "version", "") + " reget_on_change=\"true\">\n"
+            sHTML += "<select " + CommonAttribs(oStep, False, "version", "") + " reget_on_change=\"true\">\n"
             # default
             sHTML += "<option " + SetOption("", sVersion) + " value=\"\">Default</option>\n"
     
@@ -1636,7 +1761,7 @@ def RunTask(oStep):
         print sAssetID
         #  asset
         sHTML += "<input type=\"text\" " + \
-            CommonAttribsWithID(sStepID, sFunction, False, "asset_id", sOTIDField, "hidden") + \
+            CommonAttribsWithID(oStep, False, "asset_id", sOTIDField, "hidden") + \
             " value=\"" + sAssetID + "\" />"
     
         sHTML += "Asset: \n"
@@ -1661,10 +1786,10 @@ def RunTask(oStep):
             " src=\"static/images/icons/search.png\" />\n"
     
         sHTML += "<br />"
-        sHTML += "Task Handle: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle", "") + \
+        sHTML += "Task Handle: <input type=\"text\" " + CommonAttribs(oStep, True, "handle", "") + \
             " value=\"" + sHandle + "\" />\n"
     
-        sHTML += "Time to Wait: <input type=\"text\" " + CommonAttribs(sStepID, sFunction, False, "time_to_wait", "") + \
+        sHTML += "Time to Wait: <input type=\"text\" " + CommonAttribs(oStep, False, "time_to_wait", "") + \
             " value=\"" + sTime + "\" />\n"
     
         # sHTML += "<br />"
@@ -1749,7 +1874,7 @@ def Subtask(oStep):
         sOTIDField = uiCommon.NewGUID()
     
         sHTML += "<input type=\"text\" " + \
-            CommonAttribsWithID(sStepID, sFunction, True, "original_task_id", sOTIDField, "hidden") + \
+            CommonAttribsWithID(oStep, True, "original_task_id", sOTIDField, "hidden") + \
             " value=\"" + sOriginalTaskID + "\" reget_on_change=\"true\" />\n"
     
         sHTML += "Task: \n"
@@ -1776,7 +1901,7 @@ def Subtask(oStep):
         if uiCommon.IsGUID(sOriginalTaskID):
             sHTML += "<br />"
             sHTML += "Version: \n"
-            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "version", "") + \
+            sHTML += "<select " + CommonAttribs(oStep, False, "version", "") + \
                 " reget_on_change=\"true\">\n"
             # default
             sHTML += "<option " + SetOption("", sVersion) + " value=\"\">Default</option>\n"
@@ -1824,7 +1949,7 @@ def WaitForTasks(oStep):
         for xe in xPairs:
             sKey = xe.findtext("name", "")
     
-            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "handle[" + str(i) + "]/name", "") + \
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "handle[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Handle name.\"" \
@@ -1878,7 +2003,7 @@ def ClearVariable(oStep):
             if sKey.strip() != sKey:
                 SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
     
-            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Variable name.\"" \
@@ -1934,7 +2059,7 @@ def SetVariable(oStep):
     
             sHTML += "<tr>\n"
             sHTML += "<td class=\"w1pct\">&nbsp;Variable:&nbsp;</td>\n"
-            sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "variable[" + str(i) + "]/name", "") + \
+            sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Variable name.\"" \
@@ -1943,7 +2068,7 @@ def SetVariable(oStep):
     
             #  we gotta get the field id first, but don't show the textarea until after
             sValueFieldID = uiCommon.NewGUID()
-            sCommonAttribs = CommonAttribsWithID(sStepID, sFunction, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
+            sCommonAttribs = CommonAttribsWithID(oStep, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
     
             sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"1\" style=\"height: 18px;\" " + sCommonAttribs + \
                 " help=\"Enter a value for the Variable.\"" \
@@ -1957,7 +2082,7 @@ def SetVariable(oStep):
     
             sHTML += "<td class=\"w1pct\">&nbsp;Modifier:&nbsp;</td>"
             sHTML += "<td class=\"w75pct\">"
-            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "variable[" + str(i) + "]/modifier", "") + ">\n"
+            sHTML += "<select " + CommonAttribs(oStep, False, "variable[" + str(i) + "]/modifier", "") + ">\n"
             sHTML += "  <option " + SetOption("", sMod) + " value=\"\">--None--</option>\n"
             sHTML += "  <option " + SetOption("TO_UPPER", sMod) + " value=\"TO_UPPER\">UPPERCASE</option>\n"
             sHTML += "  <option " + SetOption("TO_LOWER", sMod) + " value=\"TO_LOWER\">lowercase</option>\n"
@@ -2008,7 +2133,7 @@ def NewConnection(oStep):
     
         sHTML = ""
         sHTML += "Connect via: \n"
-        sHTML += "<select " + CommonAttribs(sStepID, sFunction, True, "conn_type", "") + " reget_on_change=\"true\">\n"
+        sHTML += "<select " + CommonAttribs(oStep, True, "conn_type", "") + " reget_on_change=\"true\">\n"
     
         for ct in ConnectionTypes:
             sHTML += "<option " + SetOption(ct, sConnType) + " value=\"" + ct + "\">" + ct + "</option>\n"
@@ -2024,13 +2149,13 @@ def NewConnection(oStep):
             
             sHTML += " to Instance \n"
             sHTML += "<input type=\"text\" " + \
-                CommonAttribs(sStepID, sFunction, True, "asset", "w300px code") + \
+                CommonAttribs(oStep, True, "asset", "w300px code") + \
                 " is_required=\"true\"" \
                 " value=\"" + sAssetID + "\"" + " /><br />\n"
     
             sHTML += " in Cloud \n"
             
-            sHTML += "<select " + CommonAttribs(sStepID, sFunction, False, "cloud_name", "combo") + ">\n"
+            sHTML += "<select " + CommonAttribs(oStep, False, "cloud_name", "combo") + ">\n"
             # empty one
             sHTML += "<option " + SetOption("", sCloudName) + " value=\"\"></option>\n"
             
@@ -2075,7 +2200,7 @@ def NewConnection(oStep):
     
             sHTML += " to Asset \n"
             sHTML += "<input type=\"text\" " + \
-                CommonAttribsWithID(sStepID, sFunction, False, "asset", sElementID, "hidden") + \
+                CommonAttribsWithID(oStep, False, "asset", sElementID, "hidden") + \
                 " value=\"" + sAssetID + "\"" + " />\n"
             sHTML += "<input type=\"text\"" \
                 " help=\"Select an Asset or enter a variable.\"" \
@@ -2098,7 +2223,7 @@ def NewConnection(oStep):
                 " src=\"static/images/icons/search.png\" />\n"
             
         sHTML += " as \n"
-        sHTML += "<input type=\"text\" " + CommonAttribs(sStepID, sFunction, True, "conn_name", "w200px") + \
+        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "conn_name", "w200px") + \
             " help=\"Name this connection for reference in the Task.\" value=\"" + sConnName + "\" />\n"
         sHTML += "\n"
     
@@ -2125,12 +2250,12 @@ def If(oStep):
     
         for xTest in xTests:
             sEval = xTest.findtext("eval", None)
-            sAction = xTest.findtext("action", None)
+            xAction = xTest.find("action", None)
     
             #  we gotta get the field id first, but don't show the textarea until after
             sFieldID = uiCommon.NewGUID()
             sCol = "tests/test[" + str(i) + "]/eval"
-            sCommonAttribsForTA = CommonAttribsWithID(sStepID, sFunction, True, sCol, sFieldID, "")
+            sCommonAttribsForTA = CommonAttribsWithID(oStep, True, sCol, sFieldID, "")
     
             # a way to delete the section you just added
             if i == 1:
@@ -2156,7 +2281,6 @@ def If(oStep):
                 sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
     
     
-            print sEval
             if sEval is not None:
                 sHTML += "<textarea " + sCommonAttribsForTA + " help=\"Enter a test condition.\">" + sEval + "</textarea><br />\n"
             else:
@@ -2165,9 +2289,11 @@ def If(oStep):
     
             # here's the embedded content
             sCol = "tests/test[" + str(i) + "]/action"
-    
-            if sAction is not None:
-                sHTML += DrawDropZone(sStepID, sAction, sFunction, sCol, "Action:<br />", True)
+            # (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "") + 
+            if xAction is not None:
+                xEmbeddedFunction = xAction.find("function")
+                # xEmbeddedFunction might be None, but we pass it anyway to get the empty zone drawn
+                sHTML += DrawDropZone(oStep, xEmbeddedFunction, sCol, "Action:<br />", True)
             else:
                 sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element."
     
@@ -2187,12 +2313,15 @@ def If(oStep):
         sHTML += "<div id=\"if_" + sStepID + "_else\" class=\"fn_if_else_section\">"
     
         # the final 'else' area
-        sElse = xd.findtext("else", "")
-        if sElse is not None:
+        xElse = xd.find("else", "")
+        if xElse is not None:
             sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\">" \
                "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else condition.\" /></span> "
             sHTML += "Else (no 'If' conditions matched):"
-            sHTML += DrawDropZone(sStepID, sElse, sFunction, "else", "", True)
+
+            xEmbeddedFunction = xElse.find("function")
+            # xEmbeddedFunction might be None, but we pass it anyway to get the empty zone drawn
+            sHTML += DrawDropZone(oStep, xEmbeddedFunction, "else", "", True)
         else:
             # draw an add link.  The rest will happen on the client.
             sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add an Else section.\" />( click to add a final 'Else' section )</div>"

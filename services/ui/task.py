@@ -683,6 +683,8 @@ class Step(object):
         # usually, we're working on steps within the context of already knowing the Task.
         # but if it's needed, it will have been explicitly populated.
         self.Task = None
+        # most steps won't even have this - only manually created ones for "embedded" steps
+        self.XPathPrefix = ""
         
         # if an error occured parsing, this step will be invalid
         # this property notes that

@@ -179,7 +179,7 @@ namespace FunctionTemplates
 
             return sMainHTML;
         }
-        public string DrawEmbeddedStep(Step oStep)
+        public string DrawEmbeddedStep(Step oStepish)
         {
 			string sStepID = oStep.ID;
 			

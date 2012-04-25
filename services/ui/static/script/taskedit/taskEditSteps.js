@@ -182,7 +182,7 @@ $(document).ready(function() {
 
     //the onclick event of the 'remove' link of embedded steps
     $("#steps .embedded_step_delete_btn").live("click", function() {
-        $("#embedded_step_remove_id").val($(this).attr("remove_id"));
+        $("#embedded_step_remove_xpath").val($(this).attr("remove_xpath"));
         $("#embedded_step_parent_id").val($(this).attr("parent_id"));
         $("#embedded_step_delete_confirm_dialog").dialog('open');
         //alert('remove step ' + $(this).attr("remove_id") + ' from ' + $(this).attr("parent_id"));
@@ -536,18 +536,6 @@ function initSortable() {
         showVarPicker(e);
     });
 
-    //NOTE: 8-3-09 NSC --- commented this out, performance seems to be better with this
-    //declared directly on the field, where values can be passed without dom lookups
-
-    //HATE THIS.. but the 'change' event isn't supported on the live() function.
-    //the pageload event doesn't work for bindings or changing attributes, because they will stack.
-    //so you have to be careful to REMOVE or UNBIND anything before you add/bind it.
-    //    $("#steps :input[te_group='step_fields']").unbind("change", onStepFieldChange);
-    //    $("#steps :input[te_group='step_fields']").change(onStepFieldChange);
-
-    //end commented
-
-
     //what happens when a step field gets focus?
     //we show the help for that field in the help pane.
     //and set a global variable with it's id
@@ -881,11 +869,6 @@ function doStepDetailUpdate(field, step_id, func, xpath) {
                 showAlert(response.responseText);
             }
         });
-
-
-        //tried this... no marked effect on performance
-        //ACWebMethods.taskMethods.wmUpdateStep(step_id, func, xpath, val, OnFieldUpdateSuccess, OnFieldUpdateFailure);
-
 
         //clear out the div of the stuff we just updated!
         $("#step_update_array").empty()
