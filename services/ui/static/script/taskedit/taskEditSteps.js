@@ -163,13 +163,13 @@ $(document).ready(function() {
         var step_id = $(this).attr("step_id");
 
         $.ajax({
-            async: false,
+            async: true,
             type: "POST",
-            url: "taskMethods.asmx/wmCopyStepToClipboard",
+            url: "taskMethods/wmCopyStepToClipboard",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
-            success: function(msg) {
+            success: function(response) {
                 doGetClips();
                 $("#update_success_msg").text("Copy Successful").fadeOut(2000);
             },
@@ -793,8 +793,11 @@ function doStepAdd(new_step) {
 		        //NOTE NOTE NOTE: this is temporary
 		        //until I fix the copy command ... we will delete the clipboard item after pasting
 		        //this is not permanent, but allows it to be checked in now
-		        if (item.indexOf('clip_') != -1)
-		            doClearClipboard(item.replace(/clip_/, ""))
+		        
+		        // 4-26-12 NSC: since embedded commands work differently, we no longer need to remove a 
+		        // clipboard step when it's used
+		        // if (item.indexOf('clip_') != -1)
+		        //    doClearClipboard(item.replace(/clip_/, ""))
 		
 		        //but we will change the sortable if this command has embedded commands.
 		        //you have to add the embedded command NOW, or click cancel.

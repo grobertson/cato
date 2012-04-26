@@ -129,6 +129,30 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmGetTaskDebug(self):
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+
+        if not uiCommon.IsGUID(sTaskID.replace("'", "")):
+            uiGlobals.request.Messages.append("Invalid or missing Task ID.")
+
+        try:
+            sSQL = "select task_status, submitted_dt, completed_dt, task_instance, debug_level" \
+                " from tv_task_instance where task_id = '" + sTaskID + "'" \
+                " order by task_instance desc limit 1"
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append("Unable to get task code." + uiGlobals.request.db.error)
+
+            if dr:
+                return "{\"status\" : \"%s\", \"submitted\" : \"%s\", \"completed\" : \"%s\", \"instance\" : \"%s\", \"log_level\" : \"%s\"}" % \
+                    (dr["task_status"], dr["submitted_dt"], dr["completed_dt"], dr["task_instance"], dr["debug_level"])
+            else:
+                return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
     
     def wmGetTaskVersionsDropdown(self):
         try:
@@ -558,21 +582,21 @@ class taskMethods:
             # will serialize and update the entire sortable... 
             # immediately replacing this -1 with the correct position
 
-            if uiCommon.IsGUID(sItem):
-                sNewStepID = sItem
+            sNewStepID = uiCommon.NewGUID()
 
-                # copy from the clipboard (using the root_step_id to get ALL associated steps)
+            if uiCommon.IsGUID(sItem):
+                # copy from the clipboard
                 sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
                     " commented, locked," \
                     " function_name, function_xml)" \
-                    " select step_id, '" + sTaskID + "'," \
+                    " select '" + sNewStepID + "', '" + sTaskID + "'," \
                     " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
                     "-1,step_desc," \
                     "0,0," \
                     "function_name,function_xml" \
                     " from task_step_clipboard" \
                     " where user_id = '" + sUserID + "'" \
-                    " and root_step_id = '" + sItem + "'"
+                    " and step_id = '" + sItem + "'"
 
                 if not uiGlobals.request.db.exec_db_noexcep(sSQL):
                     uiGlobals.request.Messages.append("Unable to add step." + uiGlobals.request.db.error)
@@ -589,9 +613,6 @@ class taskMethods:
                 if not func:
                     uiGlobals.request.Messages.append("Unable to add step.  Can't find a Function definition for [" + sItem + "]")
                 
-                # add a new command
-                sNewStepID = uiCommon.NewGUID()
-
                 # NOTE: !! yes we are doing some command specific logic here.
                 # Certain commands have different 'default' values for delimiters, etc.
                 # sOPM: 0=none, 1=delimited, 2=parsed
@@ -665,14 +686,17 @@ class taskMethods:
 
             sStepHTML = ""
             
+            if not uiCommon.IsGUID(sTaskID):
+                uiGlobals.request.Messages.append("Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]")
+                return "Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]"
+
             # in some cases, we'll have some special values to go ahead and set in the function_xml
             # when it's added
             # it's content will be xpath, value
             dValues = {}
-
-            if not uiCommon.IsGUID(sTaskID):
-                uiGlobals.request.Messages.append("Unable to add step. Invalid or missing Task ID. [" + sTaskID + "]")
-
+            
+            xe = None
+            func = None
 
             # now, the sItem variable may have a function name (if it's a new command)
             # or it may have a guid (if it's from the clipboard)
@@ -694,39 +718,43 @@ class taskMethods:
                 sItem = "codeblock"
 
             if uiCommon.IsGUID(sItem):
-                """"""
-                # PAY ATTENTION
-                # this won't work like this any more, but it's similar
+                # a clipboard sItem is a guid id on the task_step_clipboard table
+                
+                # 1) get the function_xml from the clipboard table (sItem = step_id)
+                # 2) Get a Function object for the function name
+                # 3) update the parent step with the function objects xml
                 
                 # get the command from the clipboard, and then update the XML of the parent step
-                # using ST.AddNodeToCommandXML (or maybe a new function that adds an xml object directly)
-                
-#                sNewStepID = sItem
-#
-#                # copy from the clipboard (using the root_step_id to get ALL associated steps)
-#                sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order, step_desc," \
-#                    " commented, locked," \
-#                    " function_name, function_xml)" \
-#                    " select step_id, '" + sTaskID + "'," \
-#                    " case when codeblock_name is null then '" + sCodeblockName + "' else codeblock_name end," \
-#                    "-1,step_desc," \
-#                    "0,0," \
-#                    "function_name,function_xml" \
-#                    " from task_step_clipboard" \
-#                    " where user_id = '" + sUserID + "'" \
-#                    " and root_step_id = '" + sItem + "'"
-#
-#                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-#                    uiGlobals.request.Messages.append("Unable to add step." + uiGlobals.request.db.error)
-#
-#                uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
-#                    "Added Command from Clipboard to Codeblock:" + sCodeblockName)
+                sSQL = "select function_xml from task_step_clipboard where user_id = '" + sUserID + "' and step_id = '" + sItem + "'"
+
+                sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to add step." + uiGlobals.request.db.error)
+
+                if sXML:
+                    # we'll need this below to return the html
+                    xe = ET.fromstring(sXML)
+                    if xe is None:
+                        uiGlobals.request.Messages.append("Unable to add clipboard command. Function_xml could not be parsed.")
+                        return "An error has occured.  Your command could not be added."
+
+                    sFunctionName = xe.get("name", "")
+                    func = uiCommon.GetTaskFunction(sFunctionName)
+                    if not func:
+                        uiGlobals.request.Messages.append("Unable to add clipboard command to step.  Can't find a Function definition for clip [" + sItem + "]")
+
+                    ST.AddToCommandXML(sStepID, sDropXPath, ET.tostring(xe))
+
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
+                        "Added Command from Clipboard to Step: " + sStepID)
+                    
+                else:
+                    uiGlobals.request.Messages.append("Unable to add clipboard item to step.  Can't find function_xml for clipboard command [" + sItem + "]")
+                    
 
             else:
                 # 1) Get a Function object for the sItem (function_name)
                 # 2) update the parent step with the function objects xml
-                # 3) create a new "step"
-                # 4) draw it and return the html
                 
                 func = uiCommon.GetTaskFunction(sItem)
                 if not func:
@@ -747,24 +775,24 @@ class taskMethods:
                     uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
                         "Added Command Type: " + sItem + " to Step: " + sStepID)
 
-                    # draw the embedded step and return the html
-                    # !!!!! This isn't a new step! ... It's an extension of the parent step.
-                    # but, since it's a different 'function', we'll treat it like a different step for now
-                    oEmbeddedStep = task.Step() # a new step object
-                    oEmbeddedStep.ID = sStepID 
-                    oEmbeddedStep.Function = func # a function object
-                    oEmbeddedStep.FunctionName = sItem
-                    oEmbeddedStep.FunctionXDoc = xe
-                    # THIS IS CRITICAL - this embedded step ... all fields in it will need an xpath prefix 
-                    oEmbeddedStep.XPathPrefix = sDropXPath + "/function"
-                    
-                    sStepHTML += ST.DrawEmbeddedStep(oEmbeddedStep)
-                
                 else:
                     uiGlobals.request.Messages.append("Unable to add step.  No template xml.")
 
-                # return the html
-                return sStepHTML
+
+            # draw the embedded step and return the html
+            # !!!!! This isn't a new step! ... It's an extension of the parent step.
+            # but, since it's a different 'function', we'll treat it like a different step for now
+            oEmbeddedStep = task.Step() # a new step object
+            oEmbeddedStep.ID = sStepID 
+            oEmbeddedStep.Function = func # a function object
+            oEmbeddedStep.FunctionName = func.Name
+            oEmbeddedStep.FunctionXDoc = xe
+            # THIS IS CRITICAL - this embedded step ... all fields in it will need an xpath prefix 
+            oEmbeddedStep.XPathPrefix = sDropXPath + "/function"
+            
+            sStepHTML += ST.DrawEmbeddedStep(oEmbeddedStep)
+            # return the html
+            return sStepHTML
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
@@ -861,7 +889,6 @@ class taskMethods:
             return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
-    
     
     def wmUpdateStep(self):
         try:
@@ -1334,6 +1361,204 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmGetClips(self):
+        try:
+            sUserID = uiCommon.GetSessionUserID()
+            sHTML = ""
+            
+            sSQL = "select s.clip_dt, s.step_id, s.step_desc, s.function_name, s.function_xml," \
+                " s.output_parse_type, s.output_row_delimiter, s.output_column_delimiter, s.variable_xml" \
+                " from task_step_clipboard s" \
+                " where s.user_id = '" + sUserID + "'" \
+                " and s.codeblock_name is null" \
+                " order by s.clip_dt desc"
+
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append("Unable to get clipboard data for user [" + sUserID + "].<br />" + uiGlobals.request.db.error)
+
+            if dt:
+                for dr in dt:
+                    fn = uiCommon.GetTaskFunction(dr["function_name"])
+                    if fn is None:
+                        return "Error building Clip - Unable to get the details for the Command type '" + dr["function_name"] + "'."
+        
+                    sStepID = dr["step_id"]
+                    sLabel = fn.Label
+                    sIcon = fn.Icon
+                    sDesc = uiCommon.GetSnip(dr["step_desc"], 75)
+                    sClipDT = str(dr["clip_dt"])
+                    
+                    sHTML += "<li" \
+                        " id=\"clip_" + sStepID + "\"" \
+                            " name=\"clip_" + sStepID + "\"" \
+                            " class=\"command_item function clip\"" \
+                            ">"
+                    
+                    # a table for the label so the clear icon can right align
+                    sHTML += "<table width=\"99%\" border=\"0\"><tr>"
+                    sHTML += "<td width=\"1px\"><img alt=\"\" src=\"" + sIcon + "\" /></td>"
+                    sHTML += "<td style=\"vertical-align: middle; padding-left: 5px;\">" + sLabel + "</td>"
+                    sHTML += "<td width=\"1px\" style=\"vertical-align: middle;\">"
+                    
+                    # view icon
+                    # due to the complexity of telling the core routines to look in the clipboard table, it 
+                    # it not possible to easily show the complex command types
+                    #  without a redesign of how this works.  NSC 4-19-2011
+                    # due to several reasons, most notable being that the XML node for each of those commands 
+                    # that contains the step_id is hardcoded and the node names differ.
+                    # and GetSingleStep requires a step_id which must be mined from the XML.
+                    # so.... don't show a preview icon for them
+                    sFunction = fn.Name
+                    
+                    if not sFunction in "loop,exists,if,while":
+                        sHTML += "<span id=\"btn_view_clip\" view_id=\"v_" + sStepID + "\">" \
+                            "<img src=\"static/images/icons/search.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" \
+                                "</span>"
+                    sHTML += "</td></tr>"
+                    
+                    sHTML += "<tr><td>&nbsp;</td><td><span class=\"code\">" + sClipDT + "</span></td>"
+                    sHTML += "<td>"
+                    # delete icon
+                    sHTML += "<span id=\"btn_clear_clip\" remove_id=\"" + sStepID + "\">" \
+                        "<img src=\"static/images/icons/fileclose.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" \
+                            "</span>"
+                    sHTML += "</td></tr></table>"
+                    
+                    
+                    sHTML += "<div class=\"hidden\" id=\"help_text_clip_" + sStepID + "\">" + sDesc + "</div>"
+                    
+                    # TODO: for the moment we aren't building the view viersion of the command
+                    # until we convert all the VIEW functions!
+                    # we use this function because it draws a smaller version than DrawReadOnlyStep
+                    #sStepHTML = ""
+                    ## and don't draw those complex ones either
+                    #if not sFunction in "loop,exists,if,while":
+                    # BUT WHEN WE DO! ... build a clipboard step object here from the row selected above
+                    #    sStepHTML = ST.DrawClipboardStep(cs, True)
+                    
+                    # sHTML += "<div class=\"hidden\" id=\"v_" + sStepID + "\">" + sStepHTML + "</div>"
+                    
+                    sHTML += "</li>"
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmCopyStepToClipboard(self):
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+    
+            if uiCommon.IsGUID(sStepID):
+                sUserID = uiCommon.GetSessionUserID()
+    
+                # commands get new ids when copied into the clpboard.
+                sNewStepID = uiCommon.NewGUID()
+    
+                # it's a bit hokey, but if a step already exists in the clipboard, 
+                # and we are copying that step again, 
+                # ALWAYS remove the old one.
+                # we don't want to end up with lots of confusing copies
+                sSQL = "delete from task_step_clipboard" \
+                    " where user_id = '" + sUserID + "'" \
+                    " and src_step_id = '" + sStepID + "'"
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to clean clipboard." + uiGlobals.request.db.error)
+    
+                sSQL = " insert into task_step_clipboard" \
+                    " (user_id, clip_dt, src_step_id, root_step_id, step_id, function_name, function_xml, step_desc," \
+                        " output_parse_type, output_row_delimiter, output_column_delimiter, variable_xml)" \
+                    " select '" + sUserID + "', now(), step_id, '" + sNewStepID + "', '" + sNewStepID + "'," \
+                        " function_name, function_xml, step_desc," \
+                        " output_parse_type, output_row_delimiter, output_column_delimiter, variable_xml" \
+                    " from task_step" \
+                    " where step_id = '" + sStepID + "'"
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to copy step [" + sStepID + "]." + uiGlobals.request.db.error)
+    
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Unable to copy step. Missing or invalid step_id.")
+    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmRemoveFromClipboard(self):
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sUserID = uiCommon.GetSessionUserID()
+
+            # if the sStepID is a guid, we are removing just one
+            # otherwise, if it's "ALL" we are whacking them all
+            if uiCommon.IsGUID(sStepID):
+                sSQL = "delete from task_step_clipboard" \
+                    " where user_id = '" + sUserID + "'" \
+                    " and root_step_id = '" + sStepID + "'"
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to remove step [" + sStepID + "] from clipboard." + uiGlobals.request.db.error)
+
+                return ""
+            elif sStepID == "ALL":
+                sSQL = "delete from task_step_clipboard where user_id = '" + sUserID + "'"
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to remove step [" + sStepID + "] from clipboard." + uiGlobals.request.db.error)
+
+                return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    
+    def wmRunTask(self):
+        try:
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            sAssetID = uiCommon.getAjaxArg("sAssetID")
+            sParameterXML = uiCommon.getAjaxArg("sParameterXML")
+            iDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
+            
+            sUserID = uiCommon.GetSessionUserID()
+            return taskMethods.AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    # NOT a web method
+    @staticmethod
+    def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel):
+        try:
+            sParameterXML = uiCommon.unpackJSON(sParameterXML)
+                            
+            # we gotta peek into the XML and encrypt any newly keyed values
+            sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);                
+        
+            if uiCommon.IsGUID(sTaskID) and uiCommon.IsGUID(sUserID):
+                sSQL = "call addTaskInstance ('" + sTaskID + "','" + \
+                    sUserID + "',NULL," + \
+                    iDebugLevel + ",NULL,'" + \
+                    uiCommon.TickSlash(sParameterXML) + "','" + \
+                    sEcosystemID + "','" + \
+                    sAccountID + "')"
+
+                # TODO: This isn't working like it used to.  The SP returns the new instance id,
+                # but somehow it's not committing, seems like it's rolling back.
+                
+                # must be something to do with how pymysql does queries???
+                
+                sInstance = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to run task [" + sTaskID + "]." + uiGlobals.request.db.error)
+    
+                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, sInstance), 3)
+                
+                return sInstance
+            else:
+                uiGlobals.request.Messages.append("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.")
+    
+            #uh oh, return nothing
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+        
+
 
     def wmGetAccountEcosystems(self):
         sAccountID = uiCommon.getAjaxArg("sAccountID")
@@ -1567,94 +1792,94 @@ class taskMethods:
                 if xDefParams is None:
                     uiGlobals.request.Messages.append("Defaults XML data is invalid.")
         
-            # spin the nodes in the DEFAULTS xml, then dig in to the task XML and UPDATE the value if found.
-            # (if the node no longer exists, delete the node from the defaults xml IF IT WAS AN ACTION)
-            # and default "values" take precedence over task values.
-            for xDefault in xDefParams.findall("parameter"):
-                # nothing to do if it's empty
-                if xDefault is None:
-                    break
-        
-                # look it up in the task param xml
-                sDefName = xDefault.findtext("name", "")
-                xDefValues = xDefault.find("values")
-                
-                # nothing to do if there is no values node...
-                if xDefValues is None:
-                    break
-                # or if it contains no values.
-                if not len(xDefValues):
-                    break
-                # or if there is no parameter name
-                if not sDefName:
-                    break
-                
-                
-                # so, we have some valid data in the defaults xml... let's merge!
-
-                # NOTE! elementtree doesn't track parents of nodes.  We need to build a parent map...
-                parent_map = dict((c, p) for p in xTPParams.getiterator() for c in p)
-                
-                # we have the name of the parameter... go spin and find the matching node in the TASK param XML
-                xTaskParam = None
-                for node in xTPParams.findall("parameter/name"):
-                    if node.text == sDefName:
-                        # now we have the "name" node, what's the parent?
-                        xTaskParam = parent_map[node]
-                        
-                        
-                # if it doesn't exist in the task params, remove it from this document, permanently
-                # but only for action types... instance data is historical and can't be munged
-
-                if xTaskParam is None and sType == "action":
-                    uiCommon.log("INFO: A parameter exists on the Action that no longer exists on the Task.  Removing it...", 4)
-                    # BUT! in order to be able to delete it, we need enough xpath information to identify it.
-                    # it has an 'id' attribute ... use that.
-                    sIdToDelete = xTaskParam.get("id", None)
-                    if sIdToDelete:
-                        ST.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sIdToDelete + "']")           
-                    continue
-        
-                if xTaskParam is not None:
-                    # is this an encrypted parameter?
-                    sEncrypt = ""
-                    if xTaskParam.get("encrypt") is not None:
-                        sEncrypt = xTaskParam.get("encrypt", "")
+                # spin the nodes in the DEFAULTS xml, then dig in to the task XML and UPDATE the value if found.
+                # (if the node no longer exists, delete the node from the defaults xml IF IT WAS AN ACTION)
+                # and default "values" take precedence over task values.
+                for xDefault in xDefParams.findall("parameter"):
+                    # nothing to do if it's empty
+                    if xDefault is None:
+                        break
             
+                    # look it up in the task param xml
+                    sDefName = xDefault.findtext("name", "")
+                    xDefValues = xDefault.find("values")
+                    
+                    # nothing to do if there is no values node...
+                    if xDefValues is None:
+                        break
+                    # or if it contains no values.
+                    if not len(xDefValues):
+                        break
+                    # or if there is no parameter name
+                    if not sDefName:
+                        break
+                
+                
+                    # so, we have some valid data in the defaults xml... let's merge!
+    
+                    # NOTE! elementtree doesn't track parents of nodes.  We need to build a parent map...
+                    parent_map = dict((c, p) for p in xTPParams.getiterator() for c in p)
+                    
+                    # we have the name of the parameter... go spin and find the matching node in the TASK param XML
+                    xTaskParam = None
+                    for node in xTPParams.findall("parameter/name"):
+                        if node.text == sDefName:
+                            # now we have the "name" node, what's the parent?
+                            xTaskParam = parent_map[node]
+                            
+                            
+                    # if it doesn't exist in the task params, remove it from this document, permanently
+                    # but only for action types... instance data is historical and can't be munged
+    
+                    if xTaskParam is None and sType == "action":
+                        uiCommon.log("INFO: A parameter exists on the Action that no longer exists on the Task.  Removing it...", 4)
+                        # BUT! in order to be able to delete it, we need enough xpath information to identify it.
+                        # it has an 'id' attribute ... use that.
+                        sIdToDelete = xTaskParam.get("id", None)
+                        if sIdToDelete:
+                            ST.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sIdToDelete + "']")           
+                        continue
             
-                    # and the "values" collection will be the 'next' node
-                    xTaskParamValues = xTaskParam.find("values")
-            
-                    sPresentAs = xTaskParamValues.get("present_as", "")
-                    if sPresentAs == "dropdown":
-                        # dropdowns get a "selected" indicator
-                        sValueToSelect = xDefValues.findtext("value", "")
-            
-                        # find the right one by value and give it the "selected" attribute.
-                        xVal = xTaskParamValues.find("value[. = '" + sValueToSelect + "']")
-                        if xVal is not None:
-                            xVal.attrib["selected"] = "true"
-                    elif sPresentAs == "list":
-                        # first, a list gets ALL the values replaced...
-                        xTaskParamValues.replaceNodes(xDefValues)
-                    else:
-                        # IMPORTANT NOTE:
-                        # remember... both these XML documents came from wmGetObjectParameterXML...
-                        # so any encrypted data IS ALREADY OBFUSCATED and base64'd in the oev attribute.
-                        
-                        # it's a single value, so just replace it with the default.
-                        xVal = xTaskParamValues.find("value[1]")
-                        if xVal is not None:
-                            # if this is an encrypted parameter, we'll be replacing (if a default exists) the oev attribute
-                            # AND the value... don't want them to get out of sync!
-                            if uiCommon.IsTrue(sEncrypt):
-                                if xDefValues.find("value") is not None:
-                                    xVal.attrib["oev"] = xDefValues.find("value").get("oev", "")
-                                    xVal.text = xDefValues.findtext("value", "")
-                            else:
-                                # not encrypted, just replace the value.
-                                if xDefValues.find("value") is not None:
-                                    xVal.text = xDefValues.findtext("value", "")
+                    if xTaskParam is not None:
+                        # is this an encrypted parameter?
+                        sEncrypt = ""
+                        if xTaskParam.get("encrypt") is not None:
+                            sEncrypt = xTaskParam.get("encrypt", "")
+                
+                
+                        # and the "values" collection will be the 'next' node
+                        xTaskParamValues = xTaskParam.find("values")
+                
+                        sPresentAs = xTaskParamValues.get("present_as", "")
+                        if sPresentAs == "dropdown":
+                            # dropdowns get a "selected" indicator
+                            sValueToSelect = xDefValues.findtext("value", "")
+                
+                            # find the right one by value and give it the "selected" attribute.
+                            xVal = xTaskParamValues.find("value[. = '" + sValueToSelect + "']")
+                            if xVal is not None:
+                                xVal.attrib["selected"] = "true"
+                        elif sPresentAs == "list":
+                            # first, a list gets ALL the values replaced...
+                            xTaskParamValues.replaceNodes(xDefValues)
+                        else:
+                            # IMPORTANT NOTE:
+                            # remember... both these XML documents came from wmGetObjectParameterXML...
+                            # so any encrypted data IS ALREADY OBFUSCATED and base64'd in the oev attribute.
+                            
+                            # it's a single value, so just replace it with the default.
+                            xVal = xTaskParamValues.find("value[1]")
+                            if xVal is not None:
+                                # if this is an encrypted parameter, we'll be replacing (if a default exists) the oev attribute
+                                # AND the value... don't want them to get out of sync!
+                                if uiCommon.IsTrue(sEncrypt):
+                                    if xDefValues.find("value") is not None:
+                                        xVal.attrib["oev"] = xDefValues.find("value").get("oev", "")
+                                        xVal.text = xDefValues.findtext("value", "")
+                                else:
+                                    # not encrypted, just replace the value.
+                                    if xDefValues.find("value") is not None:
+                                        xVal.text = xDefValues.findtext("value", "")
         
                 
             resp = ET.tostring(xTPParams)

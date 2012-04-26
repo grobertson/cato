@@ -61,6 +61,8 @@ function tabWasClicked(tab) {
         GetObjectsTags($("#ctl00_phDetail_hidOriginalTaskID").val());
     } else if (tab == "clipboard") {
         doGetClips();
+    } else if (tab == "debug") {
+        doGetDebug();
     }
 }
 

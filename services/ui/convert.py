@@ -91,7 +91,7 @@ with open("convert.in", 'r') as f_in:
 
         # Try/Catch blocks
         line = line.replace("try", "try:")
-        line = line.replace("catch (Exception ex)", "except Exception, ex:")
+        line = line.replace("catch (Exception ex)", "except Exception:")
         # I often threw "new exceptions" - python doesn't need the extra stuff
         line = line.replace("new Exception", "Exception")
         line = line.replace("throw", "raise")

@@ -492,12 +492,17 @@ function doClearClipboard(id) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmRemoveFromClipboard",
+        url: "taskMethods/wmRemoveFromClipboard",
         data: '{"sStepID":"' + id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            doGetClips();
+        success: function (response) {
+            // we can just whack it from the dom
+            if (id == "ALL")
+            	$("#clipboard").empty();
+            else
+            	$("#clipboard #clip_" + id).remove();
+
             $("#update_success_msg").text("Remove Successful").fadeOut(2000);
         },
         error: function (response) {
@@ -509,13 +514,12 @@ function doClearClipboard(id) {
 function doGetClips() {
     $.ajax({
         async: false,
-        type: "POST",
-        url: "taskMethods.asmx/wmGetClips",
-        data: '{}',
+        type: "GET",
+        url: "taskMethods/wmGetClips",
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#clipboard").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#clipboard").html(response);
             initDraggable();
         },
         error: function (response) {

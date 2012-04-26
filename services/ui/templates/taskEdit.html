@@ -94,17 +94,25 @@ $var cssfiles: registry.css taskEdit.css taskView.css
                 <img id="debug_asset_clear_btn" class="pointer" src="static/images/icons/fileclose.png"
                     alt="" />
             </p>-->
-            <p>
-                Last Run Time:
-                <span id="lblLastRunDT"></span><br />
-                Last Run Status:
-                <span id="lblLastRunStatus"></span>
-                <span id="debug_view_latest_log" class="debug_btn" ImageUrl="static/images/icons/view_text_16.png"></span>
-            </p>
-            <br />
-            <hr />
-            <br />
-            <p style="text-align: center;">
+            <div id="debug_last_run" class="hidden">
+                <h4>Last Run</h4>
+                Submitted:
+                <span id="debug_submitted"></span><br />
+                Completed:
+                <span id="debug_completed"></span><br />
+                Status:
+                <span id="debug_status"></span><br />
+                Instance:
+                <span id="debug_instance"></span><br />
+                Logging Level:
+                <span id="debug_log_level"></span><br />
+                
+                View Log:
+                <span id="debug_view_latest_log" class="ui-icon ui-icon-search debug_btn" style="display: inline-block;"></span>
+	
+	            <hr />
+            </div>
+            <div style="text-align: center;">
                 Current Status:
                 <span id="lblCurrentStatus"></span>
                 <br />
@@ -114,7 +122,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
                     alt="" />
                 <img id="debug_view_active_log" class="debug_btn" src="static/images/icons/view_text_32.png"
                     alt="" />
-            </p>
+            </div>
         </div>
         <div id="div_parameters" class="toolbox_panel hidden">
             <span id="parameter_add_btn">Add New</span>

@@ -32,7 +32,7 @@ $(document).ready(function () {
 
         //does the page have a tabClick handler function?
         if (typeof tabWasClicked == 'function') {
-            tabWasClicked($(this).attr("id").replace(/tab_/, "").replace(/ctl00_phDetail_/, ""));
+            tabWasClicked($(this).attr("id").replace(/tab_/, ""));
         }
     });
 

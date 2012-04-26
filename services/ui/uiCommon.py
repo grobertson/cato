@@ -178,7 +178,7 @@ def FixBreaks(sInput):
 def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
     uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
     
-    sTrimmedLog = LogMessage.replace("'", "''").replace("\\","\\\\").strip()
+    sTrimmedLog = TickSlash(LogMessage).strip()
     if sTrimmedLog:
         if len(sTrimmedLog) > 7999:
             sTrimmedLog = sTrimmedLog[:7998]
@@ -219,6 +219,33 @@ def WriteObjectPropertyChangeLog(oType, sObjectID, sLabel, sFrom, sTo):
         if sFrom != sTo:
             sLog = "Changed: " + sLabel + " from [" + TickSlash(sFrom) + "] to [" + TickSlash(sTo) + "]."
             AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
+
+def PrepareAndEncryptParameterXML(sParameterXML):
+    try:
+        if sParameterXML:
+            xDoc = ET.fromstring(sParameterXML)
+            if xDoc is None:
+                uiGlobals.request.Messages.append("Parameter XML data is invalid.")
+    
+            # now, all we're doing here is:
+            #  a) encrypting any new values
+            #  b) moving any oev values from an attribute to a value
+            
+            #  a) encrypt new values
+            for xToEncrypt in xDoc.findall("parameter/values/value[@do_encrypt='true']"):
+                xToEncrypt.text = CatoEncrypt(xToEncrypt.text)
+                xToEncrypt.attrib["do_encrypt"] = ""
+    
+            # b) unbase64 any oev's and move them to values
+            for xToEncrypt in xDoc.findall("parameter/values/value[@oev='true']"):
+                xToEncrypt.text = unpackJSON(xToEncrypt.text)
+                xToEncrypt.attrib["oev"] = ""
+            
+            return ET.tostring(xDoc)
+        else:
+            return ""
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
 
 
 def ForceLogout(sMsg):
