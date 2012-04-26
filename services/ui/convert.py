@@ -80,6 +80,7 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("\" + Environment.NewLine", "\\n\"")
         line = line.replace(".IndexOf(", ".find(")
         line = line.replace(".Replace", ".replace")
+        line = line.replace(".Split", ".split")
         line = line.replace(".Trim()", ".strip()")
         line = line.replace("HttpContext.Current.Server.MapPath(", "") # this will leave a trailing paren !
         line = line.replace(").Value", ", \"\") # WAS A .Value - confirm") #should work most of the time for Cato code

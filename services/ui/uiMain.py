@@ -175,10 +175,10 @@ def CacheMenu():
     sHTML = ""
     for xMenu in xMenus:
         sLabel = xMenu.get("label", "No Label Defined")
-        sHref = " href=\"" + xMenu.get("href", "") + "\""
-        sOnClick = " onclick=\"" + xMenu.get("onclick", "") + "\""
+        sHref = (" href=\"" + xMenu.get("href", "") + "\"" if xMenu.get("href") else "")
+        sOnClick = (" onclick=\"" + xMenu.get("onclick", "") + "\"" if xMenu.get("onclick") else "")
+        sIcon = ("<img src=\"" + xMenu.get("icon", "") + "\" alt=\"\" />" if xMenu.get("icon") else "")
         sTarget = xMenu.get("target", "")
-        sIcon = "<img src=\"" + xMenu.get("icon", "") + "\" alt=\"\" />"
         sClass = xMenu.get("class", "")
         
         sHTML += "<li class=\"" + sClass + "\" style=\"cursor: pointer;\">"
@@ -196,10 +196,10 @@ def CacheMenu():
             sHTML += "<ul>"
             for xItem in xItems:
                 sLabel = xItem.get("label", "No Label Defined")
-                sHref = " href=\"" + xItem.get("href", "") + "\""
-                sOnClick = " onclick=\"" + xItem.get("onclick", "") + "\""
+                sHref = (" href=\"" + xItem.get("href", "") + "\"" if xItem.get("href") else "")
+                sOnClick = (" onclick=\"" + xItem.get("onclick", "") + "\"" if xItem.get("onclick") else "")
+                sIcon = ("<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />" if xItem.get("icon") else "")
                 sTarget = xItem.get("target", "")
-                sIcon = "<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />"
                 sClass = xItem.get("class", "")
 
                 sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">"

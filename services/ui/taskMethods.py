@@ -175,7 +175,6 @@ class taskMethods:
             else:
                 if dt:
                     for dr in dt:
-                        print dr
                         sHTML += "<li class=\"ui-widget-content ui-corner-all version code\" id=\"v_" + dr["task_id"] + "\""
                         sHTML += "task_id=\"" + dr["task_id"] + "\">"
                         sHTML += "<img src=\"static/images/icons/" + dr["status_icon"] + "_16.png\" alt=\"\" />"
@@ -609,8 +608,7 @@ class taskMethods:
                     # well, we can't let the absence of a parse_method negate it,
                     # so the default is "2".
                     sPopVars = xe.get("variables", "false")
-                    print sPopVars
-                    print sOPM
+
                     if uiCommon.IsTrue(sPopVars) and sOPM == "0":
                         sOPM = "2"
                     
@@ -776,7 +774,7 @@ class taskMethods:
         
             sSteps = uiCommon.getAjaxArg("sSteps")
             i = 1
-            aSteps = sSteps.split(',')
+            aSteps = sSteps.split(",")
             for step_id in aSteps:
                 sSQL = "update task_step set step_order = " + str(i) + " where step_id = '" + step_id + "'"
 
@@ -908,7 +906,7 @@ class taskMethods:
             try:
                 uiCommon.log("... looking for %s" % sXPath, 4)
                 xNode = xDoc.find(sXPath)
-                print ET.tostring(xNode)
+
                 if xNode is None:
                     uiGlobals.request.Messages.append("XML data for step [" + sStepID + "] does not contain '" + sXPath + "' node.")
 
@@ -1313,13 +1311,17 @@ class taskMethods:
     
             # if it's delimited, sort it
             if sOPM == "1" or bAllDelimited == True:
-                print "would sort" # if I knew the best approach
-    #            List<XElement> ordered = xVars.Elements("variable")
-    #                .OrderBy(element => (int?)element.Element("position"))
-    #                    .ToList()
-    #            
-    #            xVars.RemoveAll()
-    #            xVars.Add(ordered)
+                # They're all delimited, sort by the delimiter index
+                data = []
+                for elem in xVars:
+                    key = elem.findtext("position")
+                    data.append((key, elem)) # the double parens are required! we're appending a tuple
+                
+                data.sort()
+                
+                # insert the last item from each tuple
+                xVars[:] = [item[-1] for item in data]
+
             
             uiCommon.log("Saving variables ...", 4)
             uiCommon.log(ET.tostring(xVars), 4)
@@ -1816,7 +1818,7 @@ class taskMethods:
                 if sXML:
                     xd = ET.fromstring(sXML)
                     if xd is None: uiGlobals.request.Messages.append("XML parameter data is invalid.")
-                    print sXML
+
                     xParameter = xd.find("parameter[@id='" + sParamID + "']")
                     if xParameter is None: return "Error: XML does not contain parameter."
 
@@ -1978,5 +1980,154 @@ class taskMethods:
                 return ""
             else:
                 uiGlobals.request.Messages.append("Invalid or missing Task or Parameter ID.")
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmUpdateTaskParam(self):
+        try:
+            sType = uiCommon.getAjaxArg("sType")
+            sID = uiCommon.getAjaxArg("sID")
+            sParamID = uiCommon.getAjaxArg("sParamID")
+            sName = uiCommon.getAjaxArg("sName")
+            sDesc = uiCommon.getAjaxArg("sDesc")
+            sRequired = uiCommon.getAjaxArg("sRequired")
+            sPrompt = uiCommon.getAjaxArg("sPrompt")
+            sEncrypt = uiCommon.getAjaxArg("sEncrypt")
+            sPresentAs = uiCommon.getAjaxArg("sPresentAs")
+            sValues = uiCommon.getAjaxArg("sValues")
+            sMinLength = uiCommon.getAjaxArg("sMinLength")
+            sMaxLength = uiCommon.getAjaxArg("sMaxLength")
+            sMinValue = uiCommon.getAjaxArg("sMinValue")
+            sMaxValue = uiCommon.getAjaxArg("sMaxValue")
+            sConstraint = uiCommon.getAjaxArg("sConstraint")
+            sConstraintMsg = uiCommon.getAjaxArg("sConstraintMsg")
+
+            if not uiCommon.IsGUID(sID):
+                uiGlobals.request.Messages.append("ERROR: Save Parameter - Invalid or missing ID.")
+
+            # we encoded this in javascript before the ajax call.
+            # the safest way to unencode it is to use the same javascript lib.
+            # (sometimes the javascript and .net libs don't translate exactly, google it.)
+            sDesc = uiCommon.unpackJSON(sDesc).strip()
+            sConstraint = uiCommon.unpackJSON(sConstraint)
+            sConstraintMsg = uiCommon.unpackJSON(sConstraintMsg).strip()
+            
+            # normalize and clean the values
+            sRequired = ("true" if uiCommon.IsTrue(sRequired) else "false")
+            sPrompt = ("true" if uiCommon.IsTrue(sPrompt) else "false")
+            sEncrypt = ("true" if uiCommon.IsTrue(sEncrypt) else "false")
+            sName = sName.strip().replace("'", "''")
+
+
+            sTable = ""
+            sXML = ""
+            sParameterXPath = "parameter[@id='" + sParamID + "']" #using this to keep the code below cleaner.
+
+            if sType == "ecosystem":
+                sTable = "ecosystem"
+            elif sType == "task":
+                sTable = "task"
+
+            bParamAdd = False
+            # bParamUpdate = false
+
+            # if sParamID is empty, we are adding
+            if not sParamID:
+                sParamID = "p_" + uiCommon.NewGUID()
+                sParameterXPath = "parameter[@id='" + sParamID + "']" # reset this if we had to get a new id
+
+
+                # does the task already have parameters?
+                sSQL = "select parameter_xml from " + sTable + " where " + sType + "_id = '" + sID + "'"
+                sAddXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                sAddXML = "<parameter id=\"" + sParamID + "\"" \
+                    " required=\"" + sRequired + "\" prompt=\"" + sPrompt + "\" encrypt=\"" + sEncrypt + "\"" \
+                    " minlength=\"" + sMinLength + "\" maxlength=\"" + sMaxLength + "\"" \
+                    " minvalue=\"" + sMinValue + "\" maxvalue=\"" + sMaxValue + "\"" \
+                    " constraint=\"" + sConstraint + "\" constraint_msg=\"" + sConstraintMsg + "\"" \
+                    ">" \
+                    "<name>" + sName + "</name>" \
+                    "<desc>" + sDesc + "</desc>" \
+                    "</parameter>"
+
+                if not sXML:
+                    # XML doesn't exist at all, add it to the record
+                    sAddXML = "<parameters>" + sAddXML + "</parameters>"
+
+                    sSQL = "update " + sTable + " set " \
+                        " parameter_xml = '" + sAddXML + "'" \
+                        " where " + sType + "_id = '" + sID + "'"
+
+                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                        uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                    bParamAdd = True
+                else:
+                    # XML exists, add the node to it
+                    ST.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "parameters", sAddXML)
+                    bParamAdd = True
+            else:
+                # update the node values
+                ST.SetNodeValueinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/name", sName)
+                ST.SetNodeValueinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/desc", sDesc)
+                # and the attributes
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "required", sRequired)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "prompt", sPrompt)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "encrypt", sEncrypt)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minlength", sMinLength)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxlength", sMaxLength)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minvalue", sMinValue)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxvalue", sMaxValue)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint", sConstraint)
+                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint_msg", sConstraintMsg)
+
+                bParamAdd = False
+
+
+            #  not clean at all handling both tasks and ecosystems in the same method, but whatever.
+            if bParamAdd:
+                if sType == "task":
+                    uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, sID, "Parameter", "Added Parameter [%s]" % sName )
+                if sType == "ecosystem":
+                    uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Ecosystem, sID, "Parameter", "Added Parameter [%s]" % sName )
+            else:
+                #  would be a lot of trouble to add the from to, why is it needed you have each value in the log, just scroll back
+                #  so just add a changed message to the log
+                if sType == "task":
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sID, "Parameter", "Modified Parameter [%s]" % sName )
+                if sType == "ecosystem":
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sID, "Parameter", "Modified Parameter [%s]" % sName )
+
+            # update the values
+            aValues = sValues.split("|")
+            sValueXML = ""
+
+            for sVal in aValues:
+                sReadyValue = ""
+                
+                # if encrypt is true we MIGHT want to encrypt this value.
+                # but it might simply be a resubmit of an existing value in which case we DON'T
+                # if it has oev: as a prefix, it needs no additional work
+                if uiCommon.IsTrue(sEncrypt):
+                    if sVal.find("oev:") > -1:
+                        sReadyValue = uiCommon.unpackJSON(sVal.replace("oev:", ""))
+                    else:
+                        sReadyValue = uiCommon.CatoEncrypt(uiCommon.unpackJSON(sVal))
+                else:
+                    sReadyValue = uiCommon.unpackJSON(sVal)
+                    
+                sValueXML += "<value id=\"pv_" + uiCommon.NewGUID() + "\">" + sReadyValue + "</value>"
+
+            sValueXML = "<values present_as=\"" + sPresentAs + "\">" + sValueXML + "</values>"
+
+
+            # whack-n-add
+            ST.RemoveNodeFromXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/values")
+            ST.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, sValueXML)
+
+            return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())

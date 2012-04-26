@@ -11,6 +11,7 @@ import re
 import pickle
 import xml.etree.ElementTree as ET
 import providers
+from catocommon import catocommon
 
 # writes to stdout using the catocommon.server output function
 # also prints to the console.
@@ -34,7 +35,19 @@ def log(msg, debuglevel = 2):
                 print user_id + " :"
                 print msg
 
+def CatoEncrypt(s):
+    return catocommon.cato_encrypt(s)
+
+def CatoDecrypt(s):
+    return catocommon.cato_decrypt(s)
+
+def getAjaxArgs():
+    """Just returns the whole posted json as a json dictionary"""
+    data = uiGlobals.web.data()
+    return json.loads(data)
+
 def getAjaxArg(sArg, sDefault=""):
+    """Picks out and returns a single value."""
     data = uiGlobals.web.data()
     dic = json.loads(data)
     

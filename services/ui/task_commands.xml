@@ -6,7 +6,7 @@
 					<conn_type input_type="select" />
 					<cloud_name input_type="dropdown" style="combo" />
 					<asset input_type="text" />
-					<conn_name input_type="text">CONN1</conn_name>
+					<conn_name input_type="text" label="as" required="true" class="w200px" help="Name this connection for reference in the Task.">CONN1</conn_name>
 				</function>
 			</command>
 			<command name="drop_connection" label="Drop Connection" description="Drops the connection to an Asset." help="&lt;b&gt;Drop Connection&lt;/b&gt;&lt;br&gt;Drop Connection will close the a named connection made earlier in the execution of the task. Select the connection name either by clicking the icon to the right of the Connection Name box or typing the name in." icon="static/images/icons/connect_no_32.png">
