@@ -2,7 +2,6 @@ import sys
 import traceback
 from uiCommon import log
 import uiCommon
-from catocommon import catocommon
 import xml.etree.ElementTree as ET
 import providers
 from uiGlobals import ConnectionTypes
@@ -53,8 +52,6 @@ def DrawFullStep(oStep):
     
 
     sMainHTML = ""
-    sVariableHTML = ""
-    sOptionHTML = ""
     
     #what's the 'label' for the step strip?
     #(hate this... wish the label was consistent across all step types)
@@ -196,11 +193,11 @@ def GetStepTemplate(oStep):
     elif sFunction.lower() == "set_asset_registry":
         sHTML = "Not Yet Available" #SetAssetRegistry(oStep)
     elif sFunction.lower() == "loop":
-        sHTML = "Not Yet Available" #Loop(oStep)
+        sHTML = Loop(oStep)
     elif sFunction.lower() == "while":
-        sHTML = "Not Yet Available" #While(oStep)
+        sHTML = While(oStep)
     elif sFunction.lower() == "exists":
-        sHTML = "Not Yet Available" #Exists(oStep)
+        sHTML = Exists(oStep)
     else:
         # We didn't find one of our built in commands.  That's ok - most commands are drawn from their XML.
         sHTML, sOptionHTML = DrawStepFromXMLDocument(oStep)
@@ -339,19 +336,16 @@ def DrawNode(xeNode, sXPath, oStep):
                 #here's the magic... are there any children nodes here with the SAME NAME?
                 #if so they need an index on the xpath
                 if len(xeNode.find(sChildNodeName)) > 1:
-                    print "1"
                     #since the document won't necessarily be in perfect order,
                     #we need to keep track of same named nodes and their indexes.
                     #so, stick each array node up in a lookup table.
                     #is it already in my lookup table?
                     iLastIndex = 0
                     if dictNodes.has_key(sChildNodeName):
-                        print "2"
                         #not there, add it
                         iLastIndex = 1
                         dictNodes[sChildNodeName] = iLastIndex
                     else:
-                        print "3"
                         #there, increment it and set it
                         iLastIndex += 1
                         dictNodes[sChildNodeName] = iLastIndex
@@ -600,8 +594,6 @@ def DrawEmbeddedStep(oStep):
     # sExpandedClass = ("step_collapsed" if oStep.UserSettings.Visible else "")
 
     sMainHTML = ""
-    sVariableHTML = ""
-    sOptionHTML = ""
 
     # labels are different here than in Full Steps.
     sIcon = ("" if not fn.Icon else fn.Icon)
@@ -667,7 +659,7 @@ def DrawStepCommon(oStep, sOptionHTML, sVariableHTML, bIsEmbedded = False):
     sHTML = ""
     sHTML += "        <hr />"
     sHTML += "        <div class=\"step_common\" >"
-    sHTML += "            <div class=\"step_common_header\">"
+    sHTML += "            <div class=\"step_common_header\">" # header div
     
     sShowOnLoad = oStep.UserSettings.Button
     
@@ -693,7 +685,9 @@ def DrawStepCommon(oStep, sOptionHTML, sVariableHTML, bIsEmbedded = False):
             " id=\"btn_step_common_detail_" + sStepID + "_help\"" \
             " button=\"help\"" \
             " step_id=\"" + sStepID + "\">Help</span>"
-        sHTML += "            </div>"
+    
+    
+    sHTML += "            </div>" # end header div
     
     #sections
     # embedded commands don't have notes (it's the description of the command, which doesn't apply)
@@ -703,7 +697,7 @@ def DrawStepCommon(oStep, sOptionHTML, sVariableHTML, bIsEmbedded = False):
             " style=\"height: 100px;\">"
 #        sHTML += "                <textarea rows=\"4\" " + CommonAttribs(sStepID, "_common", False, "step_desc", "") + \
 #            " help=\"Enter notes for this Command.\" reget_on_change=\"true\">" + oStep.Description + "</textarea>"
-#        sHTML += "            </div>"
+        sHTML += "            </div>"
 
         # embedded commands *could* show the help, but I don't like the look of it.
         # it's cluttered
@@ -948,7 +942,6 @@ def SetNodeAttributeinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sA
             # then send the whole doc back to the database
             sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
                 " where " + sWhereClause
-            print sSQL
             if not uiGlobals.request.db.exec_db_noexcep(sSQL):
                 uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
 
@@ -1462,8 +1455,6 @@ def GetEcosystemObjects(oStep):
     try:
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
-        sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
 
         sObjectType = xd.findtext("object_type", "")
@@ -1511,7 +1502,6 @@ def SqlExec(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
 
         """TAKE NOTE:
@@ -1621,7 +1611,6 @@ def RunTask(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
     
         sActualTaskID = ""
@@ -1758,7 +1747,7 @@ def RunTask(oStep):
     
     
         sHTML += "<br />"
-        print sAssetID
+
         #  asset
         sHTML += "<input type=\"text\" " + \
             CommonAttribsWithID(oStep, False, "asset_id", sOTIDField, "hidden") + \
@@ -1821,7 +1810,6 @@ def Subtask(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
     
         sActualTaskID = ""
@@ -1833,7 +1821,6 @@ def Subtask(oStep):
     
         # get the name and code for belonging to this otid and version
         if uiCommon.IsGUID(sOriginalTaskID):
-            print 1
             sSQL = "select task_id, task_code, task_name from task" \
                 " where original_task_id = '" + sOriginalTaskID + "'" + \
                 (" and default_version = 1" if not sVersion else " and version = '" + sVersion + "'")
@@ -1842,7 +1829,7 @@ def Subtask(oStep):
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append("Error retrieving subtask.(1)<br />" + uiGlobals.request.db.error)
                 return "Error retrieving subtask.(1)<br />" + uiGlobals.request.db.error
-            print dr
+
             if dr is not None:
                 sLabel = dr["task_code"] + " : " + dr["task_name"]
                 sActualTaskID = dr["task_id"]
@@ -1936,7 +1923,6 @@ def WaitForTasks(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
     
         sHTML = ""
@@ -1985,7 +1971,6 @@ def ClearVariable(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
     
         sHTML = ""
@@ -2036,7 +2021,6 @@ def SetVariable(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
     
         sHTML = ""
@@ -2120,14 +2104,12 @@ def NewConnection(oStep):
             
         log("New Connection command:", 4)
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
         xAsset = xd.find("asset")
         xConnName = xd.find("conn_name")
         xConnType = xd.find("conn_type")
         xCloudName = xd.find("cloud_name")
         sAssetID = ("" if xAsset is None else ("" if xAsset.text is None else xAsset.text))
-        sConnName = ("" if xConnName is None else ("" if xConnName.text is None else xConnName.text))
         sConnType = ("" if xConnType is None else ("" if xConnType.text is None else xConnType.text))
         sCloudName = ("" if xCloudName is None else ("" if xCloudName.text is None else xCloudName.text))
     
@@ -2178,7 +2160,8 @@ def NewConnection(oStep):
     
         else:
             # clear out the cloud_name property... it's not relevant for these types
-            SetNodeValueinCommandXML(sStepID, "cloud_name", "")
+            if sCloudName:
+                SetNodeValueinCommandXML(sStepID, "cloud_name", "")
             
             # ASSET
             # IF IT's A GUID...
@@ -2222,11 +2205,8 @@ def NewConnection(oStep):
                 " step_id=\"" + sStepID + "\"" \
                 " src=\"static/images/icons/search.png\" />\n"
             
-        sHTML += " as \n"
-        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "conn_name", "w200px") + \
-            " help=\"Name this connection for reference in the Task.\" value=\"" + sConnName + "\" />\n"
-        sHTML += "\n"
-    
+        # nothing special here, just draw the field.
+        sHTML += DrawField(xConnName, "conn_name", oStep)
     
         return sHTML
     except Exception:
@@ -2238,7 +2218,6 @@ def If(oStep):
         uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             
         sStepID = oStep.ID
-        sFunction = oStep.FunctionName
         xd = oStep.FunctionXDoc
     
         sHTML = ""
@@ -2289,7 +2268,7 @@ def If(oStep):
     
             # here's the embedded content
             sCol = "tests/test[" + str(i) + "]/action"
-            # (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "") + 
+
             if xAction is not None:
                 xEmbeddedFunction = xAction.find("function")
                 # xEmbeddedFunction might be None, but we pass it anyway to get the empty zone drawn
@@ -2329,6 +2308,184 @@ def If(oStep):
         sHTML += "</div>"
     
         return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
+def Loop(oStep):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        xd = oStep.FunctionXDoc
+    
+        sStart = xd.findtext("start", "")
+        sIncrement = xd.findtext("increment", "")
+        sCounter = xd.findtext("counter", "")
+        sTest = xd.findtext("test", "")
+        sCompareTo = xd.findtext("compare_to", "")
+        sMax = xd.findtext("max", "")
+    
+        xAction = xd.find("action")
+    
+        sHTML = ""
+    
+    
+        sHTML += "Counter variable \n"
+        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "counter", "") + \
+            " validate_as=\"variable\" help=\"Variable to increment.\" value=\"" + sCounter + "\" />\n"
+    
+        sHTML += " begins at\n"
+        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "start", "w100px")
+        sHTML += " help=\"Enter an integer value where the loop will begin.\" value=\"" + sStart + "\" />\n"
+    
+        sHTML += " and increments by \n"
+        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "increment", "w100px") + \
+            " help=\"The integer value to increment the counter after each loop.\" value=\"" + sIncrement + "\" />.<br />\n"
+    
+        sHTML += "Loop will continue while variable is \n"
+        sHTML += "<select " + CommonAttribs(oStep, False, "test", "") + ">\n"
+        sHTML += "  <option " + SetOption("==", sTest) + " value=\"==\">==</option>\n"
+        sHTML += "  <option " + SetOption("!=", sTest) + " value=\"!=\">!=</option>\n"
+        sHTML += "  <option " + SetOption("<=", sTest) + " value=\"<=\">&lt;=</option>\n"
+        sHTML += "  <option " + SetOption("<", sTest) + " value=\"<\">&lt;</option>\n"
+        sHTML += "  <option " + SetOption(">=", sTest) + " value=\">=\">&gt;=</option>\n"
+        sHTML += "  <option " + SetOption(">", sTest) + " value=\">\">&gt;</option>\n"
+        sHTML += "</select>\n"
+    
+        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, True, "compare_to", "w400px") + \
+            " help=\"Loop until variable compared with this value becomes 'false'.\" value=\"" + sCompareTo + "\" />\n"
+    
+    
+        sHTML += "<br /> or \n"
+        sHTML += "<input type=\"text\" " + CommonAttribs(oStep, False, "max", "w50px") + \
+            " help=\"For safety, enter a maximum number of times to loop before aborting.\" value=\"" + sMax + "\" /> loops have occured.\n"
+    
+        sHTML += "<hr />\n"
+    
+        # enable the dropzone for the Action
+        if xAction is not None:
+            xEmbeddedFunction = xAction.find("function")
+            # xEmbeddedFunction might be None, but we pass it anyway to get the empty zone drawn
+            sHTML += DrawDropZone(oStep, xEmbeddedFunction, "action", "Action:<br />", True)
+        else:
+            sHTML += "ERROR: Malformed XML for Step ID [" + oStep.ID + "].  Missing 'action' element."
+    
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
+def While(oStep):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        xd = oStep.FunctionXDoc
+    
+        sTest = xd.findtext("test", "")
+        xAction = xd.find("action")
+    
+        sHTML = ""
+        sHTML += "While: \n"
+        sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"10\" style=\"height: 18px;\" " + \
+            CommonAttribs(oStep, False, "test", "") + " help=\"\"" \
+            ">" + uiCommon.SafeHTML(sTest) + "</textarea>\n"
+    
+    
+        # enable the dropzone for the Action
+        if xAction is not None:
+            xEmbeddedFunction = xAction.find("function")
+            # xEmbeddedFunction might be None, but we pass it anyway to get the empty zone drawn
+            sHTML += DrawDropZone(oStep, xEmbeddedFunction, "action", "<hr />Action:<br />", True)
+        else:
+            sHTML += "ERROR: Malformed XML for Step ID [" + oStep.ID + "].  Missing 'action' element."
+    
+    
+        return sHTML
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+        return "Unable to draw Step - see log for details."
+
+def Exists(oStep):
+    try:
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+        xd = oStep.FunctionXDoc
+    
+        sHTML = ""
+        sHTML += "<div id=\"v" + oStep.ID + "_vars\">"
+        sHTML += "Variables to Test:<br />"
+    
+        xPairs = xd.findall("variable")
+        i = 1
+        for xe in xPairs:
+            sKey = xe.findtext("name", "")
+            sIsTrue = xe.findtext("is_true", "")
+    
+            # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
+            # hokey, but doing it here because the field update function is global.
+            if sKey.strip() != sKey:
+                SetNodeValueinCommandXML(oStep.ID, "variable[" + str(i) + "]/name", sKey.strip())
+    
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + \
+                CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
+                " validate_as=\"variable\"" \
+                " value=\"" + sKey + "\"" \
+                " help=\"Enter a Variable name.\"" \
+                " />"
+    
+            sHTML += "&nbsp; Is True:<input type=\"checkbox\" " + \
+                CommonAttribs(oStep, True, "variable[" + str(i) + "]/is_true", "") + " " + SetCheckRadio("1", sIsTrue) + " />\n"
+    
+            sHTML += "<span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + oStep.ID + "\">"
+            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
+                " alt=\"\" title=\"Remove\" /></span>"
+    
+            # break it every three fields
+            # if i % 3 == 0 and i >= 3:
+            sHTML += "<br />"
+    
+            i += 1
+    
+        sHTML += "<div class=\"fn_exists_add_btn pointer\"" \
+            " add_to_id=\"v" + oStep.ID + "_vars\"" \
+            " step_id=\"" + oStep.ID + "\">" \
+            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
+            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+        sHTML += "</div>"
+    
+        #  Exists have a Positive and Negative action
+        xPositiveAction = xd.find("actions/positive_action")
+        if xPositiveAction is None:
+            return "Error: XML does not contain positive_action"
+    
+        xNegativeAction = xd.find("actions/negative_action")
+        if xNegativeAction is None:
+            return "Error: XML does not contain negative_action"
+    
+        sCol = ""
+    
+        # here's the embedded content
+        sCol = "actions/positive_action"
+    
+        if xPositiveAction is not None:
+            xEmbeddedFunction = xPositiveAction.find("function")
+            sHTML += DrawDropZone(oStep, xEmbeddedFunction, sCol, "Positive Action:<br />", True)
+        else:
+            sHTML += "ERROR: Malformed XML for Step ID [" + oStep.ID + "].  Missing '" + sCol + "' element."
+    
+    
+        sCol = "actions/negative_action"
+    
+        if xNegativeAction is not None:
+            xEmbeddedFunction = xNegativeAction.find("function")
+            sHTML += DrawDropZone(oStep, xEmbeddedFunction, sCol, "Negative Action:<br />", True)
+        else:
+            sHTML += "ERROR: Malformed XML for Step ID [" + oStep.ID + "].  Missing '" + sCol + "' element."
+    
+        #  The End.
+        return sHTML
+
     except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
         return "Unable to draw Step - see log for details."
