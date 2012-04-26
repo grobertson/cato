@@ -15,19 +15,39 @@ class cloudMethods:
     #whatever method is requested, that function is called.
     def GET(self, method):
         try:
+            # EVERY new HTTP request sets up the "request" in uiGlobals.
+            # ALL functions chained from this HTTP request handler share that request
+            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception as ex:
+        except Exception, ex:
             raise ex
+        finally:
+            if uiGlobals.request:
+                if uiGlobals.request.db.conn.socket:
+                    uiGlobals.request.db.close()
+                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
 
     def POST(self, method):
         try:
+            # EVERY new HTTP request sets up the "request" in uiGlobals.
+            # ALL functions chained from this HTTP request handler share that request
+            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception as ex:
+        except Exception, ex:
             raise ex
+        finally:
+            if uiGlobals.request:
+                if uiGlobals.request.db.conn.socket:
+                    uiGlobals.request.db.close()
+                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
 
     def wmGetClouds(self):
         sHTML = ""
@@ -45,9 +65,7 @@ class cloudMethods:
             " from clouds" \
             " where 1=1 " + sWhereString + " order by provider, cloud_name"
         
-        db = catocommon.new_conn()
-        rows = db.select_all_dict(sSQL)
-        db.close()
+        rows = uiGlobals.request.db.select_all_dict(sSQL)
 
         if rows:
             for row in rows:
@@ -80,6 +98,8 @@ class cloudMethods:
     
     def wmGetCloud(self):
         try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
             sID = uiCommon.getAjaxArg("sID")
             c = cloud.Cloud()
             if c:
@@ -90,10 +110,12 @@ class cloudMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
         except Exception, ex:
-            raise ex
+            uiGlobals.request.Messages.append(ex.__str__())
 
     def wmGetCloudAccounts(self):
         try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
             sProvider = uiCommon.getAjaxArg("sProvider")
             ca = cloud.CloudAccounts()
             ca.Fill(sProvider)
@@ -103,9 +125,11 @@ class cloudMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sProvider + "].'}"
         except Exception, ex:
-            raise ex
+            uiGlobals.request.Messages.append(ex.__str__())
 
     def wmSaveCloud(self):
+        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
         sMode = uiCommon.getAjaxArg("sMode")
         sCloudID = uiCommon.getAjaxArg("sCloudID")
         sCloudName = uiCommon.getAjaxArg("sCloudName")
@@ -122,6 +146,8 @@ class cloudMethods:
                     return "{\"error\" : \"" + sErr + "\"}"
                 if c == None:
                     return "{\"error\" : \"Unable to create Cloud.\"}"
+
+                uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Cloud, c.ID, c.Name, "Cloud Created")
             elif sMode == "edit":
                 c = cloud.Cloud()
                 c.FromID(sCloudID)
@@ -133,17 +159,21 @@ class cloudMethods:
                 #get a new provider by name
                 c.Provider = providers.Provider.GetFromSession(sProvider)
                 if not c.DBUpdate():
-                    raise Exception(sErr)
-            
+                    uiGlobals.request.Messages.append(sErr)
+                
+                uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Cloud, self.ID, self.Name, sCloudName, self.Name)
+
             if c:
                 return c.AsJSON()
             else:
                 return "{\"error\" : \"Unable to save Cloud using mode [" + sMode + "].\"}"
         except Exception, ex:
-            raise ex
+            uiGlobals.request.Messages.append(ex.__str__())
 
     def wmDeleteClouds(self):
         try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
                 return "{\"info\" : \"Unable to delete - no selection.\"}"
@@ -152,25 +182,22 @@ class cloudMethods:
             
             #get important data that will be deleted for the log
             sSQL = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")"
-            db = catocommon.new_conn()
-            rows = db.select_all(sSQL)
+            rows = uiGlobals.request.db.select_all(sSQL)
 
             sSQL = "delete from clouds where cloud_id in (" + sDeleteArray + ")"
-            if not db.tran_exec_noexcep(sSQL):
-                raise Exception(db.error)
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
             
             #reget the cloud providers class in the session
             uiCommon.SetCloudProviders()
 
             #if we made it here, save the logs
             for dr in rows:
-                uiCommon.WriteObjectDeleteLog(db, uiGlobals.CatoObjectTypes.Cloud, dr[0], dr[1], dr[2] + " Cloud Deleted.")
+                uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Cloud, dr[0], dr[1], dr[2] + " Cloud Deleted.")
     
             return "{\"result\" : \"success\"}"
             
         except Exception, ex:
-            raise ex
-        finally:
-            db.close()
+            uiGlobals.request.Messages.append(ex.__str__())
 
         

@@ -146,7 +146,20 @@ class Provider(object):
                 raise Exception("Provider [" + sProvider + "] does not exist in the cloud_providers session xml.")
         except Exception, ex:
             raise ex
+
+    
+    def GetAllObjectTypes(self):
+        try:
+            cots = {}
             
+            for p_name, p in self.Products.iteritems():
+                for cot_name, cot in p.CloudObjectTypes.iteritems():
+                    if cot is not None:
+                        cots[cot.ID] = cot
+            return cots
+        except Exception, ex:
+            raise ex
+
 
     def GetObjectTypeByName(self, sObjectType):
         for p in self.Products:

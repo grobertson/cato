@@ -1,31 +1,44 @@
+//Copyright 2011 Cloud Sidekick
+// 
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+// 
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+//
+
 $(document).ready(function () {
     //specific field validation and masking
-    $(".var_name").live("keypress", function (e) { return restrictEntryToIdentifier(e, this); });
+    $("#step_var_edit_dialog .var_name").live("keypress", function (e) { return restrictEntryToIdentifier(e, this); });
     $("#new_delimited_position").keypress(function (e) { return restrictEntryToInteger(e, this); });
 
-    $("#error_dialog").dialog({
+    $("#step_var_edit_dialog").dialog({
         autoOpen: false,
-        draggable: false,
-        resizable: false,
+        draggable: true,
+        resizable: true,
         bgiframe: true,
         modal: true,
+        width: 800,
+		height: 600,
         overlay: {
             backgroundColor: '#000',
             opacity: 0.5
         },
         buttons: {
-            Ok: function () {
+            "Save": function () {
+                doUpdate();
+                $(this).dialog('close');
+            },
+            Cancel: function () {
                 $(this).dialog('close');
             }
         }
-    });
-
-    $("#info_dialog").dialog({
-        autoOpen: false,
-        draggable: false,
-        resizable: false,
-        bgiframe: true,
-        modal: false
     });
 
     $("#delimiter_picker_dialog").dialog({
@@ -36,20 +49,7 @@ $(document).ready(function () {
         modal: true
     });
 
-    //the change event of one of the variable name fields does a quick validation check
-    //against all the other value fields.
-    //(because you can't have two of the same values)
-    $("#edit_variables .var_name").live("change", function () {
-        checkForNameConflicts()
-    });
-
-    //the change event of the value fields, specifically to do some validation testing
-    //left properties
-    $("#edit_variables .prop").live("change", function () {
-        validateParsedVar(this);
-    });
-
-    //DELIMITED DIALOG
+    //DELIMITED DIALOG (not ajax)
     $("#variable_add_dialog_delimited").dialog({
         autoOpen: false,
         draggable: false,
@@ -61,7 +61,10 @@ $(document).ready(function () {
             "Add": function () {
                 addDelimitedVar();
             },
-            "Close": function () {
+            "Done": function () {
+            	if ($("#new_delimited_var_name").length > 0 && $("#new_delimited_position").length)
+            		addDelimitedVar();
+
                 $(this).dialog('close');
                 $("#delimited_msg").html("");
             }
@@ -77,22 +80,24 @@ $(document).ready(function () {
             addDelimitedVar();
         }
     });
-
     //END DELIMITED
 
-    //PARSED DIALOG
+    //PARSED DIALOG (not ajax)
     $("#variable_add_dialog_parsed").dialog({
         autoOpen: false,
         draggable: false,
         resizable: false,
         bgiframe: true,
         modal: true,
-        width: 400,
+        width: 500,
         buttons: {
-            OK: function () {
+            "Add": function () {
                 addParsedVar();
             },
-            Cancel: function () {
+            "Done": function () {
+            	if ($("#new_parsed_var_name").length > 0)
+            		addParsedVar();
+
                 $(this).dialog('close');
                 $("#parsed_msg").html("");
             }
@@ -146,8 +151,56 @@ $(document).ready(function () {
     });
     //END PARSED
 
+    
+    //the onclick event of the 'popout' icon of each step
+    $("#steps .variable_popup_btn").live("click", function() {
+        var step_id = $(this).attr("step_id");
+        $.ajax({
+	        async: false,
+	        type: "POST",
+	        url: "taskMethods/wmGetStepVarsEdit",
+	        data: '{"sStepID":"' + step_id + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function(response) {
+	        	if (!response.parse_type || !response.row_delimiter || !response.col_delimiter || !response.html)
+					$("#step_var_edit_dialog #phVars").empty().html("ERROR (wmGetStepVarsEdit): unable to get the variables for this step.  One or more of the return values was missing.");
+
+            	$("#step_var_edit_dialog #hidStepID").val(step_id);
+            	$("#step_var_edit_dialog #hidOutputParseType").val(response.parse_type);
+            	$("#step_var_edit_dialog #hidRowDelimiter").val(response.row_delimiter);
+            	$("#step_var_edit_dialog #hidColDelimiter").val(response.col_delimiter);
+
+				$("#step_var_edit_dialog #phVars").empty().html(unpackJSON(response.html));
+				
+				//we have to hook up all the bindings for the vars that were just added to the DOM
+				wireEmUp()
+				
+		        $("#step_var_edit_dialog").dialog('open');
+	        },
+	        error: function(response) {
+	            showAlert(response.responseText);
+	        }
+	    });
+    });
+});
+
+function wireEmUp() {
+    //the change event of one of the variable name fields does a quick validation check
+    //against all the other value fields.
+    //(because you can't have two of the same values)
+    $("#edit_variables .var_name").change(function () {
+        checkForNameConflicts()
+    });
+
+    //the change event of the value fields, specifically to do some validation testing
+    //left properties
+    $("#edit_variables .prop").change(function () {
+        validateParsedVar(this);
+    });
+
     //clear out all the variables
-    $("#variable_clearall_btn").click(function () {
+    $("#step_var_edit_dialog #variable_clearall_btn").click(function () {
         if (confirm("Clear all Variables?"))
             $("#edit_variables").empty();
 
@@ -163,32 +216,32 @@ $(document).ready(function () {
     $("[name=delimiter_clear_btn]").click(function () {
         var target = $(this).attr("target");
         if (target == 'row') {
-            $("#ctl00_phDetail_hidRowDelimiter").val("");
+            $("#step_var_edit_dialog #hidRowDelimiter").val("");
             $("#output_row_delimiter_label").html("N/A");
         }
         else if (target == 'col') {
-            $("#ctl00_phDetail_hidColDelimiter").val("");
+            $("#step_var_edit_dialog #hidColDelimiter").val("");
             $("#output_col_delimiter_label").html("N/A");
         }
     });
 
     //bind the delimiter picker to the select buttons
-    $(".delimiter").click(function () {
+    $("#delimiter_picker_dialog .delimiter").click(function () {
         if ($("#delimiter_picker_target").val() == 'row') {
-            $("#ctl00_phDetail_hidRowDelimiter").val($(this).attr("val"));
-            $("#output_row_delimiter_label").html($(this).html());
+            $("#step_var_edit_dialog #hidRowDelimiter").val($(this).attr("val"));
+            $("#step_var_edit_dialog #output_row_delimiter_label").html($(this).html());
         }
         else if ($("#delimiter_picker_target").val() == 'col') {
-            $("#ctl00_phDetail_hidColDelimiter").val($(this).attr("val"));
-            $("#output_col_delimiter_label").html($(this).html());
+            $("#step_var_edit_dialog #hidColDelimiter").val($(this).attr("val"));
+            $("#step_var_edit_dialog #output_col_delimiter_label").html($(this).html());
         }
 
         $("#delimiter_picker_dialog").dialog('close');
     });
 
     //bind the variable add button
-    $("#variable_add_btn").click(function () {
-        var opm = $("#ctl00_phDetail_hidOutputParseType").val();
+    $("#step_var_edit_dialog #variable_add_btn").click(function () {
+        var opm = $("#step_var_edit_dialog #hidOutputParseType").val();
         switch (opm) {
             case "1": //delimited
                 $("#new_delimited_var_name").val("");
@@ -202,24 +255,19 @@ $(document).ready(function () {
                 $("#variable_add_dialog_parsed").dialog("open");
                 $("#new_parsed_var_name").focus();
                 break;
+         	default:
+         		$("#step_var_edit_dialog #edit_variables").prepend("Warning: Parse method is " + opm + ", and this feature shouldn't be available, or the parse type is being returned incorrectly.")
         }
     });
 
     //the variable delete button
-    $(".variable_delete_btn").live("click", function (event) {
+    $("#step_var_edit_dialog .variable_delete_btn").live("click", function (event) {
         $("#" + $(this).attr("remove_id")).remove();
         checkForNameConflicts();
     });
+	
+}
 
-    //the save button binding
-    $("#save_btn").click(function () {
-        doUpdate();
-    });
-    //the cancel button binding
-    $("#cancel_btn").click(function () {
-        self.close();
-    });
-});
 function checkForNameConflicts() {
     $("#edit_variables .var_name").removeClass("conflicted_value");
 
@@ -349,7 +397,7 @@ function addDelimitedVar() {
                     " class=\"code var_name var_unique\" />";
     foo += "</span>";
     foo += "<span class=\"variable_delete_btn\" remove_id=\"v" + vid + "\">" +
-                    "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>";
+                    "<img src=\"static/images/icons/fileclose.png\" alt=\"\" /></span>";
     foo += "<br /><span class=\"variable_detail\">" +
                             "will contain the data from column position: " +
                             " <input type=\"text\" class=\"w100px code\" id=\"v" + vid + "_l_prop\"" +
@@ -388,7 +436,7 @@ function addParsedVar() {
     }
 
     //===== Warn if the "field break" identifier is not set.
-    var cold = $("#ctl00_phDetail_hidColDelimiter").val();
+    var cold = $("#step_var_edit_dialog #hidColDelimiter").val();
     if (cold < 9) { //9 is the lowest value in the picker list
         if (typ == "delimited") {
             $("#parsed_msg").html("You have defined a delimited type variable, but no Field Break Indicator is set.\n\nPlease set a Field Break Indicator.");
@@ -424,7 +472,7 @@ function addParsedVar() {
     foo += "</span>";
 
     foo += "<span class=\"variable_delete_btn\" remove_id=\"v" + vid + "\">" +
-                    "<img src=\"../images/icons/fileclose.png\" alt=\"\" /></span>";
+                    "<img src=\"static/images/icons/fileclose.png\" alt=\"\" /></span>";
 
     //switch here on the type
     switch (typ) {
@@ -541,71 +589,103 @@ function doUpdate() {
         return false;
     }
 
-    var step_id = $("#ctl00_phDetail_hidStepID").val();
-    var opm = $("#ctl00_phDetail_hidOutputParseType").val();
-    var rowd = $("#ctl00_phDetail_hidRowDelimiter").val();
-    var cold = $("#ctl00_phDetail_hidColDelimiter").val();
-    var vars = new Array();
+    var step_id = $("#step_var_edit_dialog #hidStepID").val();
+    var opm = $("#step_var_edit_dialog #hidOutputParseType").val();
+    var rowd = $("#step_var_edit_dialog #hidRowDelimiter").val();
+    var cold = $("#step_var_edit_dialog #hidColDelimiter").val();
+    var vars = "[";
 
     //build the variable array
+    // if ($("#edit_variables .variable").length > 0) {
+        // //we can select the variables by class
+        // //and we have put all the
+        // $("#edit_variables .variable").each(
+	        // function (intIndex) {
+	            // vars[intIndex] = new Array();
+// 	
+	            // var rowid = $(this).attr("id");
+// 	
+	            // //some types have only one property, others have two, here we're just grabbing both
+	            // //handle missing elements
+	            // var lprop = ($("#" + rowid + "_l_prop").length > 0 ? $("#" + rowid + "_l_prop").val() : "");
+	            // var rprop = ($("#" + rowid + "_r_prop").length > 0 ? $("#" + rowid + "_r_prop").val() : "");
+// 	
+	            // //if it happens to be 'parsed' type, there will be two 'type' indicators on each var.
+	            // //                var l_mode = $("[name=parsed_lmode_rb]:checked").val();
+	            // var ltype = ($("[name=" + rowid + "_l_mode]").length > 0 ? $("[name=" + rowid + "_l_mode]:checked").val() : "");
+	            // var rtype = ($("[name=" + rowid + "_r_mode]").length > 0 ? $("[name=" + rowid + "_r_mode]:checked").val() : "");
+// 	
+	            // vars[intIndex][0] = $("#" + rowid + "_name").val();
+	            // vars[intIndex][1] = $(this).attr("var_type");
+	            // vars[intIndex][2] = lprop;
+	            // vars[intIndex][3] = rprop;
+	            // vars[intIndex][4] = ltype;
+	            // vars[intIndex][5] = rtype;
+        // });
+    // }
     if ($("#edit_variables .variable").length > 0) {
+    	var iCount = $("#edit_variables .variable").length - 1;
         //we can select the variables by class
         //and we have put all the
         $("#edit_variables .variable").each(
-        function (intIndex) {
-            vars[intIndex] = new Array();
-
-            var rowid = $(this).attr("id");
-
-            //some types have only one property, others have two, here we're just grabbing both
-            //handle missing elements
-            var lprop = ($("#" + rowid + "_l_prop").length > 0 ? $("#" + rowid + "_l_prop").val() : "");
-            var rprop = ($("#" + rowid + "_r_prop").length > 0 ? $("#" + rowid + "_r_prop").val() : "");
-
-            //if it happens to be 'parsed' type, there will be two 'type' indicators on each var.
-            //                var l_mode = $("[name=parsed_lmode_rb]:checked").val();
-            var ltype = ($("[name=" + rowid + "_l_mode]").length > 0 ? $("[name=" + rowid + "_l_mode]:checked").val() : "");
-            var rtype = ($("[name=" + rowid + "_r_mode]").length > 0 ? $("[name=" + rowid + "_r_mode]:checked").val() : "");
-
-            vars[intIndex][0] = $("#" + rowid + "_name").val();
-            vars[intIndex][1] = $(this).attr("var_type");
-            vars[intIndex][2] = lprop;
-            vars[intIndex][3] = rprop;
-            vars[intIndex][4] = ltype;
-            vars[intIndex][5] = rtype;
-        }
-        );
+	        function (intIndex) {
+	            var thisvar = "[";
+	
+	            var rowid = $(this).attr("id");
+	
+	            //some types have only one property, others have two, here we're just grabbing both
+	            //handle missing elements
+	            var lprop = ($("#" + rowid + "_l_prop").length > 0 ? $("#" + rowid + "_l_prop").val() : null);
+	            var rprop = ($("#" + rowid + "_r_prop").length > 0 ? $("#" + rowid + "_r_prop").val() : null);
+	
+	            //if it happens to be 'parsed' type, there will be two 'type' indicators on each var.
+	            //                var l_mode = $("[name=parsed_lmode_rb]:checked").val();
+	            var ltype = ($("[name=" + rowid + "_l_mode]").length > 0 ? $("[name=" + rowid + "_l_mode]:checked").val() : null);
+	            var rtype = ($("[name=" + rowid + "_r_mode]").length > 0 ? $("[name=" + rowid + "_r_mode]:checked").val() : null);
+	
+	            thisvar += '"' + $("#" + rowid + "_name").val() + '",';
+	            thisvar += '"' + $(this).attr("var_type") + '",';
+	            thisvar += '"' + packJSON(lprop) + '",';
+	            thisvar += '"' + packJSON(rprop) + '",';
+	            thisvar += '"' + ltype + '",';
+	            thisvar += '"' + rtype + '"';
+	            
+	            thisvar += "]"
+	            if (intIndex < iCount)
+	            	thisvar += ","
+	            	
+	            vars += thisvar;
+        });
     }
+    vars += "]";
 
 
     //do it!
     //if (vars.length > 0) {
     //Doing the Microsoft ajax call because the jQuery one doesn't work for arrays.
-    PageMethods.wmUpdateVars(step_id, opm, rowd, cold, vars, OnSuccess, OnFailure);
+    //    PageMethods.wmUpdateVars(step_id, opm, rowd, cold, vars, OnSuccess, OnFailure);
     //}
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "taskMethods/wmUpdateVars",
+        data: '{"sStepID":"' + step_id + '", "sOPM":"' + opm + '", "sRowDelimiter":"' + rowd + '", "sColDelimiter":"' + cold + '", "oVarArray":' + vars + ' }',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+		    getStep(step_id, step_id, true);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 
-
-}
-
-function OnSuccess(result, userContext, methodName) {
-    step_id = $("#ctl00_phDetail_hidStepID").val();
-    self.opener.getStep(step_id, step_id, true);
-    //            getVars();
-    //            showInfo("Update Successful.");
-    self.close();
-}
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnFailure(error, userContext, methodName) {
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
 }
 
 function getVars() {
-    step_id = $("#ctl00_phDetail_hidStepID").val();
+    step_id = $("#step_var_edit_dialog #hidStepID").val();
     $.ajax({
-        async: false,
+        async: true,
         type: "POST",
         url: "taskStepVarsEdit.aspx/wmGetVars",
         data: '{"sStepID":"' + step_id + '"}',
@@ -618,18 +698,4 @@ function getVars() {
             showAlert(response.responseText);
         }
     });
-}//Copyright 2011 Cloud Sidekick
-// 
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-// 
-//    http://www.apache.org/licenses/LICENSE-2.0
-// 
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
-//
-
+}

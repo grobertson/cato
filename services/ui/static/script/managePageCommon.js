@@ -267,9 +267,9 @@ function ShowSortIcon() {
 		if ($th.length > 0)
 		{
          	if ($("#ctl00_phDetail_hidSortDirection").val() == "asc") {
-            	$th.remove("img").prepend("<img src='../images/UpArrow.gif' />");
+            	$th.remove("img").prepend("<img src='static/images/UpArrow.gif' />");
         	} else {
-            	$th.remove("img").prepend("<img src='../images/DnArrow.gif' />");
+            	$th.remove("img").prepend("<img src='static/images/DnArrow.gif' />");
         	}
     	}
     }

@@ -151,12 +151,6 @@ $(document).ready(function() {
         $("#" + field).change();
     });
 
-    //the onclick event of the 'popout' icon of each step
-    $("#steps .variable_popup_btn").live("click", function() {
-        var url = "taskStepVarsEdit.aspx?step_id=" + $(this).attr("step_id");
-        openWindow(url, "stepedit", "location=no,status=no,scrollbars=yes,width=800,height=700");
-    });
-
     //the onclick event of the 'delete' link of each step
     $("#steps .step_delete_btn").live("click", function() {
         $("#hidStepDelete").val($(this).attr("remove_id"));
@@ -169,13 +163,13 @@ $(document).ready(function() {
         var step_id = $(this).attr("step_id");
 
         $.ajax({
-            async: false,
+            async: true,
             type: "POST",
-            url: "taskMethods.asmx/wmCopyStepToClipboard",
+            url: "taskMethods/wmCopyStepToClipboard",
             data: '{"sStepID":"' + step_id + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
-            success: function(msg) {
+            success: function(response) {
                 doGetClips();
                 $("#update_success_msg").text("Copy Successful").fadeOut(2000);
             },
@@ -188,7 +182,7 @@ $(document).ready(function() {
 
     //the onclick event of the 'remove' link of embedded steps
     $("#steps .embedded_step_delete_btn").live("click", function() {
-        $("#embedded_step_remove_id").val($(this).attr("remove_id"));
+        $("#embedded_step_remove_xpath").val($(this).attr("remove_xpath"));
         $("#embedded_step_parent_id").val($(this).attr("parent_id"));
         $("#embedded_step_delete_confirm_dialog").dialog('open');
         //alert('remove step ' + $(this).attr("remove_id") + ' from ' + $(this).attr("parent_id"));
@@ -322,12 +316,12 @@ $(document).ready(function() {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmTaskSearch",
+            url: "taskMethods/wmTaskSearch",
             data: '{"sSearchText":"' + search_text + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(retval) {
-                $("#task_picker_results").html(retval.d);
+            dataType: "html",
+            success: function(response) {
+                $("#task_picker_results").html(response);
                 //bind the onclick event for the new results
                 $("#task_picker_results .task_picker_value").disableSelection();
                 $("#task_picker_dialog").unblock();
@@ -335,7 +329,6 @@ $(document).ready(function() {
                 //gotta kill previously bound clicks or it will stack 'em! = bad.
                 $("#task_picker_results li[tag='task_picker_row']").die();
                 $("#task_picker_results li[tag='task_picker_row']").live("click", function() {
-
                     $("#task_steps").block({ message: null });
 
                     $("#task_picker_dialog").dialog('close');
@@ -343,7 +336,6 @@ $(document).ready(function() {
 
                     field.val($(this).attr("original_task_id"));
                     field.change();
-
                 });
 
                 //task description tooltips on the task picker dialog
@@ -543,18 +535,6 @@ function initSortable() {
     $("#steps :input[te_group='step_fields']").rightClick(function(e) {
         showVarPicker(e);
     });
-
-    //NOTE: 8-3-09 NSC --- commented this out, performance seems to be better with this
-    //declared directly on the field, where values can be passed without dom lookups
-
-    //HATE THIS.. but the 'change' event isn't supported on the live() function.
-    //the pageload event doesn't work for bindings or changing attributes, because they will stack.
-    //so you have to be careful to REMOVE or UNBIND anything before you add/bind it.
-    //    $("#steps :input[te_group='step_fields']").unbind("change", onStepFieldChange);
-    //    $("#steps :input[te_group='step_fields']").change(onStepFieldChange);
-
-    //end commented
-
 
     //what happens when a step field gets focus?
     //we show the help for that field in the help pane.
@@ -813,8 +793,11 @@ function doStepAdd(new_step) {
 		        //NOTE NOTE NOTE: this is temporary
 		        //until I fix the copy command ... we will delete the clipboard item after pasting
 		        //this is not permanent, but allows it to be checked in now
-		        if (item.indexOf('clip_') != -1)
-		            doClearClipboard(item.replace(/clip_/, ""))
+		        
+		        // 4-26-12 NSC: since embedded commands work differently, we no longer need to remove a 
+		        // clipboard step when it's used
+		        // if (item.indexOf('clip_') != -1)
+		        //    doClearClipboard(item.replace(/clip_/, ""))
 		
 		        //but we will change the sortable if this command has embedded commands.
 		        //you have to add the embedded command NOW, or click cancel.
@@ -876,7 +859,7 @@ function doStepDetailUpdate(field, step_id, func, xpath) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmUpdateStep",
+            url: "taskMethods/wmUpdateStep",
             data: '{"sStepID":"' + step_id + '","sFunction":"' + func + '","sXPath":"' + xpath + '","sValue":"' + val + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
@@ -889,11 +872,6 @@ function doStepDetailUpdate(field, step_id, func, xpath) {
                 showAlert(response.responseText);
             }
         });
-
-
-        //tried this... no marked effect on performance
-        //ACWebMethods.taskMethods.wmUpdateStep(step_id, func, xpath, val, OnFieldUpdateSuccess, OnFieldUpdateFailure);
-
 
         //clear out the div of the stuff we just updated!
         $("#step_update_array").empty()
@@ -1002,7 +980,7 @@ function validateStep(in_element_id) {
 
 function drawStepValidationBar(step_id, cnt, msg) {
     return "<div id=\"info_" + step_id.toString() + "\" class=\"step_validation_template\">" +
-        "<img src=\"../images/icons/status_unknown_16.png\" alt=\"\" />" +
+        "<img src=\"static/images/icons/status_unknown_16.png\" alt=\"\" />" +
         "The following Command has <span class=\"info_error_count\">" + cnt.toString() +
         "</span> item(s) needing attention." +
         "<div class=\"info_syntax_errors\"></div>" +

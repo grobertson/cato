@@ -219,3 +219,32 @@ function doSaveDebugAsset() {
         }
     });
 }
+
+function doGetDebug() {
+    $.ajax({
+        async: true,
+        type: "POST",
+        url: "taskMethods/wmGetTaskDebug",
+        data: '{"sTaskID":"' + g_task_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (debug) {
+	       try {
+				if (debug.status) {
+					$("#debug_submitted").html(debug.submitted);
+					$("#debug_completed").html(debug.completed);
+					$("#debug_status").html(debug.status);
+					$("#debug_instance").html(debug.instance);
+					$("#debug_log_level").html(debug.log_level);
+					
+					$("#debug_last_run").show();
+				}
+			} catch (ex) {
+				showAlert(response.d);
+			}
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}

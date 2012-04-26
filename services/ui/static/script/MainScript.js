@@ -24,10 +24,12 @@
 function packJSON(instr) {
 	"use strict";
 	//if it's empty or undefined, return ""
-	if (instr === "" || instr === undefined) {
+	if (instr === "" || instr === undefined || instr === null)
 		return "";
-	}
 
+	if (instr.length < 1)
+		return "";
+		
 	//NOTE! base64 encoding still has a couple of reserved characters so we explicitly replace them AFTER
 	var outstr = $.base64.encode(instr);
 	return outstr.replace(/\//g, "%2F").replace(/\+/g, "%2B");
@@ -35,10 +37,13 @@ function packJSON(instr) {
 
 function unpackJSON(instr) {
 	"use strict";
-	//if it's nothing, return nothing
-	if (instr === "") {
-		return instr;
+	//if it's nothing, return a cleaner nothing
+	if (instr === "" || instr === undefined || instr === null) {
+		return "";
 	}
+
+	if (instr.length < 1)
+		return "";
 
 	//NOTE! base64 decoding still has a couple of reserved characters so we explicitly replace them BEFORE
 	var outstr = instr.replace(/%2F/g, "/").replace(/%2B/g, "+");

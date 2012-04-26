@@ -230,58 +230,35 @@ function doGetDetails() {
 }
 
 function doGetCommands() {
-	$.ajax({
-        type: "GET",
-        async: true,
-        url: "taskMethods/wmGetCommands",
-        dataType: "json",
-        success: function (response) {
-			try {
-				if (response.error) {
-					showAlert(response.error);
-				}
-				if (response.categories) {
-					cats_html = unpackJSON(response.categories)
-					$("#div_commands #categories").html(cats_html);
-
-				    //set the help text on hover over a category
-				    $("#toolbox .category").hover(function () {
-				        $("#te_help_box_detail").html($("#help_text_" + $(this).attr("name")).html());
-				    }, function () {
-				        $("#te_help_box_detail").html("");
-				    });
-				
-				    //toggle categories
-				    $("#toolbox .category").click(function () {
-				        //unselect all the categories
-				        $("#toolbox .category").removeClass("category_selected");
-				
-				        //and select this one you clicked
-				        //alert($(this).attr("id"));
-				        $(this).addClass("category_selected");
-				
-				        //hide 'em all
-				        $("#toolbox .functions").addClass("hidden");
-				
-				        //show the one you clicked
-				        $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
-				    });
-				}
-				if (response.functions) {
-					$("#div_commands #category_functions").html(unpackJSON(response.functions));
-				    //init the draggable items (commands and the clipboard)
-				    //this will also be called when items are added/removed from the clipboard.
-				    initDraggable();
-				}
-			} catch (ex) {
-				showAlert(response);
-			}
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
-
+	$("#div_commands #categories").load("static/_categories.html", function() {
+	    //set the help text on hover over a category
+	    $("#toolbox .category").hover(function () {
+	        $("#te_help_box_detail").html($("#help_text_" + $(this).attr("name")).html());
+	    }, function () {
+	        $("#te_help_box_detail").html("");
+	    });
+	
+	    //toggle categories
+	    $("#toolbox .category").click(function () {
+	        //unselect all the categories
+	        $("#toolbox .category").removeClass("category_selected");
+	
+	        //and select this one you clicked
+	        //alert($(this).attr("id"));
+	        $(this).addClass("category_selected");
+	
+	        //hide 'em all
+	        $("#toolbox .functions").addClass("hidden");
+	
+	        //show the one you clicked
+	        $("#" + $(this).attr("id") + "_functions").removeClass("hidden");
+	    });
+	});
+	$("#div_commands #category_functions").load("static/_functions.html", function() {
+	    //init the draggable items (commands and the clipboard)
+	    //this will also be called when items are added/removed from the clipboard.
+	    initDraggable();
+	});
 }
 
 function doGetSteps() {
@@ -382,37 +359,24 @@ function doEmbeddedStepAdd(func, droptarget) {
 
     var item = func.attr("id");
     var drop_step_id = $("#" + droptarget).attr("step_id");
+    var drop_xpath = $("#" + droptarget).attr("xpath");
 
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmAddStep",
-        data: '{"sTaskID":"' + g_task_id + '","sCodeblockName":"' + drop_step_id + '","sItem":"' + item + '"}',
+        url: "taskMethods/wmAddEmbeddedCommandToStep",
+        data: '{"sTaskID":"' + g_task_id + '","sStepID":"' + drop_step_id + '","sDropXPath":"' + drop_xpath + '","sItem":"' + item + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            var new_step_id = retval.d.substring(0, 36);
-
-            //got it.  now, update the specific field that is receiving this step
-            field = $("#" + droptarget).attr("datafield_id");
-            $("#" + field).val(new_step_id);
-            $("#" + field).change();
-
-            //just get the internal content
-            getStep(new_step_id, droptarget, false);
-            $("#update_success_msg").text("Add Successful").fadeOut(2000);
-
-            //NOTE NOTE NOTE: this is temporary
-            //until I fix the copy command ... we will delete the clipboard item after pasting
-            //this is not permanent, but allows it to be checked in now
-            if (item.indexOf('clip_') != -1)
-                doClearClipboard(item.replace(/clip_/, ""))
+        dataType: "html",
+        success: function (response) {
+        	$("#" + droptarget).replaceWith(response);
 
             //you have to add the embedded command NOW, or click cancel.
-            if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
-                doDropZoneEnable($("#" + new_step_id + " .step_nested_drop_target"));
-            }
-
+            // if (item == "fn_if" || item == "fn_loop" || item == "fn_exists" || item == "fn_while") {
+                // doDropZoneEnable($("#" + droptarget + " .step_nested_drop_target"));
+            // }
+            $("#task_steps").unblock();
+            $("#update_success_msg").fadeOut(2000);
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -422,30 +386,18 @@ function doEmbeddedStepAdd(func, droptarget) {
 }
 
 function doEmbeddedStepDelete() {
-    var remove_step_id = $("#embedded_step_remove_id").val();
+    var remove_xpath = $("#embedded_step_remove_xpath").val();
     var parent_id = $("#embedded_step_parent_id").val();
 
-    //    //don't need to block, the dialog blocks.
     $("#update_success_msg").text("Updating...").show();
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmDeleteStep",
-        data: '{"sStepID":"' + remove_step_id + '","sParentID":"' + parent_id + '"}',
+        url: "taskMethods/wmDeleteEmbeddedCommand",
+        data: '{"sXPath":"' + remove_xpath + '","sParentID":"' + parent_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            //crazy, but this page is so dynamic, on the server there is no way to identify the hidden field
-            //that is holding the value for this embedded command.
-            //but, thanks to jQuery... you can select a field based on it's value!
-            //since GUID's are unique,
-            //get the field holding the step_id of this child... that will be the text field that triggers the update!
-            //and the change event will fire the regular update event that clears the XML for that specific value!
-            //THANK YOU AND GOOD NIGHT!
-            var field = $("#steps :input[value='" + remove_step_id + "']").filter("#steps :input[te_group='step_fields']");
-            field.val("");
-            field.change();
-
+        success: function (response) {
             //reget the parent step
             getStep(parent_id, parent_id, true);
             $("#update_success_msg").text("Update Successful").fadeOut(2000);
@@ -456,7 +408,7 @@ function doEmbeddedStepDelete() {
         }
     });
 
-    $("#embedded_step_remove_id").val("");
+    $("#embedded_step_remove_xpath").val("");
     $("#embedded_step_parent_id").val("");
 }
 
@@ -464,12 +416,12 @@ function getStep(step_id, target, init) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetStep",
+        url: "taskMethods/wmGetStep",
         data: '{"sStepID":"' + step_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (retval) {
-            $("#" + target).replaceWith(retval.d);
+            $("#" + target).replaceWith(retval);
 
             if (init)
                 initSortable();
@@ -540,12 +492,17 @@ function doClearClipboard(id) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmRemoveFromClipboard",
+        url: "taskMethods/wmRemoveFromClipboard",
         data: '{"sStepID":"' + id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            doGetClips();
+        success: function (response) {
+            // we can just whack it from the dom
+            if (id == "ALL")
+            	$("#clipboard").empty();
+            else
+            	$("#clipboard #clip_" + id).remove();
+
             $("#update_success_msg").text("Remove Successful").fadeOut(2000);
         },
         error: function (response) {
@@ -557,13 +514,12 @@ function doClearClipboard(id) {
 function doGetClips() {
     $.ajax({
         async: false,
-        type: "POST",
-        url: "taskMethods.asmx/wmGetClips",
-        data: '{}',
+        type: "GET",
+        url: "taskMethods/wmGetClips",
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#clipboard").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#clipboard").html(response);
             initDraggable();
         },
         error: function (response) {

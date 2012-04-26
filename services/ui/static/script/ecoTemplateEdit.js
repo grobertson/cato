@@ -325,7 +325,7 @@ function SaveIcon() {
             }
             else {
             	//update the icon on the page
-            	$("#ac_" + action_id).find(".action_icon").attr("src","../images/actions/" + icon);
+            	$("#ac_" + action_id).find(".action_icon").attr("src","static/images/actions/" + icon);
                 $("#update_success_msg").text("Update Successful").fadeOut(2000);
             }
         },

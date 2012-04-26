@@ -4,12 +4,15 @@ import web
 import os
 import sys
 import urllib
+import pickle
 import xml.etree.ElementTree as ET
 
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 lib_path = os.path.join(base_path, "services", "lib")
 sys.path.append(lib_path)
 
+# DON'T REMOVE these that Aptana shows as "unused".
+# they are used, just in the URL mapping for web.py down below.
 from catocommon import catocommon
 from uiMethods import uiMethods
 from uiMethods import logout
@@ -66,6 +69,166 @@ def auth_app_processor(handle):
     
     return handle()
 
+
+def SetTaskCommands():
+    try:
+        from taskCommands import FunctionCategories
+        #we load two classes here...
+        #first, the category/function hierarchy
+        cats = FunctionCategories()
+        bCoreSuccess = cats.Load("task_commands.xml")
+        if not bCoreSuccess:
+            raise Exception("Critical: Unable to read/parse task_commands.xml.")
+
+        #try to append any extension files
+        #this will read all the xml files in /extensions
+        #and append to sErr if it failed, but not crash or die.
+        for root, subdirs, files in os.walk("extensions"):
+            for f in files:
+                ext = os.path.splitext(f)[-1]
+                if ext == ".xml":
+                    fullpath = os.path.join(root, f)
+                    if not cats.Append(fullpath):
+                        uiCommon.log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
+
+        #put the categories list in the session...
+        #uiGlobals.session.function_categories = cats.Categories
+        #then the dict of all functions for fastest lookups
+        #uiGlobals.session.functions = cats.Functions
+
+        # was told not to put big objects in the session, so since this can actually be shared by all users,
+        # lets try saving a pickle
+        # it will get created every time a user logs in, but can be read by all.
+        f = open("datacache/_categories.pickle", 'wb')
+        pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
+        
+        #rebuild the cache html files
+        CacheTaskCommands()
+
+        return True
+    except Exception, ex:
+        uiCommon.log("Unable to load Task Commands XML." + ex.__str__(), 0)
+
+def CacheTaskCommands():
+    #creates the html cache file
+    try:
+        sCatHTML = ""
+        sFunHTML = ""
+
+        # so, we will use the FunctionCategories class in the session that was loaded at login, and build the list items for the commands tab.
+        cats = uiCommon.GetTaskFunctionCategories()
+        if not cats:
+            print "Error: Task Function Categories class is not in the datacache."
+        else:
+            for cat in cats:
+                sCatHTML += "<li class=\"ui-widget-content ui-corner-all command_item category\""
+                sCatHTML += " id=\"cat_" + cat.Name + "\""
+                sCatHTML += " name=\"" + cat.Name + "\">"
+                sCatHTML += "<div>"
+                sCatHTML += "<img class=\"category_icon\" src=\"" + cat.Icon + "\" alt=\"\" />"
+                sCatHTML += "<span>" + cat.Label + "</span>"
+                sCatHTML += "</div>"
+                sCatHTML += "<div id=\"help_text_" + cat.Name + "\" class=\"hidden\">"
+                sCatHTML += cat.Description
+                sCatHTML += "</div>"
+                sCatHTML += "</li>"
+                
+                sFunHTML += "<div class=\"functions hidden\" id=\"cat_" + cat.Name + "_functions\">"
+                # now, let's work out the functions.
+                # we can just draw them all... they are hidden and will display on the client as clicked
+                for fn in cat.Functions:
+                    sFunHTML += "<div class=\"ui-widget-content ui-corner-all command_item function\""
+                    sFunHTML += " id=\"fn_" + fn.Name + "\""
+                    sFunHTML += " name=\"" + fn.Name + "\">"
+                    sFunHTML += "<img class=\"function_icon\" src=\"" + fn.Icon + "\" alt=\"\" />"
+                    sFunHTML += "<span>" + fn.Label + "</span>"
+                    sFunHTML += "<div id=\"help_text_" + fn.Name + "\" class=\"hidden\">"
+                    sFunHTML += fn.Description
+                    sFunHTML += "</div>"
+                    sFunHTML += "</div>"
+
+                sFunHTML += "</div>"
+
+        with open("static/_categories.html", 'w') as f_out:
+            if not f_out:
+                print "ERROR: unable to create static/_categories.html."
+            f_out.write(sCatHTML)
+
+        with open("static/_functions.html", 'w') as f_out:
+            if not f_out:
+                print "ERROR: unable to create static/_functions.html."
+            f_out.write(sFunHTML)
+
+    except Exception, ex:
+        uiCommon.log(ex.__str__(), 0)
+
+def CacheMenu():
+    #put the site.master.xml in the session here
+    # this is a significant boost to performance
+    xRoot = ET.parse("site.master.xml")
+    if not xRoot:
+        raise Exception("Critical: Unable to read/parse site.master.xml.")
+        
+    xMenus = xRoot.findall("mainmenu/menu") 
+
+    sHTML = ""
+    for xMenu in xMenus:
+        sLabel = xMenu.get("label", "No Label Defined")
+        sHref = (" href=\"" + xMenu.get("href", "") + "\"" if xMenu.get("href") else "")
+        sOnClick = (" onclick=\"" + xMenu.get("onclick", "") + "\"" if xMenu.get("onclick") else "")
+        sIcon = ("<img src=\"" + xMenu.get("icon", "") + "\" alt=\"\" />" if xMenu.get("icon") else "")
+        sTarget = xMenu.get("target", "")
+        sClass = xMenu.get("class", "")
+        
+        sHTML += "<li class=\"" + sClass + "\" style=\"cursor: pointer;\">"
+        sHTML += "<a"
+        sHTML += sOnClick
+        sHTML += sHref
+        sHTML += sTarget
+        sHTML += ">"
+        sHTML += sIcon
+        sHTML += sLabel
+        sHTML += "</a>"
+        
+        xItems = xMenu.findall("item")
+        if str(len(xItems)) > 0:
+            sHTML += "<ul>"
+            for xItem in xItems:
+                sLabel = xItem.get("label", "No Label Defined")
+                sHref = (" href=\"" + xItem.get("href", "") + "\"" if xItem.get("href") else "")
+                sOnClick = (" onclick=\"" + xItem.get("onclick", "") + "\"" if xItem.get("onclick") else "")
+                sIcon = ("<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />" if xItem.get("icon") else "")
+                sTarget = xItem.get("target", "")
+                sClass = xItem.get("class", "")
+
+                sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">"
+                sHTML += "<a"
+                sHTML += sOnClick 
+                sHTML += sHref 
+                sHTML += sTarget 
+                sHTML += ">"
+                sHTML += sIcon
+                sHTML += sLabel
+                sHTML += "</a>"
+                sHTML += "</li>"
+            sHTML += "</ul>"
+            
+        #wrap up the outer menu
+        sHTML += "</li>"
+    
+    with open("static/_menu.html", 'w') as f_out:
+        if not f_out:
+            print "ERROR: unable to create static/_menu.html."
+        f_out.write(sHTML)
+
+
+"""
+    Main Startup
+"""
+
+
+
 if __name__ == "__main__":
     #this is a service, which has a db connection.
     # but we're not gonna use that for gui calls - we'll make our own when needed.
@@ -107,9 +270,26 @@ if __name__ == "__main__":
     uiGlobals.server = server
     
     # the debug level (0-4 with 0 being 'none' and 4 being 'verbose')    
-    uiGlobals.debuglevel = 3 # change as needed for debugging
+    uiGlobals.debuglevel = 4 # change as needed for debugging
     
     # setting this to True seems to show a lot more detail in UI exceptions
     web.config.debug = False
+    
+    # we need to build some static html here...
+    # caching in the session is a bad idea, and this stuff very very rarely changes.
+    # so, when the service is started it will update the files, and the ui 
+    # will simply pull in the files when requested.
+    
+    # put the task commands in a pickle for our lookups
+    # and cache the html in a flat file
+    uiCommon.log("Generating static html...", 3)
+    SetTaskCommands()
+    CacheMenu()
+        
+    uiCommon.log("Refreshing datacache...", 3)
+    #put the cloud providers and object types in a pickle
+    # also a big performance boost
+    uiCommon.SetCloudProviders()
+
     
     app.run()

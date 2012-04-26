@@ -1527,7 +1527,7 @@ namespace FunctionTemplates
             //here's the embedded content
             sCol = "actions/positive_action";
 
-            if (xNegativeAction != null)
+            if (xPositiveAction != null)
                 sHTML += DrawDropZone(sStepID, xPositiveAction.Value, sFunction, sCol, "Positive Action:<br />", true);
             else
                 sHTML += "ERROR: Malformed XML for Step ID [" + sStepID + "].  Missing '" + sCol + "' element.";

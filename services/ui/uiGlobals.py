@@ -1,18 +1,38 @@
-#this globals are set on init, and anything that imports this file
+#these globals are set on init, and anything that imports this file
 # has access to these objects
 web = None
 session = None
-#this db references an open connection used by many functions
-#don't use it all the time - some functions that need transactions, etc should get
-# their own connections.
-dbconn = None
-
 # "server" is the running web service
 server = None
 
 # the debug level (0-4 with 0 being 'none' and 4 being 'verbose')
 debuglevel = 2 #defaults to 2
 
+request = None
+
+ConnectionTypes = ["ssh - ec2", "ssh", "telnet", "mysql", "oracle", "sqlserver", "sybase", "informix"]
+   
+class Request(object):
+    db = None
+    Function = ""
+    Messages = []
+
+    def __init__(self, db):
+        self.db = db
+        self.Function = ""
+        self.Messages = []
+    
+    def DumpMessages(self):
+        s = ""
+        
+        if self.Messages:
+            s = (self.Function if self.Function else "Unknown") + ":: "
+            for msg in self.Messages:
+                s += "\n%s" % msg
+        
+        return s
+        
+    
 class SecurityLogTypes(object):
     Object = "Object"
     Security = "Security"

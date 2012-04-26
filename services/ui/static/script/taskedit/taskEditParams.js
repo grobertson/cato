@@ -81,7 +81,7 @@ $(document).ready(function () {
         var html = "<div id=\"" + id + "\">" +
             "<textarea class=\"param_edit_value\" rows=\"1\"></textarea>" +
             " <img class=\"param_edit_value_remove_btn pointer\" remove_id=\"" + id + "\"" +
-            " src=\"../images/icons/fileclose.png\" alt=\"\" /></div>";
+            " src=\"static/images/icons/fileclose.png\" alt=\"\" /></div>";
 
         $("#param_edit_values").append(html);
         $("#" + id + " textarea:first").focus();
@@ -135,13 +135,12 @@ function ShowParameterEdit(param_id) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetTaskParam",
+        url: "taskMethods/wmGetTaskParam",
         data: '{"sType":"' + type + '","sID":"' + id + '","sParamID":"' + param_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            //put the results in the dialog
-            $("#param_edit_dialog_detail").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#param_edit_dialog_detail").html(response);
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -223,7 +222,7 @@ function doSaveParam() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmUpdateTaskParam",
+        url: "taskMethods/wmUpdateTaskParam",
         data: '{"sType":"' + type + '","sID":"' + id +
             '","sParamID":"' + param_id + '","sName":"' + name + '","sDesc":"' + desc +
             '","sRequired":"' + is_required + '","sPrompt":"' + should_prompt + '","sEncrypt":"' + encrypt +
@@ -258,11 +257,11 @@ function doDeleteParam() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmDeleteTaskParam",
+        url: "taskMethods/wmDeleteTaskParam",
         data: '{"sType":"' + type + '","sID":"' + id + '","sParamID":"' + param_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (retval) {
+        success: function (response) {
             doGetParams(type, id);
             $("#update_success_msg").text("Update Successful").fadeOut(2000);
         },
@@ -278,12 +277,12 @@ function doGetParams(type, id, editable, snip, readonly) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetParameters",
+        url: "taskMethods/wmGetParameters",
         data: '{"sType":"' + type + '","sID":"' + id + '","bEditable":"' + editable + '","bSnipValues":"' + snip + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#parameters").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#parameters").html(response);
 
             //have to rebind the tooltips here
             bindParameterToolTips();

@@ -1,3 +1,8 @@
+"""
+    THIS CLASS has it's own database connections.
+    Why?  Because it isn't only used by the UI.
+"""
+
 import uiCommon
 import uiGlobals
 from catocommon import catocommon
@@ -89,8 +94,6 @@ class Cloud(object):
                     return None, db.error
             db.close()
             
-            uiCommon.WriteObjectAddLog(db, uiGlobals.CatoObjectTypes.Cloud, sNewID, sCloudName, "Cloud Created")
-            
             #update the CloudProviders in the session
             cp = uiCommon.GetCloudProviders() #get the session object
             cp.Providers[sProvider].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
@@ -132,8 +135,6 @@ class Cloud(object):
                     return None, db.error
             db.close()
             
-            uiCommon.WriteObjectPropertyChangeLog(db, uiGlobals.CatoObjectTypes.Cloud, self.ID, self.Name, sOriginalName, self.Name)
-            
             #update the CloudProviders in the session
             cp = uiCommon.GetCloudProviders() #get the session object
             cp.Providers[self.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
@@ -168,7 +169,7 @@ class CloudAccounts(object):
             " where 1=1 " + sWhereString + " order by is_default desc, account_name"
         
         db = catocommon.new_conn()
-        self.DataTable = db.select_all(sSQL)
+        self.DataTable = db.select_all_dict(sSQL)
         db.close()
 
     def AsJSON(self):

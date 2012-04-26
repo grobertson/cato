@@ -33,8 +33,7 @@ $(document).ready(function () {
     //the show log link
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function () {
-        var url = "securityLogView.aspx?type=3&id=" + g_task_id;
-        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+        ShowLogViewDialog(3, g_task_id, true);
     });
 
     //the show runlog link
@@ -62,6 +61,8 @@ function tabWasClicked(tab) {
         GetObjectsTags($("#ctl00_phDetail_hidOriginalTaskID").val());
     } else if (tab == "clipboard") {
         doGetClips();
+    } else if (tab == "debug") {
+        doGetDebug();
     }
 }
 

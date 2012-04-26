@@ -27,7 +27,7 @@ $(document).ready(function () {
         var output = "";
         output += "<div class=\"task_launch_parameter_value\">";
         output += "<textarea class=\"task_launch_parameter_value_input\" width=\"90%\" rows=\"1\"></textarea>";
-        output += "<img class=\"parameter_dialog_remove_btn\" src=\"../images/icons/fileclose.png\" alt=\"Remove Value\" />";
+        output += "<img class=\"parameter_dialog_remove_btn\" src=\"static/images/icons/fileclose.png\" alt=\"Remove Value\" />";
         output += "</div>";
 
         //and add it to the dialog
@@ -148,14 +148,14 @@ function DrawParameterEditForm(parameter_xml) {
                         //don't draw the 'x' on the first value... make at least one value required.
                         if (vidx > 0) {
                             output += "<span class=\"floatright ui-icon ui-icon-trash parameter_dialog_remove_btn\" title=\"Remove Value\"></span>";
-                            //output += "<img class=\"parameter_dialog_remove_btn\" src=\"../images/icons/fileclose.png\" alt=\"Remove Value\" />";
+                            //output += "<img class=\"parameter_dialog_remove_btn\" src=\"static/images/icons/fileclose.png\" alt=\"Remove Value\" />";
                         }
 
                         output += "</div>";
                     });
 
                     //draw an add link.
-                    output += "<div class=\"parameter_dialog_add_btn pointer\" add_to=\"" + parameter_id + "\"><img style=\"width:10px; height:10px;\" src=\"../images/icons/edit_add.png\" alt=\"\" title=\"Add another value.\" />( click to add another value )</div>";
+                    output += "<div class=\"parameter_dialog_add_btn pointer\" add_to=\"" + parameter_id + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add another value.\" />( click to add another value )</div>";
                 }
                 else {
                     //if there happen to be more than one defined somehow... too bad.  Just show the first one

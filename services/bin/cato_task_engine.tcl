@@ -4052,7 +4052,7 @@ proc process_step {step_id task_name} {
 proc new_command {conn_name cmd_text timeout pos_resp neg_resp} {
 	set proc_name new_command
 	
-	set cmd_xml "<function command_type=\"cmd_line\" parse_method=\"2\"> \
+	set cmd_xml "<function name=\"cmd_line\" parse_method=\"2\"> \
 		<conn_name input_type=\"text\">$conn_name</conn_name> \
 		<command input_type=\"text\">$cmd_text</command> \
 		<timeout input_type=\"text\">$timeout</timeout> \
