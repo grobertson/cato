@@ -14,20 +14,38 @@
 //
 
 $(document).ready(function () {
-    $("#item_search_btn").live("click", function () {
-        //until we redo this all as ajax, our pretty button clicks the hidden ugly one
-        $("#ctl00_phDetail_btnSearch").click();
-    });
-
-    // where to go on row click
-    $("[tag='selectable']").live("click", function () {
-    	var id = $(this).parent().attr("task_instance");
-        openDialogWindow('taskRunLog?task_instance=' + id, 'TaskRunLog' + id, 950, 750, 'true');
-    });
+	GetItems();
+    ManagePageLoad();
 });
 
-function pageLoad() {
-    $("#item_search_btn").button({ icons: { primary: "ui-icon-search"} });
-    initJtable(true, false);
-    $.unblockUI();
+function GetItems() {
+    status = getQuerystringVariable("status");
+	search = $("#txtSearch").val();
+	from = $("#txtStartDate").val();;
+	to = $("#txtStopDate").val();
+	records = $("#txtResultCount").val();
+
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "taskMethods/wmGetTaskInstances",
+        data: '{"sSearch":"' + search + '", "sFrom":"' + from + '", "sTo":"' + to + '", "sRecords":"' + records + '", "sStatus":"' + status + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+            $("#instances").html(response);
+            //gotta restripe the table
+            initJtable(true, false);
+
+		    // where to go on row click
+		    $(".selectable").click(function () {
+		    	var id = $(this).parent().attr("task_instance");
+		        openDialogWindow('taskRunLog?task_instance=' + id, 'TaskRunLog' + id, 950, 750, 'true');
+		    });
+
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }

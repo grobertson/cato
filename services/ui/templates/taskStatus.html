@@ -1,0 +1,139 @@
+$def with ()
+$var jsfiles: taskStatus.js
+$var cssfiles:
+
+<div id="left_panel">
+    <div class="left_tooltip">
+        <img src="static/images/task-status-192x192.png" alt="" />
+        <div id="left_tooltip_box_outer">
+            <div id="left_tooltip_box_inner">
+                <p>
+                    The task status display shows up to the minute information on Tasks.
+                </p>
+                <p>
+                    Rows which highlight on mouse-over will display more detailed data when clicked. 
+                </p>
+                <p>
+                    Data updates every 30 seconds, or <a href="#" onclick="getStatuses();">click here</a> to update manually.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="content" class="display">
+    <br />
+    <table border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td>
+                <div class="ui-widget-content ui-corner-all" style="height: 165px; margin-left: 40px;">
+                    <div class="ui-widget-header">
+                        <span> Task Status - Active</span>
+                    </div>
+                    <div style="padding: 10px;">
+                        <table class="jtable" cellspacing="1" cellpadding="1">
+                            <thead>
+                                <tr>
+                                    <th width="300px">Status</th>
+                                    <th align="center" width="100px">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="selectAutoTask" status="processing">
+                                    <td width="300px">Processing</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblProcessing"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="staged">
+                                    <td width="300px">Staged</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblStaged"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="submitted">
+                                    <td width="300px">Submitted</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblSubmitted"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="pending">
+                                    <td width="300px">Pending</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblPending"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="aborting">
+                                    <td width="300px">Aborting</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblAborting"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="queued">
+                                    <td width="300px">Queued</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblQueued"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="processing,submitted,aborting,pending,staged,queued">
+                                    <td width="300px">Total Active</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblActive"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="ui-widget-content ui-corner-all" style="height: 165px; margin-left: 20px;">
+                    <div class="ui-widget-header">
+                        <span> Task Status - Completed</span>
+                    </div>
+                    <div style="padding: 10px;">
+                        <table class="jtable" cellspacing="1" cellpadding="1">
+                            <thead>
+                                <tr>
+                                    <th width="300px">Status</th>
+                                    <th align="center" width="100px">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="selectAutoTask" status="completed">
+                                    <td width="300px">Completed</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblCompleted"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="cancelled">
+                                    <td width="300px">Cancelled</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblCancelled"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="error">
+                                    <td width="300px">Errored</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblErrored"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="completed,cancelled,error">
+                                    <td width="300px">Total Completed</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblTotalCompleted"></span>
+                                    </td>
+                                </tr>
+                                <tr class="selectAutoTask" status="">
+                                    <td width="300px">All Statuses</td>
+                                    <td align="center" width="100px">
+                                        <span id="lblAllStatuses"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

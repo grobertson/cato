@@ -28,7 +28,7 @@
 		<menu roles="developer user" label="Information" icon="static/images/icons/info_24.png">
 			<item roles="developer" label="View System Status" icon="static/images/icons/sys_stat_24.png" onclick="showPleaseWait();" href="/systemStatus">
 			</item>
-			<item roles="developer user" label="View Task Status" icon="static/images/icons/task_stat_24.png" onclick="showPleaseWait();" href="../pages/taskStatusView.aspx">
+			<item roles="developer user" label="View Task Status" icon="static/images/icons/task_stat_24.png" onclick="showPleaseWait();" href="/taskStatus">
 			</item>
 			<item roles="developer user" label="About Cato" icon="static/images/icons/about_24.png" onclick="showPleaseWait();" href="../pages/about.aspx">
 			</item>

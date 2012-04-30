@@ -53,6 +53,10 @@ class taskRunLog:
     def GET(self):
         return render_popup.taskRunLog()
 
+class taskActivityLog:        
+    def GET(self):
+        return render.taskActivityLog()
+
 class cloudEdit:        
     def GET(self):
         return render.cloudEdit()
@@ -60,6 +64,10 @@ class cloudEdit:
 class systemStatus:        
     def GET(self):
         return render.systemStatus()
+
+class taskStatus:        
+    def GET(self):
+        return render.taskStatus()
 
 #Authentication preprocessor
 def auth_app_processor(handle):
@@ -256,8 +264,10 @@ if __name__ == "__main__":
         '/cloudEdit', 'cloudEdit',
         '/taskEdit', 'taskEdit',
         '/taskRunLog', 'taskRunLog',
+        '/taskActivityLog', 'taskActivityLog',
         '/taskManage', 'taskManage',
         '/systemStatus', 'systemStatus',
+        '/taskStatus', 'taskStatus',
         '/bypass', 'bypass'
     )
 
