@@ -80,16 +80,123 @@ class taskMethods:
                 " tag=\"chk\" />"
                 sHTML += "</td>"
                 
-                sHTML += "<td tag=\"selectable\">" + row["task_code"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row["task_name"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row["version"]) +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row["task_desc"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + row["task_status"] +  "</td>"
-                sHTML += "<td tag=\"selectable\">" + str(row["versions"]) +  "</td>"
+                sHTML += "<td class=\"selectable\">" + row["task_code"] +  "</td>"
+                sHTML += "<td class=\"selectable\">" + row["task_name"] +  "</td>"
+                sHTML += "<td class=\"selectable\">" + str(row["version"]) +  "</td>"
+                sHTML += "<td class=\"selectable\">" + row["task_desc"] +  "</td>"
+                sHTML += "<td class=\"selectable\">" + row["task_status"] +  "</td>"
+                sHTML += "<td class=\"selectable\">" + str(row["versions"]) +  "</td>"
                 
                 sHTML += "</tr>"
 
         return sHTML    
+
+    def wmGetTaskInstances(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+            sFilter = uiCommon.getAjaxArg("sSearch")
+            sStatus = uiCommon.getAjaxArg("sStatus")
+            sRecords = uiCommon.getAjaxArg("sRecords", "200")
+            sFrom = uiCommon.getAjaxArg("sFrom", "")
+            sTo = uiCommon.getAjaxArg("sTo", "")
+
+            sHTML = ""
+            sWhereString = " where (1=1) "
+
+            if sFilter:
+                aSearchTerms = sFilter.split(",")
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (ti.task_instance like '%%" + term + "%%' " \
+                            "or ti.task_id like '%%" + term + "%%' " \
+                            "or ti.asset_id like '%%" + term + "%%' " \
+                            "or ti.pid like '%%" + term + "%%' " \
+                            "or ti.task_status like '%%" + term + "%%' " \
+                            "or ar.hostname like '%%" + term + "%%' " \
+                            "or a.asset_name like '%%" + term + "%%' " \
+                            "or t.task_name like '%%" + term + "%%' " \
+                            "or t.version like '%%" + term + "%%' " \
+                            "or u.username like '%%" + term + "%%' " \
+                            "or u.full_name like '%%" + term + "%%' " \
+                            "or d.ecosystem_name like '%%" + term + "%%') "
+    
+            sDateSearchString = ""
+
+            if sFrom:
+                sDateSearchString += " and (submitted_dt >= str_to_date('" + sFrom + "', '%%m/%%d/%%Y')" \
+                " or started_dt >= str_to_date('" + sFrom + "', '%%m/%%d/%%Y')" \
+                " or completed_dt >= str_to_date('" + sFrom + "', '%%m/%%d/%%Y')) "
+            if sTo:
+                sDateSearchString += " and (submitted_dt <= str_to_date('" + sTo + "', '%%m/%%d/%%Y')" \
+                " or started_dt <= str_to_date('" + sTo + "', '%%m/%%d/%%Y')" \
+                " or completed_dt <= str_to_date('" + sTo + "', '%%m/%%d/%%Y')) "
+
+
+
+            # there may be a list of statuses passed in, if so, build out the where clause for them too
+            if sStatus:
+                l = []
+                # status might be a comma delimited list.  but to prevent sql injection, parse it.
+                for s in sStatus.split(","):
+                    l.append("'%s'" % s)
+                # I love python!
+                if l:
+                    sWhereString += " and ti.task_status in (%s)" % ",".join(map(str, l)) 
+                
+            # NOT CURRENTLY CHECKING PERMISSIONS
+            sTagString = ""
+            """
+            if !uiCommon.UserIsInRole("Developer") and !uiCommon.UserIsInRole("Administrator"):
+                sTagString+= " join object_tags tt on t.original_task_id = tt.object_id" \
+                    " join object_tags ut on ut.tag_name = tt.tag_name" \
+                    " and ut.object_type = 1 and tt.object_type = 3" \
+                    " and ut.object_id = '" + uiCommon.GetSessionUserID() + "'"
+            """
+            
+            sSQL = "select ti.task_instance, t.task_id, t.task_code, a.asset_name," \
+                    " ti.pid as process_id, ti.task_status, t.task_name," \
+                    " ifnull(u.full_name, '') as started_by," \
+                    " t.version, u.full_name, ar.hostname as ce_name, ar.platform as ce_type," \
+                    " d.ecosystem_name, d.ecosystem_id," \
+                    " convert(ti.submitted_dt, CHAR(20)) as submitted_dt," \
+                    " convert(ti.started_dt, CHAR(20)) as started_dt," \
+                    " convert(ti.completed_dt, CHAR(20)) as completed_dt" \
+                    " from tv_task_instance ti" \
+                    " left join task t on t.task_id = ti.task_id" + \
+                    sTagString + \
+                    " left outer join application_registry ar on ti.ce_node = ar.id" \
+                    " left outer join ecosystem d on ti.ecosystem_id = d.ecosystem_id" \
+                    " left join users u on u.user_id = ti.submitted_by" \
+                    " left join asset a on a.asset_id = ti.asset_id" + \
+                    sWhereString + sDateSearchString + \
+                    " order by ti.task_instance desc" \
+                    " limit " + sRecords
+
+            rows = uiGlobals.request.db.select_all_dict(sSQL)
+    
+            if rows:
+                for row in rows:
+                    task_label = "%s (%s)" % (row["task_name"], str(row["version"]))
+                    sHTML += "<tr style=\"font-size: .8em;\" task_instance=\"%s\">" % row["task_instance"]
+                    
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["task_instance"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["task_code"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % task_label
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["asset_name"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["task_status"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["started_by"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["ce_name"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % str(row["process_id"])
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["ecosystem_name"]
+                    sHTML += "<td class=\"selectable\">%s<br />%s<br />%s</td>" % (row["submitted_dt"], row["started_dt"], row["completed_dt"])
+                    sHTML += "<td class=\"selectable\"><span onclick=\"location.href='taskEdit?task_id=%s'\" class=\"ui-icon ui-icon-pencil pointer\"></span></td>" % row["task_id"]
+                    
+                    sHTML += "</tr>"
+    
+            return sHTML    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetTask(self):
         try:
@@ -1517,11 +1624,6 @@ class taskMethods:
                     sEcosystemID + "','" + \
                     sAccountID + "')"
                 
-                # TODO: This isn't working like it used to.  The SP returns the new instance id,
-                # but somehow it's not committing, seems like it's rolling back.
-                
-                # must be something to do with how pymysql does queries???
-                
                 row = uiGlobals.request.db.exec_proc(sSQL)
                 if uiGlobals.request.db.error:
                     uiGlobals.request.Messages.append("Unable to run task [" + sTaskID + "]." + uiGlobals.request.db.error)
@@ -2225,7 +2327,7 @@ class taskMethods:
 
 
             sTable = ""
-            sXML = ""
+            sCurrentXML = ""
             sParameterXPath = "parameter[@id='" + sParamID + "']" #using this to keep the code below cleaner.
 
             if sType == "ecosystem":
@@ -2244,7 +2346,7 @@ class taskMethods:
 
                 # does the task already have parameters?
                 sSQL = "select parameter_xml from " + sTable + " where " + sType + "_id = '" + sID + "'"
-                sAddXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                sCurrentXML = uiGlobals.request.db.select_col_noexcep(sSQL)
                 if uiGlobals.request.db.error:
                     uiGlobals.request.Messages.append(uiGlobals.request.db.error)
 
@@ -2258,7 +2360,7 @@ class taskMethods:
                     "<desc>" + sDesc + "</desc>" \
                     "</parameter>"
 
-                if not sXML:
+                if not sCurrentXML:
                     # XML doesn't exist at all, add it to the record
                     sAddXML = "<parameters>" + sAddXML + "</parameters>"
 
@@ -2672,3 +2774,49 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return ""
+
+
+    def wmGetTaskStatusCounts(self):
+        try:
+            # we're building a json object to be returned, so we'll start with a dictionary
+            output = {}
+            sSQL = "select Processing, Staged, Pending, Submitted, Aborting, Queued, AllStatuses," \
+                    "(Processing + Pending + Submitted + Aborting + Queued + Staged) as TotalActive," \
+                    "Cancelled, Completed, Errored, (Cancelled + Completed + Errored) as TotalComplete " \
+                    "from (select count(case when task_status = 'Processing' then 1 end) as Processing," \
+                    "count(case when task_status = 'Pending' then 1 end) as Pending," \
+                    "count(case when task_status = 'Submitted' then 1 end) as Submitted," \
+                    "count(case when task_status = 'Aborting' then 1 end) as Aborting," \
+                    "count(case when task_status = 'Queued' then 1 end) as Queued," \
+                    "count(case when task_status = 'Cancelled' then 1 end) as Cancelled," \
+                    "count(case when task_status = 'Completed' then 1 end) as Completed," \
+                    "count(case when task_status = 'Staged' then 1 end) as Staged," \
+                    "count(case when task_status = 'Error' then 1 end) as Errored, " \
+                    "count(*) as AllStatuses " \
+                    "from tv_task_instance) foo"
+
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append("Unable to get instance details for task instance.  " + uiGlobals.request.db.error)
+
+            if dr is not None:
+                output["Processing"] = dr["Processing"]
+                output["Submitted"] = dr["Submitted"]
+                output["Staged"] = dr["Staged"]
+                output["Aborting"] = dr["Aborting"]
+                output["Pending"] = dr["Pending"]
+                output["Queued"] = dr["Queued"]
+                output["TotalActive"] = dr["TotalActive"]
+                output["Cancelled"] = dr["Cancelled"]
+                output["Completed"] = dr["Completed"]
+                output["Errored"] = dr["Errored"]
+                output["TotalComplete"] = dr["TotalComplete"]
+                output["AllStatuses"] = dr["AllStatuses"]
+                
+                # all done, serialize our output dictionary
+                return json.dumps(output)
+
+            #if we get here, there is just no data... 
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

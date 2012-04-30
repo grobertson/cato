@@ -22,8 +22,8 @@ $(document).ready(function () {
         openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
     
-    //this page updates every 10 seconds
-    setInterval("GetData()", 10000);
+    //this page updates every 30 seconds
+    setInterval("GetData()", 30000);
 });
 
 function GetData() {

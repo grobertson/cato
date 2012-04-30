@@ -61,14 +61,8 @@
         }
     });
     
-    //what happens when you click a row?
-    $("[tag='selectable']").live("click", function () {
-        showPleaseWait();
-        location.href = '/taskEdit?task_id=' + $(this).parent().attr("task_id");
-    });
-
-	GetItems();
     ManagePageLoad();
+	GetItems();
 
 });
 
@@ -84,6 +78,13 @@ function GetItems() {
             $("#tasks").html(response);
             //gotta restripe the table
             initJtable(true, true);
+
+		    //what happens when you click a row?
+		    $(".selectable").click(function () {
+		        showPleaseWait();
+		        location.href = '/taskEdit?task_id=' + $(this).parent().attr("task_id");
+		    });
+
         },
         error: function (response) {
             showAlert(response.responseText);

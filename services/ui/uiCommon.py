@@ -52,7 +52,10 @@ def getAjaxArg(sArg, sDefault=""):
     dic = json.loads(data)
     
     if dic.has_key(sArg):
-        return dic[sArg]
+        if dic[sArg]:
+            return dic[sArg]
+        else:
+            return sDefault
     else:
         return sDefault
 
@@ -61,7 +64,7 @@ def GetCookie(sCookie):
     if cookie:
         return cookie
     else:
-        log("Warning: Attempt to retrieve cookie [%s] failed - cookie doesn't exist." % sCookie, 2)
+        log("Warning: Attempt to retrieve cookie [%s] failed - cookie doesn't exist.  This is usually OK immediately following a login." % sCookie, 3)
         return ""
 
 def SetCookie(sCookie, sValue):

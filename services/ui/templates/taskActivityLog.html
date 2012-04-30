@@ -1,0 +1,83 @@
+$def with ()
+$var jsfiles: managePageCommon.js taskActivityLog.js
+$var cssfiles:
+
+<div id="left_panel">
+    <div id="left_tooltip_img">
+        <img src="static/images/manage-tasks-192x192.png" alt="" />
+    </div>
+    <div class="left_tooltip">
+        <div id="left_tooltip_box_outer">
+            <div id="left_tooltip_box_inner">
+                <h2>Task Activity Log</h2>
+                <p>
+                    The Task Activity Log screen displays a list of recent Task runs with time and status.
+                </p>
+                <p>
+                    Click on a row to see a detailed log of that Task's execution.  Click the edit icon at the end of the row to edit the Task definition.
+                </p>
+                <p><a href="http://projects.cloudsidekick.com/projects/cato/wiki/Tasks?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app#Task-Activity-Log" target="_blank"><img src="static/images/icons/info.png" alt="" />Click here</a>
+                    for a more detailed description of the Task Activity Log.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="content">
+    Filter:
+    <input type="text" id="txtSearch" class="search_text" />
+    <!-- for some reason this pops up under the list?? -->
+    <span id="lblStartDate" style="z-index: 1200;">
+        Begin Date
+        <input type="text" id="txtStartDate" class="datepicker" />
+    </span>
+    <span id="lblStopDate">
+        End Date
+        <input type="text" id="txtStopDate" class="datepicker" />
+    </span>
+    <span id="lblMaxRows">
+        # of Results
+        <input type="text" id="txtResultCount" />
+    </span>
+    <span id="item_search_btn">Search</span>
+    <table class="jtable" cellspacing="1" cellpadding="1" width="99%">
+        <thead>
+            <tr>
+                <th sortcolumn="task_instance" width="30px">
+                    Instance
+                </th>
+                <th sortcolumn="task_code">
+                    Task Code
+                </th>
+                <th sortcolumn="task_name">
+                    Task
+                </th>
+                <th sortcolumn="asset_name">
+                    Asset
+                </th>
+                <th sortcolumn="task_status">
+                    Status
+                </th>
+                <th sortcolumn="started_by">
+                    Started By
+                </th>
+                <th sortcolumn="ce_name">
+                    CE
+                </th>
+                <th sortcolumn="process_id">
+                    PID
+                </th>
+                <th sortcolumn="ecosystem_name">
+                    Ecosystem
+                </th>
+                <th sortcolumn="completed_dt" width="100px">
+                    Timing
+                </th>
+                <th width="10px" align="center">
+                </th>
+            </tr>
+        </thead>
+        <tbody id="instances">
+        </tbody>
+    </table>
+</div>
