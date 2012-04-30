@@ -194,7 +194,7 @@ function getQuerystringVariable(variable) {
             return pair[1];
         }
     }
-    return null;
+    return "";
 }
 
 
