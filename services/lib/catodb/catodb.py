@@ -192,6 +192,29 @@ class Db(object):
 		else:
 			return None
 
+	# Calling a procedure is a bit different.  For our purpuses, we'll assume the proc returns data using a "select"
+	# at the end.  Multiple result sets are not supported.
+	def exec_proc(self, sql, params=()):
+		"""Executes a procedure.  If there is a result set, it is returned."""
+		if sql == "":
+			print "select_row: SQL cannot be empty."
+			return None
+		
+		try:
+			c = self.conn.cursor(pymysql.cursors.DictCursor)
+			c.execute(sql, params)
+			self.conn.commit()
+			result = c.fetchall()
+			c.close()
+		except Exception, e:
+			raise Exception(e)
+
+		if result:
+			return result
+		else:
+			return None
+
+
 
 # Now something interesting...
 # these functions all just call the ones above...
