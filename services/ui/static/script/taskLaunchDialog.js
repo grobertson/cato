@@ -558,16 +558,18 @@ function LaunchTask() {
         dataType: "text",
         success: function (response) {
 			if (response.length > 0) {
-			    openDialogWindow('taskRunLog.aspx?task_instance=' + response, 'TaskRunLog' + response, 950, 750, 'true');
+			    openDialogWindow('taskRunLog?task_instance=' + response, 'TaskRunLog' + response, 950, 750, 'true');
 			
 			    $("#update_success_msg").text("Start Successful").fadeOut(2000);
-			    hidePleaseWait();
 			
 			    //hate sticking it here, but this is only for the task edit/view pages...
 			    $("#hidDebugActiveInstance").val(response);
 			} else {
 			  	alert("The Task may not have started... no Task Instance was returned.")
 			}
+
+            $("#update_success_msg").fadeOut(2000);
+		    hidePleaseWait();
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);

@@ -14,31 +14,27 @@
 //
 
 $(document).ready(function () {
+    g_instance = getQuerystringVariable("task_instance");
+    g_task_id = getQuerystringVariable("task_id");
+    g_asset_id = getQuerystringVariable("asset_id");
+    g_rows = getQuerystringVariable("rows");
+
     $(".link").disableSelection();
 
     //refresh button
     $("#refresh_btn").click(function () {
-        showPleaseWait();
-        self.location.reload();
-        hidePleaseWait();
+		doGetDetails();
     });
 
     //parent instance link
-    $("#ctl00_phDetail_lblSubmittedByInstance").click(function () {
+    $("#lblSubmittedByInstance").click(function () {
         showPleaseWait();
-        self.location.href = "taskRunLog.aspx?task_instance=" + $("#ctl00_phDetail_hidSubmittedByInstance").val(); ;
+        self.location.href = "taskRunLog?task_instance=" + $("#hidSubmittedByInstance").val(); ;
         hidePleaseWait();
     });
 
-    //"other" instances jump links
-    $("[tag='selectable']").click(function () {
-        self.location.href = "taskRunLog.aspx?task_instance=" + $(this).parent().attr("task_instance"); ;
-    });
-
-    initJtable();
-
     //show the abort button if applicable
-    status = $("#ctl00_phDetail_lblStatus").text();
+    status = $("#lblStatus").text();
     if ("Submitted,Processing,Queued".indexOf(status) > -1)
         $("#abort_btn").removeClass("hidden");
 
@@ -88,16 +84,11 @@ $(document).ready(function () {
         $(".log_results").toggleClass("hidden");
         $("#show_results").toggleClass("vis_btn_off");
     });
-    $("#show_logfile").click(function () {
-        //pop a window with the log file
-        var url = $("#ctl00_phDetail_hidCELogFile").val();
-        openDialogWindow(url, 'TaskLogFile', 800, 700, 'true');
-    });
 
     //repost and ask for the whole log
     $("#get_all").click(function () {
         if (confirm("This may take a long time.\n\nAre you sure?"))
-            self.location.href = 'taskRunLog.aspx?task_instance=' + $("#ctl00_phDetail_hidInstanceID").val() + '&rows=all';
+            self.location.href = 'taskRunLog?task_instance=' + $("#hidInstanceID").val() + '&rows=all';
     });
 
 
@@ -123,13 +114,13 @@ $(document).ready(function () {
             OK: function () {
                 $(this).dialog('close');
 
-                var task_name = $("#ctl00_phDetail_lblTaskName").html();
-                var asset_id = $("#ctl00_phDetail_hidAssetID").val();
-                var ecosystem_id = $("#ctl00_phDetail_hidEcosystemID").val();
-                var account_id = $("#ctl00_phDetail_hidAccountID").val();
-                var account_name = $("#ctl00_phDetail_lblAccountName").val();
-                var instance = $("#ctl00_phDetail_hidInstanceID").val();
-                var debug_level = $("#ctl00_phDetail_hidDebugLevel").val();
+                var task_name = $("#lblTaskName").html();
+                var asset_id = $("#hidAssetID").val();
+                var ecosystem_id = $("#hidEcosystemID").val();
+                var account_id = $("#hidAccountID").val();
+                var account_name = $("#lblAccountName").val();
+                var instance = $("#hidInstanceID").val();
+                var debug_level = $("#hidDebugLevel").val();
 
 				var args = '{"task_id":"' + g_task_id + '", "task_name":"' + task_name + '", "debug_level":"' + debug_level + '"';
         
@@ -147,17 +138,125 @@ $(document).ready(function () {
             }
         }
     });
+
     hidePleaseWait();
 
     //if there's no value in the CELogfile ... hide the button.
-    if ($("#ctl00_phDetail_hidCELogFile").val() == "")
+    if ($("#hidCELogFile").val() == "")
         $("#show_logfile").hide();
 
+
+	doGetDetails();
+	
 });
 
-function doDebugStop() {
+function doGetDetails() {
+    $.ajax({
+        async: true,
+        type: "POST",
+        url: "taskMethods/wmGetTaskRunLogDetails",
+        data: '{"sTaskInstance":"' + g_instance + '", "sTaskID":"' + g_task_id + '", "sAssetID":"' + g_asset_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (instance) {
+        	if (instance.error)
+        		showAlert(instance.error);
+        		
+			$("#hidInstanceID").val(instance.task_instance);
+			$("#hidTaskID").val(instance.task_id);
+			$("#hidAssetID").val(instance.asset_id);
+			$("#hidSubmittedByInstance").val(instance.submitted_by_instance);
+			$("#hidEcosystemID").val(instance.ecosystem_id);
+			$("#hidAccountID").val(instance.account_id);
 
-    instance = $("#ctl00_phDetail_hidInstanceID").val();
+			$("#lblTaskInstance").text(instance.task_instance);
+			$("#lblTaskName").text(instance.task_name_label);
+			$("#lblStatus").text(instance.task_status);
+			$("#lblAssetName").text(instance.asset_name);
+			$("#lblSubmittedDT").text(instance.submitted_dt);
+			$("#lblStartedDT").text(instance.started_dt);
+			$("#lblCompletedDT").text(instance.completed_dt);
+			$("#lblSubmittedBy").text(instance.submitted_by);
+			$("#lblCENode").text(instance.ce_node);
+			$("#lblPID").text(instance.pid);
+			$("#lblSubmittedByInstance").text(instance.submitted_by_instance);
+			$("#lblEcosystemName").text(instance.ecosystem_name);
+			$("#lblAccountName").text(instance.account_name);
+
+	        if (instance.submitted_by_instance != "")
+	            $("#lblSubmittedByInstance").addClass("link");
+                
+            //if we got a "resubmit_message"...
+            if (instance.resubmit_message)                                            
+    			$("#lblResubmitMessage").text(instance.resubmit_message);
+
+			//don't show the cancel button if it's not running
+            if (instance.allow_cancel == "false")                                            
+    			$("#phCancel").hide();
+			else
+    			$("#phCancel").show();
+                        
+
+            //if the other instances array has stuff in it, then
+            if (instance.other_instances) {
+            	if (instance.other_instances.length) {
+            		html = ""
+					$(instance.other_instances).each(function (idx, row) {
+						html += '<tr task_instance="' + row[0] + '">' +
+							'<td tag="selectable">' + row[0] + '</td>' +
+				            '<td tag="selectable">' + row[1] + '</td>' +
+				            '</tr>';
+		          	});
+					$("#other_instances").empty().append(html);
+					initJtable();
+				    //jump links
+				    $("#other_instances tr").click(function () {
+				        self.location.href = "taskRunLog?task_instance=" + $(this).attr("task_instance"); ;
+				    });
+
+            		$("#pnlOtherInstances").show();
+        		}
+			}
+			
+			//we rely on the details to get the log
+			doGetLog();
+
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
+function doGetLog() {
+    instance = $("#hidInstanceID").val();
+
+	if (instance == '')
+		return;
+
+    $.ajax({
+        async: true,
+        type: "POST",
+        url: "taskMethods/wmGetTaskRunLog",
+        data: '{"sTaskInstance":"' + instance + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+            if (response.log)
+            	$("#ltLog").replaceWith(unpackJSON(response.log));
+            	
+            if (response.summary)
+            	$("#ltSummary").replaceWith(unpackJSON(response.summary));
+            	
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
+function doDebugStop() {
+    instance = $("#hidInstanceID").val();
 
 	if (instance == '')
 		return;
@@ -170,18 +269,10 @@ function doDebugStop() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
-
             location.reload();
-
         },
         error: function (response) {
             showAlert(response.responseText);
         }
     });
-
-
-}
-
-function pageLoad() {
-    initJtable();
 }
