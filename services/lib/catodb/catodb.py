@@ -207,6 +207,7 @@ class Db(object):
 			self.conn.commit()
 			result = c.fetchall()
 			c.close()
+			self.conn.next_result()
 		except Exception, e:
 			raise Exception(e)
 
