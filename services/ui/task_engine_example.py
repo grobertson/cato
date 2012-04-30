@@ -10,6 +10,8 @@ sys.path.append(lib_path)
 
 import task
 
+import te_globals
+
 def ProcessStep(step):
     print "executing step [%d, %s]" % (step.Order, step.ID)
 
@@ -41,6 +43,10 @@ def ProcessStep(step):
         print "would execute 'cmd_line'"
     elif command_type == "new_connection":
         print "would execute 'new_connection'"
+        from te_new_connection import connect
+        connect(step)
+        print te_globals.connections #now the connection we set in te_new_connection is available everywhere!
+        
     else:
         print "oops, I don't know how to handle [%s]" % command_type
     
