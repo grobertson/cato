@@ -35,7 +35,7 @@ function GetItems() {
         success: function (response) {
             $("#instances").html(response);
             //gotta restripe the table
-            initJtable(true, false);
+            initJtable(true, true);
 
 		    // where to go on row click
 		    $(".selectable").click(function () {

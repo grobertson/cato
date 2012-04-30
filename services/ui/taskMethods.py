@@ -2327,7 +2327,7 @@ class taskMethods:
 
 
             sTable = ""
-            sXML = ""
+            sCurrentXML = ""
             sParameterXPath = "parameter[@id='" + sParamID + "']" #using this to keep the code below cleaner.
 
             if sType == "ecosystem":
@@ -2346,7 +2346,7 @@ class taskMethods:
 
                 # does the task already have parameters?
                 sSQL = "select parameter_xml from " + sTable + " where " + sType + "_id = '" + sID + "'"
-                sAddXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                sCurrentXML = uiGlobals.request.db.select_col_noexcep(sSQL)
                 if uiGlobals.request.db.error:
                     uiGlobals.request.Messages.append(uiGlobals.request.db.error)
 
@@ -2360,7 +2360,7 @@ class taskMethods:
                     "<desc>" + sDesc + "</desc>" \
                     "</parameter>"
 
-                if not sXML:
+                if not sCurrentXML:
                     # XML doesn't exist at all, add it to the record
                     sAddXML = "<parameters>" + sAddXML + "</parameters>"
 

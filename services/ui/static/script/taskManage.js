@@ -61,8 +61,8 @@
         }
     });
     
-	GetItems();
     ManagePageLoad();
+	GetItems();
 
 });
 
