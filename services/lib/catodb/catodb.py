@@ -28,6 +28,7 @@ class Db(object):
 		try:
 			self.conn = pymysql.connect(host=server, port=int(port), 
 				user=user, passwd=password, db=database)
+            self.conn.autocommit(1)
 		except Exception, e:
 			raise Exception(e)
 	
