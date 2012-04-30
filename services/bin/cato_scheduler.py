@@ -19,7 +19,10 @@
 import os
 import sys
 import time
+
+### requires croniter from https://github.com/taichino/croniter
 from croniter import croniter
+
 from datetime import datetime
 
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
