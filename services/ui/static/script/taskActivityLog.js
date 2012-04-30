@@ -22,7 +22,7 @@ $(document).ready(function () {
     // where to go on row click
     $("[tag='selectable']").live("click", function () {
     	var id = $(this).parent().attr("task_instance");
-        openDialogWindow('taskRunLog.aspx?task_instance=' + id, 'TaskRunLog' + id, 950, 750, 'true');
+        openDialogWindow('taskRunLog?task_instance=' + id, 'TaskRunLog' + id, 950, 750, 'true');
     });
 });
 

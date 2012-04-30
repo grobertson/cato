@@ -49,6 +49,10 @@ class taskEdit:
     def GET(self):
         return render.taskEdit()
 
+class taskRunLog:        
+    def GET(self):
+        return render_popup.taskRunLog()
+
 class cloudEdit:        
     def GET(self):
         return render.cloudEdit()
@@ -251,6 +255,7 @@ if __name__ == "__main__":
         '/home', 'home',
         '/cloudEdit', 'cloudEdit',
         '/taskEdit', 'taskEdit',
+        '/taskRunLog', 'taskRunLog',
         '/taskManage', 'taskManage',
         '/systemStatus', 'systemStatus',
         '/bypass', 'bypass'
@@ -258,6 +263,7 @@ if __name__ == "__main__":
 
 
     render = web.template.render('templates', base='base')
+    render_popup = web.template.render('templates', base='popup')
     render_plain = web.template.render('templates')
     
     app = web.application(urls, globals(), autoreload=True)

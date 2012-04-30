@@ -129,31 +129,7 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
-    def wmGetTaskDebug(self):
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-        sTaskID = uiCommon.getAjaxArg("sTaskID")
 
-        if not uiCommon.IsGUID(sTaskID.replace("'", "")):
-            uiGlobals.request.Messages.append("Invalid or missing Task ID.")
-
-        try:
-            sSQL = "select task_status, submitted_dt, completed_dt, task_instance, debug_level" \
-                " from tv_task_instance where task_id = '" + sTaskID + "'" \
-                " order by task_instance desc limit 1"
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append("Unable to get task code." + uiGlobals.request.db.error)
-
-            if dr:
-                return "{\"status\" : \"%s\", \"submitted\" : \"%s\", \"completed\" : \"%s\", \"instance\" : \"%s\", \"log_level\" : \"%s\"}" % \
-                    (dr["task_status"], dr["submitted_dt"], dr["completed_dt"], dr["task_instance"], dr["debug_level"])
-            else:
-                return ""
-        except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
-
-    
     def wmGetTaskVersionsDropdown(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -1514,17 +1490,20 @@ class taskMethods:
             sAccountID = uiCommon.getAjaxArg("sAccountID")
             sAssetID = uiCommon.getAjaxArg("sAssetID")
             sParameterXML = uiCommon.getAjaxArg("sParameterXML")
-            iDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
+            sDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
             
             sUserID = uiCommon.GetSessionUserID()
-            return taskMethods.AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel)
+            return taskMethods.AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, sDebugLevel)
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
     # NOT a web method
     @staticmethod
-    def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, iDebugLevel):
+    def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, sDebugLevel):
         try:
+            if not sUserID: return ""
+            if not sTaskID: return ""
+            
             sParameterXML = uiCommon.unpackJSON(sParameterXML)
                             
             # we gotta peek into the XML and encrypt any newly keyed values
@@ -1533,23 +1512,23 @@ class taskMethods:
             if uiCommon.IsGUID(sTaskID) and uiCommon.IsGUID(sUserID):
                 sSQL = "call addTaskInstance ('" + sTaskID + "','" + \
                     sUserID + "',NULL," + \
-                    iDebugLevel + ",NULL,'" + \
+                    sDebugLevel + ",NULL,'" + \
                     uiCommon.TickSlash(sParameterXML) + "','" + \
                     sEcosystemID + "','" + \
                     sAccountID + "')"
-
+                
                 # TODO: This isn't working like it used to.  The SP returns the new instance id,
                 # but somehow it's not committing, seems like it's rolling back.
                 
                 # must be something to do with how pymysql does queries???
                 
-                sInstance = uiGlobals.request.db.select_col_noexcep(sSQL)
+                row = uiGlobals.request.db.exec_proc(sSQL)
                 if uiGlobals.request.db.error:
                     uiGlobals.request.Messages.append("Unable to run task [" + sTaskID + "]." + uiGlobals.request.db.error)
     
-                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, sInstance), 3)
+                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row["task_instance"]), 3)
                 
-                return sInstance
+                return row["task_instance"]
             else:
                 uiGlobals.request.Messages.append("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.")
     
@@ -1557,6 +1536,7 @@ class taskMethods:
             return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
         
 
 
@@ -2356,3 +2336,339 @@ class taskMethods:
             return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetTaskRunLogDetails(self):
+        try:
+            sTaskInstance = str(uiCommon.getAjaxArg("sTaskInstance"))
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sAssetID = uiCommon.getAjaxArg("sAssetID")
+            
+            # we're building a json object to be returned, so we'll start with a dictionary
+            output = {}
+
+            # different things happen depending on the page args
+
+            # if an instance was provided... it overrides all other args 
+            # otherwise we need to figure out which instance we want
+            if sTaskInstance == "":
+                if uiCommon.IsGUID(sTaskID):
+                    sSQL = "select max(task_instance) from tv_task_instance where task_id = '" + sTaskID + "'"
+
+                    if uiCommon.IsGUID(sAssetID):
+                        sSQL += " and asset_id = '" + sAssetID + "'"
+
+                    sTaskInstance = str(uiGlobals.request.db.select_col_noexcep(sSQL))
+                    if uiGlobals.request.db.error:
+                        uiGlobals.request.Messages.append("Unable to get task_instance from task/asset id.  " + uiGlobals.request.db.error)
+            
+            if sTaskInstance:
+                # the task instance must be a number, die if it isn't
+                try:
+                    x = int(sTaskInstance)
+                except:
+                    return "Task Instance must be an integer. [%s]." % (sTaskInstance)
+                
+                # not doing the permission check yet
+                """
+                # PERMISSION CHECK
+                # now... kick out if the user isn't allowed to see this page
+
+                # it's a little backwards... IsPageAllowed will kick out this page for users...
+                # so don't bother to check that if we can determine the user has permission by 
+                # a group association to this task
+                sOTID = ""
+                stiSQL = "select t.original_task_id" \
+                   " from tv_task_instance ti join task t on ti.task_id = t.task_id" \
+                   " where ti.task_instance = '" + sTaskInstance + "'"
+
+                sOTID = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get original_task_id for task instance.  " + uiGlobals.request.db.error)
+
+                # now we know the ID, see if we are grouped with it
+                # this will kick out if they DONT match tags and they AREN'T in a role with sufficient privileges
+                if !uiCommon.UserAndObjectTagsMatch(sOTID, 3)) uiCommon.IsPageAllowed("You do not have permission to view this Task.":
+                # END PERMISSION CHECK
+                """
+
+                # all good... continue...
+                output["task_instance"] = sTaskInstance
+                
+                sSQL = "select ti.task_instance, ti.task_id, '' as asset_id, ti.task_status, ti.submitted_by_instance, " \
+                    " ti.submitted_dt, ti.started_dt, ti.completed_dt, ti.ce_node, ti.pid, ti.debug_level," \
+                    " t.task_name, t.version, '' as asset_name, u.full_name," \
+                    " ar.app_instance, ar.platform, ar.hostname," \
+                    " t.concurrent_instances, t.queue_depth," \
+                    " ti.ecosystem_id, d.ecosystem_name, ti.account_id, ca.account_name" \
+                    " from tv_task_instance ti" \
+                    " join task t on ti.task_id = t.task_id" \
+                    " left outer join users u on ti.submitted_by = u.user_id" \
+                    " left outer join tv_application_registry ar on ti.ce_node = ar.id" \
+                    " left outer join cloud_account ca on ti.account_id = ca.account_id" \
+                    " left outer join ecosystem d on ti.ecosystem_id = d.ecosystem_id" \
+                    " where task_instance = " + sTaskInstance
+
+                dr = uiGlobals.request.db.select_row_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get instance details for task instance.  " + uiGlobals.request.db.error)
+
+                if dr is not None:
+                    output["task_id"] = dr["task_id"]
+                    output["asset_id"] = (dr["asset_id"] if dr["asset_id"] else "")
+                    output["debug_level"] = (dr["debug_level"] if dr["debug_level"] else "")
+
+                    output["task_name_label"] = dr["task_name"] + " - Version " + str(dr["version"])
+                    output["task_status"] = dr["task_status"]
+                    output["asset_name"] = ("N/A" if not dr["asset_name"] else dr["asset_name"])
+                    output["submitted_dt"] = ("" if not dr["submitted_dt"] else str(dr["submitted_dt"]))
+                    output["started_dt"] = ("" if not dr["started_dt"] else str(dr["started_dt"]))
+                    output["completed_dt"] = ("" if not dr["completed_dt"] else str(dr["completed_dt"]))
+                    output["ce_node"] = ("" if not dr["ce_node"] else str(dr["app_instance"]) + " (" + dr["platform"] + ")")
+                    output["pid"] = ("" if not dr["pid"] else str(dr["pid"]))
+
+                    output["submitted_by_instance"] = ("" if not dr["submitted_by_instance"] else dr["submitted_by_instance"])
+
+                    output["ecosystem_id"] = (dr["ecosystem_id"] if dr["ecosystem_id"] else "")
+                    output["ecosystem_name"] = (dr["ecosystem_name"] if dr["ecosystem_name"] else "")
+                    output["account_id"] = (dr["account_id"] if dr["account_id"] else "")
+                    output["account_name"] = (dr["account_name"] if dr["account_name"] else "")
+
+                    output["submitted_by"] = (dr["full_name"] if dr["full_name"] else "Scheduler")
+
+                    # we should return some indication of whether or not the user can do
+                    # certain functions.
+                    """
+                    # superusers AND those tagged with this Task can see the stop and resubmit button
+                    if uiCommon.UserIsInRole("Developer") or uiCommon.UserIsInRole("Administrator") or uiCommon.UserAndObjectTagsMatch(dr["original_task_id"], 3):
+                        phResubmit.Visible = true
+                        phCancel.Visible = true
+                    else:
+                        phResubmit.Visible = false
+                        phCancel.Visible = false
+                    """
+
+
+
+                    # if THIS instance is 'active', show additional warning info on the resubmit confirmation.
+                    # and if it's not, don't show the "cancel" button
+                    if dr["task_status"].lower() in "processing,queued,submitted,pending,aborting,queued,staged":
+                        output["resubmit_message"] = "This Task is currently active.  You have requested to start another instance."
+                    else:
+                        output["allow_cancel"] = "false"
+
+
+                    # check for OTHER active instances
+                    sSQL = "select count(*) from tv_task_instance where task_id = '" + dr["task_id"] + "'" \
+                        " and task_instance <> '" + sTaskInstance + "'" \
+                        " and task_status in ('processing','submitted','pending','aborting','queued','staged')"
+                    iActiveCount = uiGlobals.request.db.select_col_noexcep(sSQL)
+                    if uiGlobals.request.db.error:
+                        uiGlobals.request.Messages.append("Unable to get active instance count.  " + uiGlobals.request.db.error)
+
+
+                    # and hide the resubmit button if we're over the limit
+                    # if active < concurrent do nothing
+                    # if active >= concurrent but there's room in the queue, change the message
+                    # if this one would pop the queue, hide the button
+                    aOtherInstances = []
+                    if iActiveCount > 0:
+                        try:
+                            iConcurrent = int(dr["concurrent_instances"])
+                        except:
+                            iConcurrent = 0
+    
+                        try:
+                            iQueueDepth = int(dr["queue_depth"])
+                        except:
+                            iQueueDepth = 0
+    
+                        if iConcurrent + iQueueDepth > 0:
+                            if iActiveCount >= iConcurrent and (iActiveCount + 1) <= iQueueDepth:
+                                output["resubmit_message"] = "The maximum concurrent instances for this Task are running.  This request will be queued."
+                            else:
+                                output["allow_resubmit"] = "false"
+
+                        # neato... show the user a list of all the other instances!
+                        sSQL = "select task_instance, task_status from tv_task_instance" \
+                            " where task_id = '" + dr["task_id"] + "'" \
+                            " and task_instance <> '" + sTaskInstance + "'" \
+                            " and task_status in ('processing','submitted','pending','aborting','queued','staged')" \
+                            " order by task_status"
+
+                        dt = uiGlobals.request.db.select_all_dict(sSQL)
+                        if uiGlobals.request.db.error:
+                            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                        # build a list of the other instances
+                        for dr in dt:
+                            aOtherInstances.append((dr["task_instance"], dr["task_status"]))
+
+                        output["other_instances"] = aOtherInstances
+                    
+                    # all done, serialize our output dictionary
+                    return json.dumps(output)
+
+                else:
+                    return "{'error':'Did not find any data for Instance [%s].}" % (sTaskInstance)
+                
+            #if we get here, there is just no data... maybe it never ran.
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetTaskRunLog(self):
+        sTaskInstance = uiCommon.getAjaxArg("sTaskInstance")
+        sRows = uiCommon.getAjaxArg("sRows")
+
+        # OK, here's something neat.
+        # the TE *might* write a row in the log table with some xml content for a "results summary".
+        # we don't wanna hardcode too much, so we'll just inspect each log row looking for a flag.
+        # if we find it, we'll hold on to the data until the end and display it nicely instead of the log.
+        sResultSummary = ""
+        
+        try:
+            if not sTaskInstance:
+                return "{\"log\" : \"Unable to get log - no Instance passed to wmGetTaskRunLog.\"}"
+            
+            sLimitClause = " limit 100"
+
+            if sRows:
+                if sRows == "all":
+                    sLimitClause = ""
+                else:
+                    sLimitClause = " limit " + sRows
+
+            sSQL = "select til.task_instance, til.entered_dt, til.connection_name, til.log," \
+                " til.step_id, s.step_order, s.function_name, s.function_name as function_label, s.codeblock_name, " \
+                " til.command_text," \
+                " '' as variable_name,  '' as variable_value, " \
+                " case when length(til.log) > 256 then 1 else 0 end as large_text" \
+                " from task_instance_log til" \
+                " left outer join task_step s on til.step_id = s.step_id" \
+                " where til.task_instance = " + sTaskInstance + \
+                " order by til.id" + sLimitClause
+
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sLog = ""
+            sSummary = ""
+
+            if dt:
+                sLog += "<ul class=\"log\">\n"
+                sThisStepID = ""
+                sPrevStepID = ""
+
+                for dr in dt:
+                    # first, check if this row contains the 'results summary'
+                    # this will be indicated by the text "Results Summary" in the *command* field.
+                    if dr["command_text"]:
+                        if dr["command_text"] == "result_summary":
+                            sResultSummary = dr["log"]
+                            continue
+                    
+                    sThisStepID = dr["step_id"]
+
+
+
+
+                    # start a new list item and header only if we are moving on to a different step.
+                    if sPrevStepID != sThisStepID:
+                        # this is backwards, we are closing the previous loops list item
+                        # only if this loop is a different step_id than the last.
+                        # but not on the first loop (sPrevStepID = "")
+                        if sPrevStepID != "":
+                            sLog += "</li>\n"
+
+                        # new item
+                        sLog += "<li class=\"ui-widget-content ui-corner-bottom log_item\">\n"
+                        sLog += "    <div class=\"log_header ui-state-default ui-widget-header\">\n"
+                        if dr["function_label"]:
+                            try:
+                                iStepOrder = int(dr["step_order"])
+                            except:
+                                iStepOrder = 0
+                                
+                            if iStepOrder:
+                                sLog += "[" + dr["codeblock_name"] + " - " + dr["function_label"] + " - Step " + str(iStepOrder) + "]\n"
+                            else:
+                                sLog += "[Action - " + dr["function_label"]
+
+                        sLog += "At: [" + str(dr["entered_dt"]) + "]\n"
+
+                        if dr["connection_name"]:
+                            sLog += "On Connection: [" + dr["connection_name"] + "]\n"
+
+
+                        sLog += "    </div>\n"
+
+                    # detail section
+                    sLog += "<div class=\"log_detail\">\n"
+
+                    # it might have a command
+                    if dr["command_text"].strip():
+                        sLog += "<div class=\"log_command ui-widget-content ui-corner-all hidden\">\n"
+
+                        # the command text might hold special information we want to display differently
+                        sCommandText = dr["command_text"]
+                        if "run_task" in sCommandText:
+                            sInstance = sCommandText.replace("run_task ", "")
+                            sCommandText = "<span class=\"link\" onclick=\"location.href='taskRunLog.aspx?task_instance=" + sInstance + "';\">Jump to Task</span>"
+
+                        sLog += uiCommon.FixBreaks(uiCommon.SafeHTML(sCommandText))
+                        sLog += "</div>\n"
+
+
+                    # it might be a log entry:
+                    if dr["log"].strip():
+                        # commented out to save space
+                        # sLog += "Results:\n"
+                        sLog += "    <div class=\"log_results ui-widget-content ui-corner-all\">\n"
+                        sLog += uiCommon.FixBreaks(uiCommon.SafeHTML(dr["log"]))
+                        sLog += "    </div>\n"
+
+
+#  VARIABLE STUFF IS NOT YET ACTIVE
+#                         # it could be a variable:value entry:
+#                         if !dr["variable_name"].Equals(System.DBNull.Value):
+#                         #                             if dr["variable_name"].strip()):
+#                             #                                 sLog += "Variable:\n"
+#                                 sLog += "<div class=\"log_variable_name ui-widget-content ui-corner-all\">\n"
+#                                 sLog += dr["variable_name"]
+#                                 sLog += "</div>\n"
+#                                 sLog += "Set To:\n"
+#                                 sLog += "<div class=\"log_variable_value ui-widget-content ui-corner-all\">\n"
+#                                 sLog += dr["variable_value"]
+#                                 sLog += "</div>\n"
+#                             }
+#                         }
+
+                    
+                    # end detail
+                    sLog += "</div>\n"
+
+                    sPrevStepID = sThisStepID
+
+                # the last one get's closed no matter what
+                sLog += "</li>\n"
+                sLog += "</ul>\n"
+
+                try:                         
+                    # almost done... if there is a Result Summary ... display that.
+                    if sResultSummary:
+                        xdSummary = ET.fromstring(sResultSummary)
+                        if xdSummary is not None:
+                            for item in xdSummary.findall("items/item"):
+                                name = item.findtext("name", "")
+                                detail = item.findtext("detail", "")
+                                sSummary += "<div class='result_summary_item_name'>%s</div>" % name
+                                sSummary += "<div class='result_summary_item_detail ui-widget-content ui-corner-all'>%s</div>" % detail    
+                except Exception:
+                    uiGlobals.request.Messages.append(traceback.format_exc())
+            
+            return "{\"log\" : \"%s\", \"summary\" : \"%s\"}" % (uiCommon.packJSON(sLog), uiCommon.packJSON(sSummary))
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""

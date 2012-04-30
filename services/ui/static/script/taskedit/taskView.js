@@ -39,7 +39,7 @@ $(document).ready(function () {
     //the show runlog link
     $("#show_runlog_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_runlog_link").click(function () {
-        var url = "taskRunLog.aspx?task_id=" + g_task_id;
+        var url = "taskRunLog?task_id=" + g_task_id;
         openWindow(url, "TaskRunLog" + g_task_id, "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
     });
 });

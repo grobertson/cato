@@ -69,13 +69,13 @@ $(document).ready(function () {
 
     //bind the debug show log button
     $("#debug_view_latest_log").click(function () {
-        openDialogWindow('taskRunLog.aspx?task_id=' + g_task_id, 'TaskRunLog' + g_task_id, 950, 750, 'true');
+        openDialogWindow('taskRunLog?task_id=' + g_task_id, 'TaskRunLog' + g_task_id, 950, 750, 'true');
     });
     //bind the debug show active log button
     $("#debug_view_active_log").click(function () {
         var aid = $("#hidDebugActiveInstance").val();
         if (aid != "") {
-            openDialogWindow('taskRunLog.aspx?task_instance=' + aid, 'TaskRunLog' + aid, 950, 750, 'true');
+            openDialogWindow('taskRunLog?task_instance=' + aid, 'TaskRunLog' + aid, 950, 750, 'true');
         }
     });
 
@@ -224,18 +224,18 @@ function doGetDebug() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "taskMethods/wmGetTaskDebug",
+        url: "taskMethods/wmGetTaskRunLogDetails",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (debug) {
 	       try {
-				if (debug.status) {
-					$("#debug_submitted").html(debug.submitted);
-					$("#debug_completed").html(debug.completed);
-					$("#debug_status").html(debug.status);
-					$("#debug_instance").html(debug.instance);
-					$("#debug_log_level").html(debug.log_level);
+				if (debug.task_status) {
+					$("#debug_submitted").html(debug.submitted_dt);
+					$("#debug_completed").html(debug.completed_dt);
+					$("#debug_status").html(debug.task_status);
+					$("#debug_instance").html(debug.task_instance);
+					$("#debug_submitted_by").html(debug.submitted_by);
 					
 					$("#debug_last_run").show();
 				}
