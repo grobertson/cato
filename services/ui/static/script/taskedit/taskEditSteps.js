@@ -283,12 +283,12 @@ $(document).ready(function() {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmGetTaskCodeblocks",
+            url: "taskMethods/wmGetTaskCodeblockPicker",
             data: '{"sTaskID":"' + g_task_id + '","sStepID":"' + stepid + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(retval) {
-                $("#codeblock_picker_codeblocks").html(retval.d);
+            dataType: "html",
+            success: function(response) {
+                $("#codeblock_picker_codeblocks").html(response);
                 $("#codeblock_picker_codeblocks .value_picker_value").hover(
                         function() {
                             $(this).toggleClass("value_picker_value_hover");

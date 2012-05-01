@@ -552,6 +552,144 @@ class taskMethods:
             return sCBHTML
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmAddCodeblock(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sNewCodeblockName = uiCommon.getAjaxArg("sNewCodeblockName")
+
+        try:
+            if sNewCodeblockName:
+                sSQL = "insert into task_codeblock (task_id, codeblock_name)" \
+                       " values (" + "'" + sTaskID + "'," \
+                       "'" + sNewCodeblockName + "'" \
+                       ")"
+
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to add Codeblock [" + sNewCodeblockName + "]. " + uiGlobals.request.db.error)
+
+                uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sNewCodeblockName, "Added Codeblock.")
+            else:
+                uiGlobals.request.Messages.append("Unable to add Codeblock. Invalid or missing Codeblock Name.")
+        except Exception:
+            uiGlobals.request.Messages.append("Unable to add Codeblock. " + traceback.format_exc())
+        finally:
+            return ""
+        
+    def wmDeleteCodeblock(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sCodeblockID = uiCommon.getAjaxArg("sCodeblockID")
+        try:
+            sSQL = "delete u from task_step_user_settings u" \
+                " join task_step ts on u.step_id = ts.step_id" \
+                " where ts.task_id = '" + sTaskID + "'" \
+                " and ts.codeblock_name = '" + sCodeblockID + "'"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to delete Steps user settings for Steps in Codeblock." + uiGlobals.request.db.error)
+
+            sSQL = "delete from task_step" \
+                " where task_id = '" + sTaskID + "'" \
+                " and codeblock_name = '" + sCodeblockID + "'"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to delete Steps from Codeblock." + uiGlobals.request.db.error)
+
+            sSQL = "delete from task_codeblock" \
+                " where task_id = '" + sTaskID + "'" \
+                " and codeblock_name = '" + sCodeblockID + "'"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to delete Codeblock." + uiGlobals.request.db.error)
+
+            uiGlobals.request.db.tran_commit()
+
+            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sCodeblockID, "Deleted Codeblock.")
+
+        except Exception:
+            uiGlobals.request.Messages.append("Exception: " + traceback.format_exc())
+        finally:
+            return ""
+
+    def wmRenameCodeblock(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sOldCodeblockName = uiCommon.getAjaxArg("sOldCodeblockName")
+        sNewCodeblockName = uiCommon.getAjaxArg("sNewCodeblockName")
+        try:
+            if uiCommon.IsGUID(sTaskID):
+                #  first make sure we are not try:ing to rename it something that already exists.
+                sSQL = "select count(*) from task_codeblock where task_id = '" + sTaskID + "'" \
+                    " and codeblock_name = '" + sNewCodeblockName + "'"
+                iCount = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to check codeblock names for task." + uiGlobals.request.db.error)
+                if iCount != 0:
+                    return ("Codeblock Name already in use, choose another.")
+
+                #  do it
+
+                # update the codeblock table
+                sSQL = "update task_codeblock set codeblock_name = '" + sNewCodeblockName + \
+                    "' where codeblock_name = '" + sOldCodeblockName + \
+                    "' and task_id = '" + sTaskID + "'"
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                # and any steps in that codeblock
+                sSQL = "update task_step set codeblock_name = '" + sNewCodeblockName + \
+                    "' where codeblock_name = '" + sOldCodeblockName + \
+                    "' and task_id = '" + sTaskID + "'"
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                # the fun part... rename it where it exists in any steps
+                # but this must be in a loop of only the steps where that codeblock reference exists.
+                sSQL = "select step_id from task_step" \
+                    " where task_id = '" + sTaskID + "'" \
+                    " and ExtractValue(function_xml, '//codeblock[1]') = '" + sOldCodeblockName + "'"
+                dtSteps = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get steps referencing the Codeblock." + uiGlobals.request.db.error)
+
+                if dtSteps:
+                    for dr in dtSteps:
+                        ST.SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + dr["step_id"] + "'", "codeblock[.='" + sOldCodeblockName + "']", sNewCodeblockName)
+
+                # all done
+                uiGlobals.request.db.tran_commit()
+                
+                uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sOldCodeblockName, "Renamed Codeblock [%s -> %s]" % (sOldCodeblockName, sNewCodeblockName))
+
+            else:
+                uiGlobals.request.Messages.append("Unable to get codeblocks for task. Missing or invalid task_id.")
+                return "Unable to get codeblocks for task. Missing or invalid task_id."
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+        finally:
+            return ""
+
+    def wmCopyCodeblockStepsToClipboard(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sCodeblockName = uiCommon.getAjaxArg("sCodeblockName")
+
+        try:
+            if sCodeblockName != "":
+                sSQL = "select step_id" \
+                    " from task_step" \
+                    " where task_id = '" + sTaskID + "'" \
+                    " and codeblock_name = '" + sCodeblockName + "'" \
+                    " order by step_order desc"
+
+                dt = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                if dt:
+                    for dr in dt:
+                        taskMethods.CopyStepToClipboard(dr["step_id"])
+
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Unable to copy Codeblock. Missing or invalid codeblock_name.")
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
         
     def wmGetSteps(self):
         try:
@@ -1546,7 +1684,14 @@ class taskMethods:
     def wmCopyStepToClipboard(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-    
+            taskMethods.CopyStepToClipboard(sStepID)
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    @staticmethod
+    def CopyStepToClipboard(sStepID):
+        try:
             if uiCommon.IsGUID(sStepID):
                 sUserID = uiCommon.GetSessionUserID()
     
@@ -2925,6 +3070,32 @@ class taskMethods:
                 return sHTML
             else:
                 uiGlobals.request.Messages.append("Unable to get variables for task. Missing or invalid task_id.")
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetTaskCodeblockPicker(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sStepID = uiCommon.getAjaxArg("sStepID")
+
+        try:
+            if uiCommon.IsGUID(sTaskID):
+                sSQL = "select codeblock_name from task_codeblock where task_id = '" + sTaskID + "'" \
+                    " and codeblock_name not in (select codeblock_name from task_step where step_id = '" + sStepID + "')" \
+                    " order by codeblock_name"
+
+                dt = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get codeblocks for task." + uiGlobals.request.db.error)
+
+                sHTML = ""
+
+                for dr in dt:
+                    sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">" + dr["codeblock_name"] + "</div>"
+
+                return sHTML
+            else:
+                uiGlobals.request.Messages.append("Unable to get codeblocks for task. Missing or invalid task_id.")
 
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())

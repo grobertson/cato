@@ -617,24 +617,11 @@ class Task(object):
                     
                     # maybe this should just be a list?
                     if oStep:
-                        #a 'REAL' codeblock will be in this collection
-                        # (the codeblock of an embedded step is not a 'real' codeblock, rather a pointer to another step
+                        # just double check that the codeblocks match
                         if self.Codeblocks.has_key(oStep.Codeblock):
                             self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
-                            #print self.Codeblocks[oStep.Codeblock].Steps
                         else:
-                            #so, what do we do if we found a step that's not in a 'real' codeblock?
-                            #well, the gui will take care of drawing those embedded steps...
-                            #but we have a problem with export, version up, etc.
-                            #these steps can't be orphans!
-                            #so, we'll go ahead and create codeblocks for them.
-                            #this is terrible, but part of the problem with this embedded stuff.
-                            #we'll tweak the gui so GUID named codeblocks don't show.
-                            self.Codeblocks[oStep.Codeblock] = Codeblock(oStep.Codeblock)
-                            self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
-            #maybe one day we'll do the full recusrive loading of all embedded steps here
-            # but not today... it's a big deal and we need to let these changes settle down first.
-            
+                            print "WARNING: Step think it belongs in codeblock [%s] but this task doesn't have that codeblock." % oStep.Codeblock
         except Exception, ex:
             raise ex
         finally:

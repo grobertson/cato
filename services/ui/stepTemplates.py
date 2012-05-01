@@ -2463,8 +2463,6 @@ def Exists(oStep):
         return "Unable to draw Step - see log for details."
 
 def Codeblock(oStep):
-    sStepID = oStep.ID
-    sFunction = oStep.FunctionName
     xd = oStep.FunctionXDoc
 
     sCB = xd.findtext("codeblock", "")
@@ -2481,12 +2479,10 @@ def Codeblock(oStep):
 
     if sCB != "":
         # don't enable the edit link if it isn't a valid codeblock on this task.
-        sSQL = "select codeblock_name from task_codeblock" \
-            " where task_id = (select task_id from task_step where step_id = '" + sStepID + "')"
-        sCodeblocks = uiGlobals.request.db.select_csv(sSQL, True)
-        if sCodeblocks:
-            if sCB in sCodeblocks:
+        for cb in oStep.Task.Codeblocks:
+            if sCB == cb:
                 sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline codeblock_goto_btn pointer\" title=\"Go To Codeblock\"" \
                     " codeblock=\"" + sCB + "\"></span>\n"
+                break
 
     return sHTML

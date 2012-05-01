@@ -51,13 +51,13 @@ $(document).ready(function () {
         var cb = $(this).attr("codeblock_name");
 
         $.ajax({
-            async: false,
+            async: true,
             type: "POST",
-            url: "taskMethods.asmx/wmCopyCodeblockStepsToClipboard",
+            url: "taskMethods/wmCopyCodeblockStepsToClipboard",
             data: '{"sTaskID":"' + g_task_id + '","sCodeblockName":"' + cb + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
-            success: function (msg) {
+            success: function (response) {
                 doGetClips();
                 $("#update_success_msg").text("Copy Successful").fadeOut(2000);
             },
@@ -207,12 +207,12 @@ function doCodeblockUpdate(old_name) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmRenameCodeblock",
+        url: "taskMethods/wmRenameCodeblock",
         data: '{"sTaskID":"' + g_task_id + '","sOldCodeblockName":"' + old_name + '","sNewCodeblockName":"' + sNewCodeblockName + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
+        dataType: "text",
+        success: function (response) {
+            if (response.length == 0) {
                 $("#codeblock_edit_dialog").dialog("close");
 
                 //if we are looking at the codeblock we are changing... gotta reset the hidden field
@@ -226,7 +226,7 @@ function doCodeblockUpdate(old_name) {
 
 				$("#update_success_msg").text("Update Successful").fadeOut(2000);
             } else {
-                showInfo(msg.d);
+                showInfo(response);
             }
         },
         error: function (response) {
@@ -252,7 +252,7 @@ function doCodeblockAdd() {
 	    $.ajax({
 	        async: false,
 	        type: "POST",
-	        url: "taskMethods.asmx/wmAddCodeblock",
+	        url: "taskMethods/wmAddCodeblock",
 	        data: '{"sTaskID":"' + g_task_id + '","sNewCodeblockName":"' + codeblock_name + '"}',
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
@@ -300,7 +300,7 @@ function doCodeblockDelete() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmDeleteCodeblock",
+        url: "taskMethods/wmDeleteCodeblock",
         data: '{"sTaskID":"' + g_task_id + '","sCodeblockID":"' + codeblock_name + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",

@@ -140,16 +140,16 @@ class Db(object):
 		"""Selects a set of rows, and returns the first column as a comma delimited string."""
 		s = ""
 		rows = self.select_all(sql)
+		lst = []
 		if rows:
 			for row in rows:
 				if quoted:
-					s += "'%s'," % (row[0])
+					lst.append("'%s'" % str(row[0]))
 				else:
-					s += "%s," % (row[0])
+					lst.append("%s" % str(row[0]))
 			
-			s = s[:-1] #remove the trailing comma
-			
-		return s
+		return ",".join(lst)
+	
 	
 	# These next functions are the same as their predecessors, except they return the results in a dict.
 	# This is handy for referencing valued by column name instead of index.
