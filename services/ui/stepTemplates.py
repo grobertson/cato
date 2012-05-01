@@ -42,7 +42,8 @@ def DrawFullStep(oStep):
     sExpandedClass = ("" if oStep.UserSettings.Visible else "step_collapsed")
     sSkipStepClass = ("step_skip" if oStep.Commented else "")
     sSkipHeaderClass = ("step_header_skip" if oStep.Commented else "")
-    sSkipIcon = ("static/images/icons/cnrgrey.png" if oStep.Commented else "static/images/icons/cnr.png")
+    sSkipIcon = ("pause" if oStep.Commented else "play")
+    sSkipVal = ("1" if oStep.Commented else "0")
 
     # pay attention
     # this overrides the 'expanded class', making the step collapsed by default if it's commented out.
@@ -80,7 +81,7 @@ def DrawFullStep(oStep):
     #    sSnip = uiCommon.GetSnip(GetValueSnip(oStep), 75)
 
     
-    sLabel += ("" if sSnip == "" else "<span style=\"padding-left:15pxfont-style:italicfont-weight:normal\">[" + sSnip + "]</span>")
+    sLabel += ("" if sSnip == "" else "<span style=\"padding-left:15px; font-style:italic; font-weight:normal\">[" + sSnip + "]</span>")
 
     sLockClause = (" onclick=\"return false\"" if oStep.Locked else "")
 
@@ -97,32 +98,32 @@ def DrawFullStep(oStep):
     
     
     # step expand image
-    sExpandImage = "expand_down.png"
+    sExpandImage = "triangle-1-s"
     if sExpandedClass == "step_collapsed": 
-        sExpandImage = "expand_up.png"
+        sExpandImage = "triangle-1-e"
 
     sMainHTML += "    <div class=\"ui-state-default step_header " + sSkipHeaderClass + "\"" \
         " id=\"step_header_" + sStepID + "\">"
     sMainHTML += "        <div class=\"step_header_title\">"
     sMainHTML += "            <span class=\"step_toggle_btn\" step_id=\"" + sStepID + "\">" \
-    " <img class=\"expand_image\" src=\"static/images/icons/" + sExpandImage + "\" alt=\"\" title=\"Hide/Show Step\" /></span>"
+    " <img class=\"ui-icon ui-icon-" + sExpandImage + " forceinline expand_image\" title=\"Hide/Show Step\" /></span>"
     sMainHTML += "            <span>" + sLabel + "</span>"
     sMainHTML += "        </div>"
     sMainHTML += "        <div class=\"step_header_icons\">"
 
     #this button will copy a step into the clipboard.
-    sMainHTML += "            <span><img id=\"step_copy_btn_" + sStepID + "\"" \
-        " class=\"step_copy_btn\" step_id=\"" + sStepID + "\"" \
-        " src=\"static/images/icons/editcopy_16.png\" alt=\"\" title=\"Copy this Step to your Clipboard\"/></span>"
+    sMainHTML += "            <span id=\"step_copy_btn_" + sStepID + "\"" \
+        " class=\"ui-icon ui-icon-copy forceinline step_copy_btn\" step_id=\"" + sStepID + "\"" \
+        " title=\"Copy this Step to your Clipboard\"></span>"
 
     #this button is data enabled.  it controls the value of the hidden field at the top of the step.
-    sMainHTML += "            <span><img id=\"step_skip_btn_" + sStepID + "\"" \
-        " class=\"step_skip_btn\" step_id=\"" + sStepID + "\"" \
-        " src=\"" + sSkipIcon + "\" alt=\"\" title=\"Skip this Step\"/></span>"
+    sMainHTML += "            <span id=\"step_skip_btn_" + sStepID + "\" skip=\"" + sSkipVal + "\"" \
+        " class=\"ui-icon ui-icon-" + sSkipIcon + " forceinline step_skip_btn\" step_id=\"" + sStepID + "\"" \
+        " title=\"Skip this Step\"></span>"
 # see above TODO        " datafield_id=\"" + sCommentFieldID + "\"" \
 
-    sMainHTML += "            <span class=\"step_delete_btn\" remove_id=\"" + sStepID + "\">" \
-        " <img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Delete Step\" /></span>"
+    sMainHTML += "            <span class=\"ui-icon ui-icon-close forceinline step_delete_btn\" remove_id=\"" + sStepID + "\">" \
+        " title=\"Delete Step\"></span>"
     sMainHTML += "        </div>"
     sMainHTML += "    </div>"
     sMainHTML += "    <div id=\"step_detail_" + sStepID + "\"" \
@@ -170,6 +171,8 @@ def GetStepTemplate(oStep):
 
     if sFunction.lower() == "new_connection":
         sHTML = NewConnection(oStep)
+    elif sFunction.lower() == "codeblock":
+        sHTML = Codeblock(oStep)
     elif sFunction.lower() == "if":
         sHTML = If(oStep)
     elif sFunction.lower() == "sql_exec":
@@ -523,7 +526,7 @@ def DrawField(xe, sXPath, oStep):
         #might this be a conn_name field?  If so, we can show the picker.
         sConnPicker = xe.get("connection_picker", "")
         if uiCommon.IsTrue(sConnPicker):
-            sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\" src=\"static/images/icons/search.png\" link_to=\"" + sElementID + "\" />"
+            sHTML += "<span class=\"ui-icon ui-icon-search forceinline conn_picker_btn pointer\" link_to=\"" + sElementID + "\"></span>"
 
     #some final layout possibilities
     if uiCommon.IsTrue(sBreakAfter):
@@ -1093,11 +1096,10 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
             " /></td>"
 
         if bShowPicker:
-            sHTML += "<td class=\"w1pct\"><img class=\"key_picker_btn pointer\" alt=\"\"" \
-                " src=\"static/images/icons/search.png\"" \
+            sHTML += "<td class=\"w1pct\"><span class=\"ui-icon ui-icon-search forceinline key_picker_btn pointer\"" \
                 " function=\"" + sFunction + "\"" \
                 " target_field_id=\"" + sElementID + "\"" \
-                " link_to=\"" + sElementID + "\" />\n"
+                " link_to=\"" + sElementID + "\"></span>\n"
 
             sHTML += "</td>\n"
 
@@ -1112,9 +1114,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
             " />\n"
 
         # big box button
-        sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
-            " src=\"static/images/icons/edit_16.png\"" \
-            " link_to=\"" + sValueFieldID + "\" /></td>\n"
+        sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline big_box_btn pointer\" link_to=\"" + sValueFieldID + "\"></span></td>\n"
 
         # optional mask option
         if bShowMaskOption:
@@ -1126,9 +1126,8 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
 
             sHTML += "</td>\n"
 
-        sHTML += "<td class=\"w1pct\" align=\"right\"><span class=\"fn_pair_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-        sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-            " alt=\"\" title=\"Remove\" /></span></td>"
+        sHTML += "<td class=\"w1pct\" align=\"right\"><span class=\"ui-icon ui-icon-close forceinline fn_pair_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+        sHTML += "</span></td>"
 
         sHTML += "</tr></table>\n"
 
@@ -1137,8 +1136,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
     sHTML += "<div class=\"fn_pair_add_btn pointer\"" \
         " add_to_id=\"" + sStepID + "_pairs\"" \
         " step_id=\"" + sStepID + "\">" \
-        "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-        " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+        "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
     sHTML += "</div>"
 
     return sHTML
@@ -1533,9 +1531,7 @@ def SqlExec(oStep):
         sHTML += "Connection:\n"
         sHTML += "<input type=\"text\" " + CommonAttribsWithID(oStep, True, "conn_name", sElementID, "")
         sHTML += " help=\"Enter an active connection where this SQL will be executed.\" value=\"" + sConnName + "\" />"
-        sHTML += "<img class=\"conn_picker_btn pointer\" alt=\"\"" \
-            " src=\"static/images/icons/search.png\"" \
-            " link_to=\"" + sElementID + "\" />\n"
+        sHTML += "<span class=\"ui-icon ui-icon-search forceinline conn_picker_btn pointer\" link_to=\"" + sElementID + "\"></span>\n"
 
         sHTML += "Mode:\n"
         sHTML += "<select " + CommonAttribs(oStep, True, "mode", "") + " reget_on_change=\"true\">\n"
@@ -1708,17 +1704,14 @@ def RunTask(oStep):
             " class=\"code w75pct\"" \
             " id=\"fn_run_task_taskname_" + sStepID + "\"" \
             " value=\"" + sLabel + "\" />\n"
-        sHTML += "<img class=\"task_picker_btn pointer\" alt=\"\"" \
+        sHTML += "<span class=\"ui-icon ui-icon-search forceinline task_picker_btn pointer\" title=\"Pick Task\"" \
             " target_field_id=\"" + sOTIDField + "\"" \
-            " step_id=\"" + sStepID + "\"" \
-            " src=\"static/images/icons/search.png\" />\n"
+            " step_id=\"" + sStepID + "\"></span>\n"
         if sActualTaskID != "":
-            sHTML += "<img class=\"task_open_btn pointer\" alt=\"Edit Task\"" \
-                " task_id=\"" + sActualTaskID + "\"" \
-                " src=\"static/images/icons/kedit_16.png\" />\n"
-            sHTML += "<img class=\"task_print_btn pointer\" alt=\"View Task\"" \
-                " task_id=\"" + sActualTaskID + "\"" \
-                " src=\"static/images/icons/printer.png\" />\n"
+            sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline task_open_btn pointer\" title=\"Edit Task\"" \
+                " task_id=\"" + sActualTaskID + "\"></span>\n"
+            sHTML += "<span class=\"ui-icon ui-icon-print forceinline task_print_btn pointer\" title=\"View Task\"" \
+                " task_id=\"" + sActualTaskID + "\"></span>\n"
     
         # versions
         if uiCommon.IsGUID(sOriginalTaskID):
@@ -1764,15 +1757,13 @@ def RunTask(oStep):
             " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sOTIDField + "');\"" \
             " value=\"" + sAssetName + "\" />\n"
     
-        sHTML += "<img class=\"fn_field_clear_btn pointer\" clear_id=\"fn_run_task_assetname_" + sStepID + "\"" \
-            " style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-            " alt=\"\" title=\"Clear\" />"
+        sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_field_clear_btn pointer\" clear_id=\"fn_run_task_assetname_" + sStepID + "\"" \
+            " title=\"Clear\"></span>"
     
-        sHTML += "<img class=\"asset_picker_btn pointer\" alt=\"\"" \
+        sHTML += "<span class=\"ui-icon ui-icon-search forceinline asset_picker_btn pointer\" title=\"Select\"" \
             " link_to=\"" + sOTIDField + "\"" \
             " target_field_id=\"fn_run_task_assetname_" + sStepID + "\"" \
-            " step_id=\"" + sStepID + "\"" \
-            " src=\"static/images/icons/search.png\" />\n"
+            " step_id=\"" + sStepID + "\"></span>\n"
     
         sHTML += "<br />"
         sHTML += "Task Handle: <input type=\"text\" " + CommonAttribs(oStep, True, "handle", "") + \
@@ -1797,8 +1788,7 @@ def RunTask(oStep):
             sHTML += "<div class=\"fn_runtask_edit_parameters_btn pointer\"" \
                 " task_id=\"" + sActualTaskID + "\"" \
                 " step_id=\"" + sStepID + "\">" \
-                "<img src=\"static/images/icons/edit_16.png\"" \
-                " alt=\"\" title=\"Edit Parameters\" /> Edit Parameters</div>"
+                "<span class=\"ui-icon ui-icon-pencil forceinline \"></span> Edit Parameters</div>"
         
         return sHTML
     except Exception:
@@ -1873,17 +1863,14 @@ def Subtask(oStep):
             " class=\"code w75pct\"" \
             " id=\"fn_subtask_taskname_" + sStepID + "\"" \
             " value=\"" + sLabel + "\" />\n"
-        sHTML += "<img class=\"task_picker_btn pointer\" alt=\"\"" \
+        sHTML += "<span class=\"ui-icon ui-icon-search forceinline task_picker_btn pointer\"" \
             " target_field_id=\"" + sOTIDField + "\"" \
-            " step_id=\"" + sStepID + "\"" \
-            " src=\"static/images/icons/search.png\" />\n"
+            " step_id=\"" + sStepID + "\"></span>\n"
         if sActualTaskID != "":
-            sHTML += "<img class=\"task_open_btn pointer\" alt=\"Edit Task\"" \
-                " task_id=\"" + sActualTaskID + "\"" \
-                " src=\"static/images/icons/kedit_16.png\" />\n"
-            sHTML += "<img class=\"task_print_btn pointer\" alt=\"View Task\"" \
-                " task_id=\"" + sActualTaskID + "\"" \
-                " src=\"static/images/icons/printer.png\" />\n"
+            sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline task_open_btn pointer\" title=\"Edit Task\"" \
+                " task_id=\"" + sActualTaskID + "\"></span>\n"
+            sHTML += "<span class=\"ui-icon ui-icon-print forceinline task_print_btn pointer\" title=\"View Task\"" \
+                " task_id=\"" + sActualTaskID + "\"></span>\n"
         # versions
         if uiCommon.IsGUID(sOriginalTaskID):
             sHTML += "<br />"
@@ -1941,9 +1928,7 @@ def WaitForTasks(oStep):
                 " help=\"Enter a Handle name.\"" \
                 " />\n"
     
-            sHTML += "<span class=\"fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                " alt=\"\" title=\"Remove\" /></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1994,9 +1979,7 @@ def ClearVariable(oStep):
                 " help=\"Enter a Variable name.\"" \
                 " />\n"
     
-            sHTML += "<span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                " alt=\"\" title=\"Remove\" /></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -2007,8 +1990,7 @@ def ClearVariable(oStep):
         sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
             " add_to_id=\"v" + sStepID + "_vars\"" \
             " step_id=\"" + sStepID + "\">" \
-            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+            "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"
     
         return sHTML
@@ -2059,9 +2041,7 @@ def SetVariable(oStep):
                 ">" + uiCommon.SafeHTML(sVal) + "</textarea>\n"
     
             # big box button
-            sHTML += "<img class=\"big_box_btn pointer\" alt=\"\"" \
-                " src=\"static/images/icons/edit_16.png\"" \
-                " link_to=\"" + sValueFieldID + "\" /></td>\n"
+            sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline big_box_btn pointer\" link_to=\"" + sValueFieldID + "\"></span></td>\n"
     
     
             sHTML += "<td class=\"w1pct\">&nbsp;Modifier:&nbsp;</td>"
@@ -2076,9 +2056,8 @@ def SetVariable(oStep):
             sHTML += "  <option " + SetOption("FROM_JSON", sMod) + " value=\"FROM_JSON\">Read JSON</option>\n"
             sHTML += "</select></td>\n"
     
-            sHTML += "<td class=\"w1pct\"><span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                " alt=\"\" title=\"Remove\" /></span></td>"
+            sHTML += "<td class=\"w1pct\"><span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
+            sHTML += "</span></td>"
     
             sHTML += "</tr>\n"
     
@@ -2089,8 +2068,7 @@ def SetVariable(oStep):
         sHTML += "<div class=\"fn_setvar_add_btn pointer\"" \
             " add_to_id=\"v" + sStepID + "_vars\"" \
             " step_id=\"" + sStepID + "\">" \
-            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+            "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\" />( click to add another )</div>"
         sHTML += "</div>"
     
         return sHTML
@@ -2195,15 +2173,13 @@ def NewConnection(oStep):
                 " value=\"" + sAssetName + "\" />\n"
     
             
-            sHTML += "<img class=\"fn_field_clear_btn pointer\" clear_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
-                " style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                " alt=\"\" title=\"Clear\" />"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_field_clear_btn pointer\" clear_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
+                " title=\"Clear\"></span>"
     
-            sHTML += "<img class=\"asset_picker_btn pointer\" alt=\"\"" \
+            sHTML += "<span class=\"ui-icon ui-icon-search forceinline asset_picker_btn pointer\"" \
                 " link_to=\"" + sElementID + "\"" \
                 " target_field_id=\"fn_new_connection_assetname_" + sStepID + "\"" \
-                " step_id=\"" + sStepID + "\"" \
-                " src=\"static/images/icons/search.png\" />\n"
+                " step_id=\"" + sStepID + "\"></span>\n"
             
         # nothing special here, just draw the field.
         sHTML += DrawField(xConnName, "conn_name", oStep)
@@ -2255,8 +2231,7 @@ def If(oStep):
                 sHTML += "If:<br />"
             else:
                 sHTML += "<div id=\"if_" + sStepID + "_else_" + str(i) + "\" class=\"fn_if_else_section\">"
-                sHTML += "<span class=\"fn_if_remove_btn pointer\" number=\"" + str(i) + "\" step_id=\"" + sStepID + "\">" \
-                    "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else If condition.\" /></span> "
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_if_remove_btn pointer\" number=\"" + str(i) + "\" step_id=\"" + sStepID + "\" title=\"Remove this Else If condition.\"></span> "
                 sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
     
     
@@ -2286,7 +2261,7 @@ def If(oStep):
     
     
         # draw an add link.  The rest will happen on the client.
-        sHTML += "<div class=\"fn_if_add_btn pointer\" add_to_id=\"if_" + sStepID + "_conditions\" step_id=\"" + sStepID + "\" next_index=\"" + str(i) + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add another Else If section.\" />( click to add another 'Else If' section )</div>"
+        sHTML += "<div class=\"fn_if_add_btn pointer\" add_to_id=\"if_" + sStepID + "_conditions\" step_id=\"" + sStepID + "\" next_index=\"" + str(i) + "\"><span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another Else If section.\"></span>( click to add another 'Else If' section )</div>"
     
     
         sHTML += "<div id=\"if_" + sStepID + "_else\" class=\"fn_if_else_section\">"
@@ -2295,7 +2270,7 @@ def If(oStep):
         xElse = xd.find("else", "")
         if xElse is not None:
             sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\">" \
-               "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove this Else condition.\" /></span> "
+               "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Remove this Else condition.\"></span></span> "
             sHTML += "Else (no 'If' conditions matched):"
 
             xEmbeddedFunction = xElse.find("function")
@@ -2303,7 +2278,7 @@ def If(oStep):
             sHTML += DrawDropZone(oStep, xEmbeddedFunction, "else", "", True)
         else:
             # draw an add link.  The rest will happen on the client.
-            sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\" alt=\"\" title=\"Add an Else section.\" />( click to add a final 'Else' section )</div>"
+            sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add an Else section.\"></span>( click to add a final 'Else' section )</div>"
     
         sHTML += "</div>"
     
@@ -2437,9 +2412,7 @@ def Exists(oStep):
             sHTML += "&nbsp; Is True:<input type=\"checkbox\" " + \
                 CommonAttribs(oStep, True, "variable[" + str(i) + "]/is_true", "") + " " + SetCheckRadio("1", sIsTrue) + " />\n"
     
-            sHTML += "<span class=\"fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + oStep.ID + "\">"
-            sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                " alt=\"\" title=\"Remove\" /></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             # if i % 3 == 0 and i >= 3:
@@ -2450,8 +2423,7 @@ def Exists(oStep):
         sHTML += "<div class=\"fn_exists_add_btn pointer\"" \
             " add_to_id=\"v" + oStep.ID + "_vars\"" \
             " step_id=\"" + oStep.ID + "\">" \
-            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+            "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"
     
         #  Exists have a Positive and Negative action
@@ -2489,3 +2461,32 @@ def Exists(oStep):
     except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
         return "Unable to draw Step - see log for details."
+
+def Codeblock(oStep):
+    sStepID = oStep.ID
+    sFunction = oStep.FunctionName
+    xd = oStep.FunctionXDoc
+
+    sCB = xd.findtext("codeblock", "")
+    sHTML = ""
+    sElementID = uiCommon.NewGUID()
+
+    sHTML += "Codeblock: \n"
+    sHTML += "<input type=\"text\" " + CommonAttribsWithID(oStep, True, "codeblock", sElementID, "") + \
+        " reget_on_change=\"true\"" \
+        " help=\"Enter a Codeblock Name or variable, or select a Codeblock from the picker.\"" \
+        " value=\"" + sCB + "\" />\n"
+    sHTML += "<span class=\"ui-icon ui-icon-search forceinline codeblock_picker_btn pointer\" title=\"Pick a Codeblock\"" \
+        " link_to=\"" + sElementID + "\"></span>\n"
+
+    if sCB != "":
+        # don't enable the edit link if it isn't a valid codeblock on this task.
+        sSQL = "select codeblock_name from task_codeblock" \
+            " where task_id = (select task_id from task_step where step_id = '" + sStepID + "')"
+        sCodeblocks = uiGlobals.request.db.select_csv(sSQL, True)
+        if sCodeblocks:
+            if sCB in sCodeblocks:
+                sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline codeblock_goto_btn pointer\" title=\"Go To Codeblock\"" \
+                    " codeblock=\"" + sCB + "\"></span>\n"
+
+    return sHTML

@@ -740,8 +740,8 @@ class Step(object):
             self.Codeblock = ("" if not dr["codeblock_name"] else dr["codeblock_name"])
             self.Order = dr["step_order"]
             self.Description = ("" if not dr["step_desc"] else dr["step_desc"])
-            self.Commented = (True if dr["commented"] == "1" else False)
-            self.Locked = (True if dr["locked"] == "1" else False)
+            self.Commented = (True if dr["commented"] == 1 else False)
+            self.Locked = (True if dr["locked"] == 1 else False)
             self.FunctionXML = ("" if not dr["function_xml"] else dr["function_xml"])
             #once parsed, it's cleaner.  update the object with the cleaner xml
             if self.FunctionXML:

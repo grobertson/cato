@@ -31,9 +31,11 @@ $(document).ready(function() {
 
         // swap the child image, this will work as long as the up down image stays the first child if the span
         if (visible == 1) {
-            $(this).children(":first-child").attr("src", "static/images/icons/expand_down.png");
+            $(this).children(":first-child").removeClass("ui-icon-triangle-1-e");
+            $(this).children(":first-child").addClass("ui-icon-triangle-1-s");
         } else {
-            $(this).children(":first-child").attr("src", "static/images/icons/expand_up.png");
+            $(this).children(":first-child").removeClass("ui-icon-triangle-1-s");
+            $(this).children(":first-child").addClass("ui-icon-triangle-1-e");
         }
 
 
@@ -63,13 +65,22 @@ $(document).ready(function() {
         // also change the expand images
         if ($("#steps .step_collapsed").length == $(".step_detail").length) {
             $("#steps .step_detail").removeClass("step_collapsed");
-            $(this).children(":first-child").attr("src", "static/images/icons/expand_down.png");
-            $("#steps .expand_image").attr("src", "static/images/icons/expand_down.png");
+           
+            $(this).removeClass("ui-icon-triangle-1-s");
+            $(this).addClass("ui-icon-triangle-1-n");
+           
+            $("#steps .expand_image").removeClass("ui-icon-triangle-1-e");
+            $("#steps .expand_image").addClass("ui-icon-triangle-1-s");
         } else {
             $("#steps .step_detail").addClass("step_collapsed");
             $("#steps .step_common_detail").addClass("step_common_collapsed");
-            $(this).children(":first-child").attr("src", "static/images/icons/expand_up.png");
-            $("#steps .expand_image").attr("src", "static/images/icons/expand_up.png");
+
+           
+            $(this).removeClass("ui-icon-triangle-1-n");
+            $(this).addClass("ui-icon-triangle-1-s");
+           
+            $("#steps .expand_image").removeClass("ui-icon-triangle-1-s");
+            $("#steps .expand_image").addClass("ui-icon-triangle-1-e");
         }
     });
 
@@ -127,18 +138,20 @@ $(document).ready(function() {
     $("#steps .step_skip_btn").live("click", function() {
         //click the hidden field and fire the change event
         var step_id = $(this).attr("step_id");
-        var field = $(this).attr("datafield_id");
-        if ($("#" + field).val() == "1") {
-            $("#" + field).val("0");
+        var skip = $(this).attr("skip");
+        if (skip == "1") {
+        	skip = 0;
+            $(this).attr("skip", "0");
 
-            this.src = this.src.replace(/cnrgrey/, "cnr");
+            $(this).removeClass("ui-icon-pause").addClass("ui-icon-play");
             $("#" + step_id).removeClass("step_skip");
             $("#step_header_" + step_id).removeClass("step_header_skip");
             $("#step_detail_" + step_id).removeClass("step_collapsed");
         } else {
-            $("#" + field).val("1");
+        	skip = 1;
+            $(this).attr("skip", "1");
 
-            this.src = this.src.replace(/cnr/, "cnrgrey");
+            $(this).removeClass("ui-icon-play").addClass("ui-icon-pause");
             $("#" + step_id).addClass("step_skip");
 
 			//remove the validation nag
@@ -148,7 +161,22 @@ $(document).ready(function() {
             $("#step_detail_" + step_id).addClass("step_collapsed");
         }
 
-        $("#" + field).change();
+	    $.ajax({
+	        async: true,
+	        type: "POST",
+	        url: "taskMethods/wmToggleStepSkip",
+	        data: '{"sStepID":"' + step_id + '", "sSkip":"' + skip + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function(response) {
+	            $("#update_success_msg").text("Update Successful").fadeOut(2000);
+	        },
+	        error: function(response) {
+	            $("#update_success_msg").fadeOut(2000);
+	            showAlert(response.responseText);
+	        }
+	    });
+
     });
 
     //the onclick event of the 'delete' link of each step
@@ -198,12 +226,12 @@ $(document).ready(function() {
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods.asmx/wmGetTaskConnections",
+            url: "taskMethods/wmGetTaskConnections",
             data: '{"sTaskID":"' + g_task_id + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(retval) {
-                $("#conn_picker_connections").html(retval.d);
+            dataType: "html",
+            success: function(response) {
+                $("#conn_picker_connections").html(response);
                 $("#conn_picker_connections .value_picker_value").hover(
                         function() {
                             $(this).toggleClass("value_picker_value_hover");
@@ -463,6 +491,7 @@ function pageLoad() {
 
 }
 
+
 //called in rare cases when the value entered in one field should push it's update through another field.
 //(when the "wired" field is hidden, and the data entry field is visible but not wired.)
 function pushStepFieldChangeVia(pushing_ctl, push_via_id) {
@@ -603,12 +632,12 @@ function showVarPicker(e) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmGetTaskVariables",
+        url: "taskMethods/wmGetTaskVarPickerPopup",
         data: '{"sTaskID":"' + g_task_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(retval) {
-            $("#var_picker_variables").html(retval.d);
+        dataType: "html",
+        success: function(response) {
+            $("#var_picker_variables").html(response);
 
             $("#var_picker_variables .value_picker_group").click(function() {
                 $("#" + $(this).attr("target")).toggleClass("hidden");

@@ -761,3 +761,8 @@ We used a table to avoid the annoyance of div float left and right.
 .redBorder {
 	border: 1px solid red !important;
 }
+
+/* sometimes we just easily want block elements to be shown inline, without floating*/
+.forceinline {
+	display: inline-block !important;
+}

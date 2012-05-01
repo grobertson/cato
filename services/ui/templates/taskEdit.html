@@ -178,9 +178,8 @@ $var cssfiles: registry.css taskEdit.css taskView.css
     <div id="all">
         <div class="ui-state-default te_header">
             <div class="step_section_title">
-                <span id="step_toggle_all_btn" class="pointer">
-                    <img class="step_toggle_all_btn" src="static/images/icons/expand.png" alt="Expand/Collapse All Steps"
-                        title="Expand/Collapse All Steps" /></span><span 
+                <span id="step_toggle_all_btn" class="ui-state-default ui-corner-all ui-icon ui-icon-triangle-2-n-s forceinline step_toggle_all_btn pointer" title="Expand/Collapse All Steps"
+                        title="Expand/Collapse All Steps"></span><span 
 						id="codeblock_steps_title" class="step_title"></span><span id="codeblock_selector_btn"></span>                
 				<div id="codeblock_selector" class="ui-widget-content ui-corner-bottom hidden">
                 	<ul id="codeblocks">
@@ -189,8 +188,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             	</div>
             </div>
             <div class="step_section_icons">
-                <span id="print_link" class="pointer">
-                    <img class="task_print_link" alt="" src="static/images/icons/printer.png" />
+                <span id="print_link" class="ui-icon ui-icon-print pointer task_print_link">
                 </span>
             </div>
         </div>
@@ -264,36 +262,40 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 </div>
 <div id="conn_picker" class="ui-widget-content ui-corner-all value_picker hidden">
     <span class="ui-state-default value_picker_title">
-        <img src="static/images/icons/connect_no.png" alt="" />
+        <img src="static/images/icons/connect_no.png" alt="" style="height: 12px" />
         Select a Connection &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img id="conn_picker_close_btn" class="pointer" alt="" src="static/images/icons/fileclose.png" /></span>
+        <img id="conn_picker_close_btn"  class="ui-icon ui-icon-close floatright pointer"></span>
+    </span>
     <div id="conn_picker_connections">
         No connections have been defined on this Task.
     </div>
 </div>
 <div id="key_picker" class="ui-widget-content ui-corner-all value_picker hidden">
     <span class="ui-state-default value_picker_title">
-        <img src="static/images/icons/connect_no.png" alt="" />
+        <img src="static/images/icons/connect_no.png" alt="" style="height: 12px" />
         Select a Key &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img id="key_picker_close_btn" class="pointer" alt="" src="static/images/icons/fileclose.png" /></span>
+        <img id="key_picker_close_btn"  class="ui-icon ui-icon-close floatright pointer"></span>
+    </span>
     <div id="key_picker_keys">
         No keys have been defined for this Command type.
     </div>
 </div>
 <div id="codeblock_picker" class="ui-widget-content ui-corner-all value_picker hidden">
     <span class="ui-state-default value_picker_title">
-        <img src="static/images/icons/news_subscribe.png" alt="" />
+        <img src="static/images/icons/news_subscribe.png" alt="" style="height: 12px" />
         Select a Codeblock &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img id="codeblock_picker_close_btn" class="pointer" alt="" src="static/images/icons/fileclose.png" /></span>
+        <span id="codeblock_picker_close_btn"  class="ui-icon ui-icon-close floatright pointer"></span>
+    </span>
     <div id="codeblock_picker_codeblocks">
         No codeblocks have been defined on this Task.
     </div>
 </div>
 <div id="var_picker" class="ui-widget-content ui-corner-all value_picker hidden">
     <span class="ui-state-default value_picker_title">
-        <img src="static/images/icons/bookmark.png" alt="" />
+        <img src="static/images/icons/bookmark.png" alt="" style="height: 12px" />
         Select a Variable &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img id="var_picker_close_btn" class="pointer" alt="" src="static/images/icons/fileclose.png" /></span>
+        <span id="var_picker_close_btn" class="ui-icon ui-icon-close floatright pointer"></span>
+    </span>
     <div id="var_picker_variables">
         No variables have been defined on this Task.
     </div>

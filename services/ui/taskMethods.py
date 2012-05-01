@@ -539,13 +539,13 @@ class taskMethods:
                 sCBHTML += "<span>" + cb.Name + "</span>"
                 sCBHTML += "</div>"
                 sCBHTML += "<div class=\"codeblock_icons pointer\">"
-                sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\">"
-                sCBHTML += "<img class=\"codeblock_rename\" codeblock_name=\"" + cb.Name + "\""
-                sCBHTML += " src=\"static/images/icons/edit_16.png\" alt=\"\" /></span><span class=\"codeblock_copy_btn\""
-                sCBHTML += " codeblock_name=\"" + cb.Name + "\">"
-                sCBHTML += "<img src=\"static/images/icons/editcopy_16.png\" alt=\"\" /></span><span id=\"codeblock_delete_btn_" + cb.Name + "\""
-                sCBHTML += " class=\"codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">"
-                sCBHTML += "<img src=\"static/images/icons/fileclose.png\" alt=\"\" /></span>"
+                sCBHTML += "<span id=\"codeblock_rename_btn_" + cb.Name + "\" class=\"ui-icon ui-icon-pencil forceinline codeblock_rename\" codeblock_name=\"" + cb.Name + "\">"
+                sCBHTML += "</span>"
+                sCBHTML += "<span class=\"ui-icon ui-icon-copy forceinline codeblock_copy_btn\" codeblock_name=\"" + cb.Name + "\">"
+                sCBHTML += "</span>"
+                sCBHTML += "<span id=\"codeblock_delete_btn_" + cb.Name + "\""
+                sCBHTML += " class=\"ui-icon ui-icon-close forceinline codeblock_delete_btn codeblock_icon_delete\" remove_id=\"" + cb.Name + "\">"
+                sCBHTML += "</span>"
                 sCBHTML += "</div>"
                 sCBHTML += "</div>"
                 sCBHTML += "</li>"
@@ -1163,6 +1163,22 @@ class taskMethods:
                 return ""
             else:
                 uiCommon.log("Unable to toggle step visibility. Missing or invalid step_id.", 2)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmToggleStepSkip(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sSkip = uiCommon.getAjaxArg("sSkip")
+
+            sSQL = "update task_step set commented = " + str(sSkip) + " where step_id = '" + sStepID + "'"
+            print sSQL
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append("Unable to update steps." + uiGlobals.request.db.error)
+
+            return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
@@ -2818,5 +2834,127 @@ class taskMethods:
 
             #if we get here, there is just no data... 
             return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetTaskVarPickerPopup(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+
+        try:
+            if uiCommon.IsGUID(sTaskID):
+                sHTML = ""
+
+                # VARIABLES
+                sSQL = "select distinct var_name from (" \
+                    " select ExtractValue(function_xml, '//step_variables/variable/name[1]') as var_name" \
+                    " from task_step" \
+                    " where task_id = '" + sTaskID + "'" \
+                    " UNION" \
+                    " select ExtractValue(function_xml, '//function/counter[1]') as var_name" \
+                    " from task_step" \
+                    " where task_id = '" + sTaskID + "'" \
+                    " and function_name = 'loop'" \
+                    " UNION" \
+                    " select ExtractValue(function_xml, '//variable/name[1]') as var_name" \
+                    " from task_step" \
+                    " where task_id = '" + sTaskID + "'" \
+                    " and function_name in ('set_variable','substring')" \
+                    " ) foo" \
+                    " where ifnull(var_name,'') <> ''" \
+                    " order by var_name"
+
+                #lVars is a list of all the variables we can pick from
+                # the value is the var "name"
+                lVars = []
+
+                dtStupidVars = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get variables for task." + uiGlobals.request.db.error)
+
+                if dtStupidVars is not None:
+                    for drStupidVars in dtStupidVars:
+                        aVars = drStupidVars["var_name"].split(' ')
+                        for sVar in aVars:
+                            lVars.append(str(sVar))
+
+                # sort it
+                lVars.sort()
+
+                # Finally, we have a table with all the vars!
+                if lVars:
+                    sHTML += "<div target=\"var_picker_group_vars\" class=\"ui-widget-content ui-corner-all value_picker_group\"><img alt=\"\" src=\"static/images/icons/expand.png\" style=\"width:12px;height:12px;\" /> Variables</div>"
+                    sHTML += "<div id=\"var_picker_group_vars\" class=\"hidden\">"
+
+                    for thisvar in lVars:
+                        sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">%s</div>" % thisvar
+
+                    sHTML += "</div>"
+
+                # PARAMETERS
+                sSQL = "select parameter_xml from task where task_id = '" + sTaskID + "'"
+
+                sParameterXML = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                if sParameterXML:
+                    xParams = ET.fromstring(sParameterXML)
+                    if xParams is None:
+                        uiGlobals.request.Messages.append("Parameter XML data for task [" + sTaskID + "] is invalid.")
+                    else:
+                        sHTML += "<div target=\"var_picker_group_params\" class=\"ui-widget-content ui-corner-all value_picker_group\"><img alt=\"\" src=\"static/images/icons/expand.png\" style=\"width:12px;height:12px;\" /> Parameters</div>"
+                        sHTML += "<div id=\"var_picker_group_params\" class=\"hidden\">"
+
+                        for xParameter in xParams.findall("parameter"):
+                            sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">" + xParameter.findtext("name", "") + "</div>"
+
+                    sHTML += "</div>"
+
+                
+                # "Global" Variables
+                sHTML += "<div target=\"var_picker_group_globals\" class=\"ui-widget-content ui-corner-all value_picker_group\"><img alt=\"\" src=\"static/images/icons/expand.png\" style=\"width:12px;height:12px;\" /> Globals</div>"
+                sHTML += "<div id=\"var_picker_group_globals\" class=\"hidden\">"
+
+                lItems = ["_ASSET","_SUBMITTED_BY","_SUBMITTED_BY_EMAIL","_TASK_INSTANCE","_TASK_NAME","_TASK_VERSION","_DATE"]
+                for gvar in lItems:
+                    sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">%s</div>" % gvar
+
+                sHTML += "</div>"
+
+                # all done
+                return sHTML
+            else:
+                uiGlobals.request.Messages.append("Unable to get variables for task. Missing or invalid task_id.")
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetTaskConnections(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+
+        try:
+            if uiCommon.IsGUID(sTaskID):
+                sSQL = "select conn_name from (" \
+                    "select distinct ExtractValue(function_xml, '//conn_name[1]') as conn_name" \
+                    " from task_step" \
+                        " where function_name = 'new_connection'" \
+                        " and task_id = '" + sTaskID + "'" \
+                        " ) foo" \
+                    " where ifnull(conn_name,'') <> ''" \
+                    " order by conn_name"
+
+                dt = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append("Unable to get connections for task." + uiGlobals.request.db.error)
+
+                sHTML = ""
+
+                for dr in dt:
+                    sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">" + dr["conn_name"] + "</div>"
+
+                return sHTML
+            else:
+                uiGlobals.request.Messages.append("Unable to get connections for task. Missing or invalid task_id.")
+
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
