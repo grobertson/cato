@@ -204,7 +204,6 @@ class CatoService(CatoProcess):
 
     def service_loop(self):
         while True:
-            self.output("here service loop")
             self.get_settings()
             self.main_process()
             time.sleep(self.loop)
