@@ -19,6 +19,7 @@
 import os
 import sys
 import time
+import signal
 
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 lib_path = os.path.join(base_path, "services", "lib")
@@ -39,7 +40,7 @@ class Poller(catocommon.CatoService):
             join task t on t.task_id = ti.task_id
             where ti.task_status = 'Submitted'
             order by task_instance asc limit %s"""
-        self.output(sql % (get_num))
+        #self.output(sql % (get_num))
         rows = self.db.select_all(sql, (get_num))
         if rows:
             for row in rows:
@@ -54,17 +55,12 @@ class Poller(catocommon.CatoService):
 
                     cmd_line = "nohup %s/services/bin/cato_task_engine.tcl %d >& %s/ce/%d.log &" % (self.home, task_instance, self.logfiles_path, task_instance)
 
-                    pid = os.system(cmd_line)
-                    self.output("The process id for task instance %d is %s" % (task_instance, pid))
-                    if pid > "":
-                        sql = """update task_instance set task_status = 'Staged',
-                            pid = %d where task_instance = %s"""
-                        self.db.exec_db(sql, (pid, task_instance))
-                    else:
-                        sql = """update task_instance set task_status = 'Staged'
-                            where task_instance = %s"""
-                        self.db.exec_db(sql, (task_instance))
-                        time.sleep(0.01)
+                    ret = os.system(cmd_line)
+                    self.output("Task instance %d started with return code of %d" % (task_instance, ret))
+                    sql = """update task_instance set task_status = 'Staged'
+                        where task_instance = %s"""
+                    self.db.exec_db(sql, (task_instance))
+                    time.sleep(0.01)
                         
     def update_to_error(self, the_pid):
     
@@ -83,8 +79,12 @@ class Poller(catocommon.CatoService):
 
     def kill_ce_pid(self, pid):
 
-        self.output("Killing process %d", (pid))
-        #os.kill(int(pid), signal.SIGHUP)
+        self.output("Killing process %s" % (pid))
+        try:
+            os.kill(int(pid), signal.SIGHUP)
+        except Exception, e:
+            self.output("Attempt to kill process %s failed: %s"% (pid, str(e)))
+            
 
     def check_processing(self):
 
@@ -101,9 +101,9 @@ class Poller(catocommon.CatoService):
         cmd_line = """ps U%s -opid | grep "%s/services/bin/cato_task_engine.tcl" | grep -v grep""" % (self.user, self.home)
 
         #os_pids = os.system(cmd_line)
-        print cmd_line
-        print os_pids
-        print db_pids
+        #print cmd_line
+        #print os_pids
+        #print db_pids
         not_running_pids = list(set(db_pids)-set(os_pids))
         for pid in not_running_pids:
             self.update_to_error(pid)
@@ -123,7 +123,7 @@ class Poller(catocommon.CatoService):
             from poller_settings where id = 1"""
 
         row = self.db.select_row(sql, ())
-        self.output(row)
+        #self.output(row)
         if row:
             self.poller_mode = row[0]
             self.loop = row[1]
@@ -141,10 +141,10 @@ class Poller(catocommon.CatoService):
     def get_aborting(self): 
 
         sql = """select task_instance, pid from tv_task_instance 
-            where ce_node = %s and task_status = 'Aborting' 
+            where task_status = 'Aborting' 
             order by task_instance asc"""
 
-        rows = self.db.select_all(sql, (self.instance_id))
+        rows = self.db.select_all(sql)
         if rows:
             for row in rows:
                 self.output("Cancelling task_instance %d, pid %d" %
@@ -170,7 +170,7 @@ class Poller(catocommon.CatoService):
 if __name__ == "__main__":
 
     poller = Poller("cato_poller")
-    print dir(poller)
+    #print dir(poller)
     poller.startup()
     poller.service_loop()
 
