@@ -56,13 +56,15 @@ function tabWasClicked(tab) {
     } else if (tab == "schedules") {
     	doGetPlans();
     } else if (tab == "registry") {
-        GetRegistry($("#ctl00_phDetail_hidOriginalTaskID").val());
+        GetRegistry($("#hidOriginalTaskID").val());
     } else if (tab == "tags") {
-        GetObjectsTags($("#ctl00_phDetail_hidOriginalTaskID").val());
+        GetObjectsTags($("#hidOriginalTaskID").val());
     } else if (tab == "clipboard") {
         doGetClips();
     } else if (tab == "debug") {
         doGetDebug();
+    } else if (tab == "details") {
+        doGetDetails();
     }
 }
 
@@ -70,15 +72,15 @@ function doGetPlans() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "uiMethods.asmx/wmGetActionPlans",
+        url: "uiMethods/wmGetActionPlans",
         data: '{"sTaskID":"' + g_task_id + '","sActionID":"","sEcosystemID":""}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-        	if (retval.d == "") {
+        dataType: "html",
+        success: function (response) {
+        	if (response == "") {
         		$("#div_schedules #toolbox_plans").html("No Active Plans");
     		} else {
-            	$("#div_schedules #toolbox_plans").html(retval.d);
+            	$("#div_schedules #toolbox_plans").html(response);
 
 			    //click on an action plan in the toolbox pops the dialog AND the inner dialog
 			    $("#div_schedules #toolbox_plans .action_plan_name").click(function () {
@@ -99,15 +101,15 @@ function doGetPlans() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "uiMethods.asmx/wmGetActionSchedules",
+        url: "uiMethods/wmGetActionSchedules",
         data: '{"sTaskID":"' + g_task_id + '","sActionID":"","sEcosystemID":""}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-        	if (retval.d == "") {
+        dataType: "html",
+        success: function (response) {
+        	if (response == "") {
         		$("#div_schedules #toolbox_schedules").html("No Active Schedules");
     		} else {
-	            $("#div_schedules #toolbox_schedules").html(retval.d);
+	            $("#div_schedules #toolbox_schedules").html(response);
 
 	            //schedule icon tooltips
 	            $("#div_schedules #toolbox_schedules .schedule_tip").tipTip({

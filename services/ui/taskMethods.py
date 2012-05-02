@@ -268,7 +268,7 @@ class taskMethods:
 
             sSQL = "select task_id, version, default_version," \
                 " case default_version when 1 then ' (default)' else '' end as is_default," \
-                " case task_status when 'Approved' then 'encrypted' else 'unlock' end as status_icon," \
+                " case task_status when 'Approved' then 'locked' else 'unlocked' end as status_icon," \
                 " created_dt" \
                 " from task" \
                 " where original_task_id = " \
@@ -284,7 +284,7 @@ class taskMethods:
                     for dr in dt:
                         sHTML += "<li class=\"ui-widget-content ui-corner-all version code\" id=\"v_" + dr["task_id"] + "\""
                         sHTML += "task_id=\"" + dr["task_id"] + "\">"
-                        sHTML += "<img src=\"static/images/icons/" + dr["status_icon"] + "_16.png\" alt=\"\" />"
+                        sHTML += "<span class=\"ui-icon ui-icon-" + dr["status_icon"] + " forceinline\"></span>"
                         sHTML += str(dr["version"]) + "&nbsp;&nbsp;" + str(dr["created_dt"]) + dr["is_default"]
                         sHTML += "</li>"
 
@@ -513,6 +513,22 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())           
 
+    def wmCreateNewTaskVersion(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sMinorMajor = uiCommon.getAjaxArg("sMinorMajor")
+        try:
+            oTask, sErr = task.Task.FromID(sTaskID, True)
+            if oTask is None:
+                uiGlobals.request.Messages.append("Unable to continue.  Unable to build Task object" + sErr)
+            
+            sNewTaskID = oTask.Copy((1 if sMinorMajor == "Major" else 2), "", "")
+            if not sNewTaskID:
+                return "Unable to create new Version." + uiGlobals.request.db.error
+
+            return sNewTaskID
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return "Unable to create new version.  See server log for details."
 
     def wmGetCodeblocks(self):
         try:

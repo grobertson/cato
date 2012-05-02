@@ -12,19 +12,29 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 //
-
 $(document).ready(function() {
+    $("#new_version_btn").button({ icons: { primary: "ui-icon-extlink"} });
+    $("#new_version_btn").click(function () {
+		ShowVersionAdd();
+    });
+
     $("#addVersion_dialog").dialog({
         autoOpen: false,
         modal: true,
-        width: 600
+        width: 400,
+        buttons: {
+            "New Version": function () {
+                CreateNewVersion();
+            },
+            "Cancel": function () {
+                $(this).dialog('close');
+            }
+        }
     });
 });
 
 function ShowVersionAdd() {
     $("#hidMode").val("add");
-    $('#addVersion_dialog').dialog('option', 'title', 'Create a New Version');
-
     $("#addVersion_dialog").dialog('open');
 }
 
@@ -32,17 +42,31 @@ function CreateNewVersion() {
     $.blockUI({ message: "Creating new version..." });
 
     $.ajax({
+        async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmCreateNewTaskVersion",
+        url: "taskMethods/wmCreateNewTaskVersion",
         data: '{"sTaskID":"' + g_task_id + '","sMinorMajor":"' + $("input[name='rbMinorMajor']:checked").val() + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(msg) {
-            if (msg.d.length == 36) {
-                location.href = "taskEdit.aspx?task_id=" + msg.d;
+        dataType: "text",
+        success: function(response) {
+            if (response.length == 36) {
+		    	//NOTE: this changes the g_task_id, and pushes a new URL into the address bar
+		    	g_task_id = response
+				history.replaceState({}, "", "taskEdit?task_id=" + g_task_id);
+				//refresh the versions toolbox, which will add the new one...
+				doGetVersions();
+				
+				//BUT WE must do this to set the "focus" of the page on the new version
+				
+		    	//get the details
+		    	doGetDetails();
+				//get the codeblocks
+				doGetCodeblocks();
+				//get the steps
+				doGetSteps();
             }
             else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function(response) {
@@ -50,6 +74,7 @@ function CreateNewVersion() {
         }
     });
 
+	$.unblockUI();
     $("#addVersion_dialog").dialog('close');
 
     return false;
@@ -73,10 +98,22 @@ function doGetVersions() {
             $("#versions").html(response);
 		    //VERSION TOOLBOX
 		    $("#versions .version").disableSelection();
+		    
 		    //the onclick event of the 'version' elements
 		    $("#versions .version").click(function () {
-		        location.href = "taskEdit?task_id=" + $(this).attr("task_id") + "&tab=versions";
+		    	//NOTE: this changes the g_task_id, and pushes a new URL into the address bar
+		    	g_task_id = $(this).attr("task_id")
+				history.replaceState({}, "", "taskEdit?task_id=" + g_task_id);
+			    $("#versions .version").removeClass("version_selected")
+			    $(this).addClass("version_selected");
+		    	//get the details
+		    	doGetDetails();
+				//get the codeblocks
+				doGetCodeblocks();
+				//get the steps
+				doGetSteps();
 		    });
+		    
 		    //whatever the current version is... change it's class in the list
 		    $("#v_" + g_task_id).addClass("version_selected");
         },

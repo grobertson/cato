@@ -51,8 +51,8 @@ $var cssfiles: registry.css taskEdit.css taskView.css
                 <br />
                 <hr />
 				<center>
-					<span id="show_log_link">View Change Log</span>						
-					<span id="show_runlog_link">View Last Run Log</span>
+					<span id="show_log_link">Change Log</span>						
+					<span id="show_runlog_link">Last Run Log</span>
 				</center>
             </div>
         </div>
@@ -61,12 +61,12 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             <span id="lblVersion" class="code"></span><br />
             <span class="detail_label">Status: </span>
             <span id="lblStatus2" class="code"></span><br />
-            <input type="button" id="approve_btn" value="Approve" />
+            <span id="approve_btn">Approve</span>
             <hr />
             <span class="detail_label">All Versions:</span>
             <ul id="versions">
             </ul>
-            <input type="button" value="New Version" onclick="ShowVersionAdd();return false;" />
+            <center><span id="new_version_btn">New Version</span></center>
         </div>
         <div id="div_commands" class="toolbox_panel hidden">
             <span id="command_help_btn">Help</span>
@@ -303,13 +303,12 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 <div id="addVersion_dialog" class="hidden" title="Create Another Version">
     Current Version Number:
     <span id="lblCurrentVersion" Text=""></span>
+    <hr />
     <center>
         <input id="rbMinor" checked="checked" name="rbMinorMajor" value="Minor" type="radio" />
-        <span id="lblNewMinor" Text="New Minor Version"></span><br />
+        <label for="rbMinor">New Minor Version (<span id="lblNewMinorVersion"></span>)</label><br />
         <input id="rbMajor" name="rbMinorMajor" value="Major" type="radio" />
-        <span id="lblNewMajor" Text="New Major Version"></span><br />
-        <input type="button" value="Create New Version" onclick="CreateNewVersion();return false;" />
-        <input type="button" value="Cancel" onclick="CloseVersionDialog();return false;" />
+        <label for="rbMajor">New Major Version (<span id="lblNewMajorVersion"></span>)</label><br />
     </center>
 </div>
 <div id="fn_runtask_parameter_dialog" class="hidden" title="Task Parameters">

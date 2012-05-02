@@ -44,6 +44,9 @@ class Task(object):
         self.QueueDepth = ""
         self.ParameterXDoc = None
         self.NumberOfApprovedVersions = 0
+        self.MaxVersion = "1.000"
+        self.NextMinorVersion = "1.001"
+        self.NextMajorVersion = "2.000"
         #a task has a dictionary of codeblocks
         self.Codeblocks = {}
 
@@ -183,6 +186,9 @@ class Task(object):
             sb.append("\"%s\" : \"%s\"," % ("ConcurrentInstances", self.ConcurrentInstances))
             sb.append("\"%s\" : \"%s\"," % ("QueueDepth", self.QueueDepth))
             sb.append("\"%s\" : \"%s\"," % ("NumberOfApprovedVersions", self.NumberOfApprovedVersions))
+            sb.append("\"%s\" : \"%s\"," % ("MaxVersion", self.MaxVersion))
+            sb.append("\"%s\" : \"%s\"," % ("NextMinorVersion", self.NextMinorVersion))
+            sb.append("\"%s\" : \"%s\"," % ("NextMajorVersion", self.NextMajorVersion))
             sb.append("\"%s\" : \"%s\"" % ("UseConnectorSystem", self.UseConnectorSystem))
             sb.append("}")
             return "".join(sb)
@@ -366,11 +372,9 @@ class Task(object):
     def Copy(self, iMode, sNewTaskName, sNewTaskCode):
         #iMode 0=new task, 1=new major version, 2=new minor version
         try:
-            sSourceTaskID = self.ID
             #NOTE: this routine is not very object-aware.  It works and was copied in here
             #so it can live with other relevant code.
             #may update it later to be more object friendly
-            sErr = ""
             sSQL = ""
             sNewTaskID = uiCommon.NewGUID()
             iIsDefault = 0
@@ -384,7 +388,7 @@ class Task(object):
             sTaskName = self.Name
             sOTID = self.OriginalTaskID
 
-            #figure out te new version
+            #figure out the new version
             if iMode == 0:
                 #figure out the new name and selected version
                 sSQL = "select count(*) from task where task_name = '" + sNewTaskName + "'"
@@ -506,7 +510,12 @@ class Task(object):
             sSQL = "insert into task_codeblock select * from _copy_task_codeblock"
             if not db.tran_exec_noexcep(sSQL):
                 raise Exception(db.error)
-            sSQL = "insert into task_step select * from _copy_task_step"
+            sSQL = "insert into task_step" \
+                " (step_id, task_id, codeblock_name, step_order, commented," \
+                " locked, function_name, function_xml, step_desc)" \
+                " select step_id, task_id, codeblock_name, step_order, commented," \
+                " locked, function_name, function_xml, step_desc" \
+                " from _copy_task_step"
             if not db.tran_exec_noexcep(sSQL):
                 raise Exception(db.error)
 
@@ -521,6 +530,7 @@ class Task(object):
 
             return sNewTaskID
         except Exception, ex:
+            print traceback.format_exc()
             raise ex
         finally:
             db.close()
@@ -567,6 +577,14 @@ class Task(object):
             if db.error:
                 return "Error counting Approved versions:" + db.error
             self.NumberOfOtherVersions = iCount
+
+            sSQL = "select max(version) from task where original_task_id = '" + self.OriginalTaskID + "'"
+            sMax = db.select_col_noexcep(sSQL)
+            if db.error:
+                return "Error getting max version:" + db.error
+            self.MaxVersion = sMax
+            self.NextMinorVersion = str(float(self.MaxVersion) + .001)
+            self.NextMajorVersion = str(int(float(self.MaxVersion) + 1)) + ".000"
 
             #now, the fun stuff
             #1 get all the codeblocks and populate that dictionary
@@ -626,6 +644,16 @@ class Task(object):
             raise ex
         finally:
             db.close()
+
+    def IncrementMajorVersion(self):
+        self.Version = str(int(float(self.MaxVersion) + 1)) + ".000"
+        self.NextMinorVersion = str(float(self.Version) + .001)
+        self.NextMajorVersion = str(int(float(self.MaxVersion) + 2)) + ".000"
+
+    def IncrementMinorVersion(self):
+        self.Version = str(float(self.MaxVersion) + .001)
+        self.NextMinorVersion = str(float(self.Version) + .001)
+        self.NextMajorVersion = str(int(float(self.MaxVersion) + 1)) + ".000"
 
 class Codeblock(object):
     def __init__(self, sName):

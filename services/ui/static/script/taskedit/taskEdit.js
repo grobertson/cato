@@ -83,6 +83,7 @@ $(document).ready(function () {
         }
     });
 
+    $("#approve_btn").button({ icons: { primary: "ui-icon-check"} });
     $("#approve_btn").click(function () {
         $("#approve_dialog").dialog('open');
     });
@@ -200,6 +201,9 @@ function doGetDetails() {
                 $("#lblVersion").text(task.Version);
                 $("#lblCurrentVersion").text(task.Version);
 				$("#lblStatus2").text(task.Status);
+
+                $("#lblNewMinorVersion").text(task.NextMinorVersion);
+                $("#lblNewMajorVersion").text(task.NextMajorVersion);
 
                 /*                    
                  * ok, this is important.
