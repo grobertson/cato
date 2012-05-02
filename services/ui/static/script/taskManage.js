@@ -241,6 +241,10 @@ function DeleteItems() {
         success: function (task) {
 	       try {
 		        if (task) {
+		        	if (task.info) {
+		        		showInfo(task.info);
+		        	}
+
 	                // clear the selected array, search field and fire a new search
 	                $("#hidSelectedArray").val("");
 	                $("#txtSearch").val("");
