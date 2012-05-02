@@ -1843,9 +1843,10 @@ class taskMethods:
                 if uiGlobals.request.db.error:
                     uiGlobals.request.Messages.append("Unable to run task [" + sTaskID + "]." + uiGlobals.request.db.error)
     
-                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row["task_instance"]), 3)
+                # this needs fixing, this whole weird result set.
+                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row[0]["_task_instance"]), 3)
                 
-                return row["task_instance"]
+                return row[0]["_task_instance"]
             else:
                 uiGlobals.request.Messages.append("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.")
     

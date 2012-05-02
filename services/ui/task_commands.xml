@@ -73,8 +73,8 @@
 				<function name="if">
 					<tests>
 						<test>
-							<eval input_type="text" />
-							<action input_type="text" />
+							<eval />
+							<action />
 						</test>
 					</tests>
 				</function>
@@ -86,7 +86,7 @@
 					<test input_type="select">&lt;=</test>
 					<compare_to input_type="text" />
 					<increment input_type="text">1</increment>
-					<action input_type="text" />
+					<action />
 					<max input_type="text" />
 				</function>
 			</command>
@@ -107,7 +107,7 @@
 			<command name="while" label="While" description="Performs a while loop until condition is not true." help="&lt;b&gt;While&lt;/b&gt;&lt;br&gt;The While command is similar to a while loop in programming languages. The Test condition is evaluated at the top of each iteration.&lt;br&gt;&lt;br&gt;In the following example the while loop will continue iterating until the runtime variable my_variable evaluates to something other than yes.&lt;br&gt;'[[my_variable]]' == 'yes'" icon="static/images/icons/quick_restart_32.png">
 				<function name="while">
 					<test input_type="text" />
-					<action input_type="text" />
+					<action />
 				</function>
 			</command>
 			<command name="comment" label="Comment" description="A comment block." help="&lt;b&gt;Commentn&lt;/b&gt;&lt;br&gt;Comment is simply an inline comment box within a codeblock.  It is ignored by the Task Engine." icon="static/images/icons/comment_32.png">
@@ -206,7 +206,7 @@
 			</command>
 			<command name="parse_text" label="Parse Text" description="Variables to be extracted from text data." help="&lt;b&gt;Parse Text&lt;/b&gt;&lt;br&gt;Parse Text is used when there there are data or variables that need to be further processed into variables or arrays of variables. For instance suppose there is a variable populated with text that needs to be parsed using row and column delimiters. Enter the variable (or multiple variables if required) in the Text to Process: input box and click the Variables icon below. Enter set the row and column delmiters and identify the variables to be populated. " icon="static/images/icons/bookmark_toolbar_32.png">
 				<function name="parse_text" variables="true" parse_method="2">
-					<text input_type="text" />
+					<text input_type="textarea" rows="3" label="Text" class="w95pct" required="true" label_style="display: block;" />
 				</function>
 			</command>
 			<command name="substring" label="Substring" description="Sets a variable to a portion of the specified text." help="&lt;b&gt;Substring&lt;/b&gt;&lt;br&gt;Substring is used to populate a variable with part of a string. Enter the name of the variable to be set in the Variable: entry field. The start index is the position in the Source String to start. 0 is the first position. End Index will contain the last position to be part of the value extracted. This can be an integer, a plus sign and number of characters past the start index (+5 to get the start index plus five more characters) or the word 'end' to make the end position the last character in the string.&lt;br&gt;&lt;br&gt;Source String is the set of characters to be extracted from." icon="static/images/icons/editcut_32.png">
@@ -233,8 +233,8 @@
 						<is_true>0</is_true>
 					</variable>
 					<actions>
-						<negative_action input_type="text" />
-						<positive_action input_type="text" />
+						<negative_action />
+						<positive_action />
 					</actions>
 				</function>
 			</command>
