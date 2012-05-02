@@ -1325,7 +1325,7 @@ class taskMethods:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
             sStepID = uiCommon.getAjaxArg("sStepID")
-            ST.AddToCommandXML(sStepID, "function", "<variable>" \
+            ST.AddToCommandXML(sStepID, "", "<variable>" \
                 "<name input_type=\"text\"></name>" \
                 "<value input_type=\"text\"></value>" \
                 "<modifier input_type=\"select\">DEFAULT</modifier>" \
@@ -1340,7 +1340,7 @@ class taskMethods:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
             sStepID = uiCommon.getAjaxArg("sStepID")
-            ST.AddToCommandXML(sStepID, "function", "<variable><name input_type=\"text\"></name></variable>")
+            ST.AddToCommandXML(sStepID, "", "<variable><name input_type=\"text\"></name></variable>")
 
             return ""
         except Exception:
@@ -1351,7 +1351,7 @@ class taskMethods:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
             sStepID = uiCommon.getAjaxArg("sStepID")
-            ST.AddToCommandXML(sStepID, "function", "<variable>" \
+            ST.AddToCommandXML(sStepID, "", "<variable>" \
                 "<name input_type=\"text\"></name><is_true>0</is_true>" \
                 "</variable>")
 
@@ -1389,7 +1389,7 @@ class taskMethods:
     def wmFnWaitForTasksAddHandle(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
         try:
-            ST.AddToCommandXML(sStepID, "function", "<handle><name input_type=\"text\"></name></handle>")
+            ST.AddToCommandXML(sStepID, "", "<handle><name input_type=\"text\"></name></handle>")
             return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
@@ -1397,7 +1397,7 @@ class taskMethods:
     def wmFnAddPair(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
         try:
-            ST.AddToCommandXML(sStepID, "function", "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
+            ST.AddToCommandXML(sStepID, "", "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
 
             return ""
         except Exception:
@@ -1413,6 +1413,44 @@ class taskMethods:
                 return ""
             else:
                 uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmFnIfAddSection(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        sIndex = uiCommon.getAjaxArg("iIndex")
+        try:
+            if sIndex > "0":
+                # an index > 0 means its one of many 'elif' sections
+                ST.AddToCommandXML(sStepID, "tests", "<test><eval input_type=\"text\" /><action input_type=\"text\" /></test>")
+            elif sIndex == "-1":
+                # whereas an index of -1 means its the ONLY 'else' section
+                ST.AddToCommandXML(sStepID, "", "<else input_type=\"text\" />")
+            else:
+                # and of course a missing or 0 index is an error
+                uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
+
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmFnIfRemoveSection(self):
+        sStepID = uiCommon.getAjaxArg("sStepID")
+        sIndex = uiCommon.getAjaxArg("iIndex")
+
+        try:
+            if not uiCommon.IsGUID(sStepID):
+                uiGlobals.request.Messages.append("Unable to remove section from step. Invalid or missing Step ID. [" + sStepID + "]")
+
+            if sIndex > "0":
+                ST.RemoveFromCommandXML(sStepID, "tests/test[" + sIndex + "]")
+            elif sIndex == "-1":
+                ST.RemoveFromCommandXML(sStepID, "else[1]")
+            else:
+                uiGlobals.request.Messages.append("Unable to modify step. Invalid index.")
+
+            return ""
+
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
@@ -1592,7 +1630,7 @@ class taskMethods:
             
             # add and remove using the xml wrapper functions
             ST.RemoveFromCommandXML(sStepID, "step_variables")
-            ST.AddToCommandXML(sStepID, "function", uiCommon.TickSlash(ET.tostring(xVars)))
+            ST.AddToCommandXML(sStepID, "", uiCommon.TickSlash(ET.tostring(xVars)))
 
             return ""
         except Exception:
@@ -2316,7 +2354,7 @@ class taskMethods:
                             # since we can delete each item from the page it needs a unique id.
                             sPID = "pv" + uiCommon.NewGUID()
 
-                            sValue = xVal.text
+                            sValue = (xVal.text if xVal.text else "")
                             sObscuredValue = ""
                             
                             if uiCommon.IsTrue(sEncrypt):
@@ -2535,7 +2573,7 @@ class taskMethods:
                     bParamAdd = True
                 else:
                     # XML exists, add the node to it
-                    ST.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "parameters", sAddXML)
+                    ST.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "", sAddXML)
                     bParamAdd = True
             else:
                 # update the node values

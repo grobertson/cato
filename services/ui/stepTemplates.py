@@ -770,6 +770,7 @@ def AddToCommandXML(sStepID, sXPath, sXMLToAdd):
         if not uiCommon.IsGUID(sStepID):
             uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "].")
 
+        # this select is only for logging
         sSQL = "select task_id, codeblock_name, function_name, step_order from task_step where step_id = '" + sStepID + "'"
         dr = uiGlobals.request.db.select_row_dict(sSQL)
         if uiGlobals.request.db.error:
@@ -803,18 +804,24 @@ def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
             uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
         else:
             # parse the doc from the table
+            uiCommon.log(sXML, 4)
             xd = ET.fromstring(sXML)
             if xd is None:
                 uiGlobals.request.Messages.append("Error: Unable to parse XML.")
 
             # get the specified node from the doc, IF IT'S NOT THE ROOT
-            if xd.tag == sXPath:
+            # either a blank xpath, or a single word that matches the root, both match the root.
+            # any other path DOES NOT require the root prefix.
+            if sXPath == "":
+                xNodeToEdit = xd
+            elif xd.tag == sXPath:
                 xNodeToEdit = xd
             else:
                 xNodeToEdit = xd.find(sXPath)
             
             if xNodeToEdit is None:
                 uiGlobals.request.Messages.append("Error: XML does not contain path [" + sXPath + "].")
+                return
 
             # now parse the new section from the text passed in
             xNew = ET.fromstring(sXMLToAdd)
@@ -2202,7 +2209,7 @@ def If(oStep):
         sHTML += "<div id=\"if_" + sStepID + "_conditions\" number=\"" + str(len(xTests)) + "\">"
     
         i = 1 # because XPath starts at "1"
-    
+        print ET.tostring(xd)
         for xTest in xTests:
             sEval = xTest.findtext("eval", None)
             xAction = xTest.find("action", None)
@@ -2255,7 +2262,7 @@ def If(oStep):
             if i != 1:
                 sHTML += "</div>"
     
-            i += i
+            i += 1
     
         sHTML += "</div>"
     
