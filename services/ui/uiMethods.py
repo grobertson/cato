@@ -152,7 +152,7 @@ class uiMethods:
                     else:
                         sSelectClause = ("selected=\"selected\"" if sSelected == row["account_id"] else "")
                         
-                    sHTML +=  "<option value=\"%s\" provider=\"%s\" %s>%s</option>" % (row["account_id"], row["provider"], sSelectClause, row["account_name"])
+                    sHTML +=  "<option value=\"%s\" provider=\"%s\" %s>%s (%s)</option>" % (row["account_id"], row["provider"], sSelectClause, row["account_name"], row["provider"])
 
                 return sHTML
             

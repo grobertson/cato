@@ -356,7 +356,7 @@ function LoadEditDialog(sEditID) {
                 $("#txtLoginPassword").val(account.LoginPassword);
                 $("#txtLoginPasswordConfirm").val(account.LoginPassword);
 
-                if (account.IsDefault) $("#chkDefault").attr('checked', true);
+                if (account.IsDefault == "True") $("#chkDefault").attr('checked', true);
                 //if (account.AutoManage == "1") $("#chkAutoManageSecurity").attr('checked', true);
                 
                 //the account result will have a list of all the clouds on this account.

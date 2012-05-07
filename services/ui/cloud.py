@@ -132,16 +132,12 @@ class Cloud(object):
                 " where cloud_id = '" + self.ID + "'"
             if not db.exec_db_noexcep(sSQL):
                 if db.error == "key_violation":
-                    return None, "A Cloud with that name already exists.  Please select another name."
+                    return False, "A Cloud with that name already exists.  Please select another name."
                 else:
-                    return None, db.error
+                    return False, db.error
             db.close()
             
-            #update the CloudProviders in the session
-            cp = uiCommon.GetCloudProviders() #get the session object
-            cp.Providers[self.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-            uiCommon.UpdateCloudProviders(cp) #update the session
-            return True
+            return True, None
         except Exception, ex:
             raise Exception(ex)
 
@@ -340,5 +336,41 @@ class CloudAccount(object):
 
             # yay!
             return ca, None
+        except Exception, ex:
+            raise ex
+
+    def DBUpdate(self):
+        try:
+            db = catocommon.new_conn()
+            
+            #  only update the passwword if it has changed
+            sNewPassword = ""
+            if self.LoginPassword != "($%#d@x!&":
+                sNewPassword = (", login_password = '" + catocommon.cato_encrypt(self.LoginPassword) + "'" if self.LoginPassword else "")
+
+            sSQL = "update cloud_account set" \
+                    " account_name = '" + self.Name + "'," \
+                    " account_number = '" + self.AccountNumber + "'," \
+                    " provider = '" + self.Provider.Name + "'," \
+                    " is_default = '" + ("1" if self.IsDefault else "0") + "'," \
+                    " auto_manage_security = 0," \
+                    " login_id = '" + self.LoginID + "'" + \
+                    sNewPassword + \
+                    " where account_id = '" + self.ID + "'"
+            
+            if not db.exec_db_noexcep(sSQL):
+                if db.error == "key_violation":
+                    sErr = "A Cloud Account with that name already exists.  Please select another name."
+                    return False, sErr
+                else: 
+                    return False, db.error
+            
+            # if "default" was selected, unset all the others
+            if self.IsDefault:
+                sSQL = "update cloud_account set is_default = 0 where account_id <> '" + self.ID + "'"
+                # not worth failing... we'll just end up with two defaults.
+                db.exec_db_noexcep(sSQL)
+
+            return True, None
         except Exception, ex:
             raise ex

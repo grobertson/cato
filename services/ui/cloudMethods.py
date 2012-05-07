@@ -154,7 +154,6 @@ class cloudMethods:
         sAPIUrl = uiCommon.getAjaxArg("sAPIUrl")
         sAPIProtocol = uiCommon.getAjaxArg("sAPIProtocol")
 
-        sErr = ""
         c = None
         try:
             if sMode == "add":
@@ -173,12 +172,20 @@ class cloudMethods:
                 c.Name = sCloudName
                 c.APIProtocol = sAPIProtocol
                 c.APIUrl = sAPIUrl
+
                 #get a new provider by name
                 c.Provider = providers.Provider.GetFromSession(sProvider)
-                if not c.DBUpdate():
-                    uiGlobals.request.Messages.append(sErr)
+                result, msg = c.DBUpdate()
+                if not result:
+                    uiGlobals.request.Messages.append(msg)
+                    return "{\"info\" : \"%s\"}" % msg
                 
                 uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Cloud, self.ID, self.Name, sCloudName, self.Name)
+
+                #update the CloudProviders in the session
+                cp = uiCommon.GetCloudProviders() #get the session object
+                cp.Providers[self.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+                uiCommon.UpdateCloudProviders(cp) #update the session
 
             if c:
                 return c.AsJSON()
@@ -359,31 +366,35 @@ class cloudMethods:
                 else:
                     uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.CloudAccount, ca.ID, ca.Name, "Account Created")
         
-                    # refresh the cloud account list in the session
-#                    if not uiCommon.PutCloudAccountsInSession():
-#                        uiGlobals.request.Messages.append("Error refreshing Cloud Accounts in session: " + uiGlobals.request.db.error)
+            elif sMode == "edit":
+                ca = cloud.CloudAccount()
+                ca.FromID(sAccountID)
+                if ca is None:
+                    return "{\"error\" : \"Unable to get Cloud Account using ID [" + sAccountID + "].\"}"
+                else:
+                    ca.ID = sAccountID
+                    ca.Name = sAccountName
+                    ca.AccountNumber = sAccountNumber
+                    ca.LoginID = sLoginID
+                    ca.LoginPassword = sLoginPassword
+                    ca.IsDefault = (True if sIsDefault == "1" else False)
+                    
+                    # note: we must reassign the whole provider
+                    # changing the name screws up the CloudProviders object in the session, which is writable! (oops)
+                    ca.Provider = providers.Provider.GetFromSession(sProvider)
+                    result, msg = ca.DBUpdate()
+                    if not result:
+                        uiGlobals.request.Messages.append(msg);  
+                        return "{\"info\" : \"%s\"}" % msg
 
-#            elif sMode == "edit":
-#                # TODO: test the two passwords and confirm they match!
-#                
-#                ca = CloudAccount(sAccountID)
-#                if ca is None:
-#                    return "{\"error\" : \"Unable to get Cloud Account using ID [" + sAccountID + "].\"}"
-#                else:
-#                    ca.ID = sAccountID
-#                    ca.Name = sAccountName
-#                    ca.AccountNumber = sAccountNumber
-#                    ca.LoginID = sLoginID
-#                    ca.LoginPassword = sLoginPassword
-#                    ca.IsDefault = (true if sIsDefault == "1" else false)
-#                    
-#                    # note: we must reassign the whole provider
-#                    # changing the name screws up the CloudProviders object in the session, which is writable! (oops)
-#                    ca.Provider = Provider.GetFromSession(sProvider)
-#                    
-#                    if !ca.DBUpdate(0000BYREF_ARG0000sErr):
-#                        uiGlobals.request.Messages.append(sErr);    
-#                    
+#            # what's the original name?
+#            sSQL = "select account_name from cloud_account where account_id = '" + self.ID + "'"
+#            sOriginalName = db.select_col_noexcep(sSQL)
+#            if db.error:
+#                return None, "Error getting original Cloud Account Name:" + db.error
+  
+                    uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.CloudAccount, ca.ID, ca.Name, "", ca.Name)
+
 
             if ca:
                 return ca.AsJSON()

@@ -114,7 +114,8 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("ft.", "ST.") # "FunctionTemplates ft is now import stepTemplates as sST"
         line = line.replace("dc.IsTrue", "uiCommon.IsTrue")
         line = line.replace("../images", "static/images")
-        
+        line = line.replace("dc.EnCrypt", "catocommon.cato_encrypt")
+
         #99% of the time we won't want a None return
         line = line.replace("return\n", "return \"\"\n")
         
