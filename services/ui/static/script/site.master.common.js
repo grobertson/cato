@@ -19,7 +19,7 @@ var d = '<!-- This is the popup error message dialog template.  -->' +
     '</div>' +
     '</div>' +
     '<!-- End popup error message dialog template.  -->' +
-    '<!-- This is the slide up informational message template. -->' +
+    '<!-- This is the popup informational message template. -->' +
     '<div id="info_dialog" title="Info" class="ui-state-highlight">' +
     '<p>' +
     '    <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span>' +
@@ -30,7 +30,22 @@ var d = '<!-- This is the popup error message dialog template.  -->' +
     '    <span id="info_dialog_info"></span>' +
     '</p>' +
     '</div>' +
-	'<!-- End slide up informational message template. -->' +
+	'<!-- End popup informational message template. -->' +
+    '<!-- This is the popup "about" dialog. -->' +
+    '<div id="about_dialog" title="About Cato" class="ui-state-highlight">' +
+    '<p>' +
+    '    <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span>' +
+    '    <span id="app_name">Cloud Sidekick Cato</span><br /><br />' +
+    '    <b>On the Web: </b><span id="app_web">http://www.cloudsidekick.com</span><br /><br />' +
+    '    <b>Version: </b><span id="app_version">1.10</span><br />' +
+    '<br /><br />Copyright © Cloud Sidekick 2012. All Rights Reserved.' +
+    '</p>' +
+    '<br />' +
+    '<p>' +
+    '    <span id="info_dialog_info"></span>' +
+    '</p>' +
+    '</div>' +
+	'<!-- End "about" dialog. -->' +
 	'<!-- This is the pop up "tag picker" dialog. -->' +
     '<div id="tag_picker_dialog" class="tag_picker hidden">' +
     '    Select a Tag:' +
@@ -44,7 +59,14 @@ var d = '<!-- This is the popup error message dialog template.  -->' +
     '    </div>' +
     '</div>' +
     '<!-- End "tag picker" dialog. -->' +
+	'<!-- Log View dialog. -->' +
+	'<div id="log_view_dialog" class="hidden" title="Change Log"></div>' +
+	'<!-- End Log View dialog. -->' +
 	'' +
 	'';
+
+
+
+
 
 document.write(d);

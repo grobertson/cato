@@ -56,8 +56,7 @@ $(document).ready(function () {
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function() {
         var sID = $("#hidCurrentEditID").val();
-        var url = "securityLogView.aspx?type=1&id=" + sID;
-        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+		ShowLogViewDialog(1, sID, true);
     });
 
     //buttons

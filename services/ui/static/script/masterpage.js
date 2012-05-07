@@ -52,6 +52,19 @@ $(document).ready(function () {
         width: 400
     });
     
+    $("#about_dialog").dialog({
+        autoOpen: false,
+        draggable: false,
+        resizable: false,
+        bgiframe: true,
+        modal: true,
+        width: 400,
+        overlay: {
+            backgroundColor: '#000',
+            opacity: 0.5
+        }
+    });
+    
     //the stack trace section on the error dialog is hidden by default
     //this is the click handler for showing it.
     $("#show_stack_trace").click(function () {

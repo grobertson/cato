@@ -92,8 +92,7 @@ $(document).ready(function () {
     //the hook for the 'show log' link
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function () {
-        var url = "securityLogView.aspx?type=42&id=" + g_id;
-        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+		ShowLogViewDialog(42, g_id, true);
     });
 
 

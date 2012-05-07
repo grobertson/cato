@@ -30,7 +30,7 @@
 			</item>
 			<item roles="developer user" label="View Task Status" icon="static/images/icons/task_stat_24.png" onclick="showPleaseWait();" href="/taskStatus">
 			</item>
-			<item roles="developer user" label="About Cato" icon="static/images/icons/about_24.png" onclick="showPleaseWait();" href="../pages/about.aspx">
+			<item roles="developer user" label="About Cato" icon="static/images/icons/about_24.png" onclick="$('#about_dialog').dialog('open');" href="#">
 			</item>
 		</menu>
 		<menu label="Security" icon="static/images/icons/password.png">
@@ -70,7 +70,7 @@
 			</item>
 			<item roles="developer" label="Import a Backup File" icon="static/images/icons/import_24.png" onclick="showPleaseWait();" href="../pages/importLoadFile.aspx">
 			</item>
-			<item label="View Security Log" icon="static/images/icons/password.png" onclick="openWindow('../pages/securityLogView.aspx', 'logView', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
+			<item label="View Security Log" icon="static/images/icons/password.png" onclick="ShowLogViewDialog(0, '', true);">
 			</item>
 		</menu>
 		<menu roles="all" label="Help" icon="static/images/icons/help_24.png">

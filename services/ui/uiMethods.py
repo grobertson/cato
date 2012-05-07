@@ -255,8 +255,12 @@ class uiMethods:
                 sWhereString += " and usl.object_id = '" + sObjectID + "'"
 
             if sObjectType:
-                sWhereString += " and usl.object_type = '" + sObjectType + "'"
+                if sObjectType > "0": # but a 0 object type means we want everything
+                    sWhereString += " and usl.object_type = '" + sObjectType + "'"
            
+            if not sObjectID and not sObjectType: # no arguments passed means we want a security log
+                sWhereString += " and usl.log_type = 'Security'"
+
             sDateSearchString = ""
             sTextSearch = ""
             

@@ -40,8 +40,7 @@ $(document).ready(function () {
     //the hook for the 'show log' link
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function () {
-        var url = "securityLogView.aspx?type=41&id=" + g_eco_id;
-        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+		ShowLogViewDialog(41, g_eco_id, true);
     });
 
     $("#goto_ecotemplate_btn").button({ icons: { primary: "ui-icon-arrowthick-1-ne"}, text: false });
