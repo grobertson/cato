@@ -49,6 +49,8 @@ class Cloud(object):
                         self.APIProtocol = c.APIProtocol
                         self.Region = c.Region
                         self.Provider = c.Provider
+                        
+                        return
             
             #well, if we got here we have a problem... the ID provided wasn't found anywhere.
             #this should never happen, so bark about it.
@@ -151,7 +153,7 @@ class Cloud(object):
 class CloudAccounts(object): 
     DataTable = None
     
-    def Fill(self, sFilter):
+    def Fill(self, sFilter="", sProvider=""):
         sWhereString = ""
         if sFilter:
             aSearchTerms = sFilter.split()
@@ -162,6 +164,10 @@ class CloudAccounts(object):
                         "or provider like '%%" + term + "%%' " \
                         "or login_id like '%%" + term + "%%') "
 
+        # if a sProvider arg is passed, we explicitly limit to this provider
+        if sProvider:
+            sWhereString += " and provider = '%s'" % sProvider
+            
         sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," \
             " case is_default when 1 then 'Yes' else 'No' end as is_default," \
             " (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" \
@@ -179,8 +185,8 @@ class CloudAccounts(object):
             sb.append("[")
             for row in self.DataTable:
                 sb.append("{")
-                sb.append("\"%s\" : \"%s\"," % ("ID", row[0]))
-                sb.append("\"%s\" : \"%s\"" % ("Name", row[1]))
+                sb.append("\"%s\" : \"%s\"," % ("ID", row["account_id"]))
+                sb.append("\"%s\" : \"%s\"" % ("Name", row["account_name"]))
                 sb.append("}")
             
                 #the last one doesn't get a trailing comma
@@ -193,3 +199,86 @@ class CloudAccounts(object):
             return "".join(sb)
         except Exception, ex:
             raise ex
+
+class CloudAccount(object):
+    ID = None
+    Name = None
+    AccountNumber = None
+    LoginID = None
+    LoginPassword = None
+    IsDefault = None
+    Provider = None
+
+    def FromID(self, sAccountID):
+        try:
+            if not sAccountID:
+                raise Exception("Error building Cloud Account object: Cloud Account ID is required.");    
+            
+            sSQL = "select account_name, account_number, provider, login_id, login_password, is_default" \
+                " from cloud_account" \
+                " where account_id = '" + sAccountID + "'"
+
+            db = catocommon.new_conn()
+            dr = db.select_row_dict(sSQL)
+            db.close()
+            
+            if dr is not None:
+                self.ID = sAccountID
+                self.Name = dr["account_name"]
+                self.AccountNumber = ("" if not dr["account_number"] else dr["account_number"])
+                self.LoginID = ("" if not dr["login_id"] else dr["login_id"])
+                self.LoginPassword = ("" if not dr["login_password"] else catocommon.cato_decrypt(dr["login_password"]))
+                self.IsDefault = (True if dr["is_default"] == 1 else False)
+                
+                # find a provider object
+                cp = uiCommon.GetCloudProviders()
+                if not cp:
+                    raise Exception("Error building Cloud Account object: Unable to GetCloudProviders.")
+                    return
+
+                #check the CloudProvider class first ... it *should be there unless something is wrong.
+                if cp.Providers.has_key(dr["provider"]):
+                    self.Provider = cp.Providers[dr["provider"]]
+                else:
+                    raise Exception("Provider [" + dr["provider"] + "] does not exist in the cloud_providers session xml.")
+
+            else: 
+                raise Exception("Unable to build Cloud Account object. Either no Cloud Accounts are defined, or no Account with ID [" + sAccountID + "] could be found.")
+        except Exception, ex:
+            raise Exception(ex)
+
+    def IsValidForCalls(self):
+        if self.LoginID and self.LoginPassword:
+            return True
+        return False
+
+    def AsJSON(self):
+        try:
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+            sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+            sb.append("\"%s\" : \"%s\"," % ("Provider", self.Provider.Name))
+            sb.append("\"%s\" : \"%s\"," % ("AccountNumber", self.AccountNumber))
+            sb.append("\"%s\" : \"%s\"," % ("LoginID", self.LoginID))
+            sb.append("\"%s\" : \"%s\"," % ("LoginPassword", self.LoginPassword))
+            sb.append("\"%s\" : \"%s\"," % ("IsDefault", self.IsDefault))
+            
+            # the clouds hooked to this account
+            sb.append("\"Clouds\" : {")
+            lst = []
+            for cname, c in self.Provider.Clouds.iteritems():
+                #stick em all in a list for now
+                s = "\"%s\" : %s" % (c.ID, c.AsJSON())
+                lst.append(s)
+            #join the list using commas!
+            sb.append(",".join(lst))
+
+            sb.append("}")
+
+            
+            sb.append("}")
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
+

@@ -57,6 +57,10 @@ class taskActivityLog:
     def GET(self):
         return render.taskActivityLog()
 
+class cloudAccountEdit:        
+    def GET(self):
+        return render.cloudAccountEdit()
+
 class cloudEdit:        
     def GET(self):
         return render.cloudEdit()
@@ -262,6 +266,7 @@ if __name__ == "__main__":
         '/logout', 'logout',
         '/home', 'home',
         '/cloudEdit', 'cloudEdit',
+        '/cloudAccountEdit', 'cloudAccountEdit',
         '/taskEdit', 'taskEdit',
         '/taskRunLog', 'taskRunLog',
         '/taskActivityLog', 'taskActivityLog',

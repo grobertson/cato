@@ -18,10 +18,6 @@ $(document).ready(function () {
     // clear the edit array
     $("#hidSelectedArray").val("");
 
-    $("[tag='selectable']").live("click", function () {
-        LoadEditDialog($(this).parent().attr("account_id"));
-    });
-
     //dialogs
 
     $("#edit_dialog").dialog({
@@ -175,7 +171,7 @@ $(document).ready(function () {
 	$("#item_search_btn").die();
 	//and rebind it
 	$("#item_search_btn").live("click", function () {
-        GetAccounts();
+        GetItems();
     });
     
     //the test connection buttton
@@ -184,18 +180,28 @@ $(document).ready(function () {
         TestConnection();
     });
 
-    $(".account_help_btn").tipTip({
-        defaultPosition: "right",
-        keepAlive: false,
-        activation: "hover",
-        maxWidth: "400px",
-        fadeIn: 100
-    });
+    GetProvidersList();
+    GetItems();
+    ManagePageLoad();
 });
 
-function pageLoad() {
-    ManagePageLoad();
+function GetProvidersList() {
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "cloudMethods/wmGetProvidersList",
+        data: '{"sUserDefinedOnly":"False"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+			$("#ddlProvider").html(response);
+       },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
+
 
 function GetProviderClouds() {
 	var provider = $("#ddlProvider").val();
@@ -280,18 +286,32 @@ function TestConnection() {
 	}
 }
 
-function GetAccounts() {
+function GetItems() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/wmGetAccounts",
-        data: '{"sSearch":"' + $("#ctl00_phDetail_txtSearch").val() + '"}',
+        url: "cloudMethods/wmGetCloudAccountsTable",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (response) {
-            $('#accounts').html(response.d);
+            $("#accounts").html(response);
+            
             //gotta restripe the table
             initJtable(true, true);
+
+            $(".account_help_btn").tipTip({
+			    defaultPosition: "right",
+			    keepAlive: false,
+			    activation: "hover",
+			    maxWidth: "400px",
+			    fadeIn: 100
+			});
+
+		    $("#accounts .selectable").click(function () {
+		        LoadEditDialog($(this).parent().attr("account_id"));
+		    });
+
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -310,48 +330,26 @@ function setLabels() {
 	}
 }
 
-function LoadEditDialog(editID) {
+function LoadEditDialog(sEditID) {
     clearEditDialog();
     $("#hidMode").val("edit");
 
-    $("#hidCurrentEditID").val(editID);
+    $("#hidCurrentEditID").val(sEditID);
 
-    FillEditForm(editID);
-	setLabels();	
-	
-	//clear out any test results
-	ClearTestResult();
-	
-    $('#edit_dialog_tabs').tabs('select', 0);
-    $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
-    $("#edit_dialog").dialog("option", "title", "Modify Account");
-    $("#edit_dialog").dialog('open');
-
-}
-
-function ClearTestResult() {
-	$("#conn_test_result").css("color","green");
-	$("#conn_test_result").empty();
-	$("#conn_test_error").empty();
-}
-
-function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmGetCloudAccount",
+        url: "cloudMethods/wmGetCloudAccount",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (account) {
             //update the list in the dialog
-            if (response.d.length == 0) {
-                showAlert('error no response');
-                // do we close the dialog, leave it open to allow adding more? what?
+        	if (account.info) {
+    			showInfo(account.info);
+        	} else if (account.error) {
+        		showAlert(account.error);
             } else {
-                var account = jQuery.parseJSON(response.d);
-
-                // show the assets current values
                 $("#txtAccountName").val(account.Name);
                 $("#txtAccountNumber").val(account.AccountNumber)
                 $("#ddlProvider").val(account.Provider);
@@ -373,6 +371,16 @@ function FillEditForm(sEditID) {
 					$("#test_connection_btn").hide();
 	            else
 					$("#test_connection_btn").show();
+
+				setLabels();	
+				
+				//clear out any test results
+				ClearTestResult();
+				
+			    $('#edit_dialog_tabs').tabs('select', 0);
+			    $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
+			    $("#edit_dialog").dialog("option", "title", "Modify Account");
+			    $("#edit_dialog").dialog('open');
 			}
         },
         error: function (response) {
@@ -384,16 +392,22 @@ function FillEditForm(sEditID) {
     GetKeyPairs(sEditID);
 }
 
+function ClearTestResult() {
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
+}
+
 function GetKeyPairs(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/GetKeyPairs",
+        url: "cloudMethods/wmGetKeyPairs",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (response) {
-            $('#keypairs').html(response.d);
+            $('#keypairs').html(response);
         },
         error: function (response) {
             showAlert(response.responseText);
