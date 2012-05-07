@@ -18,10 +18,6 @@ $(document).ready(function () {
     // clear the edit array
     $("#hidSelectedArray").val("");
 
-    $("[tag='selectable']").live("click", function () {
-        LoadEditDialog($(this).parent().attr("account_id"));
-    });
-
     //dialogs
 
     $("#edit_dialog").dialog({
@@ -73,7 +69,7 @@ $(document).ready(function () {
 	$("#item_search_btn").die();
 	//and rebind it
 	$("#item_search_btn").live("click", function () {
-        GetClouds();
+        GetItems();
     });
 
 	//the Provider ddl changes a few things
@@ -100,6 +96,22 @@ $(document).ready(function () {
     ManagePageLoad();
 });
 
+function GetProvidersList() {
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "cloudMethods/wmGetProvidersList",
+        data: '{"sUserDefinedOnly":"True"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+			$("#ddlProvider").html(response);
+       },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function GetProviderAccounts() {
 	var provider = $("#ddlProvider").val();
@@ -186,7 +198,7 @@ function GetItems() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudMethods/wmGetClouds",
+        url: "cloudMethods/wmGetCloudsTable",
         data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",
@@ -194,14 +206,14 @@ function GetItems() {
             $("#clouds").html(response);
             //gotta restripe the table
             initJtable(true, true);
+		    $("#clouds .selectable").click(function () {
+		        LoadEditDialog($(this).parent().attr("cloud_id"));
+		    });
         },
         error: function (response) {
             showAlert(response.responseText);
         }
     });
-}
-function GetProvidersList() {
-    $("#ddlProvider").load("cloudMethods/wmGetProvidersList");
 }
 
 function LoadEditDialog(editID) {
