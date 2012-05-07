@@ -97,11 +97,24 @@ where function_name = 'cmd_line';
 
 
 
+# NEW CONNECTION
+update task_step set function_xml = 
+replace(function_xml,
+'<conn_name input_type="text">',
+'<conn_name input_type="text" label="as" required="true" class="w200px" help="Name this connection for reference in the Task.">'
+)
+where function_name = 'new_connection';
+
 # DROP CONNECTION
 update task_step set function_xml = 
 replace(function_xml,
 '<conn_name input_type="text">',
 '<conn_name input_type="text" label="Connection">'
+),
+function_xml = 
+replace(function_xml,
+'<conn_name input_type="text" />',
+'<conn_name input_type="text" label="Connection" />'
 )
 where function_name = 'drop_connection';
 
@@ -164,6 +177,18 @@ function_xml = replace(function_xml,
 '<text input_type="textarea" rows="3" label="Text" class="w95pct" required="true" label_style="display: block;">'
 )
 where function_name = 'parse_text';
+
+# LOG_MSG
+update task_step set 
+function_xml = replace(function_xml,
+'<message input_type="text" />',
+'<message input_type="textarea" rows="2" label="Log" class="w95pct" required="true" label_style="display: block;" />'
+),
+function_xml = replace(function_xml,
+'<message input_type="text">',
+'<message input_type="textarea" rows="2" label="Log" class="w95pct" required="true" label_style="display: block;">'
+)
+where function_name = 'log_msg';
 
 
 # THIS FIXES ANY COMMANDS THAT HAD VARIABLE_XML

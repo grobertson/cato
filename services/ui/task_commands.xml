@@ -157,7 +157,7 @@
 			</command>
 			<command name="log_msg" label="Log Message" description="Places a message in the logging table." help="&lt;b&gt;Log Message&lt;/b&gt;&lt;br&gt;Use Log Message to place a message in the logging table. This can be informational, for debugging purposes, or for saving error messages. Variable substitution occurs prior to the message insertion into the database." icon="static/images/icons/signature_32.png">
 				<function name="log_msg">
-					<message input_type="text" />
+					<message input_type="textarea" rows="2" label="Log" class="w95pct" required="true" label_style="display: block;" />
 				</function>
 			</command>
 			<command name="read_file" label="Read File" description="Reads a file into variables for processing." help="&lt;b&gt;Read File&lt;/b&gt;&lt;br&gt;Read File will read the contents of a file and process into variables for use in the task." icon="static/images/icons/readfile_32.png">
