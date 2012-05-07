@@ -204,18 +204,17 @@ function GetProvidersList() {
 
 
 function GetProviderClouds() {
+	// when ADDING, we need to get the clouds for this provider
 	var provider = $("#ddlProvider").val();
 
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmGetProviderClouds",
+        url: "cloudMethods/wmGetProviderClouds",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
-            var provider = jQuery.parseJSON(response.d);
-
+        success: function (provider) {
             // all we want here is to loop the clouds
             $("#ddlTestCloud").empty();
             $.each(provider.Clouds, function(id, cloud){
@@ -457,13 +456,12 @@ function SaveItem(close_after_save) {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmSaveAccount",
+        url: "cloudMethods/wmSaveAccount",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (account) {
         	try {
-	            var account = jQuery.parseJSON(response.d);
 		        if (account) {
 					//if there are errors or info, we're closing the dialog.
 					//just makes things cleaner regarding the "mode" (add or edit)
@@ -475,8 +473,8 @@ function SaveItem(close_after_save) {
 		        		showAlert(account.error);
 		        	} else {
 						// clear the search field and fire a search click, should reload the grid
-		                $("[id*='txtSearch']").val("");
-						GetAccounts();
+		                $("#txtSearch").val("");
+						GetItems();
 		
 						var dropdown_label = account.Name + ' (' + account.Provider + ')';
 						//if we are adding a new one, add it to the dropdown too
@@ -502,10 +500,10 @@ function SaveItem(close_after_save) {
 		            	bSaved = true;
 	          		}
 		        } else {
-		            showAlert(response.d);
+		            showAlert(response);
 		        }
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {
@@ -583,15 +581,15 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmDeleteAccounts",
+        url: "cloudMethods/wmDeleteAccounts",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
+        success: function (response) {
         	var do_refresh = false;
         	
 			//first, which one is selected?
-			var current = $("#mySelect option:selected").val();
+			var current = $("#header_cloud_accounts option:selected").val();
 
         	//remove the deleted ones from the cloud account dropdown
 			myArray = $("#hidSelectedArray").val().split(',');
@@ -607,13 +605,13 @@ function DeleteItems() {
             	$('#header_cloud_accounts').change();
             
             //update the list in the dialog
-            if (msg.d.length == 0) {
+            if (response) {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-				GetAccounts();
+                $("#txtSearch").val("");
+				GetItems();
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
             } else {

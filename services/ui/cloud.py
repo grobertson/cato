@@ -282,3 +282,63 @@ class CloudAccount(object):
         except Exception, ex:
             raise ex
 
+    #STATIC METHOD
+    #creates this Cloud as a new record in the db
+    #and returns the object
+    @staticmethod
+    def DBCreateNew(sAccountName, sAccountNumber, sProvider, sLoginID, sLoginPassword, sIsDefault):
+        try:
+            db = catocommon.new_conn()
+
+            # if there are no rows yet, make this one the default even if the box isn't checked.
+            if sIsDefault == "0":
+                iExists = -1
+                
+                sSQL = "select count(*) as cnt from cloud_account"
+                iExists = db.select_col_noexcep(sSQL)
+                if iExists == None:
+                    if db.error:
+                        db.tran_rollback()
+                        return None, "Unable to count Cloud Accounts: " + db.error
+                
+                if iExists == 0:
+                    sIsDefault = "1"
+
+            sNewID = uiCommon.NewGUID()
+            sPW = (catocommon.cato_encrypt(sLoginPassword) if sLoginPassword else "")
+            
+            sSQL = "insert into cloud_account" \
+                " (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" \
+                " values ('" + sNewID + "'," \
+                "'" + sAccountName + "'," \
+                "'" + sAccountNumber + "'," \
+                "'" + sProvider + "'," \
+                "'" + sIsDefault + "'," \
+                "'" + sLoginID + "'," \
+                "'" + sPW + "'," \
+                "0)"
+            
+            if not db.tran_exec_noexcep(sSQL):
+                if db.error == "key_violation":
+                    sErr = "A Cloud Account with that name already exists.  Please select another name."
+                    return None, sErr
+                else: 
+                    return None, db.error
+            
+            # if "default" was selected, unset all the others
+            if uiCommon.IsTrue(sIsDefault):
+                sSQL = "update cloud_account set is_default = 0 where account_id <> '" + sNewID + "'"
+                if not db.tran_exec_noexcep(sSQL):
+                    raise Exception(db.error)
+
+            db.tran_commit()
+            db.close()
+            
+            # now it's inserted... lets get it back from the db as a complete object for confirmation.
+            ca = CloudAccount()
+            ca.FromID(sNewID)
+
+            # yay!
+            return ca, None
+        except Exception, ex:
+            raise ex

@@ -200,7 +200,7 @@ class cloudMethods:
             
             #get important data that will be deleted for the log
             sSQL = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = uiGlobals.request.db.select_all_dict(sSQL)
 
             sSQL = "delete from clouds where cloud_id in (" + sDeleteArray + ")"
             if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
@@ -211,7 +211,7 @@ class cloudMethods:
 
             #if we made it here, save the logs
             for dr in rows:
-                uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Cloud, dr[0], dr[1], dr[2] + " Cloud Deleted.")
+                uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Cloud, dr["cloud_id"], dr["cloud_name"], dr["provider"] + " Cloud Deleted.")
     
             return "{\"result\" : \"success\"}"
             
@@ -234,7 +234,7 @@ class cloudMethods:
                 for row in ca.DataTable:
                     sHTML += "<tr account_id=\"" + row["account_id"] + "\">"
                     
-                    if row["has_ecosystems"]:
+                    if not row["has_ecosystems"]:
                         sHTML += "<td class=\"chkboxcolumn\">"
                         sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
                         " id=\"chk_" + row["account_id"] + "\"" \
@@ -316,4 +316,115 @@ class cloudMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
+    def wmGetProviderClouds(self):
+        try:
+            sProvider = uiCommon.getAjaxArg("sProvider")
+            
+            cp = uiCommon.GetCloudProviders()
+            if cp is None:
+                return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}"
+            else:
+                p = cp.Providers[sProvider]
+                if p is not None:
+                    return p.AsJSON()
+                else:
+                    return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def wmSaveAccount(self):
+        try:
+            sMode = uiCommon.getAjaxArg("sMode")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            sAccountName = uiCommon.getAjaxArg("sAccountName")
+            sAccountNumber = uiCommon.getAjaxArg("sAccountNumber")
+            sProvider = uiCommon.getAjaxArg("sProvider")
+            sLoginID = uiCommon.getAjaxArg("sLoginID")
+            sLoginPassword = uiCommon.getAjaxArg("sLoginPassword")
+            sLoginPasswordConfirm = uiCommon.getAjaxArg("sLoginPasswordConfirm")
+            sIsDefault = uiCommon.getAjaxArg("sIsDefault")
+            #sAutoManageSecurity = uiCommon.getAjaxArg("sAutoManageSecurity")
+
+            if sLoginPassword != sLoginPasswordConfirm:
+                return "{\"info\" : \"Passwords must match.\"}"
+
+            if sMode == "add":
+                ca, sErr = cloud.CloudAccount.DBCreateNew(sAccountName, sAccountNumber, sProvider, sLoginID, sLoginPassword, sIsDefault)
+                if sErr:
+                    return "{\"error\" : \"" + sErr + "\"}"
+                    
+                if ca is None:
+                    return "{\"error\" : \"Unable to create Cloud Account.\"}"
+                else:
+                    uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.CloudAccount, ca.ID, ca.Name, "Account Created")
+        
+                    # refresh the cloud account list in the session
+#                    if not uiCommon.PutCloudAccountsInSession():
+#                        uiGlobals.request.Messages.append("Error refreshing Cloud Accounts in session: " + uiGlobals.request.db.error)
+
+#            elif sMode == "edit":
+#                # TODO: test the two passwords and confirm they match!
+#                
+#                ca = CloudAccount(sAccountID)
+#                if ca is None:
+#                    return "{\"error\" : \"Unable to get Cloud Account using ID [" + sAccountID + "].\"}"
+#                else:
+#                    ca.ID = sAccountID
+#                    ca.Name = sAccountName
+#                    ca.AccountNumber = sAccountNumber
+#                    ca.LoginID = sLoginID
+#                    ca.LoginPassword = sLoginPassword
+#                    ca.IsDefault = (true if sIsDefault == "1" else false)
+#                    
+#                    # note: we must reassign the whole provider
+#                    # changing the name screws up the CloudProviders object in the session, which is writable! (oops)
+#                    ca.Provider = Provider.GetFromSession(sProvider)
+#                    
+#                    if !ca.DBUpdate(0000BYREF_ARG0000sErr):
+#                        uiGlobals.request.Messages.append(sErr);    
+#                    
+
+            if ca:
+                return ca.AsJSON()
+            else:
+                return "{\"error\" : \"Unable to save Cloud Account using mode [" + sMode + "].\"}"
+
+        except Exception:
+            uiGlobals.request.Messages.append("Error: General Exception: " + traceback.format_exc())
+        
+        #  no errors to here, so return an empty object
+        return "{}"
+
+    def wmDeleteAccounts(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
     
+            sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
+
+            #  get data that will be deleted for the log
+            sSQL = "select account_id, account_name, provider, login_id from cloud_account where account_id in (" + sDeleteArray + ")"
+            rows = uiGlobals.request.db.select_all_dict(sSQL)
+
+
+            sSQL = "delete from cloud_account_keypair where account_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from cloud_account where account_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            uiGlobals.request.db.tran_commit()
+
+            #  if we made it here, so save the logs
+            for dr in rows:
+                uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.CloudAccount, dr["account_id"], dr["account_name"], dr["provider"] + " Account for LoginID [" + dr["login_id"] + "] Deleted")
+
+            return "{\"result\" : \"success\"}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

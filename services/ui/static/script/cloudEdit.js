@@ -380,7 +380,7 @@ function DeleteItems() {
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
+                $("#txtSearch").val("");
 				GetItems();
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);

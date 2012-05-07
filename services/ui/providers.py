@@ -37,7 +37,6 @@ class CloudProviders(object):
                             raise Exception("Cloud Providers XML: All Clouds must have the 'api_protocol' attribute.")
                         #region is an optional attribute
                         sRegion = xCloud.get("region", "")
-                            
                         c = cloud.Cloud()
                         c.FromArgs(pv, False, xCloud.get("id", None), xCloud.get("name", None), xCloud.get("api_url", None), xCloud.get("api_protocol", None), sRegion)
                         if c.ID:
@@ -112,7 +111,7 @@ class CloudProviders(object):
                             p.CloudObjectTypes[cot.ID] = cot
                         pv.Products[p.Name] = p
                     self.Providers[pv.Name] = pv
-
+                    
         except Exception, ex:
             raise ex
 
@@ -129,6 +128,8 @@ class Provider(object):
         self.TestProduct = sTestProduct
         self.TestObject = sTestObject
         self.UserDefinedClouds = bUserDefinedClouds
+        self.Clouds = {}
+        self.Products = {}
 
     #get it by ID from the session
     @staticmethod
@@ -177,8 +178,7 @@ class Provider(object):
     def RefreshClouds(self):
         try:
             self.Clouds.clear()
-            sErr = ""
-            sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds  where provider = '" + self.Name + "'  order by cloud_name"
+            sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds where provider = '" + self.Name + "'  order by cloud_name"
             db = catocommon.new_conn()
             dt = db.select_all(sSQL)
             db.close()
@@ -189,12 +189,38 @@ class Provider(object):
                     if c:
                         self.Clouds[c.ID] = c
             else:
-                raise Exception("Error building Cloud object: " + sErr)
+                raise Exception("Error building Cloud object: " + db.error)
             return 
         except Exception, ex:
             raise ex
     
-    
+    def AsJSON(self):
+        try:
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+            sb.append("\"%s\" : \"%s\"," % ("TestProduct", self.TestProduct))
+            sb.append("\"%s\" : \"%s\"," % ("UserDefinedClouds", self.UserDefinedClouds))
+            sb.append("\"%s\" : \"%s\"," % ("TestObject", self.TestObject))
+            
+            # the clouds hooked to this account
+            sb.append("\"Clouds\" : {")
+            lst = []
+            for cname, c in self.Clouds.iteritems():
+                #stick em all in a list for now
+                s = "\"%s\" : %s" % (c.ID, c.AsJSON())
+                lst.append(s)
+            #join the list using commas!
+            sb.append(",".join(lst))
+
+            sb.append("}")
+
+            
+            sb.append("}")
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
+
 class Product(object):
     ParentProvider = None
     Name = None
