@@ -4,7 +4,6 @@
 """
 
 import uiCommon
-import uiGlobals
 from catocommon import catocommon
 
 class Cloud(object):
