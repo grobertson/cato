@@ -82,16 +82,36 @@ $(document).ready(function () {
         }
     });
 
-	//what happens when you click a row?
-    $("[tag='selectable']").live("click", function () {
-        showPleaseWait();
-        location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + $(this).parent().attr("ecotemplate_id");
-    });
+    ManagePageLoad();
+	GetItems();
 });
 
-function pageLoad() {
-    ManagePageLoad();
+function GetItems() {
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "ecoMethods/wmGetEcotemplatesTable",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+            $("#ecotemplates").html(response);
+            //gotta restripe the table
+            initJtable(true, true);
+
+		    //what happens when you click a row?
+		    $(".selectable").click(function () {
+		        showPleaseWait();
+		        location.href = '/ecoTemplateEdit?ecotemplate_id=' + $(this).parent().attr("ecotemplate_id");
+		    });
+
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
+
 
 function ShowItemAdd() {
     $("#hidMode").val("add");
@@ -230,20 +250,24 @@ function Save() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmCreateEcotemplate",
+        url: "ecoMethods/wmCreateEcotemplate",
         data: '{"sName":"' + name + '","sDescription":"' + desc + '","sStormFileSource":"' + sfs + '","sStormFile":"' + sf + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 36) {
+        success: function (response) {
+        	if (response.info) {
+    			showInfo(response.info);
+        	} else if (response.error) {
+        		showAlert(response.error);
+            } else if (response.ecotemplate_id) {
             	showPleaseWait();
             	
             	//pass a flag if the "run now" box was checked.
             	var runqs = ($("#chkStormRunNow")[0].checked ? "&run=true" : "");
             	
-                location.href = "ecoTemplateEdit.aspx?ecotemplate_id=" + msg.d + runqs;
+                location.href = "ecoTemplateEdit?ecotemplate_id=" + response.ecotemplate_id + runqs;
             } else {
-            	showInfo(msg.d, "", true);
+            	showInfo(response, "", true);
             }
         },
         error: function (response) {

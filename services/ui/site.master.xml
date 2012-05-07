@@ -46,9 +46,9 @@
 			</item>
 		</menu>
 		<menu roles="developer user" label="Ecosystems" icon="static/images/icons/ecosystems_24.png">
-			<item roles="developer" label="Manage Ecotemplates" icon="static/images/icons/ecotemplates_24.png" onclick="showPleaseWait();" href="../pages/ecoTemplateManage.aspx">
+			<item roles="developer" label="Manage Ecotemplates" icon="static/images/icons/ecotemplates_24.png" onclick="showPleaseWait();" href="/ecoTemplateManage">
 			</item>
-			<item roles="developer user" label="Manage Ecosystems" icon="static/images/icons/ecosystems_24.png" onclick="showPleaseWait();" href="../pages/ecosystemManage.aspx">
+			<item roles="developer user" label="Manage Ecosystems" icon="static/images/icons/ecosystems_24.png" onclick="showPleaseWait();" href="/ecosystemManage">
 			</item>
 			<item roles="developer user" label="Cloud Discovery" icon="static/images/icons/cloud_discovery_24.png" onclick="showPleaseWait();" href="../pages/cloudDiscovery.aspx">
 			</item>
