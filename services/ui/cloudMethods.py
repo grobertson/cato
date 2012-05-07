@@ -180,11 +180,11 @@ class cloudMethods:
                     uiGlobals.request.Messages.append(msg)
                     return "{\"info\" : \"%s\"}" % msg
                 
-                uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Cloud, self.ID, self.Name, sCloudName, self.Name)
+                uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Cloud, c.ID, c.Name, sCloudName, c.Name)
 
                 #update the CloudProviders in the session
                 cp = uiCommon.GetCloudProviders() #get the session object
-                cp.Providers[self.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
+                cp.Providers[c.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
                 uiCommon.UpdateCloudProviders(cp) #update the session
 
             if c:
