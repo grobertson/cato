@@ -87,6 +87,7 @@ with open("convert.in", 'r') as f_in:
         line = line.replace("else if", "elif")
         line = line.replace("!string.IsNullOrEmpty(", "")
         line = line.replace("string.IsNullOrEmpty(", "not ")
+        line = line.replace("this.", "self.")
         
 
         # Try/Catch blocks

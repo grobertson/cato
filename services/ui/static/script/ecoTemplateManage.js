@@ -147,33 +147,37 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmDeleteEcotemplates",
+        url: "ecoMethods/wmDeleteEcotemplates",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
-
+        success: function (response) {
+        	if (response.info) {
+    			showInfo(response.info);
+        	} else if (response.error) {
+        		showAlert(response.error);
+            } else if (response.result == "success") {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-                $("[id*='btnSearch']").click();
+                $("#txtSearch").val("");
+                GetItems();
 
                 hidePleaseWait();
                 showInfo('Delete Successful');
-
             } else {
-                showAlert(msg.d);
+                showAlert(response);
 
                 $("#delete_dialog").dialog('close');
                 
                 // reload the list, some may have been deleted.
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-                $("[id*='btnSearch']").click();
+                $("#txtSearch").val("");
+                GetItems();
             }
+
+            $("#hidSelectedArray").val("");
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -305,21 +309,25 @@ function CopyTemplate() {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmCopyEcotemplate",
+        url: "ecoMethods/wmCopyEcotemplate",
         data: '{"sEcoTemplateID":"' + sSelectedTemplateID + '","sNewName":"' + sNewTemplateName + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 36) {
+        success: function (response) {
+        	if (response.info) {
+    			showInfo(response.info);
+        	} else if (response.error) {
+        		showAlert(response.error);
+            } else if (response.ecotemplate_id) {
                 $("#copy_dialog").dialog('close');
-                // clear the search field and fire a search click, should reload the grid
-                $("#ctl00_phDetail_txtSearch").val("");
-                $("#ctl00_phDetail_btnSearch").click();
+                // clear the search field and reload the grid
+                $("#txtSearch").val("");
+               	GetItems();
 
                 hidePleaseWait();
                 showInfo('Copy Successful.');
             } else {
-                showInfo(msg.d);
+                showInfo(response);
             	$("#txtCopyEcotemplateName").val("");
             }
         },

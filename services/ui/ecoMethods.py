@@ -106,11 +106,70 @@ class ecoMethods:
                 
                 result, msg = et.DBSave()
                 if result:
+                    uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Ecosystem, et.ID, et.Name, "Ecotemplate created.")
                     return "{\"ecotemplate_id\" : \"%s\"}" % et.ID
                 else:
                     uiGlobals.request.Messages.append(msg)
                     return "{\"info\" : \"%s\"}" % msg
             else:
                 return "{\"error\" : \"Unable to create Ecotemplate.\"}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmDeleteEcotemplates(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
+    
+            sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
+            
+            # can't delete it if it's referenced.
+            sSQL = "select count(*) from ecosystem where ecotemplate_id in (" + sDeleteArray + ")"
+            iResults = uiGlobals.request.db.select_col_noexcep(sSQL)
+
+            if not iResults:
+                sSQL = "delete from ecotemplate_action where ecotemplate_id in (" + sDeleteArray + ")"
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                
+                sSQL = "delete from ecotemplate where ecotemplate_id in (" + sDeleteArray + ")"
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                
+                #if we made it here, save the logs
+                uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Ecosystem Templates(s) Deleted [" + sDeleteArray + "]")
+            else:
+                return "{\"info\" : \"Unable to delete - %d Ecosystems are referenced by these templates.\"}" % iResults
+                
+            return "{\"result\" : \"success\"}"
+            
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def wmCopyEcotemplate(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+            sNewName = uiCommon.getAjaxArg("sNewName")
+            
+            if sEcoTemplateID and sNewName:
+    
+                # have to instantiate one to copy it
+                et = ecosystem.Ecotemplate()
+                et.FromID(sEcoTemplateID)
+                if et is not None:
+                    result, msg = et.DBCopy(sNewName)
+                    if not result:
+                        return "{\"error\" : \"%s\"}" % msg
+                    
+                    # returning the ID indicates success...
+                    return "{\"ecotemplate_id\" : \"%s\"}" % et.ID
+                else:
+                    uiGlobals.request.Messages.append("Unable to get Template [" + sEcoTemplateID + "] to copy.")
+            else:
+                return "{\"info\" : \"Unable to Copy - New name and source ID are both required.\"}"
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
