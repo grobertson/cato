@@ -289,7 +289,7 @@ def GetSessionObject(category, key):
                 return ""
         
         return ""
-    except Exception as ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def SetSessionObject(key, obj, category=""):
@@ -311,7 +311,7 @@ def GetCloudProviders(): #These were put in the session at login
             return cp
         else:
             log("ERROR: Providers pickle could not be read.", 0)
-    except Exception, ex:
+    except Exception:
         log("ERROR: Providers pickle could not be read." + traceback.format_exc(), 0)
         
     return None
@@ -347,7 +347,7 @@ def GetTaskFunctionCategories():
             return obj.Categories
         else:
             log("ERROR: Categories pickle could not be read.", 0)
-    except Exception, ex:
+    except Exception:
         log("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
         
     return None

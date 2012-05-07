@@ -2118,7 +2118,7 @@ def NewConnection(oStep):
             sHTML += "<input type=\"text\" " + \
                 CommonAttribs(oStep, True, "asset", "w300px code") + \
                 " is_required=\"true\"" \
-                " value=\"" + sAssetID + "\"" + " /><br />\n"
+                " value=\"" + sAssetID + "\"" + " />\n"
     
             sHTML += " in Cloud \n"
             
