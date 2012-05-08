@@ -230,7 +230,6 @@ function doGetDetails() {
             showAlert(response.responseText);
         }
     });
-
 }
 
 function doGetCommands() {

@@ -50,6 +50,23 @@ class ecoMethods:
                     uiGlobals.request.db.close()
                 uiCommon.log(uiGlobals.request.DumpMessages(), 0)
 
+    def wmGetEcotemplate(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sID = uiCommon.getAjaxArg("sID")
+            et = ecosystem.Ecotemplate()
+            if et:
+                et.FromID(sID)
+                if et.ID:
+                    return et.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
     def wmGetEcotemplatesTable(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name

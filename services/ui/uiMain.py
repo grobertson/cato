@@ -80,6 +80,10 @@ class ecoTemplateManage:
     def GET(self):
         return render.ecoTemplateManage()
 
+class ecoTemplateEdit:        
+    def GET(self):
+        return render.ecoTemplateEdit()
+
 class ecosystemManage:        
     def GET(self):
         return render.ecosystemManage()
@@ -284,6 +288,7 @@ if __name__ == "__main__":
         '/taskManage', 'taskManage',
         '/systemStatus', 'systemStatus',
         '/taskStatus', 'taskStatus',
+        '/ecoTemplateEdit', 'ecoTemplateEdit',
         '/ecoTemplateManage', 'ecoTemplateManage',
         '/ecosystemManage', 'ecosystemManage',
         '/bypass', 'bypass'

@@ -16,14 +16,14 @@
 //This is all the functions to support the ecoTemplateEdit page.
 $(document).ready(function () {
     //used a lot
-    g_id = $("#ctl00_phDetail_hidEcoTemplateID").val();
+    g_id = getQuerystringVariable("ecotemplate_id");
 
     //fix certain ui elements to not have selectable text
     $("#toolbox .toolbox_tab").disableSelection();
 
     //specific field validation and masking
-    $("#ctl00_phDetail_txtEcoTemplateName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
-    $("#ctl00_phDetail_txtDescription").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
+    $("#txtEcoTemplateName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
+    $("#txtDescription").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
 
     //enabling the 'change' event for the Details tab
     $("#div_details :input[te_group='detail_fields']").change(function () { doDetailFieldUpdate(this); });
@@ -299,7 +299,37 @@ $(document).ready(function () {
             }
         }
     });
+    
+    GetDetails();
 });
+
+function GetDetails() {
+	$.ajax({
+        type: "POST",
+        async: true,
+        url: "ecoMethods/wmGetEcotemplate",
+        data: '{"sID":"' + g_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (task) {
+        	$("#woot").html(task)
+	       // try {
+				// $("#hidOriginalTaskID").val(task.OriginalTaskID);
+				// $("#txtTaskCode").val(task.Code);
+				// $("#txtTaskName").val(task.Name);
+				// $("#txtDescription").val(task.Description);
+				// $("#txtConcurrentInstances").val(task.ConcurrentInstances);
+				// $("#txtQueueDepth").val(task.QueueDepth);
+// 	       		
+			// } catch (ex) {
+				// showAlert(response.d);
+			// }
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 function SaveIcon() {
 	var action_id = $("#selected_action_id").val();
@@ -590,7 +620,7 @@ function doDetailFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // Change the name in the header
-                    if (column == "Name") { $("#ctl00_phDetail_lblEcoTemplateHeader").html(unpackJSON(value)); };
+                    if (column == "Name") { $("#lblEcoTemplateHeader").html(unpackJSON(value)); };
                 }
             },
             error: function (response) {
