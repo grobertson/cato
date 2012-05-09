@@ -1623,6 +1623,7 @@ def RunTask(oStep):
         sAssetName = ""
         sLabel = ""
         sHTML = ""
+        sParameterXML = ""
         
         sOriginalTaskID = xd.findtext("original_task_id", "")
         sVersion = xd.findtext("version")
@@ -1640,7 +1641,7 @@ def RunTask(oStep):
     
         # get the name and code for belonging to this otid and version
         if uiCommon.IsGUID(sOriginalTaskID):
-            sSQL = "select task_id, task_code, task_name from task" \
+            sSQL = "select task_id, task_code, task_name, parameter_xml from task" \
                 " where original_task_id = '" + sOriginalTaskID + "'" + \
                 (" and default_version = 1" if not sVersion else " and version = '" + sVersion + "'")
     
@@ -1652,11 +1653,12 @@ def RunTask(oStep):
             if dr is not None:
                 sLabel = dr["task_code"] + " : " + dr["task_name"]
                 sActualTaskID = dr["task_id"]
+                sParameterXML = (dr["parameter_xml"] if dr["parameter_xml"] else "")
             else:
                 # It's possible that the user changed the task from the picker but had 
                 # selected a version, which is still there now but may not apply to the new task.
                 # so, if the above SQL failed, try: again by resetting the version box to the default.
-                sSQL = "select task_id, task_code, task_name from task" \
+                sSQL = "select task_id, task_code, task_name, parameter_xml from task" \
                     " where original_task_id = '" + sOriginalTaskID + "'" \
                     " and default_version = 1"
     
@@ -1668,6 +1670,7 @@ def RunTask(oStep):
                 if dr is not None:
                     sLabel = dr["task_code"] + " : " + dr["task_name"]
                     sActualTaskID = dr["task_id"]
+                    sParameterXML = (dr["parameter_xml"] if dr["parameter_xml"] else "")
     
                     # oh yeah, and set the version field to null since it was wrong.
                     SetNodeValueinCommandXML(sStepID, "//version", "")
@@ -1791,11 +1794,17 @@ def RunTask(oStep):
         
         # edit parameters link - not available unless a task is selected
         if sActualTaskID:
-            sHTML += "<hr />"
-            sHTML += "<div class=\"fn_runtask_edit_parameters_btn pointer\"" \
-                " task_id=\"" + sActualTaskID + "\"" \
-                " step_id=\"" + sStepID + "\">" \
-                "<span class=\"ui-icon ui-icon-pencil forceinline \"></span> Edit Parameters</div>"
+            # this is cheating but it's faster than parsing xml
+            # count the occurences of "</parameter>" in the parameter_xml
+            x = sParameterXML.count("</parameter>")
+            r = sParameterXML.count("required=\"true\"")
+            if x:
+                icon = ("alert" if r else "pencil")
+                sHTML += "<hr />"
+                sHTML += "<div class=\"fn_runtask_edit_parameters_btn pointer\"" \
+                    " task_id=\"" + sActualTaskID + "\"" \
+                    " step_id=\"" + sStepID + "\">" \
+                    "<span class=\"ui-icon ui-icon-%s forceinline \"></span> Edit Parameters (%s)</div>" % (icon, str(x))
         
         return sHTML
     except Exception:

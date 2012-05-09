@@ -339,41 +339,42 @@ class uiMethods:
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
             else:
-                for dr in dt:
-                    sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_plan\"" \
-                        " id=\"ap_" + str(dr["plan_id"]) + "\"" \
-                        " plan_id=\"" + str(dr["plan_id"]) + "\"" \
-                        " eco_id=\"" + dr["ecosystem_id"] + "\"" \
-                        " run_on=\"" + str(dr["run_on_dt"]) + "\"" \
-                        " source=\"" + dr["source"] + "\"" \
-                        " schedule_id=\"" + str(dr["schedule_id"]) + "\"" \
-                    ">"
-                    sHTML += " <div class=\"floatleft action_plan_name\">"
-
-                    # an icon denotes if it's manual or scheduled
-                    if dr["source"] == "schedule":
-                        sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator\" title=\"Scheduled\"></span>"
-                    else:
-                        sHTML += "<span class=\"floatleft ui-icon ui-icon-document\" title=\"Run Later\"></span>"
-
-                    sHTML += dr["run_on_dt"]
-
-                    # show the action and ecosystem if it's in the results but NOT passed in
-                    # that means we are looking at this from a TASK
-                    if not sActionID:
-                        if dr["ecosystem_name"]:
-                            sHTML += " " + dr["ecosystem_name"]
-
-                        if dr["action_name"]:
-                            sHTML += " (" + dr["action_name"] + ")"
-                    sHTML += " </div>"
-
-                    sHTML += " <div class=\"floatright\">"
-                    sHTML += "<span class=\"ui-icon ui-icon-trash action_plan_remove_btn\" title=\"Delete Plan\"></span>"
-                    sHTML += " </div>"
-
-
-                    sHTML += " </div>"
+                if dt:
+                    for dr in dt:
+                        sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_plan\"" \
+                            " id=\"ap_" + str(dr["plan_id"]) + "\"" \
+                            " plan_id=\"" + str(dr["plan_id"]) + "\"" \
+                            " eco_id=\"" + dr["ecosystem_id"] + "\"" \
+                            " run_on=\"" + str(dr["run_on_dt"]) + "\"" \
+                            " source=\"" + dr["source"] + "\"" \
+                            " schedule_id=\"" + str(dr["schedule_id"]) + "\"" \
+                        ">"
+                        sHTML += " <div class=\"floatleft action_plan_name\">"
+    
+                        # an icon denotes if it's manual or scheduled
+                        if dr["source"] == "schedule":
+                            sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator\" title=\"Scheduled\"></span>"
+                        else:
+                            sHTML += "<span class=\"floatleft ui-icon ui-icon-document\" title=\"Run Later\"></span>"
+    
+                        sHTML += dr["run_on_dt"]
+    
+                        # show the action and ecosystem if it's in the results but NOT passed in
+                        # that means we are looking at this from a TASK
+                        if not sActionID:
+                            if dr["ecosystem_name"]:
+                                sHTML += " " + dr["ecosystem_name"]
+    
+                            if dr["action_name"]:
+                                sHTML += " (" + dr["action_name"] + ")"
+                        sHTML += " </div>"
+    
+                        sHTML += " <div class=\"floatright\">"
+                        sHTML += "<span class=\"ui-icon ui-icon-trash action_plan_remove_btn\" title=\"Delete Plan\"></span>"
+                        sHTML += " </div>"
+    
+    
+                        sHTML += " </div>"
 
             return sHTML
 
@@ -396,36 +397,37 @@ class uiMethods:
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
             else:
-                for dr in dt:
-                    sToolTip = ""
-                    # show the action and ecosystem if it's in the results but NOT passed in
-                    # that means we are looking at this from a TASK
-                    if not sActionID:
-                        sToolTip += "Ecosystem: " + (dr["ecosystem_name"] if dr["ecosystem_name"] else "None") + "<br />"
-
-                        if dr["action_name"]:
-                            sToolTip += "Action: " + dr["action_name"] + "<br />"
-
-                    sToolTip += (dr["descr"] if dr["descr"] else "")
-
-                    # draw it
-                    sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_schedule\"" \
-                        " id=\"as_" + dr["schedule_id"] + "\"" \
-                    ">"
-                    sHTML += " <div class=\"floatleft schedule_name\">"
-
-                    sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator schedule_tip\" title=\"" + sToolTip + "\"></span>"
-
-                    sHTML += (dr["schedule_id"] if not dr["label"] else dr["label"])
-
-                    sHTML += " </div>"
-
-                    sHTML += " <div class=\"floatright\">"
-                    sHTML += "<span class=\"ui-icon ui-icon-trash schedule_remove_btn\" title=\"Delete Schedule\"></span>"
-                    sHTML += " </div>"
-
-
-                    sHTML += " </div>"
+                if dt:
+                    for dr in dt:
+                        sToolTip = ""
+                        # show the action and ecosystem if it's in the results but NOT passed in
+                        # that means we are looking at this from a TASK
+                        if not sActionID:
+                            sToolTip += "Ecosystem: " + (dr["ecosystem_name"] if dr["ecosystem_name"] else "None") + "<br />"
+        
+                            if dr["action_name"]:
+                                sToolTip += "Action: " + dr["action_name"] + "<br />"
+        
+                        sToolTip += (dr["descr"] if dr["descr"] else "")
+        
+                        # draw it
+                        sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_schedule\"" \
+                            " id=\"as_" + dr["schedule_id"] + "\"" \
+                        ">"
+                        sHTML += " <div class=\"floatleft schedule_name\">"
+        
+                        sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator schedule_tip\" title=\"" + sToolTip + "\"></span>"
+        
+                        sHTML += (dr["schedule_id"] if not dr["label"] else dr["label"])
+        
+                        sHTML += " </div>"
+        
+                        sHTML += " <div class=\"floatright\">"
+                        sHTML += "<span class=\"ui-icon ui-icon-trash schedule_remove_btn\" title=\"Delete Schedule\"></span>"
+                        sHTML += " </div>"
+        
+        
+                        sHTML += " </div>"
 
             return sHTML
 

@@ -552,10 +552,10 @@ function ShowRunTaskParameterEdit() {
 	        url: "taskMethods/wmGetParameterXML",
 	        data: '{"sType":"runtask","sID":"' + rt_step_id + '","sFilterByEcosystemID":"' + rt_task_id + '"}',
 	        contentType: "application/json; charset=utf-8",
-	        dataType: "json",
-	        success: function (retval) {
-	            if (retval.d != "")
-	                task_parameter_xml = $.parseXML(retval.d);
+	        dataType: "xml",
+	        success: function (response) {
+	            if (response != "")
+	                task_parameter_xml = response;
 	        },
 	        error: function (response) {
 	            showAlert(response.responseText);
@@ -595,13 +595,11 @@ function SaveRunTaskParameters() {
     var parameter_xml = packJSON(buildXMLToSubmit());
     //alert(parameter_xml);
 
-    var args = '{"sType":"runtask","sID":"' + rt_step_id + '","sTaskID":"' + rt_task_id + '","sXML":"' + parameter_xml + '"}';
-        
     $.ajax({
         async: false,
         type: "POST",
         url: "taskMethods/wmSaveDefaultParameterXML",
-        data: '{"args":' + args + '}',
+        data: '{"sType":"runtask","sID":"' + rt_step_id + '","sTaskID":"' + rt_task_id + '","sXML":"' + parameter_xml + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "text",
         success: function (response) {
