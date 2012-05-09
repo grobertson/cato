@@ -377,7 +377,7 @@ class taskMethods:
 
             t, sErr = task.Task.FromID(sCopyTaskID)
             if not t:
-                return "{\"error\" : \"Unable to build Task object from ID [" + sCopyTaskID + "].\"}"
+                return "{\"error\" : \"Unable to build Task object from ID [" + sCopyTaskID + "]. %s\"}" % sErr
             
             sNewTaskID = t.Copy(0, sTaskName, sTaskCode)
             if not sNewTaskID:
@@ -1330,7 +1330,6 @@ class taskMethods:
             sSkip = uiCommon.getAjaxArg("sSkip")
 
             sSQL = "update task_step set commented = " + str(sSkip) + " where step_id = '" + sStepID + "'"
-            print sSQL
             if not uiGlobals.request.db.exec_db_noexcep(sSQL):
                 uiGlobals.request.Messages.append("Unable to update steps." + uiGlobals.request.db.error)
 
@@ -2101,6 +2100,7 @@ class taskMethods:
                         break
             
                     # look it up in the task param xml
+                    sDefID = xDefault.get("id", "")
                     sDefName = xDefault.findtext("name", "")
                     xDefValues = xDefault.find("values")
                     
@@ -2135,9 +2135,8 @@ class taskMethods:
                         uiCommon.log("INFO: A parameter exists on the Action that no longer exists on the Task.  Removing it...", 4)
                         # BUT! in order to be able to delete it, we need enough xpath information to identify it.
                         # it has an 'id' attribute ... use that.
-                        sIdToDelete = xTaskParam.get("id", None)
-                        if sIdToDelete:
-                            ST.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sIdToDelete + "']")           
+                        if sDefID:
+                            ST.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sDefID + "']")           
                         continue
             
                     if xTaskParam is not None:
@@ -2191,6 +2190,168 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
     
+    def wmSaveDefaultParameterXML(self):
+        try:
+            sType = uiCommon.getAjaxArg("sType")
+            sID = uiCommon.getAjaxArg("sID")
+            sTaskID = uiCommon.getAjaxArg("sTaskID") # sometimes this may be here
+            sXML = uiCommon.getAjaxArg("sXML")
+            sUserID = uiCommon.GetSessionUserID()
+    
+            if uiCommon.IsGUID(sID) and uiCommon.IsGUID(sUserID):
+                # we encoded this in javascript before the ajax call.
+                # the safest way to unencode it is to use the same javascript lib.
+                # (sometimes the javascript and .net libs don't translate exactly, google it.)
+                sXML = uiCommon.unpackJSON(sXML)
+
+                # we gotta peek into the XML and encrypt any newly keyed values
+                sXML = uiCommon.PrepareAndEncryptParameterXML(sXML);                
+    
+                # so, like when we read it, we gotta spin and compare, and build an XML that only represents *changes*
+                # to the defaults on the task.
+                
+                if sType == "action":
+                    # what is the task associated with this action?
+                    sSQL = "select t.task_id" \
+                        " from ecotemplate_action ea" \
+                        " join task t on ea.original_task_id = t.original_task_id" \
+                        " and t.default_version = 1" \
+                        " where ea.action_id = '" + sID + "'"
+                    sTaskID = uiGlobals.request.db.select_col_noexcep(sSQL)
+                    if uiGlobals.request.db.error:
+                        uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+                if not uiCommon.IsGUID(sTaskID):
+                    uiGlobals.request.Messages.append("Unable to find Task ID for Action, or no Task ID provided.")
+    
+    
+                sOverrideXML = ""
+                xTPDoc = None
+                xADDoc = None
+    
+                # get the parameter XML from the TASK
+                sTaskParamXML = taskMethods.GetParameterXML("task", sTaskID, "")
+                if sTaskParamXML:
+                    xTPDoc = ET.fromstring(sTaskParamXML)
+                    if xTPDoc is None:
+                        uiGlobals.request.Messages.append("Task Parameter XML data is invalid.")
+        
+                # we had the ACTION defaults handed to us
+                if sXML:
+                    xADDoc = ET.fromstring(sXML)
+                    if xADDoc is None:
+                        uiGlobals.request.Messages.append("Action Defaults XML data is invalid.")
+    
+                # spin the nodes in the ACTION xml, then dig in to the task XML and UPDATE the value if found.
+                # (if the node no longer exists, delete the node from the action XML)
+                # and action "values" take precedence over task values.
+                
+                for xDefault in xADDoc.findall("parameter"):
+                    # look it up in the task param xml
+                    sADName = xDefault.findtext("name", "")
+                    xADValues = xDefault.find("values")
+
+                    # NOTE! elementtree doesn't track parents of nodes.  We need to build a parent map...
+                    parent_map = dict((c, p) for p in xTPDoc.getiterator() for c in p)
+                    
+                    # we have the name of the parameter... go spin and find the matching node in the TASK param XML
+                    xTaskParam = None
+                    for node in xTPDoc.findall("parameter/name"):
+                        if node.text == sADName:
+                            # now we have the "name" node, what's the parent?
+                            xTaskParam = parent_map[node]
+    
+                    # if it doesn't exist in the task params, remove it from this document
+                    if xTaskParam is None:
+                        xADDoc.remove(xDefault)
+                        continue
+    
+    
+                    # and the "values" collection will be the 'next' node
+                    xTaskParamValues = xTaskParam.find("values")
+    
+                    
+                    # so... it might be 
+                    # a) just an oev (original encrypted value) so de-base64 it
+                    # b) a value flagged for encryption
+                    
+                    # note we don't care about dirty unencrypted values... they'll compare down below just fine.
+                    
+                    # is it encrypted?
+                    bEncrypted = uiCommon.IsTrue(xTaskParam.get("encrypt", ""))
+                            
+                    if bEncrypted:
+                        for xVal in xADValues.findall("value"):
+                            # a) is it an oev?  unpackJSON it (that's just an obfuscation wrapper)
+                            if uiCommon.IsTrue(xVal.get("oev", "")):
+                                xVal.text = uiCommon.unpackJSON(xVal.text)
+                                del xVal.attrib["oev"]
+                            
+                            # b) is it do_encrypt?  (remove the attribute to keep the db clutter down)
+                            if xVal.get("do_encrypt") is not None:
+                                xVal.text = catocommon.cato_encrypt(xVal.text)
+                                del xVal.attrib["do_encrypt"]
+                                
+                    
+                    # now that the encryption is sorted out,
+                    #  if the combined values of the parameter happens to match what's on the task
+                    #   we just remove it.
+                    
+                    # we're doing combined because of lists (the whole list must match for it to be a dupe)
+                    
+                    # it's easy to look at all the values in a node with the node.text property.
+                    # but we'll have to manually concatenate all the oev attributes
+                    
+                    sTaskVals = ""
+                    sDefVals = ""
+
+                    if bEncrypted:
+                        #  the task document already has the oev obfuscated
+                        for xe in xTaskParamValues.findall("value"):
+                            sTaskVals += xe.get("oev", "")
+                        # but the XML we just got from the client doesn't... it's in the value.
+                        for xe in xADValues.findall("value"):
+                            sDefVals += uiCommon.packJSON(xe.text)
+                            
+                        if sTaskVals == sDefVals:
+                            xADDoc.remove(xDefault)
+                            continue
+                    else:
+                        # just spin the values and construct a string of all the text, 
+                        # then check if they match
+                        for s in xTaskParamValues.findtext("value"):
+                            sTaskVals += s
+                        for s in xADValues.findtext("value"):
+                            sDefVals += s
+                        if sTaskVals == sDefVals:
+                            xADDoc.remove(xDefault)
+                            continue
+
+                # done
+                sOverrideXML = ET.tostring(xADDoc)
+    
+                # FINALLY, we have an XML that represents only the differences we wanna save.
+                if sType == "action":
+                    sSQL = "update ecotemplate_action set" \
+                        " parameter_defaults = '" + sOverrideXML + "'" \
+                        " where action_id = '" + sID + "'"
+    
+                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                        uiGlobals.request.Messages.append("Unable to update Action [" + sID + "]." + uiGlobals.request.db.error)
+    
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.EcoTemplate, sID, sID, "Default parameters updated: [" + sOverrideXML + "]")
+                elif sType == "runtask":
+                    # WICKED!!!!
+                    # I can use my super awesome xml functions!
+                    ST.RemoveFromCommandXML(sID, "parameters")
+                    ST.AddToCommandXML(sID, "", sOverrideXML)
+            else:
+                uiGlobals.request.Messages.append("Unable to update Eco Template Action. Missing or invalid Action ID.")
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
     """
         END OF PARAMETER METHODS
     """
@@ -2636,7 +2797,7 @@ class taskMethods:
                 # if encrypt is true we MIGHT want to encrypt this value.
                 # but it might simply be a resubmit of an existing value in which case we DON'T
                 # if it has oev: as a prefix, it needs no additional work
-                if uiCommon.IsTrue(sEncrypt):
+                if uiCommon.IsTrue(sEncrypt) and sVal:
                     if sVal.find("oev:") > -1:
                         sReadyValue = uiCommon.unpackJSON(sVal.replace("oev:", ""))
                     else:

@@ -240,12 +240,12 @@ def PrepareAndEncryptParameterXML(sParameterXML):
             #  a) encrypt new values
             for xToEncrypt in xDoc.findall("parameter/values/value[@do_encrypt='true']"):
                 xToEncrypt.text = CatoEncrypt(xToEncrypt.text)
-                xToEncrypt.attrib["do_encrypt"] = ""
+                del xToEncrypt.attrib["do_encrypt"]
     
             # b) unbase64 any oev's and move them to values
             for xToEncrypt in xDoc.findall("parameter/values/value[@oev='true']"):
                 xToEncrypt.text = unpackJSON(xToEncrypt.text)
-                xToEncrypt.attrib["oev"] = ""
+                del xToEncrypt.attrib["oev"]
             
             return ET.tostring(xDoc)
         else:

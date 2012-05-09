@@ -2209,7 +2209,6 @@ def If(oStep):
         sHTML += "<div id=\"if_" + sStepID + "_conditions\" number=\"" + str(len(xTests)) + "\">"
     
         i = 1 # because XPath starts at "1"
-        print ET.tostring(xd)
         for xTest in xTests:
             sEval = xTest.findtext("eval", None)
             xAction = xTest.find("action", None)

@@ -600,11 +600,11 @@ function SaveRunTaskParameters() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods/wmSaveDefaultParameterXML",
+        url: "taskMethods/wmSaveDefaultParameterXML",
         data: '{"args":' + args + '}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             $("#update_success_msg").text("Save Successful").fadeOut(2000);
             CloseRunTaskParameterEdit();
         },

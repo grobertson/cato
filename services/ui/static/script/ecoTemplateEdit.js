@@ -377,16 +377,14 @@ function SaveParameterDefaults() {
 	var parameter_xml = packJSON(buildXMLToSubmit());
 	//alert(parameter_xml);
 
-	var args = '{"sType":"action","sID":"' + action_id + '","sXML":"' + parameter_xml + '"}';
-
 	$.ajax({
 		async : false,
 		type : "POST",
-		url : "uiMethods.asmx/wmSaveDefaultParameterXML",
-		data : '{"args":' + args + '}',
+		url : "taskMethods/wmSaveDefaultParameterXML",
+		data : '{"sType":"action","sID":"' + action_id + '","sXML":"' + parameter_xml + '"}',
 		contentType : "application/json; charset=utf-8",
-		dataType : "json",
-		success : function(msg) {
+		dataType : "text",
+		success : function(response) {
 			$("#update_success_msg").text("Save Successful").fadeOut(2000);
 		},
 		error : function(response) {
