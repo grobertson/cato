@@ -62,14 +62,10 @@ class Task(object):
         self.Description = sDesc
 
     #constructor - from the database by ID
-    @staticmethod
-    def FromID(sTaskID, bIncludeUserSettings = False):
+    def FromID(self, sTaskID, bIncludeUserSettings = False):
         sErr = ""
         try:
-            t = Task()
-            
             db = catocommon.new_conn()
-
             sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," \
                     " task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" \
                     " from task" \
@@ -78,17 +74,19 @@ class Task(object):
             dr = db.select_row_dict(sSQL)
 
             if dr:
-                sErr = t.PopulateTask(dr, bIncludeUserSettings)
+                sErr = self.PopulateTask(db, dr, bIncludeUserSettings)
 
-            if t.ID:
-                return t, ""
+            if self.ID:
+                return ""
             else:
-                return None, sErr
+                return sErr
             
         except Exception, ex:
             raise ex
+        finally:
+            db.close()
 
-    """@staticmethod
+    """
     def FromOTIDVersion(self, sOriginalTaskID, sVersion):
         try:
             dc = dataAccess()
@@ -364,6 +362,7 @@ class Task(object):
             """
             if bLocalTransaction:
                 db.tran_commit()
+                db.close()
         except Exception, ex:
             return False, "Error updating the DB. " + ex.str__()
         finally:
@@ -535,7 +534,8 @@ class Task(object):
         finally:
             db.close()
 
-    def PopulateTask(self, dr, IncludeUserSettings):
+    def PopulateTask(self, db, dr, IncludeUserSettings):
+        # only called from inside this class, so the caller passed in a db conn pointer too
         try:
             #of course it exists...
             self.DBExists = True
@@ -562,8 +562,6 @@ class Task(object):
             # * there are some rules for the process of 'Approving' a task and other things.
             # * so, we'll need to know some count information
             # 
-            db = catocommon.new_conn()
-            
             sSQL = "select count(*) from task" \
                 " where original_task_id = '" + self.OriginalTaskID + "'" \
                 " and task_status = 'Approved'"
@@ -642,8 +640,6 @@ class Task(object):
                             print "WARNING: Step think it belongs in codeblock [%s] but this task doesn't have that codeblock." % oStep.Codeblock
         except Exception, ex:
             raise ex
-        finally:
-            db.close()
 
     def IncrementMajorVersion(self):
         self.Version = str(int(float(self.MaxVersion) + 1)) + ".000"

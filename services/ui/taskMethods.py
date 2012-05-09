@@ -19,7 +19,7 @@ class taskMethods:
             # ALL functions chained from this HTTP request handler share that request
             uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
@@ -37,7 +37,7 @@ class taskMethods:
             # ALL functions chained from this HTTP request handler share that request
             uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
@@ -205,7 +205,9 @@ class taskMethods:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
             sID = uiCommon.getAjaxArg("sTaskID")
-            t, sErr = task.Task.FromID(sID)
+            
+            t = task.Task()
+            sErr = t.FromID(sID)
             if sErr:
                 uiCommon.log(sErr, 2)
             if t:
@@ -375,7 +377,8 @@ class taskMethods:
             sTaskName = uiCommon.getAjaxArg("sTaskName")
             sTaskCode =uiCommon.getAjaxArg("sTaskCode")
 
-            t, sErr = task.Task.FromID(sCopyTaskID)
+            t = task.Task()
+            sErr = t.FromID(sCopyTaskID)
             if not t:
                 return "{\"error\" : \"Unable to build Task object from ID [" + sCopyTaskID + "]. %s\"}" % sErr
             
@@ -519,7 +522,8 @@ class taskMethods:
         sTaskID = uiCommon.getAjaxArg("sTaskID")
         sMinorMajor = uiCommon.getAjaxArg("sMinorMajor")
         try:
-            oTask, sErr = task.Task.FromID(sTaskID, True)
+            oTask = task.Task()
+            sErr = oTask.FromID(sTaskID, True)
             if oTask is None:
                 uiGlobals.request.Messages.append("Unable to continue.  Unable to build Task object" + sErr)
             
@@ -541,7 +545,8 @@ class taskMethods:
                 return "Unable to get Codeblocks - invalid Task ID."
             sErr = ""
             #instantiate the new Task object
-            oTask, sErr = task.Task.FromID(sTaskID, False)
+            oTask = task.Task()
+            sErr = oTask.FromID(sTaskID, False)
             if sErr:
                 uiCommon.log(sErr, 2)
             if not oTask:
@@ -723,7 +728,8 @@ class taskMethods:
             sAddHelpMsg =  "No Commands have been defined in this Codeblock. Drag a Command here to add it."
             sErr = ""
             #instantiate the new Task object
-            oTask, sErr = task.Task.FromID(sTaskID, True)
+            oTask = task.Task()
+            sErr = oTask.FromID(sTaskID, True)
             if sErr:
                 uiCommon.log(sErr, 2)
             if not oTask:
@@ -2311,7 +2317,8 @@ class taskMethods:
                             sTaskVals += xe.get("oev", "")
                         # but the XML we just got from the client doesn't... it's in the value.
                         for xe in xADValues.findall("value"):
-                            sDefVals += uiCommon.packJSON(xe.text)
+                            s = (xe.text if xe.text else "")
+                            sDefVals += uiCommon.packJSON(s)
                             
                         if sTaskVals == sDefVals:
                             xADDoc.remove(xDefault)
