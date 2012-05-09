@@ -239,7 +239,8 @@ with open("convert.in", 'r') as f_in:
             m = p.match(line)
             if m:
                 line = line.replace("if (", "if ")
-                line = line[:-3] + ":\n"
+                line = line[:-2] + ":\n"
+                line = line.replace("):", ":")
     
             # foreach statements (also marking them because type declarations may need fixing)
             p = re.compile(".*foreach \(.*\)")
