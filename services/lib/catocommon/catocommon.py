@@ -33,8 +33,8 @@ def new_conn():
 def cato_decrypt(encrypted):
     return catocryptpy.decrypt_string(encrypted,config["key"])
 # this common function will use the encryption key in the config, and ENCRYPT the input
-def cato_encrypt(input):
-    return catocryptpy.encrypt_string(input,config["key"])
+def cato_encrypt(s):
+    return catocryptpy.encrypt_string(s,config["key"])
 
 def read_config():
 
@@ -180,7 +180,7 @@ class CatoService(CatoProcess):
         sql = "update application_registry set heartbeat = now() where id = %s"
         self.db_heart.exec_db(sql,(self.instance_id))
 
-    def get_settings():
+    def get_settings(self):
         pass
 
     def startup(self):

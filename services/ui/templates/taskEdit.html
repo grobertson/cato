@@ -147,7 +147,6 @@ $var cssfiles: registry.css taskEdit.css taskView.css
             <span id="clear_clipboard_btn">Clear All</span>
             <hr />
             <ul id="clipboard">
-                <div id="phClipboard"></div>
             </ul>
         </div>
         <div id="div_tags" class="toolbox_panel hidden">
@@ -178,7 +177,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
     <div id="all">
         <div class="ui-state-default te_header">
             <div class="step_section_title">
-                <span id="step_toggle_all_btn" class="ui-state-default ui-corner-all ui-icon ui-icon-triangle-2-n-s forceinline step_toggle_all_btn pointer" title="Expand/Collapse All Steps"
+                <span id="step_toggle_all_btn" class="ui-state-default ui-corner-all ui-icon ui-icon-triangle-2-n-s forceinline step_toggle_all_btn pointer"
                         title="Expand/Collapse All Steps"></span><span 
 						id="codeblock_steps_title" class="step_title"></span><span id="codeblock_selector_btn"></span>                
 				<div id="codeblock_selector" class="ui-widget-content ui-corner-bottom hidden">
@@ -368,7 +367,7 @@ $var cssfiles: registry.css taskEdit.css taskView.css
 <input type="hidden" id="reg_type" value="task" />
 <!-- Step Variable Edit dialog. -->
 <div id="step_var_edit_dialog" title="Edit Command Variables">
-    <div id="phVars" runat="server"></div>
+    <div id="phVars"></div>
     <div class="hidden">
         <input type="hidden" id="hidStepID" />
         <input type="hidden" id="hidOutputParseType" />
