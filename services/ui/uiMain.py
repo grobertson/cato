@@ -31,7 +31,17 @@ def notfound():
 
 class bypass:        
     def GET(self):
-        return "This page isn't subkect to the auth processor"
+        return "This page isn't subject to the auth processor"
+
+# the login announcement hits the Cloud Sidekick web site for a news snip
+class announcement:        
+    def GET(self):
+        s = uiCommon.HTTPGetNoFail("http://community.cloudsidekick.com/login-page-announcement?utm_source=cato_app&utm_medium=loginpage&utm_campaign=app")
+        if s:
+            return s
+        else:
+            return ""
+
 
 # the default page if no URI is given, just an information message
 class index:        
@@ -92,6 +102,9 @@ def auth_app_processor(handle):
     path = web.ctx.path
     
     if path == "/bypass":
+        return handle()
+
+    if path == "/announcement":
         return handle()
 
     if path != "/login" and not session.get('user', False):
@@ -291,6 +304,7 @@ if __name__ == "__main__":
         '/ecoTemplateEdit', 'ecoTemplateEdit',
         '/ecoTemplateManage', 'ecoTemplateManage',
         '/ecosystemManage', 'ecosystemManage',
+        '/announcement', 'announcement',
         '/bypass', 'bypass'
     )
 

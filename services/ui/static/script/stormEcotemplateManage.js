@@ -84,16 +84,16 @@ function GetStormFileFromURL() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmGetStormFileFromURL",
+        url: "ecoMethods/wmGetStormFileFromURL",
         data: '{"sURL":"' + packJSON(url) + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-			if (msg.d.length > 0) {
+        dataType: "text",
+        success: function (response) {
+			if (response.length > 0) {
 		       	try
 				{
 					$("#ddlStormFileSource").val("Text");
-					$("#txtStormFile").val(unpackJSON(msg.d));
+					$("#txtStormFile").val(unpackJSON(response));
 					$("#url_to_text_btn").hide();
 					validateStormFileJSON();
 				}
@@ -102,7 +102,7 @@ function GetStormFileFromURL() {
 					showAlert(err.message);
 				}
         	} else {
-        		showAlert("Nothing returned.  URL may be invalid.");
+        		showAlert("Nothing returned from url [" + url + "].");
         	}
         },
         error: function (response) {

@@ -2,6 +2,7 @@ import sys
 import os
 import traceback
 import xml.etree.ElementTree as ET
+import json
 import uiGlobals
 import uiCommon
 from catocommon import catocommon
@@ -590,3 +591,115 @@ class ecoMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
+    def wmGetEcotemplateStorm(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+
+            sFileType = ""
+            sURL = ""
+            sFileDesc = ""
+            sStormFileJSON = ""
+            bIsValid = False
+            
+            bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = ecoMethods.GetEcotemplateStormJSON(sEcoTemplateID)
+            
+            sb = []
+            
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("IsValid", bIsValid))
+            sb.append("\"%s\" : \"%s\"," % ("Error", uiCommon.packJSON(sErr)))
+            sb.append("\"%s\" : \"%s\"," % ("FileType", sFileType))
+            sb.append("\"%s\" : \"%s\"," % ("URL",  uiCommon.packJSON(sURL)))
+            sb.append("\"%s\" : \"%s\"," % ("Description", uiCommon.packJSON(sFileDesc)))
+            sb.append("\"%s\" : \"%s\"," % ("Text", uiCommon.packJSON(sStormFileJSON)))
+            sb.append("\"%s\" : \"%s\"," % ("HTMLDescription", uiCommon.packJSON(uiCommon.FixBreaks(uiCommon.SafeHTML(sFileDesc)))))
+            sb.append("\"%s\" : \"%s\"" % ("HTMLText", uiCommon.packJSON(uiCommon.FixBreaks(uiCommon.SafeHTML(sStormFileJSON)))))
+            sb.append("}")
+            
+            return "".join(sb)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    @staticmethod
+    def GetEcotemplateStormJSON(sEcoTemplateID): 
+        bIsValid = False
+        sErr = ""
+        try:
+            if sEcoTemplateID:
+                sSQL = "select storm_file_type, storm_file" \
+                    " from ecotemplate" \
+                    " where ecotemplate_id = '" + sEcoTemplateID + "'"
+
+                dr = uiGlobals.request.db.select_row_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                
+                # now, we'll validate the json here as a safety precaution, but we're sending the whole storm file to the client
+                # where the parameters and description will be parsed out and displayed.
+                # this is really no different than where we send entire parameter_xml document to the client
+                
+                sFileType = (dr["storm_file_type"] if dr["storm_file_type"] else "")
+                sStormFile = (dr["storm_file"] if dr["storm_file"] else "")
+                
+                if sStormFile:
+                    if sFileType == "URL":
+                        # if it's a URL we try: to get it and parse it.
+                        # if we can't, we just send back a nice message.
+                        
+                        # for display purposes, we'll be sending back the URL as well as the results
+                        sURL = sStormFile
+                        
+                        
+                        # using our no fail routine here, error handling later if needed
+                        try:
+                            sStormFileJSON = uiCommon.HTTPGetNoFail(sURL)
+                        except Exception:
+                            sErr = "Error getting Storm from URL [" + sURL + "]. " + traceback.format_exc()
+                    else:
+                        # if it's not a URL we assume it's actual JSON text.
+                        sStormFileJSON = sStormFile
+                    
+                    if sStormFileJSON:
+                        try:
+                            # the process is simple...
+                            # 1) parse the json into a dict
+                            # 2) make sure a few key sections exist
+                            dic = json.loads(sStormFileJSON)
+        
+                            if dic.has_key("Description"):
+                                sFileDesc = (dic["Description"] if dic["Description"] else "")
+    
+                            # VALIDATION
+                            # we can test for certain values, and return false unless they exist.
+                            if dic.has_key("Mappings") and dic.has_key("Resources"):
+                                bIsValid = True
+                            else:
+                                sErr += "Document must contain a Mappings and a Resources section."
+                                
+                        except Exception:
+                            sErr = traceback.format_exc()
+                    else:
+                        sErr = "Storm File is empty or URL returned nothing."
+                else:
+                    sErr = "No Storm File or URL defined."
+            else:
+                uiGlobals.request.Messages.append("Unable to get Storm Details - Missing Ecotemplate ID")
+
+            # returns a big tuple
+            return bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetStormFileFromURL(self):
+        try:
+            sURL = uiCommon.getAjaxArg("sURL")
+            sURL = uiCommon.unpackJSON(sURL)
+            sStormFileJSON = uiCommon.HTTPGetNoFail(sURL)
+            if sStormFileJSON:
+                return uiCommon.packJSON(sStormFileJSON)
+            else:
+                return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""

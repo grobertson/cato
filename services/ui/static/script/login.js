@@ -25,5 +25,8 @@ $(document).ready(function () {
         $(".loginerror").hide();
         $("#error_msg").text("");
     }
-        
+     
+	// get the welcome message
+	$('#ltAnnouncement').load('/announcement');
+
 });

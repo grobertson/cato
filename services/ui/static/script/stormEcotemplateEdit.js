@@ -16,7 +16,7 @@
 //This is all the functions to support Storm on the ecoTemplateEdit page.
 $(document).ready(function () {
     //Storm buttons
-    $("#").button({ icons: { primary: "ui-icon-shuffle"} });
+    $("#url_to_text_btn").button({ icons: { primary: "ui-icon-shuffle"} });
     $("#url_to_text_btn").click(function () {
 		var storm = GetStorm();
 	    if (storm != null) {
@@ -181,22 +181,12 @@ function GetStorm() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcotemplateStorm",
+        url: "ecoMethods/wmGetEcotemplateStorm",
         data: '{"sEcoTemplateID":"' + g_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-        	try
-			{
-				storm = jQuery.parseJSON(response.d);
-				if (!storm) {
-		            showAlert(response.d);
-		        }
-			}
-			catch(err)
-			{
-				showAlert(err.message);
-			}
+			storm = response
         },
         error: function (response) {
             showAlert(response.responseText);

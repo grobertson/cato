@@ -1,6 +1,5 @@
-import urllib
+import urllib2
 import uiGlobals
-import os
 import sys
 import traceback
 import json
@@ -23,16 +22,20 @@ def log(msg, debuglevel = 2):
         except:
             """ do nothing if there's no user - it may be pre-login """
             
+        if not user_id:
+            user_id = ""
+            
+        log_nouser(msg, debuglevel)
+
+def log_nouser(msg, debuglevel = 2):
+    if debuglevel <= uiGlobals.debuglevel:
         try:
             if msg:
-                uiGlobals.server.output(user_id + " : " + str(msg))
-                print user_id + " :" + str(msg)
+                uiGlobals.server.output(str(msg))
+                print str(msg)
         except:
             if msg:
-                # maybe they couldn't be concatenated? if so, do them on separate lines
-                uiGlobals.server.output(user_id + " : ")
                 uiGlobals.server.output(msg)
-                print user_id + " :"
                 print msg
 
 def CatoEncrypt(s):
@@ -259,7 +262,7 @@ def ForceLogout(sMsg):
     uiGlobals.session.kill()
     
     log("Forcing logout with message: " + sMsg, 0)
-    raise uiGlobals.web.seeother('/login?msg=' + urllib.quote(sMsg))
+    raise uiGlobals.web.seeother('/login?msg=' + urllib2.quote(sMsg))
 
 def GetSessionUserID():
     try:
@@ -268,7 +271,7 @@ def GetSessionUserID():
             return uid
         else:
             ForceLogout("Server Session has expired (1). Please log in again.")
-    except Exception as ex:
+    except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def GetSessionObject(category, key):
@@ -387,3 +390,35 @@ def GetTaskFunction(sFunctionName):
     else:
         return None
 
+def HTTPGetNoFail(url):
+    """
+    This function does not fail.  For any errors it returns an empty result.
+
+    NOTE: this function is called by unauthenticated pages.
+    DO NOT use any of the helper functions like uiCommon.log - they look for a user and kick back to the login page 
+    if none is found.  (infinite_loop = bad)
+    
+    That's why we're using log_nouser.
+    
+    """
+    try:
+        import socket
+        socket.setdefaulttimeout(5)
+        
+        log_nouser("Trying an HTTP GET to %s" % url, 4)
+        if not url:
+            return ""
+        
+        f = urllib2.urlopen(url)
+        result = f.read()
+        
+        # PUT THE SOCKET TIMEOUT BACK! it's global!
+        socket.setdefaulttimeout(None)
+
+        if result:
+            return result
+        else:
+            return ""
+        
+    except Exception:
+        log_nouser(traceback.format_exc(), 4)
