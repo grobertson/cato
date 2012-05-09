@@ -48,7 +48,6 @@ class CloudProviders(object):
                         sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds where provider = '" + pv.Name + "' order by cloud_name"
                         db = catocommon.new_conn()
                         dt = db.select_all(sSQL)
-                        db.close()
                         if dt:
                             for dr in dt:
                                 c = cloud.Cloud()
@@ -114,6 +113,8 @@ class CloudProviders(object):
                     
         except Exception, ex:
             raise ex
+        finally:
+            db.close()
 
 class Provider(object):
     Name = None
@@ -181,7 +182,6 @@ class Provider(object):
             sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds where provider = '" + self.Name + "'  order by cloud_name"
             db = catocommon.new_conn()
             dt = db.select_all(sSQL)
-            db.close()
             if dt:
                 for dr in dt:
                     c = cloud.Cloud()
@@ -193,6 +193,8 @@ class Provider(object):
             return 
         except Exception, ex:
             raise ex
+        finally:
+            db.close()
     
     def AsJSON(self):
         try:

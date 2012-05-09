@@ -93,7 +93,6 @@ class Cloud(object):
                     return None, "A Cloud with that name already exists.  Please select another name."
                 else:
                     return None, db.error
-            db.close()
             
             #update the CloudProviders in the session
             cp = uiCommon.GetCloudProviders() #get the session object
@@ -107,6 +106,8 @@ class Cloud(object):
             return c, None
         except Exception, ex:
             raise ex
+        finally:
+            db.close()
 
     #INSTANCE METHOD
     #updates the current Cloud object to the db
@@ -134,11 +135,12 @@ class Cloud(object):
                     return False, "A Cloud with that name already exists.  Please select another name."
                 else:
                     return False, db.error
-            db.close()
-            
+
             return True, None
         except Exception, ex:
             raise Exception(ex)
+        finally:
+            db.close()
 
 
 # Note: this is not a container for CloudAccount objects - it's just a rowset from the database
@@ -147,31 +149,35 @@ class Cloud(object):
 # we don't need for list pages and dropdowns.
 class CloudAccounts(object): 
     DataTable = None
-    
-    def Fill(self, sFilter="", sProvider=""):
-        sWhereString = ""
-        if sFilter:
-            aSearchTerms = sFilter.split()
-            for term in aSearchTerms:
-                if term:
-                    sWhereString += " and (account_name like '%%" + term + "%%' " \
-                        "or account_number like '%%" + term + "%%' " \
-                        "or provider like '%%" + term + "%%' " \
-                        "or login_id like '%%" + term + "%%') "
-
-        # if a sProvider arg is passed, we explicitly limit to this provider
-        if sProvider:
-            sWhereString += " and provider = '%s'" % sProvider
-            
-        sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," \
-            " case is_default when 1 then 'Yes' else 'No' end as is_default," \
-            " (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" \
-            " from cloud_account" \
-            " where 1=1 " + sWhereString + " order by is_default desc, account_name"
         
-        db = catocommon.new_conn()
-        self.DataTable = db.select_all_dict(sSQL)
-        db.close()
+    def Fill(self, sFilter="", sProvider=""):
+        try:
+            sWhereString = ""
+            if sFilter:
+                aSearchTerms = sFilter.split()
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (account_name like '%%" + term + "%%' " \
+                            "or account_number like '%%" + term + "%%' " \
+                            "or provider like '%%" + term + "%%' " \
+                            "or login_id like '%%" + term + "%%') "
+    
+            # if a sProvider arg is passed, we explicitly limit to this provider
+            if sProvider:
+                sWhereString += " and provider = '%s'" % sProvider
+                
+            sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," \
+                " case is_default when 1 then 'Yes' else 'No' end as is_default," \
+                " (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" \
+                " from cloud_account" \
+                " where 1=1 " + sWhereString + " order by is_default desc, account_name"
+            
+            db = catocommon.new_conn()
+            self.DataTable = db.select_all_dict(sSQL)
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
 
     def AsJSON(self):
         try:
@@ -215,7 +221,6 @@ class CloudAccount(object):
 
             db = catocommon.new_conn()
             dr = db.select_row_dict(sSQL)
-            db.close()
             
             if dr is not None:
                 self.ID = sAccountID
@@ -241,6 +246,8 @@ class CloudAccount(object):
                 raise Exception("Unable to build Cloud Account object. Either no Cloud Accounts are defined, or no Account with ID [" + sAccountID + "] could be found.")
         except Exception, ex:
             raise Exception(ex)
+        finally:
+            db.close()
 
     def IsValidForCalls(self):
         if self.LoginID and self.LoginPassword:
@@ -327,7 +334,6 @@ class CloudAccount(object):
                     raise Exception(db.error)
 
             db.tran_commit()
-            db.close()
             
             # now it's inserted... lets get it back from the db as a complete object for confirmation.
             ca = CloudAccount()
@@ -337,6 +343,8 @@ class CloudAccount(object):
             return ca, None
         except Exception, ex:
             raise ex
+        finally:
+            db.close()
 
     def DBUpdate(self):
         try:
@@ -373,3 +381,5 @@ class CloudAccount(object):
             return True, None
         except Exception, ex:
             raise ex
+        finally:
+            db.close()
