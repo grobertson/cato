@@ -31,7 +31,7 @@ class Ecotemplate(object):
             sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file" \
                 " from ecotemplate" \
                 " where ecotemplate_id = '" + sEcotemplateID + "'"
-            print sSQL
+
             db = catocommon.new_conn()
             dr = db.select_row_dict(sSQL)
             if db.error:
@@ -70,9 +70,7 @@ class Ecotemplate(object):
             sb.append("{")
             sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
             sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
-            sb.append("\"%s\" : \"%s\"," % ("Description", uiCommon.packJSON(self.Description)))
-            sb.append("\"%s\" : \"%s\"," % ("StormFileType", self.StormFileType))
-            sb.append("\"%s\" : \"%s\"," % ("StormFile", uiCommon.packJSON(self.StormFile)))
+            sb.append("\"%s\" : \"%s\"" % ("Description", uiCommon.packJSON(self.Description)))
             sb.append("}")
             return "".join(sb)
         except Exception, ex:

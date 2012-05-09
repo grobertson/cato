@@ -1,6 +1,5 @@
 import sys
 import traceback
-import urllib
 import json
 import xml.etree.ElementTree as ET
 import uiGlobals
