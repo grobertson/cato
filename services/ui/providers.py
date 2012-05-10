@@ -168,7 +168,7 @@ class Provider(object):
                 cot = p.CloudObjectTypes[sObjectType]
                 if cot:
                     return cot
-            except Exception, ex:
+            except Exception:
                 """"""
                 #don't crash while it's iterating, it may find it in the next object.
                 #don't worry, we'll return null if it doesn't find anything.

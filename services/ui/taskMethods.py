@@ -743,8 +743,8 @@ class taskMethods:
                 # it will get unhidden if someone deletes the last step.
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step hidden\">" + sAddHelpMsg + "</li>"
         
-                for order, step in sorted(cb.Steps.iteritems()):
-                    sHTML += ST.DrawFullStep(step)
+                for order in sorted(cb.Steps.iterkeys()):
+                    sHTML += ST.DrawFullStep(cb.Steps[order])
             else:
                 sHTML = "<li id=\"no_step\" class=\"ui-widget-content ui-corner-all ui-state-active ui-droppable no_step\">" + sAddHelpMsg + "</li>"
                     
@@ -2852,7 +2852,7 @@ class taskMethods:
             if sTaskInstance:
                 # the task instance must be a number, die if it isn't
                 try:
-                    x = int(sTaskInstance)
+                    int(sTaskInstance)
                 except:
                     return "Task Instance must be an integer. [%s]." % (sTaskInstance)
                 

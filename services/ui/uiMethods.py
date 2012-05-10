@@ -392,7 +392,8 @@ class uiMethods:
                 " from action_schedule s" \
                 " left outer join ecotemplate_action a on s.action_id = a.action_id" \
                 " left outer join ecosystem e on s.ecosystem_id = e.ecosystem_id" \
-                " where s.task_id = '" + sTaskID + "'"
+                " where s.task_id = '%s'" + \
+                (" and e.ecosystem_id = '%s'" if sEcosystemID else "") % (sTaskID, sEcosystemID)
             dt = uiGlobals.request.db.select_all_dict(sSQL)
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)

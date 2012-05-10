@@ -426,32 +426,31 @@ class ecoMethods:
             # so I don't mind not doing it.
 
             # versions
-#            if uiCommon.IsGUID(sOriginalTaskID):
-#                sHTML += "<br />"
-#                sHTML += "Version: \n"
-#                sHTML += "<select " \
-#                    " column=\"task_version\"" \
-#                    " reget_on_change=\"true\">\n"
-#                # default
-#                sHTML += "<option " + (" selected=\"selected\"" if sVersion == "" else "") + " value=\"\">Default</option>\n"
-#
-#                sSQL = "select version from task" \
-#                    " where original_task_id = '" + sOriginalTaskID + "'" \
-#                    " order by version"
-#                DataTable dtVer = new DataTable()
-#                if !dc.sqlGetDataTable(0000BYREF_ARG0000dtVer, sSQL, 0000BYREF_ARG0000sErr):
-#                    return "Database Error:" + uiGlobals.request.db.error
-#
-#                if dtVer.Rows.Count > 0:
-#### CHECK NEXT LINE for type declarations !!!
-#                    for DataRow drVer in dtVer.Rows:
-#                        sHTML += "<option " + (" selected=\"selected\"" if sVersion == drVer["version"] else "") + \
-#                            " value=\"" + drVer["version"] + "\">" \
-#                            drVer["version"] + "</option>\n"
-#                else:
-#                    return "Unable to continue - Cannot find Version for Task [" + sOriginalTaskID + "]."
-#
-#                sHTML += "</select>\n"
+            if uiCommon.IsGUID(sOriginalTaskID):
+                sHTML += "<br />"
+                sHTML += "Version: \n"
+                sHTML += "<select " \
+                    " column=\"task_version\"" \
+                    " reget_on_change=\"true\">\n"
+                # default
+                sHTML += "<option " + (" selected=\"selected\"" if sVersion == "" else "") + " value=\"\">Default</option>\n"
+
+                sSQL = "select version from task" \
+                    " where original_task_id = '" + sOriginalTaskID + "'" \
+                    " order by version"
+                dtVer = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    return "Database Error:" + uiGlobals.request.db.error
+
+                if dtVer:
+                    for drVer in dtVer:
+                        sHTML += "<option " + (" selected=\"selected\"" if sVersion == drVer["version"] else "") + \
+                            " value=\"" + drVer["version"] + "\">" + \
+                            drVer["version"] + "</option>\n"
+                else:
+                    return "Unable to continue - Cannot find Version for Task [" + sOriginalTaskID + "]."
+
+                sHTML += "</select>\n"
 
 
             # we have the parameter xml for the task here.

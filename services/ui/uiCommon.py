@@ -9,7 +9,6 @@ import cgi
 import re
 import pickle
 import xml.etree.ElementTree as ET
-import providers
 from catocommon import catocommon
 
 # writes to stdout using the catocommon.server output function
