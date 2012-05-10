@@ -60,7 +60,7 @@ class ecoMethods:
             sID = uiCommon.getAjaxArg("sID")
             et = ecosystem.Ecotemplate()
             if et:
-                et.FromID(sID)
+                et.FromID(sID, bIncludeActions=False)
                 if et.ID:
                     return et.AsJSON()
             
@@ -350,7 +350,7 @@ class ecoMethods:
             sTaskID = dr["task_id"]
             sTaskCode = (dr["task_code"] if dr["task_code"] else "")
             sTaskName = dr["task_name"]
-            sVersion = (dr["task_version"] if dr["task_version"] else "")
+            sVersion = (str(dr["task_version"]) if dr["task_version"] else "")
             sTaskParameterXML = (dr["task_param_xml"] if dr["task_param_xml"] else "")
             # sActionParameterXML = ("" if not dr["action_param_xml"]) else dr["action_param_xml"])
 
@@ -444,9 +444,9 @@ class ecoMethods:
 
                 if dtVer:
                     for drVer in dtVer:
-                        sHTML += "<option " + (" selected=\"selected\"" if sVersion == drVer["version"] else "") + \
-                            " value=\"" + drVer["version"] + "\">" + \
-                            drVer["version"] + "</option>\n"
+                        sHTML += "<option " + (" selected=\"selected\"" if sVersion == str(drVer["version"]) else "") + \
+                            " value=\"" + str(drVer["version"]) + "\">" + \
+                            str(drVer["version"]) + "</option>\n"
                 else:
                     return "Unable to continue - Cannot find Version for Task [" + sOriginalTaskID + "]."
 
@@ -563,7 +563,6 @@ class ecoMethods:
                         sSetClause = sColumn + "='" + sValue + "'"
 
                 sSQL = "update ecotemplate_action set " + sSetClause + " where action_id = '" + sActionID + "'"
-
 
                 if not uiGlobals.request.db.exec_db_noexcep(sSQL):
                     uiGlobals.request.Messages.append("Unable to update Ecotemplate Action [" + sActionID + "]." + uiGlobals.request.db.error)

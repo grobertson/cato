@@ -26,7 +26,7 @@ class Ecotemplate(object):
         self.Description = sDescription
         self.DBExists = self.dbExists()
 
-    def FromID(self, sEcotemplateID):
+    def FromID(self, sEcotemplateID, bIncludeActions = True):
         try:
             sSQL = "select ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file" \
                 " from ecotemplate" \
@@ -45,18 +45,19 @@ class Ecotemplate(object):
                 self.StormFileType = ("" if not dr["storm_file_type"] else dr["storm_file_type"])
                 self.StormFile = ("" if not dr["storm_file"] else dr["storm_file"])
                 
-                # get a table of actions and loop the rows
-                sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" \
-                    " from ecotemplate_action" \
-                    " where ecotemplate_id = '" + sEcotemplateID + "'"
-
-                dtActions = db.select_all_dict(sSQL)
-                if dtActions:
-                    for drAction in dtActions:
-                        ea = EcotemplateAction()
-                        ea.FromRow(drAction, self)
-                        if ea is not None:
-                            self.Actions[ea.ID] = ea
+                if bIncludeActions:
+                    # get a table of actions and loop the rows
+                    sSQL = "select action_id, ecotemplate_id, action_name, action_desc, category, original_task_id, task_version, parameter_defaults, action_icon" \
+                        " from ecotemplate_action" \
+                        " where ecotemplate_id = '" + sEcotemplateID + "'"
+    
+                    dtActions = db.select_all_dict(sSQL)
+                    if dtActions:
+                        for drAction in dtActions:
+                            ea = EcotemplateAction()
+                            ea.FromRow(drAction, self)
+                            if ea is not None:
+                                self.Actions[ea.ID] = ea
             else: 
                 raise Exception("Error building Ecotemplate object: " + db.error)
         except Exception, ex:
