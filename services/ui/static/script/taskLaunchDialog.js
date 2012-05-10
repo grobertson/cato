@@ -97,7 +97,7 @@ $(document).ready(function () {
     $("#run_now_btn").button({ icons: { primary: "ui-icon-play"} });
     $("#run_now_btn").live("click", function () {
 		if (checkRequiredParams() == true && checkParamConstraints() == true)
-	    	LaunchTask();
+	    	RunNow();
     });
     $("#run_later_btn").button({ icons: { primary: "ui-icon-seek-next"} });
     $("#run_later_btn").live("click", function () {
@@ -534,7 +534,7 @@ function CloseTaskLaunchDialog() {
     return false;
 }
 
-function LaunchTask() {
+function RunNow() {
 
     showPleaseWait();
     $("#update_success_msg").text("Starting Task...");
@@ -658,6 +658,7 @@ function ReadTimetable() {
     return ttarr;
 }
 function RunRepeatedly() {
+    var account_id = $("#task_launch_dialog_account_id").val();
     var task_id = $("#task_launch_dialog_task_id").val();
     var action_id = $("#task_launch_dialog_action_id").val();
     var ecosystem_id = $("#task_launch_dialog_ecosystem_id").val();
@@ -678,6 +679,7 @@ function RunRepeatedly() {
 
     var args = '{"sTaskID":"' + task_id + '",' +
         '"sActionID":"' + action_id + '",' +
+        '"sAccountID":"' + account_id + '",' +
         '"sEcosystemID":"' + ecosystem_id + '",' +
         '"sMonths":"' + tt.months + '",' +
         '"sDays":"' + tt.days + '",' +
@@ -693,8 +695,8 @@ function RunRepeatedly() {
         url: "uiMethods/wmRunRepeatedly",
         data: args,
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             $("#update_success_msg").text("Schedule Successful").fadeOut(2000);
 
             //refresh and change to the "Plan" tab so the user knows something happened
@@ -718,6 +720,7 @@ function RunLater() {
         return false;
     }
 
+    var account_id = $("#task_launch_dialog_account_id").val();
     var task_id = $("#task_launch_dialog_task_id").val();
     var action_id = $("#task_launch_dialog_action_id").val();
     var ecosystem_id = $("#task_launch_dialog_ecosystem_id").val();
@@ -729,11 +732,11 @@ function RunLater() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmRunLater",
-        data: '{"sTaskID":"' + task_id + '","sActionID":"' + action_id + '","sEcosystemID":"' + ecosystem_id + '","sRunOn":"' + run_on + '","sParameterXML":"' + parameter_xml + '","iDebugLevel":"' + debug_level + '"}',
+        url: "uiMethods/wmRunLater",
+        data: '{"sTaskID":"' + task_id + '","sActionID":"' + action_id + '","sAccountID":"' + account_id + '","sEcosystemID":"' + ecosystem_id + '","sRunOn":"' + run_on + '","sParameterXML":"' + parameter_xml + '","iDebugLevel":"' + debug_level + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             $("#update_success_msg").text("Plan Successful").fadeOut(2000);
 
             //refresh and change to the "Plan" tab so the user knows something happened
@@ -773,13 +776,18 @@ function SaveRecurringPlan() {
         url: "uiMethods/wmSaveSchedule",
         data: args,
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
             //change to the "Plan" tab so the user knows something happened
             getPlans();  //this refreshes the plans tabs because labels have changed.
             $('#task_launch_dialog_schedule').tabs('select', 3);
+
+		    //will refresh the parent page, if it has an appropriate function
+            if (typeof doGetPlans == 'function') {
+			    doGetPlans();
+		    }
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -808,6 +816,11 @@ function SavePlan() {
             //change to the "Plan" tab so the user knows something happened
             //unlike SaveRecurringPlan - no need to refresh the plan tab here
             $('#task_launch_dialog_schedule').tabs('select', 3);
+
+		    //will refresh the parent page, if it has an appropriate function
+            if (typeof doGetPlans == 'function') {
+			    doGetPlans();
+		    }
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -867,11 +880,11 @@ function deleteSchedule(ctl) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "uiMethods.asmx/wmDeleteSchedule",
+            url: "uiMethods/wmDeleteSchedule",
             data: '{"sScheduleID":"' + schedule_id + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
+            dataType: "text",
+            success: function (response) {
                 $("#update_success_msg").text("Delete Successful").fadeOut(2000);
 
                 $(ctl).parents(".action_schedule").remove();
@@ -897,11 +910,11 @@ function deleteActionPlan(ctl) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "uiMethods.asmx/wmDeleteActionPlan",
+            url: "uiMethods/wmDeleteActionPlan",
             data: '{"iPlanID":"' + plan_id + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
+            dataType: "text",
+            success: function (response) {
                 $("#update_success_msg").text("Delete Successful").fadeOut(2000);
 
                 $(ctl).parents(".action_plan").remove();

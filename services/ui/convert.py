@@ -116,6 +116,7 @@ with open("convert.in", 'r') as f_in:
             line = line.replace("!string.IsNullOrEmpty(", "")
             line = line.replace("string.IsNullOrEmpty(", "not ")
             line = line.replace("this.", "self.")
+            line = line.replace(".Length", ".__LENGTH")
             
     
             # Try/Catch blocks
@@ -267,7 +268,7 @@ with open("convert.in", 'r') as f_in:
                 # ok, let's pick apart the pieces
                 p = re.compile("\(.*\?")
                 m = p.search(line)
-                if_part = m.group().replace("(", "").replace("?", "").strip()
+                if_part = m.group().replace("(", "").replace("?", "").replace(")", "").strip()
                 
                 p = re.compile("\?.*:")
                 m = p.search(line)

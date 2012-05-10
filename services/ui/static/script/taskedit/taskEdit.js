@@ -63,13 +63,13 @@ $(document).ready(function () {
                 $.ajax({
                     async: false,
                     type: "POST",
-                    url: "taskMethods.asmx/wmApproveTask",
+                    url: "taskMethods/wmApproveTask",
                     data: '{"sTaskID":"' + g_task_id + '","sMakeDefault":"' + make_default + '"}',
                     contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function (msg) {
+                    dataType: "text",
+                    success: function (response) {
                         //now redirect (using replace so they can't go "back" to the editable version)
-                        location.replace("taskView.aspx?task_id=" + g_task_id);
+                        location.replace("taskView?task_id=" + g_task_id);
                     },
                     error: function (response) {
                         $("#update_success_msg").fadeOut(2000);

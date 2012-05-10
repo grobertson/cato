@@ -3381,3 +3381,56 @@ class taskMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmApproveTask(self):
+        sTaskID = uiCommon.getAjaxArg("sTaskID")
+        sMakeDefault = uiCommon.getAjaxArg("sMakeDefault")
+
+        try:
+            sUserID = uiCommon.GetSessionUserID()
+
+            if uiCommon.IsGUID(sTaskID) and uiCommon.IsGUID(sUserID):
+
+                # check to see if this is the first task to be approved.
+                # if it is, we will make it default.
+                sSQL = "select count(*) from task" \
+                    " where original_task_id = " \
+                    " (select original_task_id from task where task_id = '" + sTaskID + "')" \
+                    " and task_status = 'Approved'"
+
+                iCount = uiGlobals.request.db.select_col_noexcep(sSQL)
+                if not iCount:
+                    sMakeDefault = "1"
+
+                # flag all the other tasks as not default if this one is meant to be
+                if sMakeDefault == "1":
+                    sSQL = "update task set" \
+                        " default_version = 0" \
+                        " where original_task_id =" \
+                        " (select original_task_id from (select original_task_id from task where task_id = '" + sTaskID + "') as x)"
+                    if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                        uiGlobals.request.Messages.append("Unable to update task [" + sTaskID + "]." + uiGlobals.request.db.error)
+
+                    sSQL = "update task set" \
+                    " task_status = 'Approved'," \
+                    " default_version = 1" \
+                    " where task_id = '" + sTaskID + "'"
+                else:
+                    sSQL = "update task set" \
+                        " task_status = 'Approved'" \
+                        " where task_id = '" + sTaskID + "'"
+
+                sSQL = sSQL
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to update task [" + sTaskID + "]." + uiGlobals.request.db.error)
+
+                uiGlobals.request.db.tran_commit()
+
+                uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, "Status", "Development", "Approved")
+                if sMakeDefault == "1":
+                    uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, "Default", "Set as Default Version.")
+
+            else:
+                uiGlobals.request.Messages.append("Unable to update task. Missing or invalid task id. [" + sTaskID + "]")
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

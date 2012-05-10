@@ -392,8 +392,8 @@ class uiMethods:
                 " from action_schedule s" \
                 " left outer join ecotemplate_action a on s.action_id = a.action_id" \
                 " left outer join ecosystem e on s.ecosystem_id = e.ecosystem_id" \
-                " where s.task_id = '%s'" + \
-                (" and e.ecosystem_id = '%s'" if sEcosystemID else "") % (sTaskID, sEcosystemID)
+                " where s.task_id = '" + sTaskID + "'" + \
+                (" and e.ecosystem_id = '" +sEcosystemID + "'" if sEcosystemID else "")
             dt = uiGlobals.request.db.select_all_dict(sSQL)
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
@@ -472,3 +472,226 @@ class uiMethods:
             uiGlobals.request.Messages.append("Unable to find details for Recurring Action Plan. " + uiGlobals.request.db.error + " ScheduleID [" + sScheduleID + "]")
 
         return "".join(sb)
+    
+    def wmDeleteSchedule(self):
+        try:
+            sScheduleID = uiCommon.getAjaxArg("sScheduleID")
+    
+            if not sScheduleID:
+                uiGlobals.request.Messages.append("Missing Schedule ID.")
+                return "Missing Schedule ID."
+    
+            sSQL = "delete from action_plan where schedule_id = '" + sScheduleID + "'"
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from action_schedule where schedule_id = '" + sScheduleID + "'"
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            #  if we made it here, so save the logs
+            uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Schedule [" + sScheduleID + "] deleted.")
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmDeleteActionPlan(self):
+        try:
+            iPlanID = uiCommon.getAjaxArg("iPlanID")
+    
+            if iPlanID < 1:
+                uiGlobals.request.Messages.append("Missing Action Plan ID.")
+                return "Missing Action Plan ID."
+    
+            sSQL = "delete from action_plan where plan_id = " + iPlanID
+
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            #  if we made it here, so save the logs
+            uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Action Plan [" + iPlanID + "] deleted.")
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+    
+    def wmRunLater(self):
+        try:
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sActionID = uiCommon.getAjaxArg("sActionID")
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sRunOn = uiCommon.getAjaxArg("sRunOn")
+            sParameterXML = uiCommon.getAjaxArg("sParameterXML")
+            iDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            
+            if not sTaskID or not sRunOn:
+                uiGlobals.request.Messages.append("Missing Action Plan date or Task ID.")
+
+            # we encoded this in javascript before the ajax call.
+            # the safest way to unencode it is to use the same javascript lib.
+            # (sometimes the javascript and .net libs don't translate exactly, google it.)
+            sParameterXML = uiCommon.unpackJSON(sParameterXML)
+            
+            # we gotta peek into the XML and encrypt any newly keyed values
+            sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);          
+
+            sSQL = "insert into action_plan (task_id, action_id, ecosystem_id, account_id," \
+                " run_on_dt, parameter_xml, debug_level, source)" \
+                " values (" \
+                " '" + sTaskID + "'," + \
+                (" '" + sActionID + "'" if sActionID else "''") + "," + \
+                (" '" + sEcosystemID + "'" if sEcosystemID else "''") + "," + \
+                (" '" + sAccountID + "'" if sAccountID else "''") + "," \
+                " str_to_date('" + sRunOn + "', '%%m/%%d/%%Y %%H:%%i')," + \
+                (" '" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," + \
+                (iDebugLevel if iDebugLevel > "-1" else "null") + "," \
+                " 'manual'" \
+                ")"
+
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmRunRepeatedly(self):
+        try:
+            sTaskID = uiCommon.getAjaxArg("sTaskID")
+            sActionID = uiCommon.getAjaxArg("sActionID")
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sMonths = uiCommon.getAjaxArg("sMonths")
+            sDays = uiCommon.getAjaxArg("sDays")
+            sHours = uiCommon.getAjaxArg("sHours")
+            sMinutes = uiCommon.getAjaxArg("sMinutes")
+            sDaysOrWeeks = uiCommon.getAjaxArg("sDaysOrWeeks")
+            sParameterXML = uiCommon.getAjaxArg("sParameterXML")
+            iDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            
+            if not sTaskID or not sMonths or not sDays or not sHours or not sMinutes or not sDaysOrWeeks:
+                uiGlobals.request.Messages.append("Missing or invalid Schedule timing or Task ID.")
+
+            # we encoded this in javascript before the ajax call.
+            # the safest way to unencode it is to use the same javascript lib.
+            # (sometimes the javascript and .net libs don't translate exactly, google it.)
+            sParameterXML = uiCommon.unpackJSON(sParameterXML)
+            
+            # we gotta peek into the XML and encrypt any newly keyed values
+            sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);                
+
+            # figure out a label and a description
+            sDesc = ""
+            sLabel, sDesc = uiCommon.GenerateScheduleLabel(sMonths, sDays, sHours, sMinutes, sDaysOrWeeks)
+
+            sSQL = "insert into action_schedule (schedule_id, task_id, action_id, ecosystem_id, account_id," \
+                " months, days, hours, minutes, days_or_weeks, label, descr, parameter_xml, debug_level)" \
+                   " values (" \
+                " '" + uiCommon.NewGUID() + "'," \
+                " '" + sTaskID + "'," \
+                + (" '" + sActionID + "'" if sActionID else "''") + "," \
+                + (" '" + sEcosystemID + "'" if sEcosystemID else "''") + "," \
+                + (" '" + sAccountID + "'" if sAccountID else "''") + "," \
+                " '" + sMonths + "'," \
+                " '" + sDays + "'," \
+                " '" + sHours + "'," \
+                " '" + sMinutes + "'," \
+                " '" + sDaysOrWeeks + "'," \
+                + (" '" + sLabel + "'" if sLabel else "null") + "," \
+                + (" '" + sDesc + "'" if sDesc else "null") + "," \
+                + (" '" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," \
+                + (iDebugLevel if iDebugLevel > "-1" else "null") + \
+                ")"
+
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmSavePlan(self):
+        try:
+            iPlanID = uiCommon.getAjaxArg("iPlanID")
+            sParameterXML = uiCommon.getAjaxArg("sParameterXML")
+            iDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
+            """
+             * JUST AS A REMINDER:
+             * There is no parameter 'merging' happening here.  This is a Plan ...
+             *   it has ALL the parameters it needs to pass to the CE.
+             * 
+             * """
+    
+            if not iPlanID:
+                uiGlobals.request.Messages.append("Missing Action Plan ID.")
+
+            # we encoded this in javascript before the ajax call.
+            # the safest way to unencode it is to use the same javascript lib.
+            # (sometimes the javascript and .net libs don't translate exactly, google it.)
+            sParameterXML = uiCommon.unpackJSON(sParameterXML)
+            
+            # we gotta peek into the XML and encrypt any newly keyed values
+            sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);                
+
+            sSQL = "update action_plan" \
+                " set parameter_xml = " + ("'" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," \
+                " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
+                " where plan_id = " + iPlanID
+
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+
+    def wmSaveSchedule(self):
+        sScheduleID = uiCommon.getAjaxArg("sScheduleID")
+        sMonths = uiCommon.getAjaxArg("sMonths")
+        sDays = uiCommon.getAjaxArg("sDays")
+        sHours = uiCommon.getAjaxArg("sHours")
+        sMinutes = uiCommon.getAjaxArg("sMinutes")
+        sDaysOrWeeks = uiCommon.getAjaxArg("sDaysOrWeeks")
+        sParameterXML = uiCommon.getAjaxArg("sParameterXML")
+        iDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
+        """
+         * JUST AS A REMINDER:
+         * There is no parameter 'merging' happening here.  This is a Scheduled Plan ...
+         *   it has ALL the parameters it needs to pass to the CE.
+         * 
+         * """
+
+        try:
+            if not sScheduleID or not sMonths or not sDays or not sHours or not sMinutes or not sDaysOrWeeks:
+                uiGlobals.request.Messages.append("Missing Schedule ID or invalid timetable.")
+
+            # we encoded this in javascript before the ajax call.
+            # the safest way to unencode it is to use the same javascript lib.
+            # (sometimes the javascript and .net libs don't translate exactly, google it.)
+            sParameterXML = uiCommon.unpackJSON(sParameterXML)
+            
+            # we gotta peek into the XML and encrypt any newly keyed values
+            sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);                
+
+            # whack all plans for this schedule, it's been changed
+            sSQL = "delete from action_plan where schedule_id = '" + sScheduleID + "'"
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+
+            # figure out a label
+            sLabel, sDesc = uiCommon.GenerateScheduleLabel(sMonths, sDays, sHours, sMinutes, sDaysOrWeeks)
+
+            sSQL = "update action_schedule set" \
+                " months = '" + sMonths + "'," \
+                " days = '" + sDays + "'," \
+                " hours = '" + sHours + "'," \
+                " minutes = '" + sMinutes + "'," \
+                " days_or_weeks = '" + sDaysOrWeeks + "'," \
+                " label = " + ("'" + sLabel + "'" if sLabel else "null") + "," \
+                " descr = " + ("'" + sDesc + "'" if sDesc else "null") + "," \
+                " parameter_xml = " + ("'" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," \
+                " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
+                " where schedule_id = '" + sScheduleID + "'"
+
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

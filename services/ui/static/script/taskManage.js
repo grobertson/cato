@@ -132,6 +132,7 @@ function ShowItemCopy() {
 
     $.ajax({
         type: "POST",
+        async: false,
         url: "taskMethods/wmGetTaskCodeFromID",
         data: '{"sOriginalTaskID":"' + task_copy_original_id + '"}',
         contentType: "application/json; charset=utf-8",
@@ -140,15 +141,14 @@ function ShowItemCopy() {
             if (response.code) {
                 task_code = response.code;
                 $("#lblTaskCopy").html('<b>Copying Task ' + task_code + '</b><br />&nbsp;<br />');
-                $("#copy_dialog").dialog('open');
                 $("[tag='chk']").attr("checked", false);
                 $("#hidSelectedArray").val('');
                 $("#hidCopyTaskID").val(task_copy_original_id);
                 $("#lblItemsSelected").html("0");
                 $("#txtCopyTaskName").val('');
                 $("#txtCopyTaskCode").val('');
-            } else {
-                showAlert('No task code returned.');
+            // } else {
+                // showAlert('No task code returned.');
             }
         },
         error: function (response) {
@@ -175,10 +175,9 @@ function ShowItemCopy() {
         }
     });
 
-
-
-
+    $("#copy_dialog").dialog('open');
 }
+
 function CopyTask() {
     var sNewTaskName = $("#txtCopyTaskName").val();
     var sNewTaskCode = $("#txtCopyTaskCode").val();
