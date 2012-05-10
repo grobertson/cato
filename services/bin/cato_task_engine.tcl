@@ -736,6 +736,8 @@ proc initialize {} {
 	set ::CLOUD_IDS() ""
 	set ::runtime_arr(_AWS_REGION,1) ""
 	set ::_CLOUD_ENDPOINT ""
+	set ::HTTP_RESPONSE -1
+    set ::CE_NAME [info hostname]
 
 	#set ::FILTER_BUFFER 0
 	#set ::TIMEOUT_CODEBLOCK "" 
@@ -2638,6 +2640,9 @@ proc replace_variables {the_string} {
 							set ::SUBMITTED_BY_NAME $subst_var
 						}
 					}
+					_HTTP_RESPONSE {
+						set subst_var $::HTTP_RESPONSE
+					}
 					_ASSET {
 						set subst_var $::SYSTEM_ID
 					}
@@ -3446,11 +3451,16 @@ proc http_command {command} {
 	set url [replace_variables_all [$::ROOT selectNodes string(url)]]
 	set type [$::ROOT selectNodes string(type)]
 	output "http command of type $type, url $url" 1
+    set ::HTTP_RESPONSE -1
 
 	set query ""
 	switch -- $type {
 		"GET" {
-			catch {set token [::http::geturl $url -timeout [expr 10 * 1000]]} error_code
+                set before_http [clock milliseconds] 
+                catch {
+                    set token [::http::geturl $url -timeout [expr 10 * 1000]]
+                } error_code
+                set after_http [clock milliseconds] 
 		}
 		"POST" {
 			set pairs [$::ROOT selectNodes  {//pair}]
@@ -3465,13 +3475,18 @@ proc http_command {command} {
 			if {"$query" > ""} {
 				set query [string range $query 1 end]
 			}
-			catch {set token [::http::geturl $url -timeout [expr 60 * 1000] -query $query]} error_code
+            set before_http [clock milliseconds] 
+			catch {
+                set token [::http::geturl $url -timeout [expr 60 * 1000] -query $query]
+            } error_code
+            set after_http [clock milliseconds] 
 		}
 		#"HEAD" {
 		#}
 	}
 	del_xml_root
 
+    set ::HTTP_RESPONSE [expr $after_http - $before_http]
 	if {[string match "::http::*" $error_code] == 0} {
 		set output_buffer $error_code
 		output "http $type error: $url\012$error_code" 1
@@ -3493,7 +3508,7 @@ proc http_command {command} {
 	if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
 		process_buffer $output_buffer
 	}
-	insert_audit $::STEP_ID  "" "http $type $url\012$query\012$output_buffer" ""
+	insert_audit $::STEP_ID  "" "http $type $url\012$query\012$output_buffer\012Response time = $::HTTP_RESPONSE ms" ""
 }
 proc new_connection_command {command} {
 	set proc_name new_connection_command
