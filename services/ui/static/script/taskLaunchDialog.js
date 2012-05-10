@@ -77,7 +77,7 @@ $(document).ready(function () {
                 '<input type="hidden" id="task_launch_dialog_action_id" />' +
                 '<input type="hidden" id="task_launch_dialog_ecosystem_id" />' +
                 '<input type="hidden" id="task_launch_dialog_task_instance" />' +
-                '<input type="hidden" id="plan_edit_plan_id" />'
+                '<input type="hidden" id="plan_edit_plan_id" />';
 
     $("#task_launch_dialog").prepend(d);
 

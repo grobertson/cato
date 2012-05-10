@@ -9,7 +9,8 @@ $var cssfiles:
             <div id="left_tooltip_box_inner">
                 <p>
                     The system status display shows up to
-                    the minute information on system components, services and users.</p>
+                    the minute information on system components, services and users.
+                </p>
                 <p>
                     Rows which highlight on mouse-over will display more detailed data when clicked.
                 </p>
@@ -24,98 +25,61 @@ $var cssfiles:
     <div class="ui-widget-content ui-corner-all">
         <div class="ui-widget-header">
             <span>System Components</span>
-		</div>
-		<div style="padding: 10px;">	
+        </div>
+        <div style="padding: 10px;">
             <table class="jtable" cellspacing="1" cellpadding="1" width="95%">
                 <thead>
                     <tr>
-                        <th align="left">
-                            Component
-                        </th>
-                        <th align="left">
-                            Instance
-                        </th>
-                        <th align="left">
-                            Load
-                        </th>
-                        <th align="left">
-                            Heartbeat
-                        </th>
-                        <th align="left">
-                            Enabled?
-                        </th>
-                        <th align="left">
-                            Minutes Since Last Report
-                        </th>
+                        <th align="left"> Component </th>
+                        <th align="left"> Instance </th>
+                        <th align="left"> Load </th>
+                        <th align="left"> Heartbeat </th>
+                        <th align="left"> Enabled? </th>
+                        <th align="left"> Minutes Since Last Report </th>
                     </tr>
                 </thead>
-                <tbody id="processes">
-                </tbody>
+                <tbody id="processes"></tbody>
             </table>
-		</div>
+        </div>
     </div>
     <br />
     <div class="ui-widget-content ui-corner-all">
         <div class="ui-widget-header">
-            <span>Current Users</span> <span class="security_log_link pointer" id="show_log_link">
-                <img alt="" src="/static/images/icons/view_text_16.png" />
-                View Login History</span>
-		</div>
-		<div style="padding: 10px;">	
-			<table class="jtable" cellspacing="1" cellpadding="1" width="95%">
-	            <thead>
-	                <tr>
-	                    <th align="left">
-	                        User
-	                    </th>
-	                    <th align="left">
-	                        Login Time
-	                    </th>
-	                    <th align="left">
-	                        Last Update
-	                    </th>
-	                    <th align="left">
-	                        Address
-	                    </th>
-	                    <th align="left">
-	                        Status
-	                    </th>
-	                </tr>
-	            </thead>
-	            <tbody id="users">
-	            </tbody>
-	        </table>
-		</div>
+            <span>Current Users</span><span class="security_log_link pointer" id="show_log_link"> <img alt="" src="/static/images/icons/view_text_16.png" /> View Login History</span>
+        </div>
+        <div style="padding: 10px;">
+            <table class="jtable" cellspacing="1" cellpadding="1" width="95%">
+                <thead>
+                    <tr>
+                        <th align="left"> User </th>
+                        <th align="left"> Login Time </th>
+                        <th align="left"> Last Update </th>
+                        <th align="left"> Address </th>
+                        <th align="left"> Status </th>
+                    </tr>
+                </thead>
+                <tbody id="users"></tbody>
+            </table>
+        </div>
     </div>
     <br />
     <div class="ui-widget-content ui-corner-all">
         <div class="ui-widget-header">
             <span>Messenger Queue</span>
-		</div>
-		<div style="padding: 10px;">	
-			<table class="jtable" cellspacing="1" cellpadding="1" width="95%">
-	            <thead>
-	                <tr>
-	                    <th align="left">
-	                        To
-	                    </th>
-	                    <th align="left">
-	                        Subject
-	                    </th>
-	                    <th align="left">
-	                        Status
-	                    </th>
-	                    <th align="left">
-	                        Error
-	                    </th>
-	                    <th align="left">
-	                        Timing
-	                    </th>
-	                </tr>
-	            </thead>
-	            <tbody id="messages">
-	            </tbody>
-	        </table>
-		</div>
+        </div>
+        <div style="padding: 10px;">
+            <table class="jtable" cellspacing="1" cellpadding="1" width="95%">
+                <thead>
+                    <tr>
+                        <th align="left"> To </th>
+                        <th align="left"> Subject </th>
+                        <th align="left"> Status </th>
+                        <th align="left"> Error </th>
+                        <th align="left"> Timing </th>
+                    </tr>
+                </thead>
+                <tbody id="messages"></tbody>
+            </table>
+        </div>
     </div>
 </div>
