@@ -159,7 +159,7 @@ class Ecotemplate(object):
             # create the actions
             # actions aren't referenced by id anywhere, so we'll just give them a new guid
             # to prevent any risk of PK issues.
-            for ea in self.Actions.iteritems():
+            for ea in self.Actions.itervalues():
                 sSQL = "insert into ecotemplate_action" \
                     " (action_id, ecotemplate_id, action_name, action_desc, category, action_icon, original_task_id, task_version, parameter_defaults)" \
                     " values (" \

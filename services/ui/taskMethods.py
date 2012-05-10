@@ -552,7 +552,7 @@ class taskMethods:
             if not oTask:
                 return "wmGetCodeblocks: Unable to get Task for ID [" + sTaskID + "]. " + sErr
             sCBHTML = ""
-            for name, cb in oTask.Codeblocks.iteritems():
+            for cb in oTask.Codeblocks.itervalues():
                 #if it's a guid it's a bogus codeblock (for export only)
                 if uiCommon.IsGUID(cb.Name):
                     continue
@@ -883,7 +883,7 @@ class taskMethods:
                     for sXPath, sValue in dValues.iteritems():
                         xNode = xe.find(sXPath)
                         if xNode is not None:
-                            xNode.text = dValues[sXPath]
+                            xNode.text = sValue
                 
                     sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
                         " commented, locked," \
@@ -1012,7 +1012,7 @@ class taskMethods:
                     for sXPath, sValue in dValues.iteritems():
                         xNode = xe.find(sXPath)
                         if xNode is not None:
-                            xNode.text = dValues[sXPath]
+                            xNode.text = sValue
                 
                     # Add it!
                     ST.AddToCommandXML(sStepID, sDropXPath, ET.tostring(xe))

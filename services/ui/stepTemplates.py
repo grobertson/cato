@@ -753,12 +753,12 @@ def ddDataSource_GetAWSClouds():
     # AWS regions
     p = providers.Provider.FromName("Amazon AWS")
     if p is not None:
-        for c_name, c in p.Clouds.iteritems():
+        for c in p.Clouds.itervalues():
             data[c.Name] = c.Name
     # Eucalyptus clouds
     p = providers.Provider.FromName("Eucalyptus")
     if p is not None:
-        for c_name, c in p.Clouds.iteritems():
+        for c in p.Clouds.itervalues():
             data[c.Name] = c.Name
 
     return data
@@ -1472,9 +1472,9 @@ def GetEcosystemObjects(oStep):
         
         cp = providers.CloudProviders()
         if cp is not None:
-            for p_name, p in cp.iteritems():
+            for p in cp.itervalues():
                 cots = p.GetAllObjectTypes()
-                for cot_name, cot in cots.iteritems():
+                for cot in cots.itervalues():
                     sHTML += "<option " + SetOption(cot.ID, sObjectType) + " value=\"" + cot.ID + "\">" + p.Name + " - " + cot.Label + "</option>\n";            
         
         sHTML += "</select>\n"

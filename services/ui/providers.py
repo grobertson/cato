@@ -153,8 +153,8 @@ class Provider(object):
         try:
             cots = {}
             
-            for p_name, p in self.Products.iteritems():
-                for cot_name, cot in p.CloudObjectTypes.iteritems():
+            for p in self.Products.itervalues():
+                for cot in p.CloudObjectTypes.itervalues():
                     if cot is not None:
                         cots[cot.ID] = cot
             return cots
@@ -187,7 +187,7 @@ class Provider(object):
             # the clouds hooked to this account
             sb.append("\"Clouds\" : {")
             lst = []
-            for cname, c in self.Clouds.iteritems():
+            for c in self.Clouds.itervalues():
                 #stick em all in a list for now
                 s = "\"%s\" : %s" % (c.ID, c.AsJSON())
                 lst.append(s)

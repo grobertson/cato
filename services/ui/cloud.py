@@ -38,8 +38,8 @@ class Cloud(object):
             if not cp:
                 raise Exception("Error building Cloud object: Unable to get CloudProviders.")
             #check the CloudProvider class first ... it *should be there unless something is wrong.
-            for pname, p in cp.iteritems():
-                for cname, c in p.Clouds.iteritems():
+            for p in cp.itervalues():
+                for c in p.Clouds.itervalues():
                     if c.ID == sCloudID:
                         self.IsUserDefined = c.IsUserDefined
                         self.ID = c.ID
@@ -264,7 +264,7 @@ class CloudAccount(object):
             # the clouds hooked to this account
             sb.append("\"Clouds\" : {")
             lst = []
-            for cname, c in self.Provider.Clouds.iteritems():
+            for c in self.Provider.Clouds.itervalues():
                 #stick em all in a list for now
                 s = "\"%s\" : %s" % (c.ID, c.AsJSON())
                 lst.append(s)
