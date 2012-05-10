@@ -60,8 +60,7 @@ $(document).ready(function() {
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function() {
         var sAssetID = $("#hidCurrentEditID").val();
-        var url = "securityLogView.aspx?type=2&id=" + sAssetID;
-        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+		ShowLogViewDialog(2, sAssetID, true);
     });
 
     $("#rbShared").live("change", function() {

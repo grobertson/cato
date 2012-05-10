@@ -1,24 +1,32 @@
-#select function_xml from task_step
-#where function_xml like '%<function command_type="cmd_line" parse_method="2">%'
 
 update task_step set function_xml = 
-replace(function_xml,'command_type="sql_exec" parse_method="1"','command_type="sql_exec" variables="true" parse_method="1"')
+replace(function_xml,
+'<function command_type="sql_exec" parse_method="1>"',
+'<function name="sql_exec" variables="true" parse_method="1">')
 where function_name = 'sql_exec';
 
 update task_step set function_xml = 
-replace(function_xml,'command_type="cmd_line" parse_method="2"','command_type="cmd_line" variables="true" parse_method="2"')
+replace(function_xml,
+'<function command_type="cmd_line" parse_method="2">',
+'<function name="cmd_line" variables="true" parse_method="2">')
 where function_name = 'cmd_line';
 
 update task_step set function_xml = 
-replace(function_xml,'command_type="read_file" parse_method="2"','command_type="read_file" variables="true" parse_method="2"')
+replace(function_xml,
+'<function command_type="read_file" parse_method="2">',
+'<<function name="read_file" variables="true" parse_method="2">')
 where function_name = 'read_file';
 
 update task_step set function_xml = 
-replace(function_xml,'command_type="http" parse_method="2"','command_type="http" variables="true" parse_method="2"')
+replace(function_xml,
+'<function command_type="http" parse_method="2">',
+'<function name="http" variables="true" parse_method="2">')
 where function_name = 'http';
 
 update task_step set function_xml = 
-replace(function_xml,'command_type="parse_text" parse_method="2"','command_type="parse_text" variables="true" parse_method="2"')
+replace(function_xml,
+'<function command_type="parse_text" parse_method="2">',
+'<function name="parse_text" variables="true" parse_method="2">')
 where function_name = 'parse_text';
 
 ## COMMAND LINE command
@@ -89,11 +97,24 @@ where function_name = 'cmd_line';
 
 
 
+# NEW CONNECTION
+update task_step set function_xml = 
+replace(function_xml,
+'<conn_name input_type="text">',
+'<conn_name input_type="text" label="as" required="true" class="w200px" help="Name this connection for reference in the Task.">'
+)
+where function_name = 'new_connection';
+
 # DROP CONNECTION
 update task_step set function_xml = 
 replace(function_xml,
 '<conn_name input_type="text">',
 '<conn_name input_type="text" label="Connection">'
+),
+function_xml = 
+replace(function_xml,
+'<conn_name input_type="text" />',
+'<conn_name input_type="text" label="Connection" />'
 )
 where function_name = 'drop_connection';
 
@@ -144,3 +165,40 @@ function_xml = replace(function_xml,
 '<handle input_type="text" label="Handle">'
 )
 where function_name = 'get_instance_handle';
+
+# PARSE_TEXT
+update task_step set 
+function_xml = replace(function_xml,
+'<text input_type="text" />',
+'<text input_type="textarea" rows="3" label="Text" class="w95pct" required="true" label_style="display: block;" />'
+),
+function_xml = replace(function_xml,
+'<text input_type="text">',
+'<text input_type="textarea" rows="3" label="Text" class="w95pct" required="true" label_style="display: block;">'
+)
+where function_name = 'parse_text';
+
+# LOG_MSG
+update task_step set 
+function_xml = replace(function_xml,
+'<message input_type="text" />',
+'<message input_type="textarea" rows="2" label="Log" class="w95pct" required="true" label_style="display: block;" />'
+),
+function_xml = replace(function_xml,
+'<message input_type="text">',
+'<message input_type="textarea" rows="2" label="Log" class="w95pct" required="true" label_style="display: block;">'
+)
+where function_name = 'log_msg';
+
+
+# THIS FIXES ANY COMMANDS THAT HAD VARIABLE_XML
+update task_step set function_xml = 
+replace(function_xml, '</function>', concat(ifnull(replace(replace(variable_xml, '</variables>', '</step_variables>'), '<variables>', '<step_variables>'), ''), '</function>') )
+where variable_xml is not null
+and function_xml not like '%<step_variables>%';
+
+# THIS changes the "command_type" attribute to "name".
+# it wasn't used before but now it is.
+update task_step set function_xml = 
+replace(function_xml, '<function command_type=', '<function name=')
+where function_xml like '<function command_type=%';

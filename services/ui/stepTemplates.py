@@ -2118,7 +2118,7 @@ def NewConnection(oStep):
             sHTML += "<input type=\"text\" " + \
                 CommonAttribs(oStep, True, "asset", "w300px code") + \
                 " is_required=\"true\"" \
-                " value=\"" + sAssetID + "\"" + " /><br />\n"
+                " value=\"" + sAssetID + "\"" + " />\n"
     
             sHTML += " in Cloud \n"
             
@@ -2485,11 +2485,14 @@ def Codeblock(oStep):
         " link_to=\"" + sElementID + "\"></span>\n"
 
     if sCB != "":
-        # don't enable the edit link if it isn't a valid codeblock on this task.
-        for cb in oStep.Task.Codeblocks:
-            if sCB == cb:
-                sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline codeblock_goto_btn pointer\" title=\"Go To Codeblock\"" \
-                    " codeblock=\"" + sCB + "\"></span>\n"
-                break
+        # don't enable the jump link if it isn't a valid codeblock on this task.
+        # and DON'T CRASH if there isn't a list of codeblocks. (sometimes step objects may not have a full task parent)
+        if oStep.Task:
+            if oStep.Task.Codeblocks:
+                for cb in oStep.Task.Codeblocks:
+                    if sCB == cb:
+                        sHTML += "<span class=\"ui-icon ui-icon-link forceinline codeblock_goto_btn pointer\" title=\"Go To Codeblock\"" \
+                            " codeblock=\"" + sCB + "\"></span>\n"
+                        break
 
     return sHTML

@@ -4,7 +4,6 @@
 """
 
 import uiCommon
-import uiGlobals
 from catocommon import catocommon
 
 class Cloud(object):
@@ -49,6 +48,8 @@ class Cloud(object):
                         self.APIProtocol = c.APIProtocol
                         self.Region = c.Region
                         self.Provider = c.Provider
+                        
+                        return
             
             #well, if we got here we have a problem... the ID provided wasn't found anywhere.
             #this should never happen, so bark about it.
@@ -130,16 +131,12 @@ class Cloud(object):
                 " where cloud_id = '" + self.ID + "'"
             if not db.exec_db_noexcep(sSQL):
                 if db.error == "key_violation":
-                    return None, "A Cloud with that name already exists.  Please select another name."
+                    return False, "A Cloud with that name already exists.  Please select another name."
                 else:
-                    return None, db.error
+                    return False, db.error
             db.close()
             
-            #update the CloudProviders in the session
-            cp = uiCommon.GetCloudProviders() #get the session object
-            cp.Providers[self.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-            uiCommon.UpdateCloudProviders(cp) #update the session
-            return True
+            return True, None
         except Exception, ex:
             raise Exception(ex)
 
@@ -151,7 +148,7 @@ class Cloud(object):
 class CloudAccounts(object): 
     DataTable = None
     
-    def Fill(self, sFilter):
+    def Fill(self, sFilter="", sProvider=""):
         sWhereString = ""
         if sFilter:
             aSearchTerms = sFilter.split()
@@ -162,6 +159,10 @@ class CloudAccounts(object):
                         "or provider like '%%" + term + "%%' " \
                         "or login_id like '%%" + term + "%%') "
 
+        # if a sProvider arg is passed, we explicitly limit to this provider
+        if sProvider:
+            sWhereString += " and provider = '%s'" % sProvider
+            
         sSQL = "select account_id, account_name, account_number, provider, login_id, auto_manage_security," \
             " case is_default when 1 then 'Yes' else 'No' end as is_default," \
             " (select count(*) from ecosystem where account_id = cloud_account.account_id) as has_ecosystems" \
@@ -179,8 +180,8 @@ class CloudAccounts(object):
             sb.append("[")
             for row in self.DataTable:
                 sb.append("{")
-                sb.append("\"%s\" : \"%s\"," % ("ID", row[0]))
-                sb.append("\"%s\" : \"%s\"" % ("Name", row[1]))
+                sb.append("\"%s\" : \"%s\"," % ("ID", row["account_id"]))
+                sb.append("\"%s\" : \"%s\"" % ("Name", row["account_name"]))
                 sb.append("}")
             
                 #the last one doesn't get a trailing comma
@@ -191,5 +192,184 @@ class CloudAccounts(object):
 
             sb.append("]")
             return "".join(sb)
+        except Exception, ex:
+            raise ex
+
+class CloudAccount(object):
+    ID = None
+    Name = None
+    AccountNumber = None
+    LoginID = None
+    LoginPassword = None
+    IsDefault = None
+    Provider = None
+
+    def FromID(self, sAccountID):
+        try:
+            if not sAccountID:
+                raise Exception("Error building Cloud Account object: Cloud Account ID is required.");    
+            
+            sSQL = "select account_name, account_number, provider, login_id, login_password, is_default" \
+                " from cloud_account" \
+                " where account_id = '" + sAccountID + "'"
+
+            db = catocommon.new_conn()
+            dr = db.select_row_dict(sSQL)
+            db.close()
+            
+            if dr is not None:
+                self.ID = sAccountID
+                self.Name = dr["account_name"]
+                self.AccountNumber = ("" if not dr["account_number"] else dr["account_number"])
+                self.LoginID = ("" if not dr["login_id"] else dr["login_id"])
+                self.LoginPassword = ("" if not dr["login_password"] else catocommon.cato_decrypt(dr["login_password"]))
+                self.IsDefault = (True if dr["is_default"] == 1 else False)
+                
+                # find a provider object
+                cp = uiCommon.GetCloudProviders()
+                if not cp:
+                    raise Exception("Error building Cloud Account object: Unable to GetCloudProviders.")
+                    return
+
+                #check the CloudProvider class first ... it *should be there unless something is wrong.
+                if cp.Providers.has_key(dr["provider"]):
+                    self.Provider = cp.Providers[dr["provider"]]
+                else:
+                    raise Exception("Provider [" + dr["provider"] + "] does not exist in the cloud_providers session xml.")
+
+            else: 
+                raise Exception("Unable to build Cloud Account object. Either no Cloud Accounts are defined, or no Account with ID [" + sAccountID + "] could be found.")
+        except Exception, ex:
+            raise Exception(ex)
+
+    def IsValidForCalls(self):
+        if self.LoginID and self.LoginPassword:
+            return True
+        return False
+
+    def AsJSON(self):
+        try:
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+            sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+            sb.append("\"%s\" : \"%s\"," % ("Provider", self.Provider.Name))
+            sb.append("\"%s\" : \"%s\"," % ("AccountNumber", self.AccountNumber))
+            sb.append("\"%s\" : \"%s\"," % ("LoginID", self.LoginID))
+            sb.append("\"%s\" : \"%s\"," % ("LoginPassword", self.LoginPassword))
+            sb.append("\"%s\" : \"%s\"," % ("IsDefault", self.IsDefault))
+            
+            # the clouds hooked to this account
+            sb.append("\"Clouds\" : {")
+            lst = []
+            for cname, c in self.Provider.Clouds.iteritems():
+                #stick em all in a list for now
+                s = "\"%s\" : %s" % (c.ID, c.AsJSON())
+                lst.append(s)
+            #join the list using commas!
+            sb.append(",".join(lst))
+
+            sb.append("}")
+
+            
+            sb.append("}")
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
+
+    #STATIC METHOD
+    #creates this Cloud as a new record in the db
+    #and returns the object
+    @staticmethod
+    def DBCreateNew(sAccountName, sAccountNumber, sProvider, sLoginID, sLoginPassword, sIsDefault):
+        try:
+            db = catocommon.new_conn()
+
+            # if there are no rows yet, make this one the default even if the box isn't checked.
+            if sIsDefault == "0":
+                iExists = -1
+                
+                sSQL = "select count(*) as cnt from cloud_account"
+                iExists = db.select_col_noexcep(sSQL)
+                if iExists == None:
+                    if db.error:
+                        db.tran_rollback()
+                        return None, "Unable to count Cloud Accounts: " + db.error
+                
+                if iExists == 0:
+                    sIsDefault = "1"
+
+            sNewID = uiCommon.NewGUID()
+            sPW = (catocommon.cato_encrypt(sLoginPassword) if sLoginPassword else "")
+            
+            sSQL = "insert into cloud_account" \
+                " (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" \
+                " values ('" + sNewID + "'," \
+                "'" + sAccountName + "'," \
+                "'" + sAccountNumber + "'," \
+                "'" + sProvider + "'," \
+                "'" + sIsDefault + "'," \
+                "'" + sLoginID + "'," \
+                "'" + sPW + "'," \
+                "0)"
+            
+            if not db.tran_exec_noexcep(sSQL):
+                if db.error == "key_violation":
+                    sErr = "A Cloud Account with that name already exists.  Please select another name."
+                    return None, sErr
+                else: 
+                    return None, db.error
+            
+            # if "default" was selected, unset all the others
+            if uiCommon.IsTrue(sIsDefault):
+                sSQL = "update cloud_account set is_default = 0 where account_id <> '" + sNewID + "'"
+                if not db.tran_exec_noexcep(sSQL):
+                    raise Exception(db.error)
+
+            db.tran_commit()
+            db.close()
+            
+            # now it's inserted... lets get it back from the db as a complete object for confirmation.
+            ca = CloudAccount()
+            ca.FromID(sNewID)
+
+            # yay!
+            return ca, None
+        except Exception, ex:
+            raise ex
+
+    def DBUpdate(self):
+        try:
+            db = catocommon.new_conn()
+            
+            #  only update the passwword if it has changed
+            sNewPassword = ""
+            if self.LoginPassword != "($%#d@x!&":
+                sNewPassword = (", login_password = '" + catocommon.cato_encrypt(self.LoginPassword) + "'" if self.LoginPassword else "")
+
+            sSQL = "update cloud_account set" \
+                    " account_name = '" + self.Name + "'," \
+                    " account_number = '" + self.AccountNumber + "'," \
+                    " provider = '" + self.Provider.Name + "'," \
+                    " is_default = '" + ("1" if self.IsDefault else "0") + "'," \
+                    " auto_manage_security = 0," \
+                    " login_id = '" + self.LoginID + "'" + \
+                    sNewPassword + \
+                    " where account_id = '" + self.ID + "'"
+            
+            if not db.exec_db_noexcep(sSQL):
+                if db.error == "key_violation":
+                    sErr = "A Cloud Account with that name already exists.  Please select another name."
+                    return False, sErr
+                else: 
+                    return False, db.error
+            
+            # if "default" was selected, unset all the others
+            if self.IsDefault:
+                sSQL = "update cloud_account set is_default = 0 where account_id <> '" + self.ID + "'"
+                # not worth failing... we'll just end up with two defaults.
+                db.exec_db_noexcep(sSQL)
+
+            return True, None
         except Exception, ex:
             raise ex

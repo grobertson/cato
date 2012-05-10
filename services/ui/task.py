@@ -771,10 +771,13 @@ class Step(object):
                     # but hey! why bother checking, just read 'em anyway.  Won't hurt anything.
                     self.OutputRowDelimiter = int(self.FunctionXDoc.get("row_delimiter", 0))
                     self.OutputColumnDelimiter = int(self.FunctionXDoc.get("col_delimiter", 0))
-
-                except Exception:
+                except ET.ParseError:
                     self.IsValid = False
                     print "CRITICAL: Unable to parse function xml in step [%s]." % self.ID
+                    print traceback.format_exc()    
+                except Exception:
+                    self.IsValid = False
+                    print "CRITICAL: Exception in processing step [%s]." % self.ID
                     print traceback.format_exc()    
 
             #this.Function = Function.GetFunctionByName(dr["function_name"]);

@@ -1,6 +1,5 @@
 import sys
 import traceback
-import urllib
 import json
 import xml.etree.ElementTree as ET
 import uiGlobals
@@ -50,46 +49,49 @@ class taskMethods:
                     uiGlobals.request.db.close()
                 uiCommon.log(uiGlobals.request.DumpMessages(), 0)
 
-    def wmGetTasks(self):
-        sHTML = ""
-        sWhereString = ""
-        sFilter = uiCommon.getAjaxArg("sSearch")
-        if sFilter:
-            aSearchTerms = sFilter.split()
-            for term in aSearchTerms:
-                if term:
-                    sWhereString += " and (a.task_name like '%%" + term + "%%' " \
-                        "or a.task_code like '%%" + term + "%%' " \
-                        "or a.task_desc like '%%" + term + "%%' " \
-                        "or a.task_status like '%%" + term + "%%') "
-
-        sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," \
-            " (select count(*) from task where original_task_id = a.original_task_id) as versions" \
-            " from task a" \
-            " where a.default_version = 1 " + sWhereString + " order by a.task_code"
-        
-        rows = uiGlobals.request.db.select_all_dict(sSQL)
-
-        if rows:
-            for row in rows:
-                sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
-                sHTML += "<td class=\"chkboxcolumn\">"
-                sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
-                " id=\"chk_" + row["original_task_id"] + "\"" \
-                " object_id=\"" + row["task_id"] + "\"" \
-                " tag=\"chk\" />"
-                sHTML += "</td>"
-                
-                sHTML += "<td class=\"selectable\">" + row["task_code"] +  "</td>"
-                sHTML += "<td class=\"selectable\">" + row["task_name"] +  "</td>"
-                sHTML += "<td class=\"selectable\">" + str(row["version"]) +  "</td>"
-                sHTML += "<td class=\"selectable\">" + row["task_desc"] +  "</td>"
-                sHTML += "<td class=\"selectable\">" + row["task_status"] +  "</td>"
-                sHTML += "<td class=\"selectable\">" + str(row["versions"]) +  "</td>"
-                
-                sHTML += "</tr>"
-
-        return sHTML    
+    def wmGetTasksTable(self):
+        try:
+            sHTML = ""
+            sWhereString = ""
+            sFilter = uiCommon.getAjaxArg("sSearch")
+            if sFilter:
+                aSearchTerms = sFilter.split()
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (a.task_name like '%%" + term + "%%' " \
+                            "or a.task_code like '%%" + term + "%%' " \
+                            "or a.task_desc like '%%" + term + "%%' " \
+                            "or a.task_status like '%%" + term + "%%') "
+    
+            sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," \
+                " (select count(*) from task where original_task_id = a.original_task_id) as versions" \
+                " from task a" \
+                " where a.default_version = 1 " + sWhereString + " order by a.task_code"
+            
+            rows = uiGlobals.request.db.select_all_dict(sSQL)
+    
+            if rows:
+                for row in rows:
+                    sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
+                    sHTML += "<td class=\"chkboxcolumn\">"
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                    " id=\"chk_" + row["original_task_id"] + "\"" \
+                    " object_id=\"" + row["task_id"] + "\"" \
+                    " tag=\"chk\" />"
+                    sHTML += "</td>"
+                    
+                    sHTML += "<td class=\"selectable\">" + row["task_code"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["task_name"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + str(row["version"]) +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["task_desc"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["task_status"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + str(row["versions"]) +  "</td>"
+                    
+                    sHTML += "</tr>"
+    
+            return sHTML    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
 
     def wmGetTaskInstances(self):
         try:
@@ -1843,9 +1845,10 @@ class taskMethods:
                 if uiGlobals.request.db.error:
                     uiGlobals.request.Messages.append("Unable to run task [" + sTaskID + "]." + uiGlobals.request.db.error)
     
-                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row["task_instance"]), 3)
+                # this needs fixing, this whole weird result set.
+                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row[0]["_task_instance"]), 3)
                 
-                return row["task_instance"]
+                return row[0]["_task_instance"]
             else:
                 uiGlobals.request.Messages.append("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.")
     

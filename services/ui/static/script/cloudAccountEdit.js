@@ -18,10 +18,6 @@ $(document).ready(function () {
     // clear the edit array
     $("#hidSelectedArray").val("");
 
-    $("[tag='selectable']").live("click", function () {
-        LoadEditDialog($(this).parent().attr("account_id"));
-    });
-
     //dialogs
 
     $("#edit_dialog").dialog({
@@ -175,7 +171,7 @@ $(document).ready(function () {
 	$("#item_search_btn").die();
 	//and rebind it
 	$("#item_search_btn").live("click", function () {
-        GetAccounts();
+        GetItems();
     });
     
     //the test connection buttton
@@ -184,32 +180,41 @@ $(document).ready(function () {
         TestConnection();
     });
 
-    $(".account_help_btn").tipTip({
-        defaultPosition: "right",
-        keepAlive: false,
-        activation: "hover",
-        maxWidth: "400px",
-        fadeIn: 100
-    });
+    GetProvidersList();
+    GetItems();
+    ManagePageLoad();
 });
 
-function pageLoad() {
-    ManagePageLoad();
+function GetProvidersList() {
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "cloudMethods/wmGetProvidersList",
+        data: '{"sUserDefinedOnly":"False"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+			$("#ddlProvider").html(response);
+       },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
 
+
 function GetProviderClouds() {
+	// when ADDING, we need to get the clouds for this provider
 	var provider = $("#ddlProvider").val();
 
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmGetProviderClouds",
+        url: "cloudMethods/wmGetProviderClouds",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
-            var provider = jQuery.parseJSON(response.d);
-
+        success: function (provider) {
             // all we want here is to loop the clouds
             $("#ddlTestCloud").empty();
             $.each(provider.Clouds, function(id, cloud){
@@ -280,18 +285,32 @@ function TestConnection() {
 	}
 }
 
-function GetAccounts() {
+function GetItems() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/wmGetAccounts",
-        data: '{"sSearch":"' + $("#ctl00_phDetail_txtSearch").val() + '"}',
+        url: "cloudMethods/wmGetCloudAccountsTable",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (response) {
-            $('#accounts').html(response.d);
+            $("#accounts").html(response);
+            
             //gotta restripe the table
             initJtable(true, true);
+
+            $(".account_help_btn").tipTip({
+			    defaultPosition: "right",
+			    keepAlive: false,
+			    activation: "hover",
+			    maxWidth: "400px",
+			    fadeIn: 100
+			});
+
+		    $("#accounts .selectable").click(function () {
+		        LoadEditDialog($(this).parent().attr("account_id"));
+		    });
+
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -310,48 +329,26 @@ function setLabels() {
 	}
 }
 
-function LoadEditDialog(editID) {
+function LoadEditDialog(sEditID) {
     clearEditDialog();
     $("#hidMode").val("edit");
 
-    $("#hidCurrentEditID").val(editID);
+    $("#hidCurrentEditID").val(sEditID);
 
-    FillEditForm(editID);
-	setLabels();	
-	
-	//clear out any test results
-	ClearTestResult();
-	
-    $('#edit_dialog_tabs').tabs('select', 0);
-    $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
-    $("#edit_dialog").dialog("option", "title", "Modify Account");
-    $("#edit_dialog").dialog('open');
-
-}
-
-function ClearTestResult() {
-	$("#conn_test_result").css("color","green");
-	$("#conn_test_result").empty();
-	$("#conn_test_error").empty();
-}
-
-function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmGetCloudAccount",
+        url: "cloudMethods/wmGetCloudAccount",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (account) {
             //update the list in the dialog
-            if (response.d.length == 0) {
-                showAlert('error no response');
-                // do we close the dialog, leave it open to allow adding more? what?
+        	if (account.info) {
+    			showInfo(account.info);
+        	} else if (account.error) {
+        		showAlert(account.error);
             } else {
-                var account = jQuery.parseJSON(response.d);
-
-                // show the assets current values
                 $("#txtAccountName").val(account.Name);
                 $("#txtAccountNumber").val(account.AccountNumber)
                 $("#ddlProvider").val(account.Provider);
@@ -359,7 +356,7 @@ function FillEditForm(sEditID) {
                 $("#txtLoginPassword").val(account.LoginPassword);
                 $("#txtLoginPasswordConfirm").val(account.LoginPassword);
 
-                if (account.IsDefault) $("#chkDefault").attr('checked', true);
+                if (account.IsDefault == "True") $("#chkDefault").attr('checked', true);
                 //if (account.AutoManage == "1") $("#chkAutoManageSecurity").attr('checked', true);
                 
                 //the account result will have a list of all the clouds on this account.
@@ -373,6 +370,16 @@ function FillEditForm(sEditID) {
 					$("#test_connection_btn").hide();
 	            else
 					$("#test_connection_btn").show();
+
+				setLabels();	
+				
+				//clear out any test results
+				ClearTestResult();
+				
+			    $('#edit_dialog_tabs').tabs('select', 0);
+			    $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
+			    $("#edit_dialog").dialog("option", "title", "Modify Account");
+			    $("#edit_dialog").dialog('open');
 			}
         },
         error: function (response) {
@@ -384,16 +391,22 @@ function FillEditForm(sEditID) {
     GetKeyPairs(sEditID);
 }
 
+function ClearTestResult() {
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
+}
+
 function GetKeyPairs(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudAccountEdit.aspx/GetKeyPairs",
+        url: "cloudMethods/wmGetKeyPairs",
         data: '{"sID":"' + sEditID + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
+        dataType: "html",
         success: function (response) {
-            $('#keypairs').html(response.d);
+            $('#keypairs').html(response);
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -443,13 +456,12 @@ function SaveItem(close_after_save) {
 	$.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmSaveAccount",
+        url: "cloudMethods/wmSaveAccount",
         data: args,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (account) {
         	try {
-	            var account = jQuery.parseJSON(response.d);
 		        if (account) {
 					//if there are errors or info, we're closing the dialog.
 					//just makes things cleaner regarding the "mode" (add or edit)
@@ -461,8 +473,8 @@ function SaveItem(close_after_save) {
 		        		showAlert(account.error);
 		        	} else {
 						// clear the search field and fire a search click, should reload the grid
-		                $("[id*='txtSearch']").val("");
-						GetAccounts();
+		                $("#txtSearch").val("");
+						GetItems();
 		
 						var dropdown_label = account.Name + ' (' + account.Provider + ')';
 						//if we are adding a new one, add it to the dropdown too
@@ -488,10 +500,10 @@ function SaveItem(close_after_save) {
 		            	bSaved = true;
 	          		}
 		        } else {
-		            showAlert(response.d);
+		            showAlert(response);
 		        }
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {
@@ -569,15 +581,15 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmDeleteAccounts",
+        url: "cloudMethods/wmDeleteAccounts",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
+        success: function (response) {
         	var do_refresh = false;
         	
 			//first, which one is selected?
-			var current = $("#mySelect option:selected").val();
+			var current = $("#header_cloud_accounts option:selected").val();
 
         	//remove the deleted ones from the cloud account dropdown
 			myArray = $("#hidSelectedArray").val().split(',');
@@ -593,13 +605,13 @@ function DeleteItems() {
             	$('#header_cloud_accounts').change();
             
             //update the list in the dialog
-            if (msg.d.length == 0) {
+            if (response) {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-				GetAccounts();
+                $("#txtSearch").val("");
+				GetItems();
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
             } else {

@@ -18,8 +18,7 @@ $(document).ready(function () {
 
     //the hook for the 'show log' link
     $("#show_log_link").click(function () {
-        var url = "securityLogView.aspx?login=security";
-        openWindow(url, "logView", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
+		ShowLogViewDialog('', '', true);
     });
     
     //this page updates every 30 seconds

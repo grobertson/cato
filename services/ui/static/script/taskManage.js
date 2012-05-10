@@ -70,7 +70,7 @@ function GetItems() {
     $.ajax({
         type: "POST",
         async: true,
-        url: "taskMethods/wmGetTasks",
+        url: "taskMethods/wmGetTasksTable",
         data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",

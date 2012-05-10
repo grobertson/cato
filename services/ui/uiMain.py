@@ -20,6 +20,7 @@ from uiMethods import login
 
 from taskMethods import taskMethods
 from cloudMethods import cloudMethods
+from ecoMethods import ecoMethods
 
 import uiCommon
 import uiGlobals
@@ -57,6 +58,10 @@ class taskActivityLog:
     def GET(self):
         return render.taskActivityLog()
 
+class cloudAccountEdit:        
+    def GET(self):
+        return render.cloudAccountEdit()
+
 class cloudEdit:        
     def GET(self):
         return render.cloudEdit()
@@ -70,6 +75,19 @@ class taskStatus:
         return render.taskStatus()
 
 #Authentication preprocessor
+
+class ecoTemplateManage:        
+    def GET(self):
+        return render.ecoTemplateManage()
+
+class ecoTemplateEdit:        
+    def GET(self):
+        return render.ecoTemplateEdit()
+
+class ecosystemManage:        
+    def GET(self):
+        return render.ecosystemManage()
+
 def auth_app_processor(handle):
     path = web.ctx.path
     
@@ -258,16 +276,21 @@ if __name__ == "__main__":
         '/uiMethods/(.*)', 'uiMethods',
         '/cloudMethods/(.*)', 'cloudMethods',
         '/taskMethods/(.*)', 'taskMethods',
+        '/ecoMethods/(.*)', 'ecoMethods',
         '/login', 'login',
         '/logout', 'logout',
         '/home', 'home',
         '/cloudEdit', 'cloudEdit',
+        '/cloudAccountEdit', 'cloudAccountEdit',
         '/taskEdit', 'taskEdit',
         '/taskRunLog', 'taskRunLog',
         '/taskActivityLog', 'taskActivityLog',
         '/taskManage', 'taskManage',
         '/systemStatus', 'systemStatus',
         '/taskStatus', 'taskStatus',
+        '/ecoTemplateEdit', 'ecoTemplateEdit',
+        '/ecoTemplateManage', 'ecoTemplateManage',
+        '/ecosystemManage', 'ecosystemManage',
         '/bypass', 'bypass'
     )
 
