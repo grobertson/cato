@@ -751,12 +751,12 @@ def ddDataSource_GetAWSClouds():
     data = {}
     
     # AWS regions
-    p = providers.Provider.GetFromSession("Amazon AWS")
+    p = providers.Provider.FromName("Amazon AWS")
     if p is not None:
         for c_name, c in p.Clouds.iteritems():
             data[c.Name] = c.Name
     # Eucalyptus clouds
-    p = providers.Provider.GetFromSession("Eucalyptus")
+    p = providers.Provider.FromName("Eucalyptus")
     if p is not None:
         for c_name, c in p.Clouds.iteritems():
             data[c.Name] = c.Name
@@ -1470,7 +1470,7 @@ def GetEcosystemObjects(oStep):
         sHTML += "  <option " + SetOption("", sObjectType) + " value=\"\"></option>\n"
 
         
-        cp = uiCommon.GetCloudProviders()
+        cp = providers.CloudProviders()
         if cp is not None:
             for p_name, p in cp.Providers.iteritems():
                 cots = p.GetAllObjectTypes()

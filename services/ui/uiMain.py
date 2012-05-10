@@ -339,10 +339,5 @@ if __name__ == "__main__":
     SetTaskCommands()
     CacheMenu()
         
-    uiCommon.log("Refreshing datacache...", 3)
-    #put the cloud providers and object types in a pickle
-    # also a big performance boost
-    uiCommon.SetCloudProviders()
-
     
     app.run()

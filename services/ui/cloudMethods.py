@@ -96,7 +96,7 @@ class cloudMethods:
         try:
             sUserDefinedOnly = uiCommon.getAjaxArg("sUserDefinedOnly")
             sHTML = ""
-            cp = uiCommon.GetCloudProviders()
+            cp = providers.CloudProviders()
             if cp:
                 for name, p in cp.Providers.iteritems():
                     if uiCommon.IsTrue(sUserDefinedOnly):
@@ -174,18 +174,13 @@ class cloudMethods:
                 c.APIUrl = sAPIUrl
 
                 #get a new provider by name
-                c.Provider = providers.Provider.GetFromSession(sProvider)
+                c.Provider = providers.Provider.FromName(sProvider)
                 result, msg = c.DBUpdate()
                 if not result:
                     uiGlobals.request.Messages.append(msg)
                     return "{\"info\" : \"%s\"}" % msg
                 
                 uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Cloud, c.ID, c.Name, sCloudName, c.Name)
-
-                #update the CloudProviders in the session
-                cp = uiCommon.GetCloudProviders() #get the session object
-                cp.Providers[c.Provider.Name].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-                uiCommon.UpdateCloudProviders(cp) #update the session
 
             if c:
                 return c.AsJSON()
@@ -213,9 +208,6 @@ class cloudMethods:
             if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
             
-            #reget the cloud providers class in the session
-            uiCommon.SetCloudProviders()
-
             #if we made it here, save the logs
             for dr in rows:
                 uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Cloud, dr["cloud_id"], dr["cloud_name"], dr["provider"] + " Cloud Deleted.")
@@ -327,9 +319,9 @@ class cloudMethods:
         try:
             sProvider = uiCommon.getAjaxArg("sProvider")
             
-            cp = uiCommon.GetCloudProviders()
+            cp = providers.CloudProviders()
             if cp is None:
-                return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}"
+                return "{'result':'fail','error':'Failed to get Providers.'}"
             else:
                 p = cp.Providers[sProvider]
                 if p is not None:
@@ -381,7 +373,7 @@ class cloudMethods:
                     
                     # note: we must reassign the whole provider
                     # changing the name screws up the CloudProviders object in the session, which is writable! (oops)
-                    ca.Provider = providers.Provider.GetFromSession(sProvider)
+                    ca.Provider = providers.Provider.FromName(sProvider)
                     result, msg = ca.DBUpdate()
                     if not result:
                         uiGlobals.request.Messages.append(msg);  

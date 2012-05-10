@@ -301,43 +301,6 @@ def SetSessionObject(key, obj, category=""):
     else:
         uiGlobals.session[key] = obj
     
-def GetCloudProviders(): #These were put in the session at login
-    try:
-        #cp = GetSessionObject("", "cloud_providers")
-        f = open("datacache/_providers.pickle", 'rb')
-        if not f:
-            log("ERROR: Providers pickle missing.", 0)
-
-        cp = pickle.load(f)
-        f.close()
-        if cp:
-            return cp
-        else:
-            log("ERROR: Providers pickle could not be read.", 0)
-    except Exception:
-        log("ERROR: Providers pickle could not be read." + traceback.format_exc(), 0)
-        
-    return None
-
-#this one takes a modified Cloud Providers class and puts it into the session
-def UpdateCloudProviders(cp):
-    #SetSessionObject("cloud_providers", cp, "")
-    f = open("datacache/_providers.pickle", 'wb')
-    pickle.dump(cp, f, pickle.HIGHEST_PROTOCOL)
-    f.close()
-    
-#put the cloud providers and object types from a file into the session
-def SetCloudProviders():
-    x = ET.parse("../../conf/cloud_providers.xml")
-    if x:
-        cp = providers.CloudProviders(x)
-        # uiGlobals.session.cloud_providers = cp
-        f = open("datacache/_providers.pickle", 'wb')
-        pickle.dump(cp, f, pickle.HIGHEST_PROTOCOL)
-        f.close()
-    else:
-        raise Exception("Critical: Unable to read/parse cloud_providers.xml.")
-
 #this one returns a list of Categories from the FunctionCategories class
 def GetTaskFunctionCategories():
     try:

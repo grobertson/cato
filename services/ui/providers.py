@@ -5,9 +5,11 @@ from catocommon import catocommon
 class CloudProviders(object):
     Providers = {}
     #CloudProviders is a dictionary of Provider objects
+
     #the constructor requires an ET Document
-    def __init__(self, xRoot):
+    def __init__(self):
         try:
+            xRoot = ET.parse("../../conf/cloud_providers.xml")
             if not xRoot:
                 raise Exception("Error: Invalid or missing Cloud Providers XML.")
             else:
@@ -109,6 +111,7 @@ class CloudProviders(object):
                                 cot.Properties.append(cotp)
                             p.CloudObjectTypes[cot.ID] = cot
                         pv.Products[p.Name] = p
+                    
                     self.Providers[pv.Name] = pv
                     
         except Exception, ex:
@@ -134,14 +137,11 @@ class Provider(object):
 
     #get it by ID from the session
     @staticmethod
-    def GetFromSession(sProvider):
+    def FromName(sProvider):
         try:
-            #get the provider record from the CloudProviders object in the session
-            #importing one specific function here to avoid a circular reference
-            from uiCommon import GetCloudProviders
-            cp = GetCloudProviders()
+            cp = CloudProviders()
             if cp == None:
-                raise Exception("Error building Provider object: Unable to GetCloudProviders.")
+                raise Exception("Error building Provider object: Unable to get CloudProviders.")
             if cp.Providers.has_key(sProvider):
                 return cp.Providers[sProvider]
             else:
@@ -176,26 +176,6 @@ class Provider(object):
                     
         return None
 
-    def RefreshClouds(self):
-        try:
-            self.Clouds.clear()
-            sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds where provider = '" + self.Name + "'  order by cloud_name"
-            db = catocommon.new_conn()
-            dt = db.select_all(sSQL)
-            if dt:
-                for dr in dt:
-                    c = cloud.Cloud()
-                    c.FromArgs(self, True, dr[0], dr[1], dr[2], dr[3], "")
-                    if c:
-                        self.Clouds[c.ID] = c
-            else:
-                raise Exception("Error building Cloud object: " + db.error)
-            return 
-        except Exception, ex:
-            raise ex
-        finally:
-            db.close()
-    
     def AsJSON(self):
         try:
             sb = []

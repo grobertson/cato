@@ -3,8 +3,8 @@
     Why?  Because it isn't only used by the UI.
 """
 
-import uiCommon
 from catocommon import catocommon
+import providers
 
 class Cloud(object):
     IsUserDefined = True
@@ -34,9 +34,9 @@ class Cloud(object):
                 raise Exception("Error building Cloud object: Cloud ID is required.")
             
             #search for the sCloudID in the CloudProvider Class -AND- the database
-            cp = uiCommon.GetCloudProviders()
+            cp = providers.CloudProviders()
             if not cp:
-                raise Exception("Error building Cloud object: Unable to GetCloudProviders.")
+                raise Exception("Error building Cloud object: Unable to get CloudProviders.")
             #check the CloudProvider class first ... it *should be there unless something is wrong.
             for pname, p in cp.Providers.iteritems():
                 for cname, c in p.Clouds.iteritems():
@@ -84,7 +84,7 @@ class Cloud(object):
     def DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol):
         try:
             sSQL = ""
-            sNewID = uiCommon.NewGUID()
+            sNewID = catocommon.NewGUID()
             sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" \
                 " values ('" + sNewID + "'," + "'" + sCloudName + "'," + "'" + sProvider + "'," + "'" + sAPIUrl + "'," + "'" + sAPIProtocol + "')"
             db = catocommon.new_conn()
@@ -93,11 +93,6 @@ class Cloud(object):
                     return None, "A Cloud with that name already exists.  Please select another name."
                 else:
                     return None, db.error
-            
-            #update the CloudProviders in the session
-            cp = uiCommon.GetCloudProviders() #get the session object
-            cp.Providers[sProvider].RefreshClouds() #find the proper Provider IN THE SESSION OBJECT and tell it to refresh it's clouds.
-            uiCommon.UpdateCloudProviders(cp) #update the session
             
             #now it's inserted and in the session... lets get it back from the db as a complete object for confirmation.
             c = Cloud()
@@ -231,9 +226,9 @@ class CloudAccount(object):
                 self.IsDefault = (True if dr["is_default"] == 1 else False)
                 
                 # find a provider object
-                cp = uiCommon.GetCloudProviders()
+                cp = providers.CloudProviders()
                 if not cp:
-                    raise Exception("Error building Cloud Account object: Unable to GetCloudProviders.")
+                    raise Exception("Error building Cloud Account object: Unable to get CloudProviders.")
                     return
 
                 #check the CloudProvider class first ... it *should be there unless something is wrong.
@@ -306,7 +301,7 @@ class CloudAccount(object):
                 if iExists == 0:
                     sIsDefault = "1"
 
-            sNewID = uiCommon.NewGUID()
+            sNewID = catocommon.NewGUID()
             sPW = (catocommon.cato_encrypt(sLoginPassword) if sLoginPassword else "")
             
             sSQL = "insert into cloud_account" \
@@ -328,7 +323,7 @@ class CloudAccount(object):
                     return None, db.error
             
             # if "default" was selected, unset all the others
-            if uiCommon.IsTrue(sIsDefault):
+            if sIsDefault == "1":
                 sSQL = "update cloud_account set is_default = 0 where account_id <> '" + sNewID + "'"
                 if not db.tran_exec_noexcep(sSQL):
                     raise Exception(db.error)

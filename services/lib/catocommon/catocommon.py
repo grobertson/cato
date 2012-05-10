@@ -20,6 +20,7 @@ from catocryptpy import catocryptpy
 import pymysql
 import time
 import threading
+import uuid
 from catodb import catodb
 
 # anything including catocommon can get new connections using the settings in 'config'
@@ -77,6 +78,9 @@ def read_config():
     key_vals["password"] = un_pass
         
     return key_vals
+
+def NewGUID():
+    return str(uuid.uuid1())
 
 #this file has a global 'config' that gets populated automatically.
 config = read_config()
