@@ -54,7 +54,6 @@ $(document).ready(function () {
             },
             OK: function () {
                 doDebugStop();
-                $(this).dialog('destroy');
             }
         }
     });
@@ -64,6 +63,10 @@ $(document).ready(function () {
     //resubmit button
     //shows a dialog with options
     $("#resubmit_btn").click(function () { $("#resubmit_dialog").dialog("open"); });
+
+    //Stop button
+    //shows a dialog with options
+    $("#abort_btn").click(function () { $("#abort_dialog").dialog("open"); });
 
     //show/hide content based on user preference
     $("#show_detail").click(function () {
@@ -264,11 +267,11 @@ function doDebugStop() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmStopTask",
+        url: "taskMethods/wmStopTask",
         data: '{"sInstance":"' + instance + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             location.reload();
         },
         error: function (response) {

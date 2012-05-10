@@ -563,7 +563,11 @@ function LaunchTask() {
 			    $("#update_success_msg").text("Start Successful").fadeOut(2000);
 			
 			    //hate sticking it here, but this is only for the task edit/view pages...
-			    $("#hidDebugActiveInstance").val(response);
+			    $("#debug_instance").val(response);
+			    //does the page have this function?
+	            if (typeof doGetDebug == 'function') {
+				    doGetDebug();
+			    }
 			} else {
 			  	alert("The Task may not have started... no Task Instance was returned.")
 			}

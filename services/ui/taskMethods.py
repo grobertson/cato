@@ -3354,3 +3354,30 @@ class taskMethods:
 
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+            
+    def wmStopTask(self):
+        try:
+            sInstance = uiCommon.getAjaxArg("sInstance")
+
+            if sInstance != "":
+                sSQL = "update task_instance set task_status = 'Aborting'" \
+                    " where task_instance = '" + sInstance + "'" \
+                    " and task_status in ('Processing');"
+
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to stop task instance [" + sInstance + "]." + uiGlobals.request.db.error)
+
+                sSQL = "update task_instance set task_status = 'Cancelled'" \
+                    " where task_instance = '" + sInstance + "'" \
+                    " and task_status in ('Submitted','Queued','Staged')"
+
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    uiGlobals.request.Messages.append("Unable to stop task instance [" + sInstance + "]." + uiGlobals.request.db.error)
+
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Unable to stop task. Missing or invalid task_instance.")
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+

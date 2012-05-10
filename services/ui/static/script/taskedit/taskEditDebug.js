@@ -73,7 +73,7 @@ $(document).ready(function () {
     });
     //bind the debug show active log button
     $("#debug_view_active_log").click(function () {
-        var aid = $("#hidDebugActiveInstance").val();
+        var aid = $("#debug_instance").html();
         if (aid != "") {
             openDialogWindow('taskRunLog?task_instance=' + aid, 'TaskRunLog' + aid, 950, 750, 'true');
         }
@@ -169,20 +169,18 @@ function doDebugStop() {
     //if (current_status != "Inactive" && current_status != "Aborting") {
     $("#update_success_msg").text("Stopping...").fadeIn(200);
 
-    var $instance = $("#hidDebugActiveInstance");
-
-	if ($instance.val() == '')
+	if ($("#debug_instance").html() == '')
 		return;
 
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods.asmx/wmStopTask",
-        data: '{"sInstance":"' + $instance.val() + '"}',
+        url: "taskMethods/wmStopTask",
+        data: '{"sInstance":"' + $("#debug_instance").html() + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            $instance.val("");
+        dataType: "text",
+        success: function (response) {
+            doGetDebug();
 
             //                //after stopping, set the visualness
             //                $("#debug_run_btn").removeClass("debug_btn_dim")
