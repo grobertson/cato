@@ -1472,7 +1472,7 @@ def GetEcosystemObjects(oStep):
         
         cp = providers.CloudProviders()
         if cp is not None:
-            for p_name, p in cp.Providers.iteritems():
+            for p_name, p in cp.iteritems():
                 cots = p.GetAllObjectTypes()
                 for cot_name, cot in cots.iteritems():
                     sHTML += "<option " + SetOption(cot.ID, sObjectType) + " value=\"" + cot.ID + "\">" + p.Name + " - " + cot.Label + "</option>\n";            

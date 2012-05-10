@@ -2,8 +2,7 @@ import xml.etree.ElementTree as ET
 import cloud
 from catocommon import catocommon
 
-class CloudProviders(object):
-    Providers = {}
+class CloudProviders(dict):
     #CloudProviders is a dictionary of Provider objects
 
     #the constructor requires an ET Document
@@ -112,7 +111,7 @@ class CloudProviders(object):
                             p.CloudObjectTypes[cot.ID] = cot
                         pv.Products[p.Name] = p
                     
-                    self.Providers[pv.Name] = pv
+                    self[pv.Name] = pv
                     
         except Exception, ex:
             raise ex
@@ -142,8 +141,8 @@ class Provider(object):
             cp = CloudProviders()
             if cp == None:
                 raise Exception("Error building Provider object: Unable to get CloudProviders.")
-            if cp.Providers.has_key(sProvider):
-                return cp.Providers[sProvider]
+            if cp.has_key(sProvider):
+                return cp[sProvider]
             else:
                 raise Exception("Provider [" + sProvider + "] does not exist in the cloud_providers session xml.")
         except Exception, ex:

@@ -98,7 +98,7 @@ class cloudMethods:
             sHTML = ""
             cp = providers.CloudProviders()
             if cp:
-                for name, p in cp.Providers.iteritems():
+                for name, p in cp.iteritems():
                     if uiCommon.IsTrue(sUserDefinedOnly):
                         if p.UserDefinedClouds:
                             sHTML += "<option value=\"" + name + "\">" + name + "</option>"
@@ -323,7 +323,7 @@ class cloudMethods:
             if cp is None:
                 return "{'result':'fail','error':'Failed to get Providers.'}"
             else:
-                p = cp.Providers[sProvider]
+                p = cp[sProvider]
                 if p is not None:
                     return p.AsJSON()
                 else:

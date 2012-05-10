@@ -38,7 +38,7 @@ class Cloud(object):
             if not cp:
                 raise Exception("Error building Cloud object: Unable to get CloudProviders.")
             #check the CloudProvider class first ... it *should be there unless something is wrong.
-            for pname, p in cp.Providers.iteritems():
+            for pname, p in cp.iteritems():
                 for cname, c in p.Clouds.iteritems():
                     if c.ID == sCloudID:
                         self.IsUserDefined = c.IsUserDefined
@@ -232,8 +232,8 @@ class CloudAccount(object):
                     return
 
                 #check the CloudProvider class first ... it *should be there unless something is wrong.
-                if cp.Providers.has_key(dr["provider"]):
-                    self.Provider = cp.Providers[dr["provider"]]
+                if cp.has_key(dr["provider"]):
+                    self.Provider = cp[dr["provider"]]
                 else:
                     raise Exception("Provider [" + dr["provider"] + "] does not exist in the cloud_providers session xml.")
 
