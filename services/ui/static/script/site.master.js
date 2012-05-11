@@ -63,9 +63,10 @@ function updateHeartbeat() {
 }
 
 function getCloudAccounts() {
+	// NOTE: This is not async for a reason - other 'page load' ajax calls depend on it.
     $.ajax({
         type: "POST",
-        async: true,
+        async: false,
         url: "uiMethods/wmGetCloudAccountsForHeader",
         data: '{"sSelected":"' + $("#selected_cloud_account").val() + '"}',
         contentType: "application/json; charset=utf-8",

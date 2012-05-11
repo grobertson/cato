@@ -32,7 +32,7 @@ $(document).ready(function () {
                 Save();
             },
             Cancel: function () {
-                $("[id*='lblNewMessage']").html("");
+                $("#lblNewMessage").html("");
                 $("#hidCurrentEditID").val("");
 
                 $("#hidSelectedArray").val("");
@@ -46,16 +46,61 @@ $(document).ready(function () {
         }
     });
 
-    //what happens when you click a row?
-    $("[tag='selectable']").live("click", function () {
-        showPleaseWait();
-        location.href = 'ecosystemEdit.aspx?ecosystem_id=' + $(this).parent().attr("ecosystem_id");
-    });
-});
-function pageLoad() {
     ManagePageLoad();
+	GetItems();
+	FillEcotemplatesDropdown();
+});
+
+function GetItems() {
+	var account_id = $("#header_cloud_accounts").val();
+	var search = $("#txtSearch").val();
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "ecoMethods/wmGetEcosystemsTable",
+        data: '{"sSearch":"' + search + '", "sAccountID":"' + account_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "text",
+        success: function (response) {
+            $("#ecosystems").html(response);
+            //gotta restripe the table
+            initJtable(true, true);
+
+		    //what happens when you click a row?
+		    $(".selectable").click(function () {
+		        showPleaseWait();
+		        location.href = '/ecosystemEdit?ecosystem_id=' + $(this).parent().attr("ecosystem_id");
+		    });
+
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
 
+function FillEcotemplatesDropdown() {
+	var provider = $("#ddlProvider").val();
+
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "ecoMethods/wmGetEcotemplatesJSON",
+        data: '{}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (templates) {
+            // all we want here is to loop the clouds
+            $("#ddlEcotemplates").empty();
+            $.each(templates, function(index, template){
+            	$("#ddlEcotemplates").append("<option value=\"" + template.ecotemplate_id + "\">" + template.ecotemplate_name + "</option>");
+			});
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 function CloudAccountWasChanged() {
     location.reload();
 }
@@ -74,31 +119,39 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmDeleteEcosystems",
+        url: "ecoMethods/wmDeleteEcosystems",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
-
+        success: function (response) {
+        	if (response.info) {
+    			showInfo(response.info);
+        	} else if (response.error) {
+        		showAlert(response.error);
+            } else if (response.result == "success") {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog('close');
 
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-                $("[id*='btnSearch']").click();
+                $("#txtSearch").val("");
+                GetItems();
 
                 hidePleaseWait();
                 showInfo('Delete Successful');
-
             } else {
-                showAlert(msg.d);
+                showAlert(response);
+
+                $("#delete_dialog").dialog('close');
+                
                 // reload the list, some may have been deleted.
                 // clear the search field and fire a search click, should reload the grid
-                $("[id*='txtSearch']").val("");
-                $("[id*='btnSearch']").click();
+                $("#txtSearch").val("");
+                GetItems();
             }
+
+            $("#hidSelectedArray").val("");
         },
+
         error: function (response) {
             showAlert(response.responseText);
         }
@@ -113,7 +166,7 @@ function Save() {
     var strValidationError = '';
 
     //some client side validation before we attempt to save
-    if ($("#ctl00_phDetail_ddlEcotemplates")[0].length == 0) {
+    if ($("#ddlEcotemplates")[0].length == 0) {
         bSave = false;
         strValidationError += 'Ecosystems must belong to an Ecosystem Template.  Create an Ecosystem Template first.';
     };
@@ -123,8 +176,6 @@ function Save() {
         strValidationError += 'Name is required.';
     };
 
-    //we will test it, but really we're not gonna use it rather we'll get it server side
-    //this just traps if there isn't one.
     if ($("#header_cloud_accounts")[0].length == 0) {
         bSave = false;
         strValidationError += 'Ecosystems require a Cloud Account.  Create a Cloud Account first.';
@@ -135,22 +186,27 @@ function Save() {
         return false;
     }
 
+	var account_id = $("#header_cloud_accounts").val();
 	var name = packJSON($("#new_ecosystem_name").val());
 	var desc = packJSON($("#new_ecosystem_desc").val());
-	var etid = $("#ctl00_phDetail_ddlEcotemplates").val();
+	var etid = $("#ddlEcotemplates").val();
 
 	$.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmCreateEcosystem",
-        data: '{"sName":"' + name + '","sDescription":"' + desc + '","sEcotemplateID":"' + etid + '"}',
+        url: "ecoMethods/wmCreateEcosystem",
+        data: '{"sName":"' + name + '","sDescription":"' + desc + '","sEcotemplateID":"' + etid + '", "sAccountID":"' + account_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 36) {
-                location.href = "ecosystemEdit.aspx?ecosystem_id=" + msg.d;
+        success: function (response) {
+        	if (response.error) {
+        		showAlert(response.error);
+        	} else if (response.info) {
+        		showInfo(response.info);
+        	} else if (response.id) {
+                location.href = "ecosystemEdit?ecosystem_id=" + response.id;
             } else {
-                showAlert(msg.d);
+                showAlert(response);
                 hidePleaseWait();
             }
         },

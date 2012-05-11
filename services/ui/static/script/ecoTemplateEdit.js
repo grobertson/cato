@@ -599,23 +599,28 @@ function NewEcosystem() {
 		return false;
 	}
 
+	var account_id = $("#header_cloud_accounts").val();
 	var name = packJSON($("#new_ecosystem_name").val());
 	var desc = packJSON($("#new_ecosystem_desc").val());
 
 	$.ajax({
 		async : false,
 		type : "POST",
-		url : "uiMethods.asmx/wmCreateEcosystem",
-		data : '{"sName":"' + name + '","sDescription":"' + desc + '","sEcotemplateID":"' + g_id + '"}',
+		url : "ecoMethods/wmCreateEcosystem",
+		data : '{"sName":"' + name + '","sDescription":"' + desc + '","sEcotemplateID":"' + g_id + '", "sAccountID":"' + account_id + '"}',
 		contentType : "application/json; charset=utf-8",
 		dataType : "json",
-		success : function(msg) {
-			if(msg.d.length == 36) {
+        success: function (response) {
+        	if (response.error) {
+        		showAlert(response.error);
+        	} else if (response.info) {
+        		showInfo(response.info);
+        	} else if (response.id) {
 				//just add it to the list here
 				GetEcosystems();
 				$("#ecosystem_add_dialog").dialog('close');
 			} else {
-				showAlert(msg.d);
+				showAlert(response);
 			}
 		},
 		error : function(response) {

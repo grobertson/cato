@@ -2,10 +2,43 @@
     THIS CLASS has it's own database connections.
     Why?  Because it isn't only used by the UI.
 """
-
+import json
 import uiCommon
 from catocommon import catocommon
 
+# Note: this is not a container for Ecotemplate objects - it's just a rowset from the database
+# with an AsJSON method.
+# why? Because we don't need a full object for list pages and dropdowns.
+class Ecotemplates(object):
+    rows = {}
+    def __init__(self, sFilter=""):
+        try:
+            sWhereString = ""
+            if sFilter:
+                aSearchTerms = sFilter.split()
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (a.ecotemplate_name like '%%" + term + "%%' " \
+                            "or a.ecotemplate_desc like '%%" + term + "%%') "
+    
+            sSQL = "select a.ecotemplate_id, a.ecotemplate_name, a.ecotemplate_desc," \
+                " (select count(*) from ecosystem where ecotemplate_id = a.ecotemplate_id) as in_use" \
+                " from ecotemplate a" \
+                " where 1=1 %s order by a.ecotemplate_name" % sWhereString
+            
+            db = catocommon.new_conn()
+            self.rows = db.select_all_dict(sSQL)
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
+    def AsJSON(self):
+        try:
+            return json.dumps(self.rows)
+        except Exception, ex:
+            raise ex
+        
 class Ecotemplate(object):
     ID = uiCommon.NewGUID()
     Name = None
@@ -35,7 +68,7 @@ class Ecotemplate(object):
             db = catocommon.new_conn()
             dr = db.select_row_dict(sSQL)
             if db.error:
-                raise Exception("Ecotemplate Object: Unable to check for existing Name or ID. " + db.error)
+                raise Exception("Ecotemplate Object: Unable to get Ecotemplate from database. " + db.error)
 
             if dr is not None:
                 self.DBExists = True
@@ -257,3 +290,136 @@ class EcotemplateAction(object):
         except Exception, ex:
             raise ex
         
+# Note: this is not a container for Ecotemplate objects - it's just a rowset from the database
+# with an AsJSON method.
+# why? Because we don't need a full object for list pages and dropdowns.
+class Ecosystems(object):
+    rows = {}
+    def __init__(self, sAccountID, sFilter=""):
+        try:
+            sWhereString = ""
+            if sFilter:
+                aSearchTerms = sFilter.split()
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (e.ecosystem_name like '%%" + term + "%%' " \
+                            "or e.ecosystem_desc like '%%" + term + "%%' " \
+                            "or et.ecotemplate_name like '%%" + term + "%%') "
+    
+            sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name, created_dt, last_update_dt," \
+                " (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" \
+                " from ecosystem e" \
+                " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" \
+                " where e.account_id = '%s' %s order by e.ecosystem_name" % (sAccountID, sWhereString)
+            
+            db = catocommon.new_conn()
+            self.rows = db.select_all_dict(sSQL)
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
+    def AsJSON(self):
+        try:
+            return json.dumps(self.rows)
+        except Exception, ex:
+            raise ex
+        
+class Ecosystem(object):
+    ID = uiCommon.NewGUID()
+    Name = None
+    Description = None
+    StormFile = None
+    AccountID = None
+    EcotemplateID = None
+    EcotemplateName = None #no referenced objects just yet, just the name and ID until we need more.
+    ParameterXML = None
+    CloudID = None
+    StormStatus = None
+    CreatedDate = None
+    LastUpdate = None
+    NumObjects = 0
+
+    def FromArgs(self, sName, sDescription, sEcotemplateID, sAccountID):
+        if not sName or not sEcotemplateID or not sAccountID:
+            raise Exception("Error building Ecosystem: Name, Ecotemplate and Cloud Account are required.")
+
+        self.Name = sName
+        self.Description = sDescription
+        self.EcotemplateID = sEcotemplateID
+        self.AccountID = sAccountID
+
+    @staticmethod
+    def DBCreateNew(sName, sEcotemplateID, sAccountID, sDescription="", sStormStatus="", sParameterXML="", sCloudID=""):
+        try:
+            if not sName or not sEcotemplateID or not sAccountID:
+                return None, "Name, Ecotemplate and Cloud Account are required Ecosystem properties."
+              
+            db = catocommon.new_conn()
+            
+            sID = uiCommon.NewGUID()
+
+            sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," \
+                " storm_file, storm_status, storm_parameter_xml, storm_cloud_id, created_dt, last_update_dt)" \
+                " select '" + sID + "'," \
+                " '" + sName + "'," \
+                + (" null" if not sDescription else " '" + uiCommon.TickSlash(sDescription) + "'") + "," \
+                " '" + sAccountID + "'," \
+                " ecotemplate_id," \
+                " storm_file," \
+                + (" null" if not sStormStatus else " '" + uiCommon.TickSlash(sStormStatus) + "'") + "," \
+                + (" null" if not sParameterXML else " '" + uiCommon.TickSlash(sParameterXML) + "'") + "," \
+                + (" null" if not sCloudID else " '" + sCloudID + "'") + "," \
+                " now(), now()" \
+                " from ecotemplate where ecotemplate_id = '" + sEcotemplateID + "'"
+            
+            if not db.exec_db_noexcep(sSQL):
+                if db.error == "key_violation":
+                    return None, "An Ecosystem with that name already exists.  Please select another name."
+                else:
+                    return None, db.error
+
+            #now it's inserted and in the session... lets get it back from the db as a complete object for confirmation.
+            e = Ecosystem()
+            e.FromID(sID)
+            #yay!
+            return e, None
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
+    def FromID(self, sEcosystemID):
+        try:
+            sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file, e.storm_status," \
+                " e.account_id, e.ecotemplate_id, et.ecotemplate_name, e.created_dt, e.last_update_dt," \
+                " (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" \
+                " from ecosystem e" \
+                " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" \
+                " where e.ecosystem_id = '" + sEcosystemID + "'"
+            
+            db = catocommon.new_conn()
+            dr = db.select_row_dict(sSQL)
+            if db.error:
+                raise Exception("Ecosystem Object: Unable to get Ecosystem from database. " + db.error)
+
+            if dr:
+                self.ID = dr["ecosystem_id"]
+                self.Name = dr["ecosystem_name"]
+                self.AccountID = dr["account_id"]
+                self.EcotemplateID = dr["ecotemplate_id"]
+                self.EcotemplateName = dr["ecotemplate_name"]
+                self.Description = (dr["ecosystem_desc"] if dr["ecosystem_desc"] else "")
+                self.StormFile = (dr["storm_file"] if dr["storm_file"] else "")
+                self.StormStatus = (dr["storm_status"] if dr["storm_status"] else "")
+                self.CreatedDate = (str(dr["created_dt"]) if dr["storm_status"] else "")
+                self.LastUpdate = (str(dr["last_update_dt"]) if dr["storm_status"] else "")
+                self.NumObjects = str(dr["num_objects"])
+            else: 
+                raise Exception("Error building Ecosystem object: " + db.error)
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+
+            

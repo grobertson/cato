@@ -75,24 +75,10 @@ class ecoMethods:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
             sHTML = ""
-            sWhereString = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
-            if sFilter:
-                aSearchTerms = sFilter.split()
-                for term in aSearchTerms:
-                    if term:
-                        sWhereString += " and (a.ecotemplate_name like '%%" + term + "%%' " \
-                            "or a.ecotemplate_desc like '%%" + term + "%%') "
-    
-            sSQL = "select a.ecotemplate_id, a.ecotemplate_name, a.ecotemplate_desc," \
-                " (select count(*) from ecosystem where ecotemplate_id = a.ecotemplate_id) as in_use" \
-                " from ecotemplate a" \
-                " where 1=1 %s order by a.ecotemplate_name" % sWhereString
-            
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
-    
-            if rows:
-                for row in rows:
+            ets = ecosystem.Ecotemplates(sFilter)
+            if ets:
+                for row in ets.rows:
                     sHTML += "<tr ecotemplate_id=\"%s\">" % row["ecotemplate_id"]
                     sHTML += "<td class=\"chkboxcolumn\">"
                     sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
@@ -216,7 +202,8 @@ class ecoMethods:
                     for dr in dt:
                         sEcosystemID = dr["ecosystem_id"]
                         sEcosystemName = dr["ecosystem_name"]
-                        sDesc = dr["ecosystem_desc"].replace("\"", "").replace("'", "")
+                        sDesc = (dr["ecosystem_desc"] if dr["ecosystem_desc"] else "")
+                        sDesc = sDesc.replace("\"", "").replace("'", "")
 
                         sHTML += "<li class=\"ui-widget-content ui-corner-all\"" \
                             " ecosystem_id=\"" + sEcosystemID + "\"" \
@@ -705,3 +692,123 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return ""
+
+    def wmGetEcosystemsTable(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sFilter = uiCommon.getAjaxArg("sSearch")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+
+            sHTML = ""
+            ets = ecosystem.Ecosystems(sAccountID, sFilter)
+            if ets:
+                for row in ets.rows:
+                    sHTML += "<tr ecosystem_id=\"%s\">" % row["ecosystem_id"]
+                    sHTML += "<td class=\"chkboxcolumn\">"
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                    " id=\"chk_%s\"" \
+                    " object_id=\"%s\"" \
+                    " tag=\"chk\" />" % (row["ecosystem_id"], row["ecosystem_id"])
+                    sHTML += "</td>"
+                    
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["ecosystem_name"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["ecotemplate_name"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % (row["ecosystem_desc"] if row["ecosystem_desc"] else "")
+                    sHTML += "<td class=\"selectable\">%s</td>" % str(row["created_dt"])
+                    sHTML += "<td class=\"selectable\">%s</td>" % (row["last_update_dt"])
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["num_objects"]
+                    
+                    sHTML += "</tr>"
+    
+            return sHTML    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetEcotemplatesJSON(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sFilter = uiCommon.getAjaxArg("sFilter")
+            ets = ecosystem.Ecotemplates(sFilter)
+            if ets:
+                return ets.AsJSON()
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Ecotemplates using filter [" + sFilter + "].'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def wmCreateEcosystem(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sName = uiCommon.getAjaxArg("sName")
+            sDescription = uiCommon.getAjaxArg("sDescription")
+            sEcotemplateID = uiCommon.getAjaxArg("sEcotemplateID")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            sStormStatus = uiCommon.getAjaxArg("sStormStatus")
+            sParameterXML = uiCommon.getAjaxArg("sCloudID")
+            sCloudID = uiCommon.getAjaxArg("sCloudID")
+    
+            if not sAccountID:
+                return "{\"info\" : \"Unable to create - No Cloud Account selected.\"}"
+            if not sEcotemplateID:
+                return "{\"info\" : \"Unable to create - An Ecosystem Template is required.\"}"
+
+
+            e, sErr = ecosystem.Ecosystem.DBCreateNew(uiCommon.unpackJSON(sName), sEcotemplateID, sAccountID, uiCommon.unpackJSON(sDescription), sStormStatus, uiCommon.unpackJSON(sParameterXML), sCloudID)
+            if sErr:
+                return "{\"error\" : \"" + sErr + "\"}"
+            if e == None:
+                return "{\"error\" : \"Unable to create Ecosystem.\"}"
+
+            uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Ecosystem, e.ID, e.Name, "Ecosystem created.")
+            
+            return "{\"id\" : \"%s\"}" % e.ID
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def wmDeleteEcosystems(self):
+        try:
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if not sDeleteArray:
+                return ""
+    
+            sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
+
+            sSQL = "delete from action_plan where ecosystem_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from action_schedule where ecosystem_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from object_registry where object_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from ecosystem_object where ecosystem_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from ecosystem_log where ecosystem_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sSQL = "delete from ecosystem where ecosystem_id in (" + sDeleteArray + ")"
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            
+            uiGlobals.request.db.tran_commit()
+                
+            uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Ecosystem, "", "", "Ecosystem(s) Deleted [" + sDeleteArray + "]")
+
+            return "{\"result\" : \"success\"}"
+            
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
