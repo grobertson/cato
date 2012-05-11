@@ -140,10 +140,9 @@ class uiMethods:
             sSelected = uiCommon.GetCookie("selected_cloud_account")
 
             sHTML = ""
-            ca = cloud.CloudAccounts()
-            ca.Fill("")
-            if ca.DataTable:
-                for row in ca.DataTable:
+            ca = cloud.CloudAccounts("")
+            if ca.rows:
+                for row in ca.rows:
                     # if sSelected is empty, set the default in the cookie.
                     sSelectClause = ""
                     if not sSelected:

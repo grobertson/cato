@@ -119,7 +119,7 @@ function GetProviderAccounts() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudMethods/wmGetCloudAccounts",
+        url: "cloudMethods/wmGetCloudAccountsJSON",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -127,7 +127,7 @@ function GetProviderAccounts() {
             // all we want here is to loop the clouds
             $("#ddlTestAccount").empty();
             $.each(accounts, function(index, account){
-            	$("#ddlTestAccount").append("<option value=\"" + account.ID + "\">" + account.Name + "</option>");
+            	$("#ddlTestAccount").append("<option value=\"" + account.account_id + "\">" + account.account_name + "</option>");
 			});
 			
 			//we can't allow testing the connection if there are no clouds

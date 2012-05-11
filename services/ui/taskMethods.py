@@ -52,26 +52,10 @@ class taskMethods:
     def wmGetTasksTable(self):
         try:
             sHTML = ""
-            sWhereString = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
-            if sFilter:
-                aSearchTerms = sFilter.split()
-                for term in aSearchTerms:
-                    if term:
-                        sWhereString += " and (a.task_name like '%%" + term + "%%' " \
-                            "or a.task_code like '%%" + term + "%%' " \
-                            "or a.task_desc like '%%" + term + "%%' " \
-                            "or a.task_status like '%%" + term + "%%') "
-    
-            sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," \
-                " (select count(*) from task where original_task_id = a.original_task_id) as versions" \
-                " from task a" \
-                " where a.default_version = 1 " + sWhereString + " order by a.task_code"
-            
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
-    
-            if rows:
-                for row in rows:
+            tasks = task.Tasks(sFilter)
+            if tasks:
+                for row in tasks.rows:
                     sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
                     sHTML += "<td class=\"chkboxcolumn\">"
                     sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
@@ -1517,7 +1501,8 @@ class taskMethods:
                     
                     sTaskName = row["task_name"].replace("\"", "\\\"")
                     sLabel = row["task_code"] + " : " + sTaskName
-                    sDesc = row["task_desc"].replace("\"", "").replace("'", "")
+                    sDesc = (dr["task_desc"] if dr["task_desc"] else "")
+                    sDesc = sDesc.replace("\"", "").replace("'", "")
 
                     sHTML += "<li class=\"ui-widget-content ui-corner-all search_dialog_value\" tag=\"task_picker_row\"" \
                         " original_task_id=\"" + row["original_task_id"] + "\"" \

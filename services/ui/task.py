@@ -22,10 +22,46 @@ ET.dump(user)
 
 import traceback
 import uuid
+import json
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
 import uiCommon
 from datetime import datetime
+
+# Note: this is not a container for Ecotemplate objects - it's just a rowset from the database
+# with an AsJSON method.
+# why? Because we don't need a full object for list pages and dropdowns.
+class Tasks(object):
+    rows = {}
+    def __init__(self, sFilter=""):
+        try:
+            sWhereString = ""
+            if sFilter:
+                aSearchTerms = sFilter.split()
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (a.task_name like '%%" + term + "%%' " \
+                            "or a.task_code like '%%" + term + "%%' " \
+                            "or a.task_desc like '%%" + term + "%%' " \
+                            "or a.task_status like '%%" + term + "%%') "
+    
+            sSQL = "select a.task_id, a.original_task_id, a.task_name, a.task_code, a.task_desc, a.version, a.task_status," \
+                " (select count(*) from task where original_task_id = a.original_task_id) as versions" \
+                " from task a" \
+                " where a.default_version = 1 " + sWhereString + " order by a.task_code"
+            
+            db = catocommon.new_conn()
+            self.rows = db.select_all_dict(sSQL)
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
+    def AsJSON(self):
+        try:
+            return json.dumps(self.rows)
+        except Exception, ex:
+            raise ex
 
 class Task(object):
     def __init__(self):

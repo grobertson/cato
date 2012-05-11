@@ -2,7 +2,7 @@
     THIS CLASS has it's own database connections.
     Why?  Because it isn't only used by the UI.
 """
-
+import json
 from catocommon import catocommon
 import providers
 
@@ -143,9 +143,9 @@ class Cloud(object):
 # why? Because the CloudAccount objects contain a full set of Provider information - stuff
 # we don't need for list pages and dropdowns.
 class CloudAccounts(object): 
-    DataTable = None
+    rows = {}
         
-    def Fill(self, sFilter="", sProvider=""):
+    def __init__(self, sFilter="", sProvider=""):
         try:
             sWhereString = ""
             if sFilter:
@@ -168,7 +168,7 @@ class CloudAccounts(object):
                 " where 1=1 " + sWhereString + " order by is_default desc, account_name"
             
             db = catocommon.new_conn()
-            self.DataTable = db.select_all_dict(sSQL)
+            self.rows = db.select_all_dict(sSQL)
         except Exception, ex:
             raise Exception(ex)
         finally:
@@ -176,23 +176,7 @@ class CloudAccounts(object):
 
     def AsJSON(self):
         try:
-            i = 1
-            sb = []
-            sb.append("[")
-            for row in self.DataTable:
-                sb.append("{")
-                sb.append("\"%s\" : \"%s\"," % ("ID", row["account_id"]))
-                sb.append("\"%s\" : \"%s\"" % ("Name", row["account_name"]))
-                sb.append("}")
-            
-                #the last one doesn't get a trailing comma
-                if i < len(self.DataTable):
-                    sb.append(",")
-                    
-                i += 1
-
-            sb.append("]")
-            return "".join(sb)
+            return json.dumps(self.rows)
         except Exception, ex:
             raise ex
 

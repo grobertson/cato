@@ -128,14 +128,13 @@ class cloudMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
-    def wmGetCloudAccounts(self):
+    def wmGetCloudAccountsJSON(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
         
             provider = uiCommon.getAjaxArg("sProvider")
-            ca = cloud.CloudAccounts()
-            ca.Fill(sFilter="", sProvider=provider)
-            if ca.DataTable:
+            ca = cloud.CloudAccounts(sFilter="", sProvider=provider)
+            if ca:
                 return ca.AsJSON()
             
             #should not get here if all is well
@@ -227,10 +226,9 @@ class cloudMethods:
             sFilter = uiCommon.getAjaxArg("sSearch")
             sHTML = ""
             
-            ca = cloud.CloudAccounts()
-            ca.Fill(sFilter)
-            if ca.DataTable:
-                for row in ca.DataTable:
+            ca = cloud.CloudAccounts(sFilter)
+            if ca.rows:
+                for row in ca.rows:
                     sHTML += "<tr account_id=\"" + row["account_id"] + "\">"
                     
                     if not row["has_ecosystems"]:

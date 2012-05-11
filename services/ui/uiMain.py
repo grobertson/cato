@@ -98,6 +98,10 @@ class ecosystemManage:
     def GET(self):
         return render.ecosystemManage()
 
+class ecosystemEdit:        
+    def GET(self):
+        return render.ecosystemEdit()
+
 class upload:
     def GET(self):
         return """This endpoint only accepts POSTS from file_upload.html"""
@@ -336,6 +340,7 @@ if __name__ == "__main__":
         '/ecoTemplateEdit', 'ecoTemplateEdit',
         '/ecoTemplateManage', 'ecoTemplateManage',
         '/ecosystemManage', 'ecosystemManage',
+        '/ecosystemEdit', 'ecosystemEdit',
         '/announcement', 'announcement',
         '/upload', 'upload',
         '/temp/(.*)', 'temp',
