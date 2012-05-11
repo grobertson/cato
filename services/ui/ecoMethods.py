@@ -623,6 +623,10 @@ class ecoMethods:
     def GetEcotemplateStormJSON(sEcoTemplateID): 
         bIsValid = False
         sErr = ""
+        sFileType = ""
+        sURL = ""
+        sFileDesc = ""
+        sStormFileJSON = ""
         try:
             if sEcoTemplateID:
                 sSQL = "select storm_file_type, storm_file" \

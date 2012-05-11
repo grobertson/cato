@@ -115,29 +115,12 @@ $(document).ready(function () {
 
 function fileWasSaved(filename) {
 	//get the file text from the server and populate the text field.
-	//alert(filename);
-    $.ajax({
-        type: "POST",
-        url: "uiMethods.asmx/wmGetFile",
-        data: '{"sFileName":"' + filename + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            if (msg.d.length > 0) {
-                var txt = unpackJSON(msg.d);
-                $("#storm_edit_dialog_text").val(txt);
-                $(".stormfileimport").hide();
-                $("#storm_edit_dialog_type").val("Text");
-
-                validateStormFileJSON();
-            } else {
-                showInfo(msg.d);
-            }
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
+	$.get(filename, function(data) {
+		$("#storm_edit_dialog_text").val(data);
+        $(".stormfileimport").hide();
+        $("#storm_edit_dialog_type").val("Text");
+        validateStormFileJSON();
+	}, "text");
 }
 
 function ShowStorm() {

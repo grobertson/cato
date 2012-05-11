@@ -98,6 +98,38 @@ class ecosystemManage:
     def GET(self):
         return render.ecosystemManage()
 
+class upload:
+    def GET(self):
+        return """This endpoint only accepts POSTS from file_upload.html"""
+    def POST(self):
+        x = web.input(fupFile={}, ref_id="")
+        if x:
+            #print x # ref_id
+            #web.debug(x['fupFile'].filename) # This is the filename
+            #web.debug(x['fupFile'].value) # This is the file contents
+            #web.debug(x['fupFile'].file.read()) # Or use a file(-like) object
+            # raise web.seeother('/upload')
+            
+            ref_id = (x.ref_id if x.ref_id else "")
+            filename = "temp/%s-%s.tmp" % (uiCommon.GetSessionUserID(), ref_id)
+            fout = open(filename,'w') # creates the file where the uploaded file should be stored
+            fout.write(x["fupFile"].file.read()) # writes the uploaded file to the newly created file.
+            fout.close() # closes the file, upload complete.
+            
+            # all done, we loop back to the file_upload.html page, but this time include
+            # a qq arg - the file name
+            raise web.seeother("static/pages/file_upload.html?ref_id=%s&filename=%s" % (ref_id, filename))
+
+class temp:
+    """all we do for temp is deliver the file."""
+    def GET(self, filename):
+        try:
+            f = open("temp/%s" % filename)
+            if f:
+                return f.read()
+        except Exception, ex:
+            return ex.__str__()
+    
 def auth_app_processor(handle):
     path = web.ctx.path
     
@@ -305,6 +337,8 @@ if __name__ == "__main__":
         '/ecoTemplateManage', 'ecoTemplateManage',
         '/ecosystemManage', 'ecosystemManage',
         '/announcement', 'announcement',
+        '/upload', 'upload',
+        '/temp/(.*)', 'temp',
         '/bypass', 'bypass'
     )
 

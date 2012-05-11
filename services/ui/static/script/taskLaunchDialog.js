@@ -380,7 +380,7 @@ function getParamXML(id, type, eco_id) {
 }
 
 function ShowTaskLaunchDialog(jsonargs) {
-	$('.current_time').load('uiMethods/wmGetDatabaseTime');    
+	$('.current_time').load('uiMethods/wmGetDatabaseTime');
 	
     //function takes a json array as arguments
     //'{"task_id":"","task_name":"","account_id":"","account_name":"","ecosystem_id":"","task_instance":"","asset_id":"","action_id":""}'
