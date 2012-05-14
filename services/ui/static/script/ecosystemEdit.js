@@ -64,56 +64,7 @@ $(document).ready(function () {
     //enabling the 'change' event for the Details tab
     $("#div_details :input[te_group='detail_fields']").change(function () { doDetailFieldUpdate(this); });
 
-    //toggle actions
-    $("#toolbox .action_category").live("click", function () {
-        var thiscat = $(this).attr("id");
 
-        //unselect all the categories
-        $("#div_actions .action_category").removeClass("ui-state-focus action_btn_focus");
-        //and select this one you clicked
-        $(this).addClass("ui-state-focus action_btn_focus");
-
-        //transfer effect
-        $(this).effect("transfer", { to: $("#action_flow") }, 300, function () {
-            //flow and display the buttons
-            if (thiscat == "ac_all") {
-                flowButtons($("#div_actions_detail .action"));
-            } else {
-                flowButtons($("#div_actions_detail .action[category='" + thiscat + "']"));
-            }
-        });
-
-    });
-
-    //what happens when you click on an action?
-    $("#div_actions_detail .action").live("click", function () {
-        $.blockUI({ message: null });
-
-
-        //unselect all the actions
-        $("#div_actions_detail .action").removeClass("ui-state-active");
-
-        var action_id = $(this).attr("id");
-        var task_id = $(this).attr("task_id").replace(/t_/, "");
-        var task_name = $(this).attr("task_name")
-        var task_version = $(this).attr("task_version")
-
-        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
-        //another goofy argument.
-        task_name = $(this).attr("action") + " : (" + task_name + " - " + task_version + ")";
-
-        //show the dialog
-        //note: we are not passing account_id - the dialog will pick the default
-        var args = '{"task_id":"' + task_id + '", \
-            "task_name":"' + task_name + '", \
-            "ecosystem_id":"' + g_eco_id + '", \
-            "action_id":"' + action_id + '"}';
-
-        //I hate that we have to occasionally do this setTimeout to get the visual effects time to work.
-        setTimeout(function () {
-            ShowTaskLaunchDialog(args);
-        }, 250); //end timeout
-    });
     
     
     //a little more detail for the storm tabs --- clicking one refreshes the content
@@ -523,12 +474,34 @@ function getActionCategories() {
 
     $.ajax({
         type: "POST",
+        async: false,
         url: "ecoMethods/wmGetEcotemplateActionCategories",
         data: '{"sEcoTemplateID":"' + g_ecotemplate_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",
         success: function (response) {
             $("#action_categories").html(response);
+            
+            //toggle actions
+		    $("#toolbox .action_category").click(function () {
+		        var thiscat = $(this).attr("id");
+		
+		        //unselect all the categories
+		        $("#div_actions .action_category").removeClass("ui-state-focus action_btn_focus");
+		        //and select this one you clicked
+		        $(this).addClass("ui-state-focus action_btn_focus");
+		
+		        //transfer effect
+		        $(this).effect("transfer", { to: $("#action_flow") }, 300, function () {
+		            //flow and display the buttons
+		            if (thiscat == "ac_all") {
+		                flowButtons($("#div_actions_detail .action"));
+		            } else {
+		                flowButtons($("#div_actions_detail .action[category='" + thiscat + "']"));
+		            }
+		        });
+		    });
+
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -540,12 +513,13 @@ function getActions() {
 
     $.ajax({
         type: "POST",
+        async: false,
         url: "ecoMethods/wmGetEcotemplateActionButtons",
         data: '{"sEcoTemplateID":"' + g_ecotemplate_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "html",
         success: function (response) {
-            $("#category_actions").html(response);
+            $("#category_actions").empty().html(response);
             flowButtons($("#div_actions_detail .action"));
 
             //action tooltips
@@ -556,6 +530,35 @@ function getActions() {
                 maxWidth: "500px",
                 fadeIn: 100
             });
+
+		    //what happens when you click on an action?
+		    $("#div_actions_detail .action").click(function () {
+		        $.blockUI({ message: null });
+		
+		        //unselect all the actions
+		        $("#div_actions_detail .action").removeClass("ui-state-active");
+		
+		        var action_id = $(this).attr("id");
+		        var task_id = $(this).attr("task_id").replace(/t_/, "");
+		        var task_name = $(this).attr("task_name")
+		        var task_version = $(this).attr("task_version")
+		
+		        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
+		        //another goofy argument.
+		        task_name = $(this).attr("action") + " : (" + task_name + " - " + task_version + ")";
+		
+		        //show the dialog
+		        //note: we are not passing account_id - the dialog will pick the default
+		        var args = '{"task_id":"' + task_id + '", \
+		            "task_name":"' + task_name + '", \
+		            "ecosystem_id":"' + g_eco_id + '", \
+		            "action_id":"' + action_id + '"}';
+		
+		        //I hate that we have to occasionally do this setTimeout to get the visual effects time to work.
+		        setTimeout(function () {
+		            ShowTaskLaunchDialog(args);
+		        }, 250); //end timeout
+		    });
 
         },
         error: function (response) {
