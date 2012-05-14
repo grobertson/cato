@@ -422,4 +422,18 @@ class Ecosystem(object):
         finally:
             db.close()
 
+    def AsJSON(self):
+        try:
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+            sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+            sb.append("\"%s\" : \"%s\"," % ("EcotemplateID", self.EcotemplateID))
+            sb.append("\"%s\" : \"%s\"," % ("CreatedDate", self.CreatedDate))
+            sb.append("\"%s\" : \"%s\"" % ("Description", uiCommon.packJSON(self.Description)))
+            sb.append("}")
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
+
             

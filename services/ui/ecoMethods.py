@@ -65,7 +65,7 @@ class ecoMethods:
                     return et.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
+            return "{'result':'fail','error':'Failed to get Ecotemplate details for ID [" + sID + "].'}"
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
@@ -693,6 +693,23 @@ class ecoMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return ""
 
+    def wmGetEcosystem(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sID = uiCommon.getAjaxArg("sID")
+            e = ecosystem.Ecosystem()
+            if e:
+                e.FromID(sID)
+                if e.ID:
+                    return e.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Ecosystem details for ID [" + sID + "].'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
     def wmGetEcosystemsTable(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -812,3 +829,162 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
+
+    def wmGetEcotemplateActionCategories(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+            sHTML = ""
+    
+            if sEcoTemplateID:
+                sIcon = "action_category_48.png"
+
+                # the 'All' category is hardcoded
+                sHTML += " <div class=\"ui-state-focus action_btn_focus ui-widget-content ui-corner-all action_btn action_category\" id=\"ac_all\">" \
+                    "<img src=\"static/images/actions/" + sIcon + "\" alt=\"\" />" \
+                    "<span>All</span></div>"
+
+
+                sSQL = "select distinct category" \
+                    " from ecotemplate_action" \
+                    " where ecotemplate_id = '" + sEcoTemplateID + "'" \
+                    " and category != ''" \
+                    " and category != 'all'" \
+                    " order by category"
+
+                dt = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                if dt:
+                    for dr in dt:
+                        sHTML += " <div class=\"ui-widget-content ui-corner-all action_btn action_category\"" \
+                           " id=\"" + dr["category"] + "\"" \
+                           ">"
+                        sHTML += "<img src=\"static/images/actions/" + sIcon + "\" alt=\"\" />"
+                        sHTML += "<span>" + dr["category"] + "</span>"
+                        sHTML += " </div>"
+            else:
+                uiGlobals.request.Messages.append("Unable to get Action Categories - Missing Ecotemplate ID")
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetEcotemplateActionButtons(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+    
+            sHTML = ""
+    
+            if sEcoTemplateID:
+                # get the action from the table, then look at the task_version.
+                # if it's null or empty we get the default,
+                # otherwise we use the version specified.
+                
+                # but, rather than do queries inside the loop, we'll do it with a union of two exclusive queries.
+                sSQL = "select * from (" \
+                    "select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.action_icon," \
+                    " t.task_id, t.task_name, t.version" \
+                    " from ecotemplate_action ea" \
+                    " join task t on ea.original_task_id = t.original_task_id" \
+                        " and t.default_version = 1" \
+                    " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" \
+                    " and ea.task_version IS null" \
+                    " UNION" \
+                    " select ea.action_id, ea.action_name, ea.category, ea.action_desc, ea.original_task_id, ea.action_icon," \
+                    " t.task_id, t.task_name, t.version" \
+                    " from ecotemplate_action ea" \
+                    " join task t on ea.original_task_id = t.original_task_id" \
+                        " and ea.task_version = t.version" \
+                    " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" \
+                    " and ea.task_version IS NOT null" \
+                    " ) foo" \
+                    " order by action_name"
+
+                dt = uiGlobals.request.db.select_all_dict(sSQL)
+                if uiGlobals.request.db.error:
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+                if dt:
+                    # i = 0
+                    # sHTML += "<table id=\"actions_table\">"
+
+                    for dr in dt:
+                        sActionID = dr["action_id"]
+                        sActionName = dr["action_name"]
+                        sTaskID = dr["task_id"]
+                        sTaskName = dr["task_name"]
+                        sVersion = str(dr["version"])
+                        sCategory = str(dr["category"])
+                        sIcon = ("action_default_48.png" if not dr["action_icon"] else dr["action_icon"])
+
+                        # sDesc is the tooltip
+                        sDesc = "<p>" + (dr["action_desc"].replace("\"", "").replace("'", "") if dr["action_desc"] else "") + \
+                            "</p><p>" + sTaskName + "</p>"
+
+
+                        # sAction = ""
+
+                        sHTML += " <div class=\"action\"" \
+                           " id=\"" + sActionID + "\"" \
+                           " action=\"" + sActionName + "\"" \
+                           " task_id=\"" + sTaskID + "\"" \
+                           " task_name=\"" + sTaskName + "\"" \
+                           " task_version=\"" + sVersion + "\"" \
+                           " category=\"" + sCategory + "\"" \
+                           ">"
+
+                        sHTML += "<div class=\"ui-widget-content ui-corner-all action_btn action_inner\">" # outer div with no styling at all
+
+                        sHTML += "<div class=\"step_header_title\">"
+                        sHTML += "</div>"
+
+                        sHTML += "<div class=\"step_header_icons\">"
+                        sHTML += "<img class=\"action_help_btn\"" \
+                            " src=\"static/images/icons/info.png\" alt=\"\" style=\"width: 12px; height: 12px;\"" \
+                            " title=\"" + sDesc + "\" />"
+                        sHTML += "</div>"
+
+                        # gotta clear the floats
+                        sHTML += "<div class=\"clearfloat\">"
+
+                        sHTML += "<img class=\"action_icon\" src=\"static/images/actions/" + sIcon + "\" alt=\"\" />"
+
+
+                        sHTML += " </div>"
+                        sHTML += " </div>" # end inner div
+
+                        sHTML += "<span class=\"action_name\">"
+                        sHTML += sActionName
+                        sHTML += "</span>"
+
+
+                        sHTML += " </div>" # end outer div
+
+
+                        #  # we are building this as a two-column stack.  We'll use tables.
+                        #  # and a modulus to see if we're on an even numbered pass
+                        #  if i % 2 == 0:
+#                              #      # even - a first column
+                        #      sHTML += "<tr><td width=\"50%\">" + sAction + "</td>"
+                        #  }
+                        #  else
+#                              #      # odd - a second column
+                        #      sHTML += "</td><td width=\"50%\">" + sAction + "</td></tr>"
+                        #  }
+
+
+                        # i += 1
+
+                    # sHTML += "</table>"
+
+                    # need a clearfloat div here, as javascript flow logic will be 
+                    # dynamically adding and removing floats
+                    sHTML += "<div class=\"clearfloat\"></div>"
+
+            else:
+                uiGlobals.request.Messages.append("Unable to get Actions - Missing Ecotemplate ID")
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

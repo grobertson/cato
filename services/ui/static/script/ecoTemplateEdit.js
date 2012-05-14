@@ -238,7 +238,7 @@ function GetDetails() {
 				$("#txtEcoTemplateName").val(template.Name);
 				$("#txtDescription").val(unpackJSON(template.Description));
 			} catch (ex) {
-				showAlert(response);
+				showAlert(template);
 			}
 		},
 		error : function(response) {

@@ -1501,7 +1501,7 @@ class taskMethods:
                     
                     sTaskName = row["task_name"].replace("\"", "\\\"")
                     sLabel = row["task_code"] + " : " + sTaskName
-                    sDesc = (dr["task_desc"] if dr["task_desc"] else "")
+                    sDesc = (row["task_desc"] if row["task_desc"] else "")
                     sDesc = sDesc.replace("\"", "").replace("'", "")
 
                     sHTML += "<li class=\"ui-widget-content ui-corner-all search_dialog_value\" tag=\"task_picker_row\"" \
@@ -2071,6 +2071,7 @@ class taskMethods:
         
             # get the parameter XML from the TASK
             sTaskParamXML = taskMethods.GetParameterXML("task", sTaskID, "")
+            xTPParams = None
             if sTaskParamXML:
                 xTPParams = ET.fromstring(sTaskParamXML)
                 if xTPParams is None:
@@ -2171,10 +2172,10 @@ class taskMethods:
                                     if xDefValues.find("value") is not None:
                                         xVal.text = xDefValues.findtext("value", "")
         
-                
-            resp = ET.tostring(xTPParams)
-            if resp:
-                return resp
+            if xTPParams is not None:    
+                resp = ET.tostring(xTPParams)
+                if resp:
+                    return resp
 
             # nothing found
             return ""

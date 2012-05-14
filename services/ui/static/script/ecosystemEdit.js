@@ -22,12 +22,12 @@ $(document).ready(function () {
 	"use strict";
 
     //used a lot
-    g_eco_id = $("#ctl00_phDetail_hidEcosystemID").val();
-    g_ecotemplate_id = $("#ctl00_phDetail_hidEcoTemplateID").val();
+    g_eco_id = getQuerystringVariable("ecosystem_id");
+    g_ecotemplate_id = $("#hidEcoTemplateID").val();
 
     //specific field validation and masking
-    $("#ctl00_phDetail_txtEcosystemName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
-    $("#ctl00_phDetail_txtDescription").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
+    $("#txtEcosystemName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
+    $("#txtDescription").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
 
     // when you hit enter inside one of the detail fields... do nothing
     // (this prevents accidentally posting something else)
@@ -143,7 +143,58 @@ $(document).ready(function () {
     //        else $(this).removeClass("ui-state-hover");
     //    });
 
+    $(".ecosystem_type").live("click", function () {
+        //get the type and set it on the page.
+        var drilldowntype = $(this).attr("id");
+        var label = $(this).attr("label");
+
+        $("#selected_object_type").val(drilldowntype);
+
+        getEcosystemObject(drilldowntype, label);
+    });
+
+    $(".ecosystem_item_remove_btn").live("click", function () {
+        var id_to_remove = $(this).attr("id_to_remove");
+        var id_to_delete = $(this).attr("id_to_delete");
+        var object_type = $("#selected_object_type").val();
+
+        if (confirm("Are you sure?")) {
+            $.ajax({
+                type: "POST",
+                url: "uiMethods.asmx/wmDeleteEcosystemObject",
+                data: '{"sEcosystemID":"' + g_eco_id + '","sObjectType":"' + object_type + '","sObjectID":"' + id_to_delete + '"}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    $("#" + id_to_remove).remove();
+
+                    //if there's nothing left, go back to the top
+                    if ($("#random_content").children().length == 0)
+                        getEcosystemObjectList();
+                },
+                error: function (response) {
+                    showAlert(response.responseText);
+                }
+            });
+        }
+
+    });
+
+    $(".breadcrumb").live("click", function () {
+        //get the type and set it on the page.
+        var drilldowntype = $(this).attr("id");
+        var label = $(this).text();
+
+        $("#selected_object_type").val(drilldowntype);
+
+        if (drilldowntype == "top")
+            getEcosystemObjectList();
+        else
+            getEcosystemObject(drilldowntype, label);
+    });
+
     //last thing we do... get the ajax content
+    GetDetails();
     getActionCategories();
     getActions();
 
@@ -153,6 +204,29 @@ $(document).ready(function () {
 	}
 
 });
+function GetDetails() {
+	$.ajax({
+		type : "POST",
+		async : false,
+		url : "ecoMethods/wmGetEcosystem",
+		data : '{"sID":"' + g_eco_id + '"}',
+		contentType : "application/json; charset=utf-8",
+		dataType : "json",
+		success : function(ecosys) {
+			try {
+				$("#hidEcoTemplateID").val(ecosys.EcotemplateID)
+				$("#txtEcosystemName").val(ecosys.Name);
+				$("#txtDescription").val(unpackJSON(ecosys.Description));
+				$("#lblCreated").html(ecosys.CreatedDate);
+			} catch (ex) {
+				showAlert(ecosys);
+			}
+		},
+		error : function(response) {
+			showAlert(response.responseText);
+		}
+	});
+}
 
 function CloudAccountWasChanged() {
     location.href = "ecosystemManage.aspx";
@@ -172,10 +246,14 @@ function tabWasClicked(tab) {
     if (tab == "objects") {
         getEcosystemObjectList();
     } else if (tab == "details") {
+    	GetDetails();
         GetRegistry(g_eco_id);
         //temporarily hidden until we enable parameters on ecosystems
         //doGetParams("ecosystem", g_eco_id);
         GetEcosystemSchedules();
+    } else if (tab == "actions") {
+	    getActionCategories();
+	    getActions();
     }
 
     //show the one you clicked
@@ -227,62 +305,6 @@ function flowButtons($selector) {
             col++;
 
     });
-}
-
-//seems to work so far.
-function pageLoad() {
-	"use strict";
-
-    $(".ecosystem_type").live("click", function () {
-        //get the type and set it on the page.
-        var drilldowntype = $(this).attr("id");
-        var label = $(this).attr("label");
-
-        $("#selected_object_type").val(drilldowntype);
-
-        getEcosystemObject(drilldowntype, label);
-    });
-
-    $(".ecosystem_item_remove_btn").live("click", function () {
-        var id_to_remove = $(this).attr("id_to_remove");
-        var id_to_delete = $(this).attr("id_to_delete");
-        var object_type = $("#selected_object_type").val();
-
-        if (confirm("Are you sure?")) {
-            $.ajax({
-                type: "POST",
-                url: "uiMethods.asmx/wmDeleteEcosystemObject",
-                data: '{"sEcosystemID":"' + g_eco_id + '","sObjectType":"' + object_type + '","sObjectID":"' + id_to_delete + '"}',
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
-                    $("#" + id_to_remove).remove();
-
-                    //if there's nothing left, go back to the top
-                    if ($("#random_content").children().length == 0)
-                        getEcosystemObjectList();
-                },
-                error: function (response) {
-                    showAlert(response.responseText);
-                }
-            });
-        }
-
-    });
-
-    $(".breadcrumb").live("click", function () {
-        //get the type and set it on the page.
-        var drilldowntype = $(this).attr("id");
-        var label = $(this).text();
-
-        $("#selected_object_type").val(drilldowntype);
-
-        if (drilldowntype == "top")
-            getEcosystemObjectList();
-        else
-            getEcosystemObject(drilldowntype, label);
-    });
-
 }
 
 function getEcosystemLog() {
@@ -486,7 +508,7 @@ function doDetailFieldUpdate(ctl) {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
                     // bugzilla 1037 Change the name in the header
-                    if (column == "Name") { $("#ctl00_phDetail_lblEcosystemNameHeader").html(unpackJSON(value)); };
+                    if (column == "Name") { $("#lblEcosystemNameHeader").html(unpackJSON(value)); };
                 }
 
             },
@@ -503,12 +525,12 @@ function getActionCategories() {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcotemplateActionCategories",
+        url: "ecoMethods/wmGetEcotemplateActionCategories",
         data: '{"sEcoTemplateID":"' + g_ecotemplate_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            $("#action_categories").html(msg.d);
+        dataType: "html",
+        success: function (response) {
+            $("#action_categories").html(response);
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -520,12 +542,12 @@ function getActions() {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcotemplateActionButtons",
+        url: "ecoMethods/wmGetEcotemplateActionButtons",
         data: '{"sEcoTemplateID":"' + g_ecotemplate_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            $("#category_actions").html(msg.d);
+        dataType: "html",
+        success: function (response) {
+            $("#category_actions").html(response);
             flowButtons($("#div_actions_detail .action"));
 
             //action tooltips
