@@ -23,7 +23,6 @@ $(document).ready(function () {
 
     //used a lot
     g_eco_id = getQuerystringVariable("ecosystem_id");
-    g_ecotemplate_id = $("#hidEcoTemplateID").val();
 
     //specific field validation and masking
     $("#txtEcosystemName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
@@ -46,7 +45,7 @@ $(document).ready(function () {
     $("#goto_ecotemplate_btn").button({ icons: { primary: "ui-icon-arrowthick-1-ne"}, text: false });
     $("#goto_ecotemplate_btn").click(function () {
         showPleaseWait();
-        location.href = 'ecoTemplateEdit.aspx?ecotemplate_id=' + g_ecotemplate_id;
+        location.href = 'ecoTemplateEdit?ecotemplate_id=' + g_ecotemplate_id;
     });
 
     $("#show_stopstorm_btn").button({ icons: { primary: "ui-icon-stop"} });
@@ -58,7 +57,7 @@ $(document).ready(function () {
 
 	//the Discovery button looks like an action category for consistency, but its' just a redirect.
     $("#discovery_btn").live("click", function () {
-		location.href="cloudDiscovery.aspx?ecosystem_id=" + g_eco_id;
+		location.href="cloudDiscovery?ecosystem_id=" + g_eco_id;
 	});
 	
     //enabling the 'change' event for the Details tab
@@ -146,8 +145,6 @@ $(document).ready(function () {
 
     //last thing we do... get the ajax content
     GetDetails();
-    getActionCategories();
-    getActions();
 
 	if (typeof(STORM) != "undefined") {
     	getEcosystemLog();
@@ -165,10 +162,14 @@ function GetDetails() {
 		dataType : "json",
 		success : function(ecosys) {
 			try {
-				$("#hidEcoTemplateID").val(ecosys.EcotemplateID)
+				g_ecotemplate_id = ecosys.EcotemplateID
 				$("#txtEcosystemName").val(ecosys.Name);
 				$("#txtDescription").val(unpackJSON(ecosys.Description));
 				$("#lblCreated").html(ecosys.CreatedDate);
+
+			    getActionCategories();
+			    getActions();
+
 			} catch (ex) {
 				showAlert(ecosys);
 			}
@@ -180,7 +181,7 @@ function GetDetails() {
 }
 
 function CloudAccountWasChanged() {
-    location.href = "ecosystemManage.aspx";
+    location.href = "ecosystemManage";
 }
 function tabWasClicked(tab) {
 	"use strict";
@@ -198,13 +199,16 @@ function tabWasClicked(tab) {
         getEcosystemObjectList();
     } else if (tab == "details") {
     	GetDetails();
-        GetRegistry(g_eco_id);
+        // TODO: Issue #284
+        //GetRegistry(g_eco_id);
+
         //temporarily hidden until we enable parameters on ecosystems
         //doGetParams("ecosystem", g_eco_id);
         GetEcosystemSchedules();
     } else if (tab == "actions") {
-	    getActionCategories();
-	    getActions();
+    	// can't think of a good reason to do this...
+	    //getActionCategories();
+	    //getActions();
     }
 
     //show the one you clicked
@@ -369,12 +373,12 @@ function getEcosystemObjectList() {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcosystemObjects",
+        url: "ecoMethods/wmGetEcosystemObjects",
         data: '{"sEcosystemID":"' + g_eco_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            $("#random_content").html(msg.d);
+        dataType: "html",
+        success: function (response) {
+            $("#random_content").html(response);
 
             //wicked! remove all breadcrumbs but me!
             $(".breadcrumb").not("#top").remove();
@@ -396,12 +400,12 @@ function getEcosystemObject(drilldowntype, label) {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcosystemObjectByType",
+        url: "ecoMethods/wmGetEcosystemObjectByType",
         data: '{"sEcosystemID":"' + g_eco_id + '", "sType":"' + drilldowntype + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            $("#random_content").html(msg.d);
+        dataType: "html",
+        success: function (response) {
+            $("#random_content").html(response);
 
             //breadcrumb
             $(".breadcrumb").not("#top").last().remove();
@@ -443,15 +447,15 @@ function doDetailFieldUpdate(ctl) {
         $.ajax({
             async: false,
             type: "POST",
-            url: "uiMethods.asmx/wmUpdateEcosystemDetail",
+            url: "ecoMethods/wmUpdateEcosystemDetail",
             data: '{"sEcosystemID":"' + g_eco_id + '","sColumn":"' + column + '","sValue":"' + value + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
+            dataType: "text",
+            success: function (response) {
 
-                if (msg.d != '') {
+                if (response != '') {
                     $("#update_success_msg").text("Update Failed").fadeOut(2000);
-                    showInfo(msg.d);
+                    showInfo(response);
                 }
                 else {
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
@@ -519,7 +523,7 @@ function getActions() {
         contentType: "application/json; charset=utf-8",
         dataType: "html",
         success: function (response) {
-            $("#category_actions").empty().html(response);
+            $("#category_actions").html(response);
             flowButtons($("#div_actions_detail .action"));
 
             //action tooltips
@@ -572,42 +576,45 @@ function GetEcosystemSchedules() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcosystemSchedules",
+        url: "ecoMethods/wmGetEcosystemSchedules",
         data: '{"sEcosystemID":"' + g_eco_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#ecosystem_schedules").html(retval.d);
-            //schedule icon tooltips
-            $("#ecosystem_schedules .schedule_tip").tipTip({
-                defaultPosition: "right",
-                keepAlive: false,
-                activation: "hover",
-                maxWidth: "500px",
-                fadeIn: 100
-            });
-		    //click on a schedule in the detail panel pops the dialog AND the inner dialog
-		    $("#ecosystem_schedules .schedule_name").click(function () {
-		        var action_id = $(this).parent().attr("action_id");
-		        var task_id = $(this).parent().attr("task_id");
-		        var task_name = $(this).parent().attr("task_name")
-		        var task_version = $(this).parent().attr("task_version")
-		
-		        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
-		        //another goofy argument.
-		        task_name = $(this).parent().attr("action") + " : (" + task_name + " - " + task_version + ")";
-		
-		        //show the dialog
-		        //note: we are not passing account_id - the dialog will pick the default
-		        var args = '{"task_id":"' + task_id + '", \
-		            "task_name":"' + task_name + '", \
-		            "ecosystem_id":"' + g_eco_id + '", \
-            		"action_id":"' + action_id + '"}';
-		        
-		        ShowTaskLaunchDialog(args);
-
-		        ShowPlanEditDialog(this);
-		    });
+        dataType: "html",
+        success: function (response) {
+        	if (response && response != "") {
+	            $("#ecosystem_schedules").html(response);
+	
+	            //schedule icon tooltips
+	            $("#ecosystem_schedules .schedule_tip").tipTip({
+	                defaultPosition: "right",
+	                keepAlive: false,
+	                activation: "hover",
+	                maxWidth: "500px",
+	                fadeIn: 100
+	            });
+			    //click on a schedule in the detail panel pops the dialog AND the inner dialog
+			    $("#ecosystem_schedules .schedule_name").click(function () {
+			        var action_id = $(this).parent().attr("action_id");
+			        var task_id = $(this).parent().attr("task_id");
+			        var task_name = $(this).parent().attr("task_name")
+			        var task_version = $(this).parent().attr("task_version")
+			
+			        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
+			        //another goofy argument.
+			        task_name = $(this).parent().attr("action") + " : (" + task_name + " - " + task_version + ")";
+			
+			        //show the dialog
+			        //note: we are not passing account_id - the dialog will pick the default
+			        var args = '{"task_id":"' + task_id + '", \
+			            "task_name":"' + task_name + '", \
+			            "ecosystem_id":"' + g_eco_id + '", \
+	            		"action_id":"' + action_id + '"}';
+			        
+			        ShowTaskLaunchDialog(args);
+	
+			        ShowPlanEditDialog(this);
+			    });
+		    }
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -616,35 +623,37 @@ function GetEcosystemSchedules() {
     $.ajax({
         async: true,
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcosystemPlans",
+        url: "ecoMethods/wmGetEcosystemPlans",
         data: '{"sEcosystemID":"' + g_eco_id + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#ecosystem_plans").html(retval.d);
-
-		    //click on a schedule in the detail panel pops the dialog AND the inner dialog
-		    $("#ecosystem_plans .action_plan_name").click(function () {
-		        var action_id = $(this).parent().attr("action_id");
-		        var task_id = $(this).parent().attr("task_id");
-		        var task_name = $(this).parent().attr("task_name")
-		        var task_version = $(this).parent().attr("task_version")
-		
-		        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
-		        //another goofy argument.
-		        task_name = $(this).parent().attr("action") + " : (" + task_name + " - " + task_version + ")";
-		
-		        //show the dialog
-		        //note: we are not passing account_id - the dialog will pick the default
-		        var args = '{"task_id":"' + task_id + '", \
-		            "task_name":"' + task_name + '", \
-		            "ecosystem_id":"' + g_eco_id + '", \
-            		"action_id":"' + action_id + '"}';
-		        
-		        ShowTaskLaunchDialog(args);
-
-		        ShowPlanEditDialog(this);
-		    });
+        dataType: "html",
+        success: function (response) {
+        	if (response && response != "") {
+	            $("#ecosystem_plans").html(response);
+	
+			    //click on a schedule in the detail panel pops the dialog AND the inner dialog
+			    $("#ecosystem_plans .action_plan_name").click(function () {
+			        var action_id = $(this).parent().attr("action_id");
+			        var task_id = $(this).parent().attr("task_id");
+			        var task_name = $(this).parent().attr("task_name")
+			        var task_version = $(this).parent().attr("task_version")
+			
+			        //since this is an "action", we'll pass the action name AND the task name, rather than bother with 
+			        //another goofy argument.
+			        task_name = $(this).parent().attr("action") + " : (" + task_name + " - " + task_version + ")";
+			
+			        //show the dialog
+			        //note: we are not passing account_id - the dialog will pick the default
+			        var args = '{"task_id":"' + task_id + '", \
+			            "task_name":"' + task_name + '", \
+			            "ecosystem_id":"' + g_eco_id + '", \
+	            		"action_id":"' + action_id + '"}';
+			        
+			        ShowTaskLaunchDialog(args);
+	
+			        ShowPlanEditDialog(this);
+			    });
+		    }
         },
         error: function (response) {
             showAlert(response.responseText);

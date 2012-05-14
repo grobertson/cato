@@ -389,6 +389,30 @@ class Ecosystem(object):
         finally:
             db.close()
 
+    def DBUpdate(self):
+        try:
+            if not self.Name or not self.EcotemplateID or not self.AccountID:
+                return False, "Name, EcotemplateID and Account ID are required Ecosystem properties."
+
+            sSQL = "update ecosystem set" \
+                " ecosystem_name = '" + self.Name + "'," \
+                " ecotemplate_id = '" + self.EcotemplateID + "'," \
+                " account_id = '" + self.AccountID + "'," \
+                " ecosystem_desc = " + (" null" if not self.Description else " '" + uiCommon.TickSlash(self.Description) + "'") + "," \
+                " last_update_dt = now()," \
+                " storm_file = " + (" null" if not self.StormFile else " '" + uiCommon.TickSlash(self.StormFile) + "'") + \
+                " where ecosystem_id = '" + self.ID + "'"
+            
+            db = catocommon.new_conn()
+            if not db.exec_db_noexcep(sSQL):
+                return False, db.error
+            
+            return True, ""
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
     def FromID(self, sEcosystemID):
         try:
             sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.storm_file, e.storm_status," \

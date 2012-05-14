@@ -7,6 +7,7 @@ import uiGlobals
 import uiCommon
 from catocommon import catocommon
 import ecosystem
+import cloud
 
 # unlike uiCommon, which is used for shared ui elements
 # this is a methods class mapped to urls for web.py
@@ -834,6 +835,7 @@ class ecoMethods:
         try:
             sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
             sHTML = ""
+            print sEcoTemplateID
     
             if sEcoTemplateID:
                 sIcon = "action_category_48.png"
@@ -873,7 +875,7 @@ class ecoMethods:
     def wmGetEcotemplateActionButtons(self):
         try:
             sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
-    
+            print sEcoTemplateID
             sHTML = ""
     
             if sEcoTemplateID:
@@ -1073,7 +1075,6 @@ class ecoMethods:
             
             if sStormParameterXML:
                 xDoc = ET.fromstring(sStormParameterXML)
-                print sStormParameterXML
                 if xDoc is not None:
                     sbparams = []
                     xParameters = xDoc.findall("parameter")
@@ -1089,3 +1090,334 @@ class ecoMethods:
             return "".join(sb)
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetEcosystemSchedules(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sHTML = ""
+
+            sSQL = "select s.schedule_id, s.label, s.descr, t.task_name, a.action_id, a.action_name, t.task_id, t.task_name, t.version" \
+                " from action_schedule s" \
+                " join task t on s.task_id = t.task_id" \
+                " left outer join ecotemplate_action a on s.action_id = a.action_id" \
+                " where s.ecosystem_id = '" + sEcosystemID + "'"
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                return uiGlobals.request.db.error
+
+            if dt:
+                for dr in dt:
+                    sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_schedule\"" \
+                        " id=\"as_" + dr["schedule_id"] + "\"" \
+                        " action_id=\"" + dr["action_id"] + "\"" \
+                        " action=\"" + dr["action_name"] + "\"" \
+                        " task_id=\"" + dr["task_id"] + "\"" \
+                        " task_name=\"" + dr["task_name"] + "\"" \
+                        " task_version=\"" + str(dr["version"]) + "\"" \
+                        ">"
+                    sHTML += " <div class=\"floatleft schedule_name\">"
+
+                    sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator schedule_tip\" title=\"" + dr["descr"] + "\"></span>"
+
+                    # show the action name, or the task name if no action exists.
+                    if not dr["action_name"]:
+                        sHTML += "(" + dr["task_name"] + ")"
+                    else:
+                        sHTML += dr["action_name"]
+
+                    # and the schedule label
+                    sHTML += " - " + (dr["schedule_id"] if not dr["label"] else dr["label"])
+
+                    sHTML += " </div>"
+
+                    sHTML += " <div class=\"floatright\">"
+                    # sHTML += "<span class=\"ui-icon ui-icon-trash schedule_remove_btn\" title=\"Delete Schedule\"></span>"
+                    sHTML += " </div>"
+
+
+                    sHTML += " </div>"
+
+            return sHTML
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
+
+    def wmGetEcosystemPlans(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sHTML = ""
+
+            sSQL = "select ap.plan_id, date_format(ap.run_on_dt, '%%m/%%d/%%Y %%H:%%i') as run_on_dt, ap.source, ap.action_id, t.task_id," \
+                " ea.action_name, t.task_name, t.version, ap.source, ap.schedule_id" \
+                " from action_plan ap" \
+                " join task t on ap.task_id = t.task_id" \
+                " left outer join ecotemplate_action ea on ap.action_id = ea.action_id" \
+                " where ap.ecosystem_id = '" + sEcosystemID + "'" \
+                " order by ap.run_on_dt, ea.action_name, t.task_name"
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                return uiGlobals.request.db.error
+
+            if dt:
+                for dr in dt:
+                    sHTML += " <div class=\"ui-widget-content ui-corner-all pointer clearfloat action_plan\"" \
+                        " id=\"ap_" + str(dr["plan_id"]) + "\"" \
+                        " plan_id=\"" + str(dr["plan_id"]) + "\"" \
+                        " run_on=\"" + str(dr["run_on_dt"]) + "\"" \
+                        " source=\"" + dr["source"] + "\"" \
+                        " schedule_id=\"" + (dr["schedule_id"] if dr["schedule_id"] else "") + "\"" \
+                        " action_id=\"" + dr["action_id"] + "\"" \
+                        " action=\"" + dr["action_name"] + "\"" \
+                        " task_id=\"" + dr["task_id"] + "\"" \
+                        " task_name=\"" + dr["task_name"] + "\"" \
+                        " task_version=\"" + str(dr["version"]) + "\"" \
+                        ">"
+                    sHTML += " <div class=\"floatleft action_plan_name\">"
+
+                    # an icon denotes if it's manual or scheduled
+                    if dr["source"] == "schedule":
+                        sHTML += "<span class=\"floatleft ui-icon ui-icon-calculator\" title=\"Scheduled\"></span>"
+                    else:
+                        sHTML += "<span class=\"floatleft ui-icon ui-icon-document\" title=\"Run Later\"></span>"
+
+                    # show the time
+                    sHTML += dr["run_on_dt"]
+
+                    # show the action name, or the task name if no action exists.
+                    if not dr["action_name"]:
+                        sHTML += " - (" + dr["task_name"] + ")"
+                    else:
+                        sHTML += " - " + dr["action_name"]
+
+
+                    sHTML += " </div>"
+
+                    sHTML += " <div class=\"floatright\">"
+                    # sHTML += "<span class=\"ui-icon ui-icon-trash action_plan_remove_btn\" title=\"Delete Plan\"></span>"
+                    sHTML += " </div>"
+
+
+                    sHTML += " </div>"
+
+            return sHTML
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
+
+    def wmGetEcosystemObjects(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sHTML = ""
+
+            sSQL = "select eo.ecosystem_object_type, count(*) as num_objects" \
+                " from ecosystem_object eo" \
+                " where eo.ecosystem_id ='" + sEcosystemID + "'" \
+                " group by eo.ecosystem_object_type" \
+                " order by eo.ecosystem_object_type"
+
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                return uiGlobals.request.db.error
+
+            if dt:
+                for dr in dt:
+                    # TODO: we need a way to get the pretty label for an object type here, since we moved 
+                    # it out of the database.
+                    # perhaps a static class method to look up a type name based on the id?
+                    # or a peek into the CloudProviders object in the session might be better.
+                    
+                    sThisShouldBeAPrettyName = dr["ecosystem_object_type"]
+                    
+                    # something here can look up the icon for each type if we wanna do that.
+                    sIcon = "aws_16.png"
+
+                    sIcon = "<img src=\"static/images/icons/" + sIcon + "\" alt=\"\" style=\"width: 16px; height: 16px;\" />&nbsp;&nbsp;&nbsp;"
+
+                    sLabel = sIcon + sThisShouldBeAPrettyName + " (" + str(dr["num_objects"]) + ")"
+
+                    sHTML += "<div class=\"ui-widget-content ui-corner-all ecosystem_type\" id=\"" + dr["ecosystem_object_type"] + "\" label=\"" + sThisShouldBeAPrettyName + "\">"
+                    sHTML += "    <div class=\"ecosystem_type_header\">"
+                    sHTML += "        <div class=\"ecosystem_item_header_title\">"
+                    sHTML += "            <span>" + sLabel + "</span>"
+                    sHTML += "        </div>"
+                    sHTML += "        <div class=\"ecosystem_item_header_icons\">"
+                    # might eventually enable whacking the whole group
+                    sHTML += "        </div>"
+                    sHTML += "    </div>"
+                    sHTML += "    <div class=\"ecosystem_type_detail\" >"
+                    # might eventually show some detail
+                    sHTML += "    </div>"
+
+
+                    sHTML += "</div>"
+
+            else:
+                sHTML += "<span>This ecosystem does not contain any Cloud Objects.</span>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
+
+    def wmGetEcosystemObjectByType(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sType = uiCommon.getAjaxArg("sType")
+            sHTML = ""
+
+            # So, we'll first get a distinct list of all clouds represented in this set
+            # then for each cloud we'll get the objects.
+            
+            # Why two queries on the same table?  Because we need the Cloud ID BEFORE we get in to the loop below.
+            # the AWS call to get the properties for the objects is a single API call that returns all the properties
+            # for ALL the objects, then we'll marry them up.
+            
+            # For our custom tagging (For Eucalyptus which currently does not support tagging)
+            #  we'll also check our internal tagging mechanism - the ecosystem_object_tags table.
+            #  and similarly we'll get them all at once and just draw the ones we need.
+
+            sSQL = "select distinct cloud_id" \
+                " from ecosystem_object" \
+                " where ecosystem_id ='" + sEcosystemID + "'" \
+                " and ecosystem_object_type = '" + sType + "'"
+
+            dtClouds = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                return uiGlobals.request.db.error
+
+
+            sSQL = "select ecosystem_object_id, key_name, value " \
+                " from ecosystem_object_tag" \
+                " where ecosystem_id ='" + sEcosystemID + "'" \
+                " order by key_name"
+
+            dtTags = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                return uiGlobals.request.db.error
+
+
+            if dtClouds:
+                for drCloud in dtClouds:
+                    sCloudID = drCloud["cloud_id"]
+
+                    # get the cloud object rows
+                    sSQL = "select eo.ecosystem_object_id, eo.ecosystem_object_type" \
+                        " from ecosystem_object eo" \
+                        " where eo.ecosystem_id ='" + sEcosystemID + "'" \
+                        " and eo.ecosystem_object_type = '" + sType + "'" \
+                        " and eo.cloud_id = '" + sCloudID + "'" \
+                        " order by eo.ecosystem_object_type"
+    
+                    dtObjects = uiGlobals.request.db.select_all_dict(sSQL)
+                    if uiGlobals.request.db.error:
+                        return uiGlobals.request.db.error
+    
+    
+                    if dtObjects:
+                        # we only need to hit the API once... this result will contain all the objects
+                        # and our DrawProperties will filter the DataTable on the ID.
+#                        dtAPIResults = GetCloudObjectsAsDataTable(sCloudID, sType, 0000BYREF_ARG0000sErr)
+                        
+                        for drObject in dtObjects:
+                            # look up the cloud and get the name
+                            c = cloud.Cloud()
+                            c.FromID(sCloudID)
+                            if c.ID is not None:
+                                # giving each section a guid so we can delete it on the client side after the ajax call.
+                                # not 100% the ecosystem_object_id will always be suitable as a javascript ID.
+                                sGroupID = uiCommon.NewGUID()
+        
+                                sHTML += "<div class=\"ui-widget-content ui-corner-all ecosystem_item\" id=\"" + sGroupID + "\">"
+        
+        
+                                sObjectID = drObject["ecosystem_object_id"]
+        
+                                sLabel = "Cloud: " + c.Name + " - " + sObjectID
+        
+                                sHTML += "<div class=\"ui-widget-header ecosystem_item_header\">"
+                                sHTML += "<div class=\"ecosystem_item_header_title\"><span>" + sLabel + "</span></div>"
+        
+                                sHTML += "<div class=\"ecosystem_item_header_icons\">"
+        
+                                sHTML += "<span class=\"ui-icon ui-icon-close ecosystem_item_remove_btn pointer\"" \
+                                    " id_to_delete=\"" + drObject["ecosystem_object_id"] + "\"" \
+                                    " id_to_remove=\"" + sGroupID + "\">"
+                                sHTML += "</span>"
+        
+                                sHTML += "</div>"
+        
+                                sHTML += "</div>"
+        
+                                # the details section
+                                sHTML += "<div class=\"ecosystem_item_detail\">"
+        
+#                                if dtAPIResults is not None:
+#                                    if dtAPIResults.Rows.Count > 0:
+#                                        sHTML += DrawAllEcosystemObjectProperties(dtAPIResults, dtTags, sObjectID)
+        
+        
+                                # end detail section
+                                sHTML += "</div>"
+                                # end block
+                                sHTML += "</div>"
+                    else:
+                        sHTML += "<span>This ecosystem does not contain any Cloud Objects.</span>"
+
+            
+            # at this point, sErr will have any issues that occured doing the AWS API call.  display it.
+            if uiGlobals.request.db.error:
+                sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try: again.<!--" + uiGlobals.request.db.error + "--></span>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
+
+    def wmUpdateEcosystemDetail(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sColumn = uiCommon.getAjaxArg("sColumn")
+            sValue = uiCommon.getAjaxArg("sValue")
+    
+            sUserID = uiCommon.GetSessionUserID()
+
+            if uiCommon.IsGUID(sEcosystemID) and uiCommon.IsGUID(sUserID):
+                et = ecosystem.Ecosystem()
+                et.FromID(sEcosystemID)
+                
+                if et:
+                    # we encoded this in javascript before the ajax call.
+                    # the safest way to unencode it is to use the same javascript lib.
+                    # (sometimes the javascript and .net libs don't translate exactly, google it.)
+                    sValue = uiCommon.unpackJSON(sValue)
+
+                    #  check for existing name
+                    if sColumn == "Name":
+                        if et.Name == sValue:
+                            return sValue + " exists, please choose another name."
+
+                    # cool, update the class attribute by name, using getattr!
+                    bSuccess = False
+                    # python is so cool.. I don't even need to check if the attribute I wanna set exists.
+                    # just set it
+                    setattr(et, sColumn, sValue)
+                    
+                    bSuccess, msg = et.DBUpdate()
+                    
+                    if bSuccess:
+                        uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcosystemID, sColumn, sValue)
+                    else: 
+                        uiGlobals.request.Messages.append("Error updating Ecosystem. " + msg)
+                        return "Error updating Ecosystem. " + msg
+                else:
+                    uiGlobals.request.Messages.append("Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "].")
+                    return "Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "]."
+                
+                return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+        return ""
