@@ -50,6 +50,15 @@ function unpackJSON(instr) {
 	return $.base64.decode(outstr);
 }
 
+//decode a url encoded string
+function urldecode(str) {
+   return decodeURIComponent((str+'').replace(/\+/g, '%20'));
+}
+//encode a string with url encoding
+function urlencode(str) {
+   return encodeURIComponent((str+'').replace(/\%20/g, '+'));
+}
+
 //this is a debugging function.
 function printClickEvents(ctl) {
 	"use strict";

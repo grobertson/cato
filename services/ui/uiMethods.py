@@ -21,7 +21,7 @@ class login:
         qs = ""
         i = uiGlobals.web.input(msg=None)
         if i.msg:
-            qs = "?msg=" + urllib.quote(i.msg)
+            qs = "?msg=" + urllib.quote_plus(i.msg)
         raise uiGlobals.web.seeother('/static/login.html' + qs)
 
     def POST(self):
@@ -41,7 +41,7 @@ class login:
             if not row:
                 uiCommon.log("Invalid login attempt - [%s] not a valid user." % (in_name), 0)
                 msg = "Invalid Username or Password."
-                raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote(msg))
+                raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote_plus(msg))
     
             
             #alrighty, lets check the password
@@ -52,7 +52,7 @@ class login:
             if row["user_password"] != encpwd:
                 uiCommon.log("Invalid login attempt - [%s] bad password." % (in_name), 0)
                 msg = "Invalid Username or Password."
-                raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote(msg))
+                raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote_plus(msg))
                 
             user_id = row["user_id"]
             

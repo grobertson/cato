@@ -18,6 +18,7 @@ $(document).ready(function () {
     
     //if there's a 'msg' querystring, show it on a nice label
     var msg = getQuerystringVariable("msg");
+    msg = urldecode(msg);
     if (msg) {
         $("#error_msg").text(msg);
         $(".loginerror").show();

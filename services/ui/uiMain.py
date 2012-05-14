@@ -144,7 +144,7 @@ def auth_app_processor(handle):
         return handle()
 
     if path != "/login" and not session.get('user', False):
-        raise web.seeother('/login?msg=' + urllib.quote("Session expired."))
+        raise web.seeother('/login?msg=' + urllib.quote_plus("Session expired."))
     
     return handle()
 
