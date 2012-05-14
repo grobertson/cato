@@ -835,7 +835,6 @@ class ecoMethods:
         try:
             sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
             sHTML = ""
-            print sEcoTemplateID
     
             if sEcoTemplateID:
                 sIcon = "action_category_48.png"
@@ -875,7 +874,6 @@ class ecoMethods:
     def wmGetEcotemplateActionButtons(self):
         try:
             sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
-            print sEcoTemplateID
             sHTML = ""
     
             if sEcoTemplateID:
@@ -1421,3 +1419,40 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
         return ""
+    
+    def wmDeleteEcosystemObject(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sObjectType = uiCommon.getAjaxArg("sObjectType")
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+    
+            if not sObjectID:
+                return ""
+
+            sSQL = "delete from ecosystem_object" \
+                " where ecosystem_id ='" + sEcosystemID + "'" \
+                " and ecosystem_object_id ='" + sObjectID + "'" \
+                " and ecosystem_object_type ='" + sObjectType + "'"
+
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                return uiGlobals.request.db.error
+
+            sSQL = "delete from ecosystem_object_tag" \
+                " where ecosystem_id ='" + sEcosystemID + "'" \
+                " and ecosystem_object_id ='" + sObjectID + "'"
+
+            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                return uiGlobals.request.db.error
+            
+            uiGlobals.request.db.tran_commit()
+    
+            #  if we made it here, so save the logs
+            uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Ecosystem, "", "", "Object [" + sObjectID + "] removed from Ecosystem [" + sEcosystemID + "]")
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+    

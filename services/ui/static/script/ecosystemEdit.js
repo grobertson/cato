@@ -111,7 +111,7 @@ $(document).ready(function () {
         if (confirm("Are you sure?")) {
             $.ajax({
                 type: "POST",
-                url: "uiMethods.asmx/wmDeleteEcosystemObject",
+                url: "ecoMethods/wmDeleteEcosystemObject",
                 data: '{"sEcosystemID":"' + g_eco_id + '","sObjectType":"' + object_type + '","sObjectID":"' + id_to_delete + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
