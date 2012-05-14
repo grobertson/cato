@@ -155,7 +155,12 @@ with open("convert.in", 'r') as f_in:
             line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not uiGlobals.request.db.exec_db_noexcep(sSQL):")
             if "!dc.sqlGetSingleString" in line:
                 line = sINDENT + "00000 = uiGlobals.request.db.select_col_noexcep(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+
+            if "!dc.sqlGetDataTable" in line:
+                line = sINDENT + "00000 = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+
             line = line.replace("+ sErr", "+ uiGlobals.request.db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
+            line = line.replace("(sErr)", "(uiGlobals.request.db.error)") # sometimes it's in a log message as the only arg
             line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not uiGlobals.request.db.tran_exec_noexcep(sSQL):")
             line = line.replace("oTrans.Command.CommandText", "sSQL") # transactions are different, regular sSQL variable
             line = line.replace("oTrans.Commit()", "uiGlobals.request.db.tran_commit()")

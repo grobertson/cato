@@ -988,3 +988,104 @@ class ecoMethods:
             return sHTML
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetEcosystemStormStatus(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            
+            sb = []
+            
+            
+            # status and parameters
+            sSQL = "select storm_status, storm_parameter_xml, last_update_dt from ecosystem where ecosystem_id = '" + sEcosystemID + "'"
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            sStormStatus = ("" if not dr["storm_status"] else dr["storm_status"])
+            sStormParameterXML = ("" if not dr["storm_parameter_xml"] else dr["storm_parameter_xml"])
+            sLastUpdateDT = ("" if not dr["last_update_dt"] else str(dr["last_update_dt"]))
+
+            # log
+            sSQL = "select ecosystem_log_id, ecosystem_id, ecosystem_object_type, ecosystem_object_id, logical_id, status, log, convert(update_dt, CHAR(20))" \
+                " from ecosystem_log" \
+                    " where ecosystem_id = '" + sEcosystemID + "'" \
+                    " order by ecosystem_log_id desc"
+            
+            dtLog = uiGlobals.request.db.select_all(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            
+            # output
+            sSQL = "select output_key, output_desc, output_value" \
+                " from ecosystem_output" \
+                    " where ecosystem_id = '" + sEcosystemID + "'" \
+                    " order by output_key"
+            
+            dtOut = uiGlobals.request.db.select_all(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            
+            
+            # build the json
+            
+            # NOTE: building it manually so we can encode/escape/etc certain values
+            sb.append("{ \"storm_status\" : \"%s\"," % (sStormStatus if sStormStatus else ""))
+            sb.append("\"last_update_dt\" : \"%s\"," % (sLastUpdateDT if sLastUpdateDT else ""))
+            
+            # log
+            sb.append(" \"ecosystem_log\" : [")
+            
+            if dtLog:
+                sblog = []
+                for drLog in dtLog:
+                    sblog.append("[ \"{0}\", \"{1}\", \"{2}\", \"{3}\", \"{4}\", \"{5}\", \"{6}\", \"{7}\" ]".format( 
+                        drLog[0], 
+                        drLog[1], 
+                        drLog[2], 
+                        drLog[3], 
+                        drLog[4], 
+                        uiCommon.packJSON(drLog[5]), 
+                        uiCommon.packJSON(uiCommon.FixBreaks(drLog[6])), 
+                        drLog[7]))
+                    
+                sb.append(",".join(sblog))
+                
+            sb.append("],")
+            
+            # output
+            sb.append(" \"storm_output\" : [")
+            
+            if dtOut:
+                sbout = []
+                for drOut in dtOut:
+                    sbout.append("[ \"{0}\", \"{1}\", \"{2}\" ]".format( 
+                        drOut[0], 
+                        uiCommon.packJSON(drOut[1]), 
+                        uiCommon.packJSON(drOut[2])))
+                    
+                sb.append(",".join(sbout))
+                
+            sb.append("],")
+            
+            # parameters
+            sb.append(" \"storm_parameters\" : [")
+            
+            if sStormParameterXML:
+                xDoc = ET.fromstring(sStormParameterXML)
+                print sStormParameterXML
+                if xDoc is not None:
+                    sbparams = []
+                    xParameters = xDoc.findall("parameter")
+                    for xParameter in xParameters:
+                        xVals = xParameter.find("values", "")
+                        sVals = ET.tostring(xVals)
+                        sbparams.append("[ \"{0}\", \"{1}\" ]".format(xParameter.findtext("name", ""), uiCommon.packJSON(sVals)))
+                        
+                    sb.append(",".join(sbparams))
+
+            sb.append("] }")
+
+            return "".join(sb)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

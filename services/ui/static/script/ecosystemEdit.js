@@ -312,13 +312,11 @@ function getEcosystemLog() {
 
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetEcosystemStormStatus",
+        url: "ecoMethods/wmGetEcosystemStormStatus",
         data: '{"sEcosystemID":"' + g_eco_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            var log = jQuery.parseJSON(msg.d);
-            
+        success: function (log) {
             //if this ecosystem doesn't have a storm_status, it's not a storm ecosystem, so hide the storm tabs
             if (log.storm_status == '') {
             	$(".storm").hide();
