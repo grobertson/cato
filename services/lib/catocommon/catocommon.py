@@ -32,11 +32,17 @@ def new_conn():
 
 # this common function will use the encryption key in the config, and DECRYPT the input
 def cato_decrypt(encrypted):
-    return catocryptpy.decrypt_string(encrypted,config["key"])
+    if encrypted:
+        return catocryptpy.decrypt_string(encrypted,config["key"])
+    else:
+        return encrypted
 # this common function will use the encryption key in the config, and ENCRYPT the input
 def cato_encrypt(s):
-    return catocryptpy.encrypt_string(s,config["key"])
-
+    if s:
+        return catocryptpy.encrypt_string(s,config["key"])
+    else:
+        return ""
+    
 def read_config():
 
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))

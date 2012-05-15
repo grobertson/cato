@@ -28,9 +28,9 @@ $(document).ready(function () {
 
     });
 
-    $("#security_save_btn").button({ icons: { primary: "ui-icon-disk"} });
-    $("#security_save_btn").click(function () {
-		SaveSecurity();
+    $(".save_btn").button({ icons: { primary: "ui-icon-disk"} });
+    $(".save_btn").click(function () {
+		SaveSettings($(this).attr("module"));
     });
 
 	GetSettings();
@@ -46,29 +46,34 @@ function GetSettings() {
 			try {
 				//so, we're gonna try to spin through the settings json and put any values in the appropriate fields.
 				//this expects the receiving input element to have the same 'id' as the json property
-				for(key in settings.Security) {
-					var value = settings.Security[key];
-					var $ctl = $("#div_security_detail #" + key)
-
-					var type = $ctl.get(0).tagName.toLowerCase();
-					var typeattr = $ctl.attr("type");
-					
-					if (type == "input") {
-						if (typeattr == "checkbox") {
-							if (value == "true" || value > 0)
-								$ctl.attr("checked", "checked");
-							else
-								$ctl.removeAttr("checked");
+				for (modulename in settings) {
+					mod_settings = settings[modulename];
+					for (key in mod_settings) {
+						var value = mod_settings[key].toString(); //cast to a string for booleans
+						var selector = "#div_" + modulename.toLowerCase() + "_detail #" + key;
+						var $ctl = $(selector)
+	
+						var type = $ctl.get(0).tagName.toLowerCase();
+						var typeattr = $ctl.attr("type");
+						
+						if (type == "input") {
+							if (typeattr == "checkbox") {
+								if (value == "true" || value > 0)
+									$ctl.attr("checked", "checked");
+								else
+									$ctl.removeAttr("checked");
+							} else {
+								$ctl.val(value);
+							}
 						} else {
 							$ctl.val(value);
 						}
-					} else if (type == "textarea") {
-						$ctl.val(value);
+						//console.log(selector);
+						//console.log("Set " + modulename + ":" + key + " to " + value);
 					}
-
 				}
 			} catch (ex) {
-				showAlert(ex);
+				alert(ex + "\nProbably a mismatched input field/json attribute name");
 			}
 		},
 		error : function(response) {
@@ -79,13 +84,13 @@ function GetSettings() {
 
 //THIS SHOULD just be one function
 //in fact, I still wanna put all this in one table.
-function SaveSecurity() {
-	args = $("#div_security_detail :input").serializeArray()
+function SaveSettings(type) {
+	args = $("#div_" + type + "_detail :input").serializeArray()
 	$.ajax({
 		async : false,
 		type : "POST",
 		url : "uiMethods/wmSaveSettings",
-		data : '{"sType":"Security","sValues":' + JSON.stringify(args) + '}',
+		data : '{"sType":"' + type + '","sValues":' + JSON.stringify(args) + '}',
 		contentType : "application/json; charset=utf-8",
 		dataType : "text",
 		success : function(response) {

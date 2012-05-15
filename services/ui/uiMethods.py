@@ -725,21 +725,26 @@ class uiMethods:
             sType = uiCommon.getAjaxArg("sType")
             sValues = uiCommon.getAjaxArg("sValues")
         
-            if sType == "Security":
-                s = settings.settings.security()
-                if s:
-                    # spin the sValues array and set the appropriate properties.
-                    # setattr is so awesome
-                    for pair in sValues:
-                        setattr(s, pair["name"], pair["value"])
+            # sweet, use getattr to actually get the class we want!
+            objname = getattr(settings.settings, sType.lower())
+            obj = objname()
+            if obj:
+                # spin the sValues array and set the appropriate properties.
+                # setattr is so awesome
+                for pair in sValues:
+                    setattr(obj, pair["name"], pair["value"])
+                    # print  "setting %s to %s" % (pair["name"], pair["value"])
+                # of course all of our settings classes must have a DBSave method
+                result, msg = obj.DBSave()
+                
+                if result:
+                    uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
+                        uiGlobals.SecurityLogActions.ConfigChange, uiGlobals.CatoObjectTypes.NA, "", 
+                        "%s settings changed." % sType.capitalize())
                     
-                    
-                    result, msg = s.DBSave()
-                    
-                    if result:
-                        return "{'result':'success'}"
-                    else:
-                        return "{'result':'fail','error':'%s'}" % msg
+                    return "{'result':'success'}"
+                else:
+                    return "{'result':'fail','error':'%s'}" % msg
             
             #should not get here if all is well
             return "{'result':'fail','error':'Error saving settings - no type provided.'}"

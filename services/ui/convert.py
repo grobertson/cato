@@ -33,6 +33,8 @@ with open("convert.in", 'r') as f_in:
                 line = line.replace("<asp:TextBox ID", "<input type=\"text\" id").replace("></asp:TextBox>", " />")
                 line = line.replace("<asp:Label ID", "<span id").replace("></asp:Label>", "></span>")
                 line = line.replace("<asp:HiddenField ID", "<input type=\"hidden\" id").replace("></asp:HiddenField>", " />")
+                line = line.replace("<asp:DropDownList ID", "<select id").replace("</asp:DropDownList>", "</select>")
+                line = line.replace("<asp:ListItem", "<option").replace("</asp:ListItem>", "</option>")
 
                 # not all placeholders or literals convert to divs...
                 line = line.replace("<asp:PlaceHolder", "#######<asp:PlaceHolder")
