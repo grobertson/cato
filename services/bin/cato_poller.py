@@ -24,12 +24,15 @@ import signal
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 lib_path = os.path.join(base_path, "services", "lib")
 sys.path.append(lib_path)
+conf_path = os.path.join(base_path, "conf")
+sys.path.append(conf_path)
 
 from catocommon import catocommon
+import settings
 
 class Poller(catocommon.CatoService):
 
-    poller_mode = ""
+    poller_enabled = ""
 
     def start_submitted_tasks(self, get_num):
 
@@ -116,27 +119,22 @@ class Poller(catocommon.CatoService):
         self.db.exec_db(sql, (loads[0], self.instance_id))
 
     def get_settings(self):
-
-        previous_mode = self.poller_mode
-
-        sql = """select mode_off_on, loop_delay_sec, max_processes 
-            from poller_settings where id = 1"""
-
-        row = self.db.select_row(sql, ())
-        #self.output(row)
-        if row:
-            self.poller_mode = row[0]
-            self.loop = row[1]
-            self.max_processes = row[2]
-        else:
-            self.output("Select from poller_settings did not work, using previous values")
+        previous_mode = self.poller_enabled
         
-        sql = """select admin_email from messenger_settings where id = 1""" 
-        self.admin_email = self.db.select_col(sql, ())
+        pset = settings.settings.poller()
+        if pset:
+            self.poller_enabled = pset.Enabled
+            self.loop = pset.LoopDelay
+            self.max_processes = pset.MaxProcesses
+        else:
+            self.output("Unable to get poller settings - using previous values.")
+        
+        mset = settings.settings.messenger()
+        self.admin_email = (mset.AdminEmail if mset.AdminEmail else "")
 
-        if previous_mode != "" and previous_mode != self.poller_mode:
-            self.output("*** Control Change: Mode is now %s" % 
-                (self.poller_mode))
+        if previous_mode != "" and previous_mode != self.poller_enabled:
+            self.output("*** Control Change: Enabled is now %s" % 
+                (str(self.poller_enabled)))
 
     def get_aborting(self): 
 
@@ -161,11 +159,13 @@ class Poller(catocommon.CatoService):
         self.get_aborting()
         self.check_processing()
 
-        ### TO DO - need to get process count from linux
-        process_count = 0
-        get_processes = self.max_processes - process_count
-
-        self.start_submitted_tasks(get_processes)
+        # don't kick off any new work if the poller isn't enabled.
+        if self.poller_enabled:
+            ### TO DO - need to get process count from linux
+            process_count = 0
+            get_processes = self.max_processes - process_count
+    
+            self.start_submitted_tasks(get_processes)
 
 if __name__ == "__main__":
 
