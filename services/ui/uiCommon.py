@@ -1,3 +1,4 @@
+import urllib
 import urllib2
 import uiGlobals
 import sys
@@ -105,12 +106,11 @@ def IsTrue(var):
         else:
             # let's see if it was a number, in which case we can just test it
             try:
-                int(s)
-                if s > 0:
+                i = int(s)
+                if i > 0:
                     return True
             except Exception:
                 """no exception, it just wasn't parseable into an int"""
-                
     return False
          
 def TickSlash(s):
@@ -352,7 +352,7 @@ def ForceLogout(sMsg):
     uiGlobals.session.kill()
     
     log("Forcing logout with message: " + sMsg, 0)
-    raise uiGlobals.web.seeother('/login?msg=' + urllib2.quote_plus(sMsg))
+    raise uiGlobals.web.seeother('/login?msg=' + urllib.quote_plus(sMsg))
 
 def GetSessionUserID():
     try:

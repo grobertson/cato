@@ -5,6 +5,7 @@ import uiGlobals
 import uiCommon
 from catocommon import catocommon
 import cloud
+import settings
 
 # unlike uiCommon, which is used for shared ui elements
 # this is a methods class mapped to urls for web.py
@@ -26,6 +27,11 @@ class login:
 
     def POST(self):
         try:
+            # HERE WE WILL get the security policy and use it to test the various steps along the login process.
+#            policy = settings.security()
+#            print "@" + policy.LoginMessage
+        
+
             # EVERY new HTTP request sets up the "request" in uiGlobals.
             # ALL functions chained from this HTTP request handler share that request
             uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
@@ -694,3 +700,49 @@ class uiMethods:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetSettings(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            s = settings.settings()
+            if s:
+                return s.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Error getting settings.'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def wmSaveSettings(self):
+        """
+            In this method, the values come from the browser in a jQuery serialized array of name/value pairs.
+        """
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+
+            sType = uiCommon.getAjaxArg("sType")
+            sValues = uiCommon.getAjaxArg("sValues")
+        
+            if sType == "Security":
+                s = settings.settings.security()
+                if s:
+                    # spin the sValues array and set the appropriate properties.
+                    # setattr is so awesome
+                    for pair in sValues:
+                        setattr(s, pair["name"], pair["value"])
+                    
+                    
+                    result, msg = s.DBSave()
+                    
+                    if result:
+                        return "{'result':'success'}"
+                    else:
+                        return "{'result':'fail','error':'%s'}" % msg
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Error saving settings - no type provided.'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()

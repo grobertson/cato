@@ -10,6 +10,8 @@ import xml.etree.ElementTree as ET
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 lib_path = os.path.join(base_path, "services", "lib")
 sys.path.append(lib_path)
+conf_path = os.path.join(base_path, "conf")
+sys.path.append(conf_path)
 
 # DON'T REMOVE these that Aptana shows as "unused".
 # they are used, just in the URL mapping for web.py down below.
@@ -51,6 +53,10 @@ class index:
 class home:        
     def GET(self):
         return render.home()
+
+class settings:        
+    def GET(self):
+        return render.settings()
 
 class taskManage:        
     def GET(self):
@@ -343,6 +349,7 @@ if __name__ == "__main__":
         '/ecosystemEdit', 'ecosystemEdit',
         '/announcement', 'announcement',
         '/upload', 'upload',
+        '/settings', 'settings',
         '/temp/(.*)', 'temp',
         '/bypass', 'bypass'
     )

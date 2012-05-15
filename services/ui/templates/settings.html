@@ -1,0 +1,144 @@
+$def with ()
+$var jsfiles: settings.js
+$var cssfiles:
+
+<style type="text/css">
+	#content {
+		padding:20px 10px 10px 10px;
+	}
+	#left_panel {
+		padding:20px 0px 0px 0px;
+	}
+</style>
+<div id="content">
+    <div class="page_title">
+        Cato Settings
+    </div>
+    <hr />
+    <div id="div_security_detail" class="detail_panel">
+        <img src="static/images/icons/login_24.png" alt="" />
+        <table width="100%">
+            <tr>
+                <td width="150px" class="row_odd"> Password Maximum Age </td>
+                <td width="300" class="row_odd">
+                <input type="text" id="PassMaxAge" name="PassMaxAge" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_even"> Password Maximum Attempts </td>
+                <td class="row_even">
+                <input type="text" id="PassMaxAttempts" name="PassMaxAttempts" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Password Maximum Length </td>
+                <td class="row_odd">
+                <input type="text" id="PassMaxLength" name="PassMaxLength" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_even"> Password Minimum Length </td>
+                <td class="row_even">
+                <input type="text" id="PassMinLength" name="PassMinLength" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Complex Password? </td>
+                <td class="row_odd">
+                <input type="checkbox" id="PassComplexity" name="PassComplexity" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_even"> Password Age Warning Days </td>
+                <td class="row_even">
+                <input type="text" id="PassAgeWarn" name="PassAgeWarn" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Password History </td>
+                <td class="row_odd">
+                <input type="text" id="PasswordHistory" name="PasswordHistory" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_even"> Require Password Change on First Login? </td>
+                <td class="row_even">
+                <input type="checkbox" id="PassRequireInitialChange" name="PassRequireInitialChange" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Auto Lock Reset </td>
+                <td class="row_odd">
+                <input type="text" id="AutoLockReset" name="AutoLockReset" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_even"> Login Message </td>
+                <td class="row_even">                <textarea id="LoginMessage" name="LoginMessage" rows="4"></textarea></td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Authentication Error Message </td>
+                <td class="row_odd">                <textarea id="AuthErrorMessage" name="AuthErrorMessage" Rows="4"></textarea></td>
+            </tr>
+            <tr>
+                <td class="row_even"> New User Welcome Email </td>
+                <td class="row_even">                <textarea id="NewUserMessage" name="NewUserMessage" rows="4"></textarea></td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Verbose Page View Logging </td>
+                <td class="row_odd">
+                <input type="checkbox" id="PageViewLogging" name="PageViewLogging" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_even"> Report View Logging </td>
+                <td class="row_even">
+                <input type="checkbox" id="ReportViewLogging" name="ReportViewLogging" />
+                </td>
+            </tr>
+            <tr>
+                <td class="row_odd"> Allow Users to Log In? </td>
+                <td class="row_odd">
+                <input type="checkbox" id="AllowLogin" name="AllowLogin" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;" height="25" class="row_odd">
+                    <span id="security_save_btn">Save</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="div_poller_detail" class="detail_panel hidden">
+        <img src="static/images/icons/ldap_24.png" alt="" />
+        pol
+    </div>
+    <div id="div_scheduler_detail" class="detail_panel hidden">
+        <img src="static/images/icons/sched_24.png" alt="" />
+        sch
+    </div>
+    <div id="div_messenger_detail" class="detail_panel hidden">
+        <img src="static/images/icons/notify_24.png" alt="" />
+        mes
+    </div>
+</div>
+<div id="left_panel">
+    <div id="group_tabs">
+        <h3>Modules</h3>
+        <hr />
+        <ul id="tabs">
+            <li class="group_tab group_tab_selected" id="security">
+                Security Policy
+            </li>
+            <li class="group_tab" id="poller">
+                Poller
+            </li>
+            <li class="group_tab" id="scheduler">
+                Scheduler
+            </li>
+            <li class="group_tab" id="messenger">
+                Messenger
+            </li>
+        </ul>
+    </div>
+</div>

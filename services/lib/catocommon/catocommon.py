@@ -82,6 +82,28 @@ def read_config():
 def NewGUID():
     return str(uuid.uuid1())
 
+def IsTrue(var):
+    # not just regular python truth testing - certain string values are also "true"
+    # but false if the string has length but isn't a "true" statement
+    # since any object could be passed here (we only want bools, ints or strs)
+    # we just cast it to a str
+    
+    # JUST BE AWARE, this isn't standard python truth testing.
+    # So, "foo" will be false... where if "foo" would be true in pure python
+    s = str(var).lower()
+    if len(s) > 0:
+        if str(var).lower() in "true,yes,on,enable,enabled":
+            return True
+        else:
+            # let's see if it was a number, in which case we can just test it
+            try:
+                i = int(s)
+                if i > 0:
+                    return True
+            except Exception:
+                """no exception, it just wasn't parseable into an int"""
+    return False
+
 #this file has a global 'config' that gets populated automatically.
 config = read_config()
 
