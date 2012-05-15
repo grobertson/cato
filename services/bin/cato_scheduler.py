@@ -22,40 +22,42 @@ import time
 
 ### requires croniter from https://github.com/taichino/croniter
 from croniter import croniter
-
 from datetime import datetime
 
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 lib_path = os.path.join(base_path, "services", "lib")
 sys.path.append(lib_path)
+conf_path = os.path.join(base_path, "conf")
+sys.path.append(conf_path)
 
+import settings
 from catocommon import catocommon
 
 class Scheduler(catocommon.CatoService):
 
-    scheduler_mode = ""
+    scheduler_enabled = ""
 
     def get_settings(self):
 
-        previous_mode = self.scheduler_mode
+        previous_mode = self.scheduler_enabled
 
-        sql = """select mode_off_on, loop_delay_sec, schedule_min_depth, schedule_max_days
-            from scheduler_settings where id = 1"""
-
-        row = self.db.select_row(sql, ())
-        #print sql
-        #print row
-        if row:
-            self.scheduler_mode = row[0]
-            self.loop = row[1]
-            self.min_depth = row[2]
-            self.max_days = row[3]
+        sset = settings.settings.scheduler()
+        if sset:
+            self.scheduler_enabled = sset.Enabled
+            self.loop = sset.LoopDelay
+            self.min_depth = sset.ScheduleMinDepth
+            self.max_days = sset.ScheduleMaxDays
+            self.max_days = sset.ScheduleMaxDays
+            
+            # doesn't seem to be implemented, but it's a setting on the table.
+            # one of the processes cleans up the application_registry table
+            self.clean_appreg = sset.CleanAppRegistry
         else:
-            self.output("select from scheduler_settings did not work, using previous values")
-        
-        if previous_mode != "" and previous_mode != self.scheduler_mode:
-            self.output("*** Control Change: Mode is now %s" % 
-                (self.scheduler_mode))
+            self.output("Unable to get settings - using previous values.")
+
+        if previous_mode != "" and previous_mode != self.scheduler_enabled:
+            self.output("*** Control Change: Enabled is now %s" % 
+                (self.scheduler_enabled))
 
     def clear_scheduled_action_plans(self):
         

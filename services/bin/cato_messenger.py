@@ -27,61 +27,54 @@ from email.mime.text import MIMEText
 base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
 lib_path = os.path.join(base_path, "services", "lib")
 sys.path.append(lib_path)
-from catocryptpy import catocryptpy
+conf_path = os.path.join(base_path, "conf")
+sys.path.append(conf_path)
 
+import settings
+from catocryptpy import catocryptpy
 from catocommon import catocommon
 
 class Messenger(catocommon.CatoService):
     
     ### to do: add attachment logic into Messenger
 
-    messenger_mode = ""
+    messenger_enabled = ""
 
     def get_settings(self):
 
-        previous_mode = self.messenger_mode
+        previous_mode = self.messenger_enabled
 
-        sql = """select mode_off_on, loop_delay_sec, retry_max_attempts, smtp_server_addr, 
-                smtp_server_user, smtp_server_password, smtp_server_port, from_email, from_name
-            from messenger_settings where id = 1"""
+        mset = settings.settings.messenger()
+        if mset:
+            self.messenger_enabled = mset.Enabled
+            self.loop = mset.PollLoop
+#            self.min_depth = mset.Enabled
+#            self.max_days = mset.Enabled
+            self.retry_attempts = mset.RetryMaxAttempts
+            self.smtp_server = mset.SMTPServerAddress
+            self.smtp_port = mset.SMTPServerPort
 
-        row = self.db.select_row(sql, ())
-        #self.output(row)
-        if row:
-            self.messenger_mode = row[0]
-            self.loop = row[1]
-            self.min_depth = row[2]
-            self.max_days = row[3]
-            self.retry_attempts = row[2]
-            self.smtp_server = row[3]
-            self.smtp_user = row[4]
-            password = row[5]
+            self.smtp_user = mset.SMTPUserAccount
+            self.smtp_pass = mset.SMTPUserPassword
 
-            if password:
-                self.smtp_pass = catocryptpy.decrypt_string(password, self.config["key"])
-            else:
-                self.smtp_pass = ""
-
-            self.smtp_port = row[6]
-            self.smtp_from_email = row[7]
-            self.smtp_from_name = row[8]
+            self.smtp_from_email = mset.FromEmail
+            self.smtp_from_name = mset.FromName
 
             if self.smtp_from_name == "":
                 self.smtp_from = """\"%s\"<%s>""" % (self.smtp_from_name, self.smtp_from_email)
             else:
                 self.smtp_from = self.smtp_from_email
+
+            self.admin_email = mset.AdminEmail
             
             #output "Smtp from address is $::SMTP_FROM"
         else:
-            self.output("select from messenger_settings did not work, using previous values")
+            self.output("Unable to get settings - using previous values.")
 
-        sql = "select admin_email from messenger_settings where id = 1"
-        row = self.db.select_row(sql, ())
-        self.admin_email = row[0]
         
-        if previous_mode != "" and previous_mode != self.messenger_mode:
-            self.output("*** Control Change: Mode is now %s" % 
-                (self.messenger_mode))
+        if previous_mode != "" and previous_mode != self.messenger_enabled:
+            self.output("*** Control Change: Enabled is now %s" % 
+                (self.messenger_enabled))
 
     def update_msg_status(self, msg_id, status, err_msg):
 

@@ -127,7 +127,7 @@ class Poller(catocommon.CatoService):
             self.loop = pset.LoopDelay
             self.max_processes = pset.MaxProcesses
         else:
-            self.output("Unable to get poller settings - using previous values.")
+            self.output("Unable to get settings - using previous values.")
         
         mset = settings.settings.messenger()
         self.admin_email = (mset.AdminEmail if mset.AdminEmail else "")

@@ -154,6 +154,7 @@ class settings(object):
         RetryMaxAttempts = 3 # max re3tries
         SMTPServerAddress = ""
         SMTPUserAccount = ""
+        SMTPUserPassword = ""
         SMTPServerPort = ""
         FromEmail = ""
         FromName = ""
@@ -175,6 +176,7 @@ class settings(object):
                     self.RetryMaxAttempts = row["retry_max_attempts"]
                     self.SMTPServerAddress = row["smtp_server_addr"]
                     self.SMTPUserAccount = row["smtp_server_user"]
+                    self.SMTPUserPassword = catocommon.cato_decrypt(row["smtp_server_password"])
                     self.SMTPServerPort = row["smtp_server_port"]
                     self.FromEmail = row["from_email"]
                     self.FromName = row["from_name"]
