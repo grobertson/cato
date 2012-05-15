@@ -1,6 +1,7 @@
 import sys
 import traceback
 import urllib
+import json
 import uiGlobals
 import uiCommon
 from catocommon import catocommon
@@ -751,3 +752,68 @@ class uiMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
+
+    def wmGetMyAccount(self):
+        try:
+            user_id = uiCommon.GetSessionUserID()
+
+            sSQL = """select full_name, username, authentication_type, email, 
+                ifnull(security_question, '') as security_question, 
+                ifnull(security_answer, '') as security_question
+                from users
+                where user_id = '%s'""" % user_id
+            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            if uiGlobals.request.db.error:
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                raise uiGlobals.request.db.error
+            else:
+                # here's the deal - we aren't even returning the 'local' settings if the type is ldap.
+                if dr["authentication_type"] == "local":
+                    return json.dumps(dr)
+                else:
+                    d = {"full_name":dr["full_name"], "username": dr["username"], "email":dr["email"], "type":dr["authentication_type"]}
+                    return json.dumps(d)
+
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            
+    def wmSaveMyAccount(self):
+        """
+            In this method, the values come from the browser in a jQuery serialized array of name/value pairs.
+        """
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+
+            user_id = uiCommon.GetSessionUserID()
+            sValues = uiCommon.getAjaxArg("sValues")
+        
+            sql_bits = []
+            for pair in sValues:
+                # but to prevent sql injection, only build a sql from values we accept
+                if pair["name"] == "my_email":
+                    sql_bits.append("email = '%s'" %  uiCommon.TickSlash(pair["value"]))
+                if pair["name"] == "my_question":
+                    sql_bits.append("security_question = '%s'" % uiCommon.TickSlash(pair["value"]))
+                if pair["name"] == "my_answer":
+                    if pair["value"]:
+                        sql_bits.append("security_answer = '%s'" % catocommon.cato_encrypt(pair["value"]))
+
+                # only do the password if it was provided
+                if pair["name"] == "my_password":
+                    if pair["value"]:
+                        sql_bits.append("user_password = '%s'" % catocommon.cato_encrypt(pair["value"]))
+
+            sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
+
+            if not uiGlobals.request.db.exec_db_noexcep(sql):
+                uiCommon.log(uiGlobals.request.db.error, 0)
+                return uiGlobals.request.db.error
+
+            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "My Account settings updated.")
+                
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+            

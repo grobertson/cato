@@ -64,6 +64,75 @@ $(document).ready(function () {
             opacity: 0.5
         }
     });
+
+    $("#my_account_dialog").dialog({
+        autoOpen: false,
+        width: 600,
+        modal: true,
+        buttons: {
+            "Save": function () {
+            	// do not submit if the passwords don't match
+            	pw1 = $("#my_account_dialog #my_password").val();
+            	pw2 = $("#my_account_dialog #my_password_confirm").val();
+            	
+            	if (pw1 != pw2) {
+            		showInfo("Passwords must match.");
+            		return false;	
+            	}
+            	
+				args = $("#my_account_dialog :input").serializeArray()
+				$.ajax({
+					async : false,
+					type : "POST",
+					url : "uiMethods/wmSaveMyAccount",
+					data : '{"sValues":' + JSON.stringify(args) + '}',
+					contentType : "application/json; charset=utf-8",
+					dataType : "text",
+					success : function(response) {
+						$("#update_success_msg").text("Save Successful").fadeOut(2000);
+						
+						$("#my_account_dialog").dialog("close");
+					},
+					error : function(response) {
+						$("#update_success_msg").fadeOut(2000);
+						showAlert(response.responseText);
+					}
+				});
+            },
+            "Cancel": function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+
+	// when you show the user settings dialog, an ajax gets the values
+	// if it's not a 'local' account, some of the fields are hidden.
+    $("#my_account_link").click(function () {
+    	//do the ajax
+	    $.ajax({
+	        type: "GET",
+	        url: "uiMethods/wmGetMyAccount",
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function (account) {
+	            if (account) {
+	                $("#my_fullname").html(account.full_name);
+	                $("#my_username").html(account.username);
+	                $("#my_email").val(account.email);
+	                $("#my_question").val(account.security_question);
+	                $("#my_answer").val(account.security_answer);
+	            }
+	        },
+	        error: function (response) {
+	            showAlert(response);
+	        }
+	    });
+    	
+    	//finally, show the dialog
+	    $("#my_account_dialog").dialog("open");
+    });
+
+
     
     //the stack trace section on the error dialog is hidden by default
     //this is the click handler for showing it.

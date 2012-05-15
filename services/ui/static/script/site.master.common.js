@@ -62,11 +62,20 @@ var d = '<!-- This is the popup error message dialog template.  -->' +
 	'<!-- Log View dialog. -->' +
 	'<div id="log_view_dialog" class="hidden" title="Change Log"></div>' +
 	'<!-- End Log View dialog. -->' +
+	'<!-- This is the pop up "My Account" dialog. -->' +
+    '<div id="my_account_dialog" class="hidden" title="My Account">' +
+	'<table>' +
+	'<tr><td>Name:</td><td><span id="my_fullname"></span></td></tr>' +
+	'<tr><td>User Name:</td><td><span id="my_username"></span></td></tr>' +
+	'<tr><td>Email:</td><td><input type="text" id="my_email" name="my_email" class="usertextbox" /></td></tr>' +
+	'<tr class="my_localsettings"><td>Password:</td><td><input type="password" id="my_password" name="my_password" class="usertextbox" /></td></tr>' +
+	'<tr class="my_localsettings"><td>Password Confirm:</td><td><input type="password" id="my_password_confirm" class="usertextbox" /></td></tr>' +
+	'<tr class="my_localsettings"><td style="vertical-align: top;">Security Question:</td><td><textarea id="my_question" name="my_question" class="usertextbox"></textarea></td></tr>' +
+	'<tr class="my_localsettings"><td>Security Answer:</td><td><input type="password" id="my_answer" name="my_answer" class="usertextbox" /></td></tr>' +
+	'</table>' +
+    '</div>' +
+    '<!-- End "My Account" dialog. -->' +
 	'' +
 	'';
-
-
-
-
 
 document.write(d);
