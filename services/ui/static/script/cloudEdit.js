@@ -65,13 +65,6 @@ $(document).ready(function () {
 		}
     });
 
-	//override the search click button as defined on managepagecommon.js, because this page is now ajax!
-	$("#item_search_btn").die();
-	//and rebind it
-	$("#item_search_btn").live("click", function () {
-        GetItems();
-    });
-
 	//the Provider ddl changes a few things
 	$('#ddlProvider').change(function () {
 		GetProviderAccounts();

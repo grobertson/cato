@@ -58,6 +58,10 @@ class settings:
     def GET(self):
         return render.settings()
 
+class userEdit:        
+    def GET(self):
+        return render.userEdit()
+
 class taskManage:        
     def GET(self):
         return render.taskManage()
@@ -347,6 +351,7 @@ if __name__ == "__main__":
         '/ecoTemplateManage', 'ecoTemplateManage',
         '/ecosystemManage', 'ecosystemManage',
         '/ecosystemEdit', 'ecosystemEdit',
+        '/userEdit', 'userEdit',
         '/announcement', 'announcement',
         '/upload', 'upload',
         '/settings', 'settings',

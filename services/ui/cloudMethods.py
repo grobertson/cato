@@ -76,7 +76,6 @@ class cloudMethods:
                     sHTML += "<td class=\"chkboxcolumn\">"
                     sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
                     " id=\"chk_" + row["cloud_id"] + "\"" \
-                    " object_id=\"" + row["cloud_id"] + "\"" \
                     " tag=\"chk\" />"
                     sHTML += "</td>"
                     
@@ -235,7 +234,6 @@ class cloudMethods:
                         sHTML += "<td class=\"chkboxcolumn\">"
                         sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
                         " id=\"chk_" + row["account_id"] + "\"" \
-                        " object_id=\"" + row["account_id"] + "\"" \
                         " tag=\"chk\" />"
                         sHTML += "</td>"
                     else:

@@ -25,11 +25,6 @@ $(document).ready(function () {
     $("#txtUserFullName").keypress(function (e) { return restrictEntryToSafeHTML(e, this); });
     $("#txtUserEmail").keypress(function (e) { return restrictEntryToEmail(e, this); });
 
-    //what happens when you click a user row
-    $("[tag='selectable']").live("click", function () {
-        LoadEditDialog(0, $(this).parent().attr("user_id"));
-    });
-
     // change action for dropdown list, saves a callback
     $("#ddlUserAuthType").live("change", function () {
         SetPasswordControls();
@@ -81,8 +76,7 @@ $(document).ready(function () {
 		}
     });
 
-});
-function pageLoad() {
+	GetItems();
     ManagePageLoad();
 
     // set a handler for cleanup 
@@ -94,7 +88,30 @@ function pageLoad() {
     // setup the userAddTabs
     $("#AddUserTabs").tabs();
 
+});
+
+function GetItems() {
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "uiMethods/wmGetUsersTable",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+            $("#users").html(response);
+            //gotta restripe the table
+            initJtable(true, true);
+		    $("#users .selectable").click(function () {
+		        LoadEditDialog(0, $(this).parent().attr("user_id"));
+		    });
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
+
 
 function SetPasswordControls() {
 	if ($("#ddlUserAuthType").val() == "local") {
@@ -501,27 +518,25 @@ function FillEditForm(sUserID) {
     $.ajax({
         type: "POST",
         async: false,
-        url: "userEdit.aspx/LoadUserFormData",
+        url: "uiMethods/wmGetUser",
         data: '{"sUserID":"' + sUserID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (response) {
+        success: function (user) {
             //update the list in the dialog
-            if (response.d.length == 0) {
+            if (user.length == 0) {
                 showAlert('error no response');
                 // do we close the dialog, leave it open to allow adding more? what?
             } else {
-
-                var oResultData = jQuery.parseJSON(response.d);
-                $("#txtUserLoginID").val(oResultData.sEditUserID);
-                $("#txtUserFullName").val(oResultData.sUserFullName)
-                $("#txtUserEmail").val(oResultData.sEmail);
-                $("#txtUserPassword").val(oResultData.sPasswordMasked);
-                $("#txtUserPasswordConfirm").val(oResultData.sPasswordMasked)
-                $("#ddlUserAuthType").val(oResultData.sAuthenticationType);
-                $("#ddlUserStatus").val(oResultData.sUserStatus);
-                $("#ctl00_phDetail_ddlUserRole").val(oResultData.sRole);
-                $("#lblFailedLoginAttempts").html(oResultData.sFailedLogins);
+                $("#txtUserLoginID").val(user.LoginID);
+                $("#txtUserFullName").val(user.FullName)
+                $("#txtUserEmail").val(user.Email);
+                //$("#txtUserPassword").val(user.sPasswordMasked);
+                //$("#txtUserPasswordConfirm").val(user.sPasswordMasked)
+                $("#ddlUserAuthType").val(user.AuthenticationType);
+                $("#ddlUserStatus").val(user.Status);
+                $("#ctl00_phDetail_ddlUserRole").val(user.Role);
+                $("#lblFailedLoginAttempts").html(user.FailedLogins);
 
                 SetPasswordControls();
                 GetObjectsTags(sUserID);

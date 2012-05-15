@@ -6,6 +6,7 @@ import uiGlobals
 import uiCommon
 from catocommon import catocommon
 import cloud
+import user
 import settings
 
 # unlike uiCommon, which is used for shared ui elements
@@ -816,4 +817,49 @@ class uiMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
+    def wmGetUsersTable(self):
+        try:
+            sHTML = ""
+            sFilter = uiCommon.getAjaxArg("sSearch")
+
+            u = user.Users(sFilter)
+            if u.rows:
+                for row in u.rows:
+                    sHTML += "<tr user_id=\"" + row["user_id"] + "\">"
+                    sHTML += "<td class=\"chkboxcolumn\">"
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                    " id=\"chk_" + row["user_id"] + "\"" \
+                    " tag=\"chk\" />"
+                    sHTML += "</td>"
+                    
+                    sHTML += "<td class=\"selectable\">" + row["status"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["full_name"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["username"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["role"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + str(row["last_login_dt"]) +  "</td>"
+                    
+                    sHTML += "</tr>"
+    
+            return sHTML    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()           
+        
+    def wmGetUser(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sID = uiCommon.getAjaxArg("sUserID")
+            u = user.User()
+            if u:
+                u.FromID(sID)
+                if u.ID:
+                    return u.AsJSON()
             
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get details for User [" + sID + "].'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+ 

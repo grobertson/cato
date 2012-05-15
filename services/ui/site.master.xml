@@ -34,7 +34,7 @@
 			</item>
 		</menu>
 		<menu label="Security" icon="static/images/icons/password.png">
-			<item label="Manage Users" icon="static/images/icons/users_24.png" onclick="showPleaseWait();" href="../pages/userEdit.aspx">
+			<item label="Manage Users" icon="static/images/icons/users_24.png" onclick="showPleaseWait();" href="/userEdit">
 			</item>
 			<item label="Manage Shared Credentials" icon="static/images/icons/shared_24.png" onclick="showPleaseWait();" href="../pages/sharedCredentialEdit.aspx">
 			</item>

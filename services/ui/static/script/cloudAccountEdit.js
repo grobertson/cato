@@ -167,13 +167,6 @@ $(document).ready(function () {
     });
 
 
-	//override the search click button as defined on managepagecommon.js, because this page is now ajax!
-	$("#item_search_btn").die();
-	//and rebind it
-	$("#item_search_btn").live("click", function () {
-        GetItems();
-    });
-    
     //the test connection buttton
     $("#test_connection_btn").button({ icons: { primary: "ui-icon-link"} });
 	$("#test_connection_btn").live("click", function () {
