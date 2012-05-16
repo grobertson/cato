@@ -15,26 +15,24 @@ from catocommon import catocommon
 # writes to stdout using the catocommon.server output function
 # also prints to the console.
 def log(msg, debuglevel = 2):
-    if debuglevel <= uiGlobals.debuglevel:
-        user_id = ""
-        try:
-            user_id = GetSessionUserID()
-        except:
-            """ do nothing if there's no user - it may be pre-login """
-            
-        if not user_id:
+    if msg:
+        if debuglevel <= uiGlobals.debuglevel:
             user_id = ""
-            
-        log_nouser(msg, debuglevel)
+            try:
+                user_id = GetSessionUserID()
+                msg = "%s :: %s" % (user_id, msg)
+            except:
+                """ do nothing if there's no user - it may be pre-login """
+                
+            log_nouser(msg, debuglevel)
 
 def log_nouser(msg, debuglevel = 2):
-    if debuglevel <= uiGlobals.debuglevel:
-        try:
-            if msg:
+    if msg:
+        if debuglevel <= uiGlobals.debuglevel:
+            try:
                 uiGlobals.server.output(str(msg))
                 print str(msg)
-        except:
-            if msg:
+            except:
                 uiGlobals.server.output(msg)
                 print msg
 
@@ -67,14 +65,14 @@ def GetCookie(sCookie):
     if cookie:
         return cookie
     else:
-        log("Warning: Attempt to retrieve cookie [%s] failed - cookie doesn't exist.  This is usually OK immediately following a login." % sCookie, 3)
+        log_nouser("Warning: Attempt to retrieve cookie [%s] failed - cookie doesn't exist.  This is usually OK immediately following a login." % sCookie, 3)
         return ""
 
 def SetCookie(sCookie, sValue):
     try:
         uiGlobals.web.setcookie(sCookie, sValue)
     except Exception:
-        log("Warning: Attempt to set cookie [%s] failed." % sCookie, 2)
+        log_nouser("Warning: Attempt to set cookie [%s] failed." % sCookie, 2)
         uiGlobals.request.Messages.append(traceback.format_exc())
 
 def NewGUID():
@@ -187,8 +185,8 @@ def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
     if sTrimmedLog:
         if len(sTrimmedLog) > 7999:
             sTrimmedLog = sTrimmedLog[:7998]
-    sSQL = "insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg) \
-        values ('" + LogType + "', '" + Action + "', '" + GetSessionUserID() + "', now(), " + str(ObjectType) + ", '" + ObjectID + "', '" + sTrimmedLog + "')"
+    sSQL = """insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg)
+        values ('%s', '%s', '%s', now(), %d, '%s', '%s')""" % (LogType, Action, GetSessionUserID(), ObjectType, ObjectID, sTrimmedLog)
     if not uiGlobals.request.db.exec_db_noexcep(sSQL):
         uiGlobals.request.Messages.append(uiGlobals.request.db.error)
 
@@ -351,7 +349,7 @@ def ForceLogout(sMsg):
     # logging out kills the session
     uiGlobals.session.kill()
     
-    log("Forcing logout with message: " + sMsg, 0)
+    log_nouser("Forcing logout with message: " + sMsg, 0)
     raise uiGlobals.web.seeother('/login?msg=' + urllib.quote_plus(sMsg))
 
 def GetSessionUserID():
@@ -396,15 +394,15 @@ def GetTaskFunctionCategories():
     try:
         f = open("datacache/_categories.pickle", 'rb')
         if not f:
-            log("ERROR: Categories pickle missing.", 0)
+            log_nouser("ERROR: Categories pickle missing.", 0)
         obj = pickle.load(f)
         f.close()
         if obj:
             return obj.Categories
         else:
-            log("ERROR: Categories pickle could not be read.", 0)
+            log_nouser("ERROR: Categories pickle could not be read.", 0)
     except Exception:
-        log("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
+        log_nouser("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
         
     return None
         
@@ -415,15 +413,15 @@ def GetTaskFunctions():
     try:
         f = open("datacache/_categories.pickle", 'rb')
         if not f:
-            log("ERROR: Categories pickle missing.", 0)
+            log_nouser("ERROR: Categories pickle missing.", 0)
         obj = pickle.load(f)
         f.close()
         if obj:
             return obj.Functions
         else:
-            log("ERROR: Categories pickle could not be read.", 0)
+            log_nouser("ERROR: Categories pickle could not be read.", 0)
     except Exception:
-        log("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
+        log_nouser("ERROR: Categories pickle could not be read." + traceback.format_exc(), 0)
         
     return None
     # return GetSessionObject("", "functions")
@@ -475,3 +473,10 @@ def HTTPGetNoFail(url):
         
     except Exception:
         log_nouser(traceback.format_exc(), 4)
+
+def GeneratePassword():
+    import string
+    from random import choice
+    chars = string.letters + string.digits
+    length = 12
+    return "".join(choice(chars) for _ in range(length))

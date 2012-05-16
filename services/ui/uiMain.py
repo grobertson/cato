@@ -178,7 +178,7 @@ def SetTaskCommands():
                 if ext == ".xml":
                     fullpath = os.path.join(root, f)
                     if not cats.Append(fullpath):
-                        uiCommon.log("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
+                        uiCommon.log_nouser("WARNING: Unable to load extension command xml file [" + fullpath + "].", 0)
 
         #put the categories list in the session...
         #uiGlobals.session.function_categories = cats.Categories
@@ -197,7 +197,7 @@ def SetTaskCommands():
 
         return True
     except Exception, ex:
-        uiCommon.log("Unable to load Task Commands XML." + ex.__str__(), 0)
+        uiCommon.log_nouser("Unable to load Task Commands XML." + ex.__str__(), 0)
 
 def CacheTaskCommands():
     #creates the html cache file
@@ -250,7 +250,7 @@ def CacheTaskCommands():
             f_out.write(sFunHTML)
 
     except Exception, ex:
-        uiCommon.log(ex.__str__(), 0)
+        uiCommon.log_nouser(ex.__str__(), 0)
 
 def CacheMenu():
     #put the site.master.xml in the session here
@@ -386,7 +386,7 @@ if __name__ == "__main__":
     
     # put the task commands in a pickle for our lookups
     # and cache the html in a flat file
-    uiCommon.log("Generating static html...", 3)
+    uiCommon.log_nouser("Generating static html...", 3)
     SetTaskCommands()
     CacheMenu()
         
