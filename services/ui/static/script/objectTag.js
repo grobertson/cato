@@ -54,11 +54,17 @@ $(document).ready(function() {
                 $.ajax({
                     async: false,
                     type: "POST",
-                    url: "../pages/uiMethods.asmx/wmAddObjectTag",
+                    url: "uiMethods/wmAddObjectTag",
                     data: '{"sObjectID":"' + oid + '","sObjectType":"' + ot + '","sTagName":"' + tag_name + '"}',
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
-                    success: function(retval) { },
+                    success: function(response) {
+						if (response.error) {
+							showAlert(response.error);
+						} else {
+							$("#update_success_msg").text("Update Successful").fadeOut(2000);
+						}
+                    },
                     error: function(response) {
                         showAlert(response.responseText);
                     }
@@ -101,11 +107,17 @@ $(document).ready(function() {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "../pages/uiMethods.asmx/wmRemoveObjectTag",
+                url: "uiMethods/wmRemoveObjectTag",
                 data: '{"sObjectID":"' + oid + '","sObjectType":"' + ot + '","sTagName":"' + tag_name + '"}',
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
-                success: function(retval) { $("#update_success_msg").text("Update Successful").fadeOut(2000); },
+                success: function(response) {
+					if (response.error) {
+						showAlert(response.error);
+					} else {
+						$("#update_success_msg").text("Update Successful").fadeOut(2000);
+					}
+                },
                 error: function(response) {
                     showAlert(response.responseText);
                 }
@@ -114,7 +126,8 @@ $(document).ready(function() {
     });
 
     //add a tag
-    $(".tag_add_btn").live("click", function() {
+    $("#tag_add_btn").button({ icons: { primary: "ui-icon-plus"} });
+    $("#tag_add_btn").live("click", function() {
 
         //hokey, but our "ids" are in different hidden fields on different pages!
         //that should be normalized eventually
@@ -154,13 +167,13 @@ function GetTagList(sObjectID) {
     $.ajax({
         async: false,
         type: "POST",
-        url: "../pages/uiMethods.asmx/wmGetTagList",
+        url: "uiMethods/wmGetTagList",
         data: '{"sObjectID":"' + sObjectID + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(retval) {
+        dataType: "html",
+        success: function(response) {
             //put the results in the dialog
-            $("#tag_picker_list").html(retval.d);
+            $("#tag_picker_list").html(response);
         },
         error: function(response) {
             showAlert(response.responseText);
@@ -171,12 +184,12 @@ function GetTagList(sObjectID) {
 function GetObjectsTags(sObjectID) {
     $.ajax({
         type: "POST",
-        url: "../pages/uiMethods.asmx/wmGetObjectsTags",
+        url: "uiMethods/wmGetObjectsTags",
         data: '{"sObjectID":"' + sObjectID + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(retval) {
-            $("#objects_tags").html(retval.d);
+        dataType: "html",
+        success: function(response) {
+            $("#objects_tags").html(response);
         },
         error: function(response) {
             showAlert(response.responseText);

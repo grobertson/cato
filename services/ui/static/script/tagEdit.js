@@ -20,6 +20,9 @@ $(document).ready(function () {
 
     $("[tag='selectable']").live("click", function () {
         var tag = $(this).parent().attr("tag_name");
+        
+        // WE TOOK desc_id off the table, it was dumb.
+        // just use jquery to find the description row, no id selector needed.
         var desc = $.trim($('#' + $(this).parent().attr("desc_id")).html());
 
         $("#hidMode").val("edit");

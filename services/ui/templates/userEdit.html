@@ -64,7 +64,9 @@ $var cssfiles:
             <li>
                 <a href="#GeneralTab"><span>General</span></a>
             </li>
-            <!--<li><a href="#GroupsTab"><span>Groups (Tags)</span></a></li>-->
+            <li>
+                <a href="#GroupsTab"><span>Groups (Tags)</span></a>
+            </li>
         </ul>
         <div id="GeneralTab" style="height: 350px;">
             <table style="width: 98%;">
@@ -95,7 +97,12 @@ $var cssfiles:
                     </tr>
                     <tr>
                         <td> User Role: </td>
-                        <td><select id="ddlUserRole" Style="width: 90%;"></select></td>
+                        <td>
+                        <select id="ddlUserRole" style="width: 90%;">
+                            <option value="User">User</option>
+                            <option value="Developer">Developer</option>
+                            <option value="Administrator">Administrator</option>
+                        </select></td>
                     </tr>
                     <tr>
                         <td> Authentication Type: </td>
@@ -153,17 +160,11 @@ $var cssfiles:
                 <span id="show_log_link">View Change Log</span>
             </center>
         </div>
-        <!--
         <div id="GroupsTab">
-        <span id="tag_add_btn" class="tag_add_btn pointer">
-        <img src="../images/icons/edit_add.png" alt="" />
-        click to add </span>
-        <hr />
-        <ul id="objects_tags">
-        </ul>
+            <span id="tag_add_btn" class="tag_add_btn pointer">Add</span>
+            <hr />
+            <ul id="objects_tags"></ul>
         </div>
-        -->
-        <!--end hidden-->
     </div>
 </div>
 <div id="delete_dialog" class="hidden" title="Delete User">

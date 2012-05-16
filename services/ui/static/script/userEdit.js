@@ -37,7 +37,6 @@ $(document).ready(function () {
         bgiframe: true,
         buttons: {
             "Save": function () {
-                showPleaseWait();
                 SaveUser();
             },
             Cancel: function () {
@@ -145,7 +144,7 @@ function ShowItemAdd() {
     $("#txtUserLoginID").focus();
     $("#ddlUserStatus").val("1");
     $("#ddlUserAuthType").val("local");
-    $("#ctl00_phDetail_ddlUserRole").val("User");
+    $("#ddlUserRole").val("User");
 }
 
 function CloseDialog() {
@@ -176,13 +175,10 @@ function DeleteItems() {
             $("#hidSelectedArray").val("");
             $("#delete_dialog").dialog('close');
 
-            $("#ctl00_phDetail_btnSearch").click();
-
-            hidePleaseWait();
+            GetItems();
             showInfo(msg.d);
         },
         error: function (response) {
-            hidePleaseWait();
             showAlert(response.responseText);
         }
     });
@@ -229,10 +225,6 @@ function SaveUserEdits() {
     }
     var sUserPassword = $("#txtUserPassword").val();
     if (sAuthType == 'local') {
-        if ($("#txtUserPassword").val() == '') {
-            bSave = false;
-            strValidationError += 'Password required.<br />';
-        };
         if ($("#txtUserPassword").val() != $("#txtUserPasswordConfirm").val()) {
             bSave = false;
             strValidationError += 'Passwords do not match!<br />';
@@ -243,11 +235,11 @@ function SaveUserEdits() {
     if ($("#cbNewUserForcePasswordChange").is(':checked')) {
         sForcePasswordChange = '1';
     }
-    if (!$("#ctl00_phDetail_ddlUserRole").val()) {
+    if (!$("#ddlUserRole").val()) {
         bSave = false;
         strValidationError += 'Role required.<br />';
     } else {
-        var sUserRole = $("#ctl00_phDetail_ddlUserRole").val();
+        var sUserRole = $("#ddlUserRole").val();
     }
     var sEmail = $('#txtUserEmail').val();
     if (sEmail == '') {
@@ -268,111 +260,100 @@ function SaveUserEdits() {
     }
 
     //put the users groups in a string for submission
-    var sGroups = "";
+    var sGroups = new Array();
     $("#objects_tags .tag").each(
-        function (intIndex) {
-            if (sGroups == "")
-                sGroups += $(this).attr("val");
-            else
-                sGroups += "," + $(this).attr("val");
+        function (idx) {
+            sGroups[idx] = $(this).attr("val");
         });
 
 
-    // ok we made it here, lets attempt to update the user
-    var sEditUserID = $("#hidCurrentEditID").val();
+    var user = {};
+    user.ID = $("#hidCurrentEditID").val();
+    user.LoginID = sLoginID;
+    user.FullName = sFullName;
+    user.AuthenticationType = sAuthType;
+    user.Password = packJSON(sUserPassword);
+    user.ForceChange = sForcePasswordChange;
+    user.Role = sUserRole;
+    user.Email = sEmail;
+    user.Status = sStatus;
+    user.Groups = sGroups;
 
-    //alert('building stuff');
-    var stuff = new Array();
-    stuff[0] = sEditUserID;
-    stuff[1] = sLoginID;
-    stuff[2] = sFullName;
-    stuff[3] = sAuthType;
-    stuff[4] = sUserPassword;
-    stuff[5] = sForcePasswordChange;
-    stuff[6] = sUserRole;
-    stuff[7] = sEmail;
-    stuff[8] = sStatus;
-    stuff[9] = sGroups;
-
-    if (stuff.length > 0) {
-        //alert('call pagemethod');
-        //Doing the Microsoft ajax call because the jQuery one doesn't work.
-        PageMethods.SaveUserEdits(stuff, OnUpdateSuccess, OnUpdateFailure);
-    } else {
-        showAlert('incorrect list of update attributes:' + stuff.length.toString());
-    }
+	$.ajax({
+		async : false,
+		type : "POST",
+		url : "uiMethods/wmUpdateUser",
+		data : JSON.stringify(user),
+		contentType : "application/json; charset=utf-8",
+		dataType : "text",
+		success : function(response) {
+			//THIS NEEDS WORK
+	        if (response.length == 0) {
+	            //showInfo('User updated.');
+	
+	            if ($("#hidMode").val() == 'edit') {
+	                // remove this item from the array
+	                var sEditID = $("#hidCurrentEditID").val();
+	                var myArray = new Array();
+	                var sArrHolder = $("#hidSelectedArray").val();
+	                myArray = sArrHolder.split(',');
+	
+	                //how many in the array before you clicked Save?
+	                var wereInArray = myArray.length;
+	
+	                if (jQuery.inArray(sEditID, myArray) > -1) {
+	                    $("#chk_" + sEditID).attr("checked", false);
+	                    myArray.remove(sEditID);
+	                }
+	
+	                $("#lblItemsSelected").html(myArray.length);
+	                $("#hidSelectedArray").val(myArray.toString());
+	
+	                if (wereInArray == 1) {
+	                    // this was the last or only user edited so close
+	                    $("#hidCurrentEditID").val("");
+	                    $("#hidEditCount").val("");
+	
+	                    CloseDialog();
+	                    //leave any search string the user had entered, so just click the search button
+						GetItems();
+	                } else {
+	                    // load the next item to edit
+	                    $("#hidCurrentEditID").val(myArray[0]);
+	                    FillEditForm(myArray[0]);
+	                }
+	            } else {
+	                CloseDialog();
+	                //leave any search string the user had entered, so just click the search button
+	                GetItems();
+	            }
+	        } else {
+	            showInfo(result);
+	        }
+		},
+		error : function(response) {
+			showAlert(response);
+		}
+	});
 }
 
 // Callback function invoked on successful completion of the MS AJAX page method.
 function OnUpdateSuccess(result, userContext, methodName) {
-    hidePleaseWait();
     //alert('success');
     if (methodName == "SaveUserEdits") {
-        if (result.length == 0) {
-            showInfo('User updated.');
 
-            if ($("#hidMode").val() == 'edit') {
-                // remove this item from the array
-                var sEditID = $("#hidCurrentEditID").val();
-                var myArray = new Array();
-                var sArrHolder = $("#hidSelectedArray").val();
-                myArray = sArrHolder.split(',');
-
-                //how many in the array before you clicked Save?
-                var wereInArray = myArray.length;
-
-                if (jQuery.inArray(sEditID, myArray) > -1) {
-                    $("#chk_" + sEditID).attr("checked", false);
-                    myArray.remove(sEditID);
-                }
-
-                $("#lblItemsSelected").html(myArray.length);
-                $("#hidSelectedArray").val(myArray.toString());
-
-                if (wereInArray == 1) {
-                    // this was the last or only user edited so close
-                    $("#hidCurrentEditID").val("");
-                    $("#hidEditCount").val("");
-
-                    CloseDialog();
-
-                    //leave any search string the user had entered, so just click the search button
-                    $("#ctl00_phDetail_btnSearch").click();
-                } else {
-                    // load the next item to edit
-                    $("#hidCurrentEditID").val(myArray[0]);
-                    FillEditForm(myArray[0]);
-                }
-            } else {
-                CloseDialog();
-
-                //leave any search string the user had entered, so just click the search button
-                $("#ctl00_phDetail_btnSearch").click();
-            }
-
-        } else {
-            showInfo(result);
-        }
 
     } else if (methodName == "SaveNewUser") {
         if (result.length == 0) {
             showInfo('User created.');
             CloseDialog();
-            $("#ctl00_phDetail_btnSearch").click();
+            GetItems();
         } else {
             showInfo(result);
         }
     }
 }
 
-// Callback function invoked on failure of the MS AJAX page method.
-function OnUpdateFailure(error, userContext, methodName) {
-    hidePleaseWait();
-    //alert('failure');
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
-}
 
 
 //sLoginID sFullName sAuthType sUserPassword sForcePasswordChange sUserRole sEmail As String
@@ -402,11 +383,11 @@ function SaveNewUser() {
         var sAuthType = $("#ddlUserAuthType").val();
     }
 
-    if (!$("#ctl00_phDetail_ddlUserRole").val()) {
+    if (!$("#ddlUserRole").val()) {
         bSave = false;
         strValidationError += 'Role required.<br />';
     } else {
-        var sUserRole = $("#ctl00_phDetail_ddlUserRole").val();
+        var sUserRole = $("#ddlUserRole").val();
     }
     var sEmail = $("#txtUserEmail").val();
     if (sEmail == '') {
@@ -535,8 +516,8 @@ function FillEditForm(sUserID) {
                 //$("#txtUserPasswordConfirm").val(user.sPasswordMasked)
                 $("#ddlUserAuthType").val(user.AuthenticationType);
                 $("#ddlUserStatus").val(user.Status);
-                $("#ctl00_phDetail_ddlUserRole").val(user.Role);
-                $("#lblFailedLoginAttempts").html(user.FailedLogins);
+                $("#ddlUserRole").val(user.Role);
+                $("#lblFailedLoginAttempts").html(user.FailedLoginAttempts);
 
                 SetPasswordControls();
                 GetObjectsTags(sUserID);
@@ -549,22 +530,21 @@ function FillEditForm(sUserID) {
 }
 function ClearFailedLoginAttempts() {
     //reset the counter and change the text
+    var user = {};
+    user.ID = $("#hidCurrentEditID").val();
+    user.FailedLoginAttempts = 0;
     $.ajax({
         type: "POST",
-        url: "userEdit.aspx/ClearFailedAttempts",
-        data: '{"sUserID":"' + $("#hidCurrentEditID").val() + '"}',
+        url: "uiMethods/wmUpdateUser",
+        data: JSON.stringify(user),
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             //update the list in the dialog
-            if (msg.d.length == 0) {
-
+            if (response.length == 0) {
                 $("#lblFailedLoginAttempts").html("0");
-
             } else {
-
-                showAlert('error resetting failed attempts.');
-
+                showAlert(response);
             }
         },
         error: function (response) {
@@ -606,22 +586,25 @@ function ShowItemCopy() {
     $("#txtUserLoginID").focus();
     $("#ddlUserStatus").val("1");
     $("#ddlUserAuthType").val("local");
-    $("#ctl00_phDetail_ddlUserRole").val("User");
+    $("#ddlUserRole").val("User");
 }
 
 function ResetPassword() {
-    //reset the counter and change the text
+    var user = {};
+    user.ID = $("#hidCurrentEditID").val();
+    user.NewRandomPassword = true;
     $.ajax({
         type: "POST",
-        url: "userEdit.aspx/ResetPassword",
-        data: '{"sUserID":"' + $("#hidCurrentEditID").val() + '"}',
+        url: "uiMethods/wmUpdateUser",
+        data: JSON.stringify(user),
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
+        dataType: "text",
+        success: function (response) {
+            //update the list in the dialog
+            if (response.length == 0) {
                 showInfo('Password successfully reset.');
             } else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {

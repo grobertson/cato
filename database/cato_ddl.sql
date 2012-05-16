@@ -412,10 +412,18 @@ CREATE TABLE `object_registry` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cato`.`tags` (
+  `tag_name` VARCHAR(32) NOT NULL ,
+  `tag_desc` VARCHAR(256) NULL ,
+  PRIMARY KEY (`tag_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `object_tags` (
   `object_id` varchar(36) NOT NULL,
   `object_type` int(11) NOT NULL,
-  `tag_name` varchar(64) NOT NULL,
+  `tag_name` varchar(32) NOT NULL,
   PRIMARY KEY (`object_id`,`tag_name`,`object_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

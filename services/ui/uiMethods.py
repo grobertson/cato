@@ -7,6 +7,7 @@ import uiCommon
 from catocommon import catocommon
 import cloud
 import user
+import tag
 import settings
 
 # unlike uiCommon, which is used for shared ui elements
@@ -42,48 +43,29 @@ class login:
             in_name = uiGlobals.web.input(username=None).username
             in_pwd = uiGlobals.web.input(password=None).password
     
-            sql = "select user_id, user_password, full_name, user_role, email, status, failed_login_attempts, expiration_dt, force_change \
-                from users where username='" + in_name + "'"
-            
-            row = uiGlobals.request.db.select_row_dict(sql)
-            if not row:
-                uiCommon.log("Invalid login attempt - [%s] not a valid user." % (in_name), 0)
+
+            u = user.User()
+            if not u.Authenticate(in_name, in_pwd):
                 msg = "Invalid Username or Password."
                 raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote_plus(msg))
     
-            
-            #alrighty, lets check the password
-            # we do this by encrypting the form submission and comparing, 
-            # NOT by decrypting it here.
-            encpwd = catocommon.cato_encrypt(in_pwd)
-            
-            if row["user_password"] != encpwd:
-                uiCommon.log("Invalid login attempt - [%s] bad password." % (in_name), 0)
-                msg = "Invalid Username or Password."
-                raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote_plus(msg))
-                
-            user_id = row["user_id"]
-            
-            #all good, put a few key things in the session
-            user = {}
-            user["user_id"] = user_id
-            user["full_name"] = row["full_name"]
-            user["role"] = row["user_role"]
-            user["email"] = row["email"]
-            user["ip_address"] = uiGlobals.web.ctx.ip
-            uiCommon.SetSessionObject("user", user)
-            #uiGlobals.session.user = user
+            #all good, put a few key things in the session, not the whole object
+            # yes, I said SESSION not a cookie, otherwise it could be hacked client side
+            current_user = {}
+            current_user["user_id"] = u.ID
+            current_user["full_name"] = u.FullName
+            current_user["role"] = u.Role
+            current_user["email"] = u.Email
+            current_user["ip_address"] = uiGlobals.web.ctx.ip
+            uiCommon.SetSessionObject("user", current_user)
+
             uiCommon.log("Login granted for: ", 4)
             uiCommon.log(uiGlobals.session.user, 4)
-            # reset the user counters and last_login
-            sql = "update users set failed_login_attempts=0, last_login_dt=now() where user_id='" + user_id + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sql):
-                uiCommon.log(uiGlobals.request.db.error, 0)
     
             #update the security log
-            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
-                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
-                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
+#            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
+#                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
+#                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
     
             uiCommon.log("Creating session...", 3)
                 
@@ -782,6 +764,10 @@ class uiMethods:
         """
             In this method, the values come from the browser in a jQuery serialized array of name/value pairs.
         """
+
+        
+        # TODO: must do checking for password complexity, see if it's already been used, etc.
+
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
 
@@ -862,4 +848,229 @@ class uiMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
- 
+    def wmGetObjectsTags(self):
+        try:
+            sHTML = ""
+            oid = uiCommon.getAjaxArg("sObjectID")
+
+            t = tag.Tags(sFilter="", sObjectID=oid)
+            if t.rows:
+                for row in t.rows:
+                    sHTML += " <li id=\"ot_" + row["tag_name"].replace(" ", "") + "\" val=\"" + row["tag_name"] + "\" class=\"tag\">"
+                    
+                    sHTML += "<table class=\"object_tags_table\"><tr>"
+                    sHTML += "<td style=\"vertical-align: middle;\">" + row["tag_name"] + "</td>"
+                    sHTML += "<td width=\"1px\"><span class=\"ui-icon ui-icon-close forceinline tag_remove_btn\" remove_id=\"ot_" + row["tag_name"].replace(" ", "") + "\"></span></td>"
+                    sHTML += "</tr></table>"
+                    
+                    sHTML += " </li>"
+            return sHTML    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()           
+        
+    def wmGetTagList(self):
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            sHTML = ""
+    
+            # # this will be from lu_tags table
+            # if the passed in objectid is empty, get them all, otherwise filter by it
+            if sObjectID:
+                sSQL = "select tag_name, tag_desc" \
+                    " from tags " \
+                    " where tag_name not in (" \
+                    " select tag_name from object_tags where object_id = '" + sObjectID + "'" \
+                    ")" \
+                    " order by tag_name"
+            else:
+                sSQL = "select tag_name, tag_desc" \
+                    " from tags" \
+                    " order by tag_name"
+
+            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                return uiGlobals.request.db.error
+
+            if dt:                
+                sHTML += "<ul>"
+                for dr in dt:
+                    desc = (dr["tag_desc"].replace("\"", "").replace("'", "") if dr["tag_desc"] else "")
+                    sHTML += " <li class=\"tag_picker_tag\"" \
+                       " id=\"tpt_" + dr["tag_name"] + "\"" \
+                       " desc=\"" + desc + "\"" \
+                       ">"
+                    sHTML += dr["tag_name"]
+                    sHTML += " </li>"
+                sHTML += "</ul>"
+            else:
+                sHTML += "No Unassociated Tags exist."
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmAddObjectTag(self):
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            sObjectType = uiCommon.getAjaxArg("sObjectType")
+            sTagName = uiCommon.getAjaxArg("sTagName")
+    
+    
+            iObjectType = int(sObjectType)
+    
+            # fail on missing values
+            if iObjectType < 0:
+                return "{ \"error\" : \"Invalid Object Type.\" }"
+            if not sObjectID or not sTagName:
+                return "{ \"error\" : \"Missing or invalid Object ID or Tag Name.\" }"
+    
+            sSQL = """insert into object_tags
+                (object_id, object_type, tag_name)
+                values ('%s', '%d', '%s')""" % (sObjectID, iObjectType, sTagName)
+    
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            uiCommon.WriteObjectChangeLog(iObjectType, sObjectID, "", "Tag [" + sTagName + "] added.")
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmRemoveObjectTag(self):
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            sObjectType = uiCommon.getAjaxArg("sObjectType")
+            sTagName = uiCommon.getAjaxArg("sTagName")
+    
+    
+            iObjectType = int(sObjectType)
+    
+            # fail on missing values
+            if iObjectType < 0:
+                return "{ \"error\" : \"Invalid Object Type.\" }"
+            if not sObjectID or not sTagName:
+                return "{ \"error\" : \"Missing or invalid Object ID or Tag Name.\" }"
+    
+            sSQL = """delete from object_tags where object_id = '%s' and tag_name = '%s'""" & (sObjectID, sTagName)
+    
+            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+    
+            uiCommon.WriteObjectChangeLog(iObjectType, sObjectID, "", "Tag [" + sTagName + "] removed.")
+    
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmUpdateUser(self):
+        """
+            This method will only update the values passed to it.
+        """
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+
+            # TODO: must do checking for password complexity, see if it's already been used, etc.
+            
+            # FIRST THINGS FIRST - it's critical we make sure the current user making this call
+            # is an Administrator
+            
+            
+            args = uiCommon.getAjaxArgs()
+            user_id = args["ID"]
+            
+            sql_bits = []
+            for key, val in args.iteritems():
+                # but to prevent sql injection, only build a sql from values we accept
+                if key == "LoginID":
+                    sql_bits.append("username='%s'" %  val)
+                if key == "FullName":
+                    sql_bits.append("full_name='%s'" % val)
+                if key == "Status":
+                    sql_bits.append("status='%s'" % val)
+                if key == "AuthenticationType":
+                    sql_bits.append("authentication_type='%s'" % val)
+                if key == "ForceChange":
+                    sql_bits.append("force_change='%s'" % val)
+                if key == "Email":
+                    sql_bits.append("email='%s'" % val)
+                if key == "Role":
+                    sql_bits.append("user_role='%s'" % val)
+                if key == "FailedLoginAttempts":
+                    sql_bits.append("failed_login_attempts='%s'" % val)
+
+
+                # only do the password if it was provided
+                if key == "Password":
+                    val = uiCommon.unpackJSON(val)
+                    if val:
+                        sql_bits.append("user_password='%s'" % catocommon.cato_encrypt(val))
+
+                # Here's something special...
+                # If the arg "RandomPassword" was provided and is true...
+                # Generate a new password and send out an email.
+                
+                # AND - don't sent it to the email on the submit data, rather to the email on the
+                
+                # IF for some reason this AND a password were provided, it means someone is hacking
+                # (We don't do both of them at the same time.)
+                # so the provided one takes precedence.
+                if key == "NewRandomPassword" and not args.has_key("Password"):
+                    u = user.User()
+                    if u:
+                        u.FromID(args["ID"])
+                        if not u.Email:
+                            return "Unable to reset password - User does not have an email address defined."
+                        else:
+                            sNewPassword = uiCommon.GeneratePassword()
+                            sql_bits.append("user_password='%s'" % sNewPassword)
+                              
+                            # an additional log entry
+                            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "Password reset.")
+
+                            # TODO: 
+                            # would get the URL of the application, construct an email message
+                            # and send using our SendEmail function (which puts a row in the message table)
+                            
+                            #sURL = uiCommon.GetSessionObject("app_url", "user")
+                            sURL = ""
+                            # now, send out an email
+                            s_set = settings.settings.security()
+                            body = s_set.NewUserMessage
+                            if not body:
+                                body = """%s - your password has been reset by an Administrator.\n\n
+                                Your temporary password is: %s.\n\n
+                                Access the application at <a href='%s' target='_blank'>%s</a>.""" % (u.FullName, sNewPassword, sURL, sURL)
+
+                                # replace our special tokens with the values
+                                body = body.replace("##FULLNAME##", u.FullName).replace("##USERNAME##", u.LoginID).replace("##PASSWORD##", sNewPassword).replace("##URL##", sURL)
+
+                                print "Would send email here..."
+#                                if !uiCommon.SendEmailMessage(sEmail.strip(), ag.APP_COMPANYNAME + " Account Management", "Account Action in " + ag.APP_NAME, sBody, 0000BYREF_ARG0000sErr:
+                        
+            
+            sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
+
+            if not uiGlobals.request.db.exec_db_noexcep(sql):
+                uiCommon.log(uiGlobals.request.db.error, 0)
+                return uiGlobals.request.db.error
+
+            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "User updated.")
+               
+               
+            if args.has_key("Groups"):
+                if args["Groups"]:
+                    # now, lets do any groups that were passed in. 
+                    sql = "delete from object_tags where object_id = '%s'" % user_id
+                    if not uiGlobals.request.db.exec_db_noexcep(sql):
+                        uiCommon.log(uiGlobals.request.db.error, 0)
+                    for tag in args["Groups"]:
+                        sql = "insert object_tags (object_type, object_id, tag_name) values (1, '%s','%s')" % (user_id, tag)
+                        if not uiGlobals.request.db.exec_db_noexcep(sql):
+                            uiCommon.log(uiGlobals.request.db.error, 0)
+            
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
