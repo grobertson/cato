@@ -6,6 +6,42 @@ import json
 from catocommon import catocommon
 import providers
 
+# Note: this is not a container for CloudAccount objects - it's just a rowset from the database
+# with an AsJSON method.
+# why? Because the CloudAccount objects contain a full set of Provider information - stuff
+# we don't need for list pages and dropdowns.
+class Clouds(object): 
+    rows = {}
+        
+    def __init__(self, sFilter=""):
+        try:
+            sWhereString = ""
+            if sFilter:
+                aSearchTerms = sFilter.split()
+                for term in aSearchTerms:
+                    if term:
+                        sWhereString += " and (cloud_name like '%%" + term + "%%' " \
+                            "or provider like '%%" + term + "%%' " \
+                            "or api_url like '%%" + term + "%%') "
+    
+            sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" \
+                " from clouds" \
+                " where 1=1 " + sWhereString + " order by provider, cloud_name"
+            
+            db = catocommon.new_conn()
+            self.rows = db.select_all_dict(sSQL)
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
+    def AsJSON(self):
+        try:
+            return json.dumps(self.rows)
+        except Exception, ex:
+            raise ex
+
+
 class Cloud(object):
     IsUserDefined = True
     ID = None

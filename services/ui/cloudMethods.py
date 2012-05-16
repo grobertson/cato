@@ -52,26 +52,12 @@ class cloudMethods:
     def wmGetCloudsTable(self):
         try:
             sHTML = ""
-            sWhereString = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
-            if sFilter:
-                aSearchTerms = sFilter.split()
-                for term in aSearchTerms:
-                    if term:
-                        sWhereString += " and (cloud_name like '%%" + term + "%%' " \
-                            "or provider like '%%" + term + "%%' " \
-                            "or api_url like '%%" + term + "%%') "
-    
-            sSQL = "select cloud_id, cloud_name, provider, api_url, api_protocol" \
-                " from clouds" \
-                " where 1=1 " + sWhereString + " order by provider, cloud_name"
+            sHTML = ""
             
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-    
-            if rows:
-                for row in rows:
+            ca = cloud.Clouds(sFilter)
+            if ca.rows:
+                for row in ca.rows:
                     sHTML += "<tr cloud_id=\"" + row["cloud_id"] + "\">"
                     sHTML += "<td class=\"chkboxcolumn\">"
                     sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
