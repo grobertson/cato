@@ -36,6 +36,29 @@ def log_nouser(msg, debuglevel = 2):
                 uiGlobals.server.output(msg)
                 print msg
 
+def check_roles(method):
+    # NOTE: if we wanted to turn on logging of every action a user takes,
+    # this is a good place to do it.  We know the user AND the function/page they requested.
+    
+    if uiGlobals.RoleMethods.has_key(method):
+        mapping = uiGlobals.RoleMethods[method]
+        if mapping is True:
+            return True
+        
+        user_role = GetSessionUserRole()
+
+        if user_role == "Administrator":
+            return True
+        
+        if user_role in mapping:
+            return True
+        else:
+            log("User requesting %s - insufficient permissions" % method, 0)
+            return False
+    else:
+        log("ERROR: %s does not have a role mapping." %method, 0)
+        return False
+
 def CatoEncrypt(s):
     return catocommon.cato_encrypt(s)
 
@@ -359,6 +382,16 @@ def GetSessionUserID():
             return uid
         else:
             ForceLogout("Server Session has expired (1). Please log in again.")
+    except Exception:
+        uiGlobals.request.Messages.append(traceback.format_exc())
+
+def GetSessionUserRole():
+    try:
+        role = GetSessionObject("user", "role")
+        if role:
+            return role
+        else:
+            ForceLogout("Server Session has expired (2). Please log in again.")
     except Exception:
         uiGlobals.request.Messages.append(traceback.format_exc())
 

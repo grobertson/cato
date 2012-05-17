@@ -54,6 +54,10 @@ class home:
     def GET(self):
         return render.home()
 
+class notAllowed:        
+    def GET(self):
+        return render.notAllowed()
+
 class settings:        
     def GET(self):
         return render.settings()
@@ -147,15 +151,18 @@ class temp:
 def auth_app_processor(handle):
     path = web.ctx.path
     
-    if path == "/bypass":
+    # requests that are allowed, no matter what
+    if path in ["/login", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
         return handle()
 
-    if path == "/announcement":
-        return handle()
-
-    if path != "/login" and not session.get('user', False):
+    # any other request requires an active session ... kick it out if there's not one.
+    if not session.get('user', False):
         raise web.seeother('/login?msg=' + urllib.quote_plus("Session expired."))
     
+    # check the role/method mappings to see if the requested page is allowed
+    if not uiCommon.check_roles(path):
+        return render.notAllowed()
+
     return handle()
 
 
@@ -339,6 +346,7 @@ if __name__ == "__main__":
         '/login', 'login',
         '/logout', 'logout',
         '/home', 'home',
+        '/notAllowed', 'notAllowed',
         '/cloudEdit', 'cloudEdit',
         '/cloudAccountEdit', 'cloudAccountEdit',
         '/taskEdit', 'taskEdit',
@@ -390,5 +398,18 @@ if __name__ == "__main__":
     SetTaskCommands()
     CacheMenu()
         
-    
+    # Uncomment the following - it will print out all the core methods in the app
+    # this will be handy during the conversion, as we add functions to uiGlobals.RoleMethods.
+#    for s in dir():
+#        print "\"/%s\" : [\"Administrator\", \"Developer\"]," % s
+#    for s in dir(uiMethods):
+#        print "\"%s\" : [\"Administrator\", \"Developer\"]," % s
+#    for s in dir(taskMethods):
+#        print "\"/%s\" : [\"Administrator\", \"Developer\"]," % s
+#    for s in dir(ecoMethods):
+#        print "\"%s\" : [\"Administrator\", \"Developer\"]," % s
+#    for s in dir(cloudMethods):
+#        print "\"%s\" : [\"Administrator\", \"Developer\"]," % s
+
+
     app.run()
