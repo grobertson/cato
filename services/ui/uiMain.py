@@ -419,6 +419,7 @@ if __name__ == "__main__":
     uiGlobals.web = web
     uiGlobals.session = session
     uiGlobals.server = server
+    uiGlobals.config = config
     
     # the debug level (0-4 with 0 being 'none' and 4 being 'verbose')    
     uiGlobals.debuglevel = 4 # change as needed for debugging

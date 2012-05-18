@@ -1,6 +1,12 @@
 import sys
 import os
 import traceback
+import urllib
+from datetime import datetime, timedelta
+import time
+import hashlib
+import base64
+import hmac
 import xml.etree.ElementTree as ET
 import json
 import uiGlobals
@@ -766,9 +772,9 @@ class ecoMethods:
             sEcotemplateID = uiCommon.getAjaxArg("sEcotemplateID")
             sAccountID = uiCommon.getAjaxArg("sAccountID")
             sStormStatus = uiCommon.getAjaxArg("sStormStatus")
-            sParameterXML = uiCommon.getAjaxArg("sCloudID")
+            sParameterXML = uiCommon.getAjaxArg("sParameterXML")
             sCloudID = uiCommon.getAjaxArg("sCloudID")
-    
+
             if not sAccountID:
                 return "{\"info\" : \"Unable to create - No Cloud Account selected.\"}"
             if not sEcotemplateID:
@@ -1455,4 +1461,163 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
+
+    def wmGetEcotemplateStormParameterXML(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+
+            if sEcoTemplateID:
+                bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = ecoMethods.GetEcotemplateStormJSON(sEcoTemplateID)
+                
+                sb = []
+                
+                # now we have the storm file json... parse it, spin it, and turn the parameters section into our parameter_xml format
+                if sStormFileJSON:
+                    sb.append("<parameters>")
+
+                    jo = json.loads(sStormFileJSON)
+                    if jo.has_key("Parameters"):
+                        oParams = jo["Parameters"]
+                        for param, attribs in oParams.iteritems():
+                            sParamName = param
+                            sParamDesc = ""
+                            sPresentAs = "value"
+                            sConstraintPattern = ""
+                            sConstraintMsg = "";                                        
+                            sMinLength = ""
+                            sMaxLength = ""
+                            sMinValue = ""
+                            sMaxValue = ""
+                            sDefaultValue = ""
+                            sValueType = ""
+                            bEncrypt = "false"
+                            jaAllowedValues = {}
+
+                            for a_key, a_val in attribs.iteritems():
+                                # http:# docs.amazonwebservices.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
+                                if a_key == "Description":
+                                    sParamDesc = str(a_val if a_val else "")
+                                elif a_key == "Type":
+                                    sValueType = str(a_val if a_val else "")
+                                elif a_key == "Default":
+                                    sDefaultValue = str(a_val if a_val else "")
+                                elif a_key == "AllowedValues":
+                                    # if there's an allowedvalues section, it's a dropdown.
+                                    sPresentAs = "dropdown"
+                                    # we might have to use the JArray here.
+                                    jaAllowedValues = (a_val if a_val else {})
+                                elif a_key == "MinLength":
+                                    sMinLength = str(a_val if a_val else "")
+                                elif a_key == "MaxLength":
+                                    sMaxLength = str(a_val if a_val else "")
+                                elif a_key == "MinValue":
+                                    sMinValue = str(a_val if a_val else "")
+                                elif a_key == "MaxValue":
+                                    sMaxValue = str(a_val if a_val else "")
+                                elif a_key == "NoEcho":
+                                    bEncrypt = "true"
+                                elif a_key == "AllowedPattern":
+                                    sConstraintPattern = str(a_val if a_val else "")
+                                elif a_key == "ConstraintDescription":
+                                    sConstraintMsg = str(a_val if a_val else "")
+                                    
+                                
+                            sb.append("<parameter id=\"p_" + uiCommon.NewGUID() + \
+                                "\" required=\"true\" prompt=\"true\" encrypt=\"" + bEncrypt + \
+                                "\" value_type=\"" + sValueType  + \
+                                "\" minvalue=\"" + sMinValue + "\" maxvalue=\"" + sMaxValue + \
+                                "\" minlength=\"" + sMinLength + "\" maxlength=\"" + sMaxLength + \
+                                "\" constraint=\"" + sConstraintPattern + "\" constraint_msg=\"" + sConstraintMsg + "\">")
+    
+                            sb.append("<name>" + sParamName + "</name>")
+                            sb.append("<desc>" + sParamDesc + "</desc>")
+                            
+                            sb.append("<values present_as=\"" + sPresentAs + "\">")
+                            
+                            if sPresentAs == "dropdown" and jaAllowedValues is not None:
+                                for oOpt in jaAllowedValues:
+                                    sb.append("<value id=\"pv_" + uiCommon.NewGUID() + "\">" + oOpt + "</value>")
+                            else:
+                                sb.append("<value id=\"pv_" + uiCommon.NewGUID() + "\">" + sDefaultValue + "</value>")
+                            
+                            sb.append("</values>")
+    
+                            sb.append("</parameter>")
+                        
+                    sb.append("</parameters>")
+                        
+                    return "".join(sb)
+                        # no... this parser isn't as accurate as the client one.
+                        # don't raise an exception, just dont' return parameters.
+                        # uiGlobals.request.Messages.append("The Storm File is invalid. " + traceback.format_exc())
+                return ""
+            else:
+                uiGlobals.request.Messages.append("Unable to get Storm Details - Missing Ecotemplate ID")
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+    
+    def wmCallStormAPI(self):
+        try:
+            sMethod = uiCommon.getAjaxArg("sMethod")
+            sArgs = uiCommon.getAjaxArg("sArgs")
+            # This will construct and send an HTTP request to the Storm API,
+            # then return the results unmolested back to the caller.
+            
+            # sArgs is an json object of args for the named method -- we use the Newtonsoft JSON to parse it.
+            # after unencoding it.
+            
+            sQS = ""
+            
+            sJSONArgs = uiCommon.unpackJSON(sArgs)
+            if sJSONArgs:
+                jo = json.loads(sJSONArgs)
+                 
+                for key, val in jo.iteritems():
+                    sQS += "&" + key + "=" + urllib.quote_plus(val)
+            
+            
+            # now, we construct the call to the Storm API in a specific way:
+            # 1: the "key" is the user_id
+            # 2: a "timestamp" which is now in UTC formatted as "%Y-%m-%dT%H:%M:%S"
+            # 3: a "signature" which is a specific part of the request SHA256/base64 encoded
+            
+            # 1:
+            sKey = uiCommon.GetSessionUserID()
+            sPW = uiGlobals.request.db.select_col_noexcep("select user_password from users where user_id = '%s'" % sKey)
+            if uiGlobals.request.db.error:
+                return uiGlobals.request.db.error
+            
+            sPW = catocommon.cato_decrypt(sPW)
+            
+            # 2:
+            sTS = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+            sTS = sTS.replace(":","%3A")
+            
+            # 3:
+            # we use the same functions we do for building the aws signature
+            sStringToSign = "{0}?key={1}&timestamp={2}".format(sMethod, sKey, sTS)
+            
+            sSignature = base64.b64encode(hmac.new(sPW, msg=sStringToSign, digestmod=hashlib.sha256).digest())
+            # used to be this ... quote_plus should be enough.
+            #sSignature = "&signature=" + uiCommon.PercentEncodeRfc3986(sSignature)
+            sSignature = "&signature=" + urllib.quote_plus(sSignature)
+            
+            sHost = (uiGlobals.config["stormapiurl"] if uiGlobals.config["stormapiurl"] else "http//127.0.0.1")
+            sPort = (uiGlobals.config["stormapiport"] if uiGlobals.config["stormapiport"] else "8080")
+            
+            sURL = "{0}:{1}/{2}{3}{4}".format(sHost, sPort, sStringToSign, sSignature, sQS)
+                    
+            sXML = ""
+            try:
+                sXML, sErr = uiCommon.HTTPGet(sURL, 15)
+                if sErr:
+                    return "{\"error\" : \"Error communicating with Storm.  %s\"}" % sErr
+
+            except:
+                uiGlobals.request.Messages.append("Error calling Storm service." + traceback.format_exc())
+                return "{\"error\" : \"Error calling Storm service.\"}"
+            
+            return "{\"xml\" : \"%s\"}" % uiCommon.packJSON(sXML)
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
     

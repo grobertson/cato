@@ -477,6 +477,46 @@ def GetTaskFunction(sFunctionName):
     else:
         return None
 
+def HTTPGet(url, timeout=30, headers={}):
+    """
+    Make an HTTP GET request, with a configurable timeout and optional headers.
+    Returns a tuple - the result and an error message.
+    """
+    try:
+        if not url:
+            return "", "URL not provided."
+        
+        log_nouser("Trying an HTTP GET to %s" % url, 4)
+
+        # WHEN IT's time to do headers, do it this way
+#        req = urllib2.Request('http://www.example.com/')
+        # spin the headers dict ...
+#        req.add_header('Referer', 'http://www.python.org/')
+#        r = urllib2.urlopen(req)
+
+        # for now, just use the url directly
+        try:
+            response = urllib2.urlopen(url, None, timeout)
+            result = response.read()
+            if result:
+                return result, None
+
+        except urllib2.URLError, ex:
+            if hasattr(ex, "reason"):
+                log_nouser("HTTPGet: failed to reach a server.", 2)
+                log_nouser(ex.reason, 2)
+                return None, ex.reason
+            elif hasattr(ex, "code"):
+                log_nouser("HTTPGet: The server couldn\'t fulfill the request.", 2)
+                log_nouser(ex.code, 2)
+                return None, ex.code
+        
+        # if all was well, we won't get here.
+        return None, "No results from request."
+        
+    except Exception:
+        log_nouser(traceback.format_exc(), 2)
+
 def HTTPGetNoFail(url):
     """
     This function does not fail.  For any errors it returns an empty result.
@@ -489,19 +529,13 @@ def HTTPGetNoFail(url):
     
     """
     try:
-        import socket
-        socket.setdefaulttimeout(5)
-        
-        log_nouser("Trying an HTTP GET to %s" % url, 4)
         if not url:
             return ""
         
-        f = urllib2.urlopen(url)
-        result = f.read()
+        log_nouser("Trying an HTTP GET to %s" % url, 4)
+        response = urllib2.urlopen(url, None, 4) # a 4 second timeout is enough
+        result = response.read()
         
-        # PUT THE SOCKET TIMEOUT BACK! it's global!
-        socket.setdefaulttimeout(None)
-
         if result:
             return result
         else:
@@ -509,3 +543,4 @@ def HTTPGetNoFail(url):
         
     except Exception:
         log_nouser(traceback.format_exc(), 4)
+        return ""

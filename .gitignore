@@ -59,3 +59,7 @@ services/ui/convert.in
 services/ui/convert.out
 
 services/ui/test.py
+
+services/ui/static/script/stormRunDialog.js
+
+services/ui/static/script/stormStopDialog.js
