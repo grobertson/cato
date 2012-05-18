@@ -2582,7 +2582,7 @@ proc replace_variables {the_string} {
 						if {"$::ECOSYSTEM_NAME" == "" && "$::ECOSYSTEM_ID" > ""} {
 							set subst_var [get_ecosystem_name]
 						} else {
-							set subst_var ""
+							set subst_var $::ECOSYSTEM_NAME
 						}
 					}
 					"_UUID2" -
