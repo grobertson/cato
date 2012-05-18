@@ -153,6 +153,7 @@ $(document).ready(function () {
 
 });
 function GetDetails() {
+	console.log("getting ecosystem")
 	$.ajax({
 		type : "POST",
 		async : false,
@@ -166,6 +167,8 @@ function GetDetails() {
 				$("#txtEcosystemName").val(ecosys.Name);
 				$("#txtDescription").val(unpackJSON(ecosys.Description));
 				$("#lblCreated").html(ecosys.CreatedDate);
+				
+				$("#txtStormFile").val(ecosys.StormFile);
 
 			    getActionCategories();
 			    getActions();
@@ -198,7 +201,7 @@ function tabWasClicked(tab) {
     if (tab == "objects") {
         getEcosystemObjectList();
     } else if (tab == "details") {
-    	GetDetails();
+    	//GetDetails();
         // TODO: Issue #284
         //GetRegistry(g_eco_id);
 

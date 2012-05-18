@@ -151,6 +151,9 @@ class temp:
 def auth_app_processor(handle):
     path = web.ctx.path
     
+    # this is very handy in verbose debugging mode for identifying errors
+    uiCommon.log_nouser("Serving %s" % path, 4)
+    
     # requests that are allowed, no matter what
     if path in ["", "/", "/login", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
         return handle()
@@ -419,6 +422,7 @@ if __name__ == "__main__":
     uiGlobals.web = web
     uiGlobals.session = session
     uiGlobals.server = server
+    uiGlobals.config = config
     
     # the debug level (0-4 with 0 being 'none' and 4 being 'verbose')    
     uiGlobals.debuglevel = 4 # change as needed for debugging

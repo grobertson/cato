@@ -54,7 +54,7 @@ class taskMethods:
             sHTML = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
             tasks = task.Tasks(sFilter)
-            if tasks:
+            if tasks.rows:
                 for row in tasks.rows:
                     sHTML += "<tr task_id=\"" + row["task_id"] + "\">"
                     sHTML += "<td class=\"chkboxcolumn\">"

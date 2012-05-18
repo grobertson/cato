@@ -82,7 +82,7 @@ def read_config():
     key_vals["key"] = un_key
     un_pass = catocryptpy.decrypt_string(enc_pass,un_key)
     key_vals["password"] = un_pass
-        
+    
     return key_vals
 
 def NewGUID():

@@ -22,7 +22,7 @@ db = catocommon.new_conn()
 
 def FixIt(xd, node):
     if node.get("input_type") is None:
-        print "this action didn't have an 'input_type' - it must've already been converted or was created correctly."
+        print "-- Action appears to be correct."
         return
     
     old_step = node.text
