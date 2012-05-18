@@ -84,7 +84,7 @@ class ecoMethods:
             sHTML = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
             ets = ecosystem.Ecotemplates(sFilter)
-            if ets:
+            if ets.rows:
                 for row in ets.rows:
                     sHTML += "<tr ecotemplate_id=\"%s\">" % row["ecotemplate_id"]
                     sHTML += "<td class=\"chkboxcolumn\">"
@@ -726,7 +726,7 @@ class ecoMethods:
 
             sHTML = ""
             ets = ecosystem.Ecosystems(sAccountID, sFilter)
-            if ets:
+            if ets.rows:
                 for row in ets.rows:
                     sHTML += "<tr ecosystem_id=\"%s\">" % row["ecosystem_id"]
                     sHTML += "<td class=\"chkboxcolumn\">"
