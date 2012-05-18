@@ -637,7 +637,7 @@ class Task(object):
                 #we can just repair it right here.
                 sSQL = "insert task_codeblock (task_id, codeblock_name) values ('" + self.ID + "', 'MAIN')"
                 if not db.exec_db_noexcep(sSQL):
-                    return db.error
+                    raise Exception(db.error)
                 self.Codeblocks["MAIN"] = Codeblock("MAIN")
 
             #GET THE STEPS

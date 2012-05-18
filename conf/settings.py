@@ -77,7 +77,7 @@ class settings(object):
                     " pass_age_warn_days='" + self.PassAgeWarn + "'," \
                     " pass_history = '" + self.PasswordHistory + "'," \
                     " pass_require_initial_change='" + ("1" if catocommon.IsTrue(self.PassRequireInitialChange) else "0") + "'," \
-                    " auto_lock_reset='" + catocommon.IsTrue(self.AutoLockReset) + "'," \
+                    " auto_lock_reset='" + ("1" if catocommon.IsTrue(self.AutoLockReset) else "0") + "'," \
                     " login_message='" + self.LoginMessage.replace("'", "''") + "'," \
                     " auth_error_message='" + self.AuthErrorMessage.replace("'", "''").replace(";", "") + "'," \
                     " new_user_email_message='" + self.NewUserMessage.replace("'", "''").replace(";", "") + "'," \
@@ -93,6 +93,7 @@ class settings(object):
                 return True, ""
             except Exception, ex:
                 raise Exception(ex)
+                print ex
             finally:
                 db.close()
 

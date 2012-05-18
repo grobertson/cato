@@ -88,6 +88,13 @@ def read_config():
 def NewGUID():
     return str(uuid.uuid1())
 
+def GeneratePassword():
+    import string
+    from random import choice
+    chars = string.letters + string.digits
+    length = 12
+    return "".join(choice(chars) for _ in range(length))
+
 def IsTrue(var):
     # not just regular python truth testing - certain string values are also "true"
     # but false if the string has length but isn't a "true" statement

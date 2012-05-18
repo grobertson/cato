@@ -152,7 +152,7 @@ def auth_app_processor(handle):
     path = web.ctx.path
     
     # requests that are allowed, no matter what
-    if path in ["/login", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
+    if path in ["", "/", "/login", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
         return handle()
 
     # any other request requires an active session ... kick it out if there's not one.
@@ -160,10 +160,22 @@ def auth_app_processor(handle):
         raise web.seeother('/login?msg=' + urllib.quote_plus("Session expired."))
     
     # check the role/method mappings to see if the requested page is allowed
-    if not uiCommon.check_roles(path):
-        return render.notAllowed()
-
-    return handle()
+    # HERE's the rub! ... some of our requests are for "pages" and others (most) are ajax calls.
+    # for the pages, we can redirect to the "notAllowed" page, 
+    # but for the ajax calls we can't - we need to return an acceptable ajax response.
+    
+    # the only way to tell if the request is for a page or an ajax
+    # is to look at the name.
+    # all of our ajax aware methods are called "wmXXX"
+    
+    if uiCommon.check_roles(path):
+        return handle()
+    else:
+        print path
+        if "Methods\/wm" in path:
+            raise web.seeother('notAllowed')
+        else:
+            return "Some content on this page isn't available to your user."
 
 
 def SetTaskCommands():
@@ -268,7 +280,10 @@ def CacheMenu():
         
     xMenus = xRoot.findall("mainmenu/menu") 
 
-    sHTML = ""
+    sAdminMenu = ""
+    sDevMenu = ""
+    sUserMenu = ""
+
     for xMenu in xMenus:
         sLabel = xMenu.get("label", "No Label Defined")
         sHref = (" href=\"" + xMenu.get("href", "") + "\"" if xMenu.get("href") else "")
@@ -276,47 +291,71 @@ def CacheMenu():
         sIcon = ("<img src=\"" + xMenu.get("icon", "") + "\" alt=\"\" />" if xMenu.get("icon") else "")
         sTarget = xMenu.get("target", "")
         sClass = xMenu.get("class", "")
+        sRoles = xMenu.get("roles", "")
         
-        sHTML += "<li class=\"" + sClass + "\" style=\"cursor: pointer;\">"
-        sHTML += "<a"
-        sHTML += sOnClick
-        sHTML += sHref
-        sHTML += sTarget
-        sHTML += ">"
-        sHTML += sIcon
-        sHTML += sLabel
-        sHTML += "</a>"
-        
+        sAdminItems = ""
+        sDevItems = ""
+        sUserItems = ""
+    
         xItems = xMenu.findall("item")
         if str(len(xItems)) > 0:
-            sHTML += "<ul>"
             for xItem in xItems:
-                sLabel = xItem.get("label", "No Label Defined")
-                sHref = (" href=\"" + xItem.get("href", "") + "\"" if xItem.get("href") else "")
-                sOnClick = (" onclick=\"" + xItem.get("onclick", "") + "\"" if xItem.get("onclick") else "")
-                sIcon = ("<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />" if xItem.get("icon") else "")
-                sTarget = xItem.get("target", "")
-                sClass = xItem.get("class", "")
+                sItemLabel = xItem.get("label", "No Label Defined")
+                sItemHref = (" href=\"" + xItem.get("href", "") + "\"" if xItem.get("href") else "")
+                sItemOnClick = (" onclick=\"" + xItem.get("onclick", "") + "\"" if xItem.get("onclick") else "")
+                sItemIcon = ("<img src=\"" + xItem.get("icon", "") + "\" alt=\"\" />" if xItem.get("icon") else "")
+                sItemTarget = xItem.get("target", "")
+                sItemClass = xItem.get("class", "")
+                sItemRoles = xItem.get("roles", "")
 
-                sHTML += "<li class=\"ui-widget-header " + sClass + "\" style=\"cursor: pointer;\">"
-                sHTML += "<a"
-                sHTML += sOnClick 
-                sHTML += sHref 
-                sHTML += sTarget 
-                sHTML += ">"
-                sHTML += sIcon
-                sHTML += sLabel
-                sHTML += "</a>"
-                sHTML += "</li>"
-            sHTML += "</ul>"
+                sItem = "<li class=\"ui-widget-header %s\" style=\"cursor: pointer;\"><a %s %s %s> %s %s</a></li>" % (sItemClass, sItemOnClick, sItemHref, sItemTarget, sItemIcon, sItemLabel)
+                
+                sAdminItems += sItem
+                
+                if "all" in sItemRoles:
+                    sUserItems += sItem 
+                    sDevItems += sItem 
+                else: 
+                    if "user" in sItemRoles:
+                        sUserItems += sItem 
+                    if "developer" in sItemRoles:
+                        sDevItems += sItem 
+
+            sUserItems = "<ul>%s</ul>" % sUserItems
+            sDevItems = "<ul>%s</ul>" % sDevItems
+            sAdminItems = "<ul>%s</ul>" % sAdminItems
+
+        # cool use of .format :-)
+        sMenu = "<li class=\"%s\" style=\"cursor: pointer;\"><a %s %s %s>%s %s</a>{0}</li>" % (sClass, sOnClick, sHref, sTarget, sIcon, sLabel)
+
+        sAdminMenu += sMenu.format(sAdminItems)
+
+        if "all" in sRoles:
+            sUserMenu += sMenu.format(sUserItems)
+            sDevMenu += sMenu.format(sDevItems)
+        else:
+            if "developer" in sRoles:
+                sDevMenu += sMenu.format(sDevItems)
+            if "user" in sRoles:
+                sUserMenu += sMenu.format(sUserItems)
+
             
-        #wrap up the outer menu
-        sHTML += "</li>"
+            
     
-    with open("static/_menu.html", 'w') as f_out:
+    with open("static/_amenu.html", 'w') as f_out:
         if not f_out:
-            print "ERROR: unable to create static/_menu.html."
-        f_out.write(sHTML)
+            print "ERROR: unable to create static/_amenu.html."
+        f_out.write(sAdminMenu)
+
+    with open("static/_dmenu.html", 'w') as f_out:
+        if not f_out:
+            print "ERROR: unable to create static/_dmenu.html."
+        f_out.write(sDevMenu)
+
+    with open("static/_umenu.html", 'w') as f_out:
+        if not f_out:
+            print "ERROR: unable to create static/_umenu.html."
+        f_out.write(sUserMenu)
 
 
 """

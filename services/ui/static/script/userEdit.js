@@ -167,16 +167,25 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "userEdit.aspx/DeleteUsers",
+        url: "uiMethods/wmDeleteUsers",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            $("#hidSelectedArray").val("");
-            $("#delete_dialog").dialog('close');
-
-            GetItems();
-            showInfo(msg.d);
+        success: function (response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.result) {
+	            $("#hidSelectedArray").val("");
+	            $("#delete_dialog").dialog('close');
+	
+	            GetItems();
+	        } else {
+	            showInfo(response);
+	        }
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -337,25 +346,6 @@ function SaveUserEdits() {
 	});
 }
 
-// Callback function invoked on successful completion of the MS AJAX page method.
-function OnUpdateSuccess(result, userContext, methodName) {
-    //alert('success');
-    if (methodName == "SaveUserEdits") {
-
-
-    } else if (methodName == "SaveNewUser") {
-        if (result.length == 0) {
-            showInfo('User created.');
-            CloseDialog();
-            GetItems();
-        } else {
-            showInfo(result);
-        }
-    }
-}
-
-
-
 //sLoginID sFullName sAuthType sUserPassword sForcePasswordChange sUserRole sEmail As String
 function SaveNewUser() {
     //alert('save new user');
@@ -431,23 +421,43 @@ function SaveNewUser() {
                 sGroups += "," + $(this).attr("id").replace(/ot_/, "");
         });
 
-    // using ajax post send the
-    var stuff = new Array();
-    stuff[0] = sLoginID;
-    stuff[1] = sFullName;
-    stuff[2] = sAuthType;
-    stuff[3] = sUserPassword;
-    stuff[4] = sGeneratePW;
-    stuff[5] = sForcePasswordChange;
-    stuff[6] = sUserRole;
-    stuff[7] = sEmail;
-    stuff[8] = sStatus;
-    stuff[9] = sGroups;
+    var user = {};
+    user.LoginID = sLoginID;
+    user.FullName = sFullName;
+    user.AuthenticationType = sAuthType;
+    user.Password = packJSON(sUserPassword);
+    user.GeneratePW = sGeneratePW;
+    user.ForceChange = sForcePasswordChange;
+    user.Role = sUserRole;
+    user.Email = sEmail;
+    user.Status = sStatus;
+    user.Groups = sGroups;
 
-    if (stuff.length > 0) {
-        PageMethods.SaveNewUser(stuff, OnUpdateSuccess, OnUpdateFailure);
-    }
-
+	$.ajax({
+		async : false,
+		type : "POST",
+		url : "uiMethods/wmCreateUser",
+		data : JSON.stringify(user),
+		contentType : "application/json; charset=utf-8",
+		dataType : "json",
+		success : function(response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.ID) {
+	            CloseDialog();
+	            GetItems();
+	        } else {
+	            showInfo(response);
+	        }
+		},
+		error : function(response) {
+			showAlert(response);
+		}
+	});
 }
 
 function LoadEditDialog(editCount, editUserID) {

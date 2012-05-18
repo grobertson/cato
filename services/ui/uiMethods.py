@@ -164,6 +164,30 @@ class uiMethods:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
         return ""
     
+    def wmGetMenu(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+            #NOTE: this needs all the kick and warn stuff
+            role = uiCommon.GetSessionUserRole()
+            
+            if not role:
+                uiCommon.ForceLogout("Unable to get Role for user.")
+    
+            filename = ""
+            if role == "Administrator":
+                filename = "_amenu.html"
+            if role == "Developer":
+                filename = "_dmenu.html"
+            if role == "User":
+                filename = "_umenu.html"
+
+            f = open("static/%s" % filename)
+            if f:
+                return f.read()
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+    
     def wmGetSystemStatus(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -748,7 +772,7 @@ class uiMethods:
             dr = uiGlobals.request.db.select_row_dict(sSQL)
             if uiGlobals.request.db.error:
                 uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                raise uiGlobals.request.db.error
+                raise Exception(uiGlobals.request.db.error)
             else:
                 # here's the deal - we aren't even returning the 'local' settings if the type is ldap.
                 if dr["authentication_type"] == "local":
@@ -966,7 +990,7 @@ class uiMethods:
 
     def wmUpdateUser(self):
         """
-            This method will only update the values passed to it.
+            Updates a user.  Will only update the values passed to it.
         """
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -1023,7 +1047,7 @@ class uiMethods:
                         if not u.Email:
                             return "Unable to reset password - User does not have an email address defined."
                         else:
-                            sNewPassword = uiCommon.GeneratePassword()
+                            sNewPassword = catocommon.GeneratePassword()
                             sql_bits.append("user_password='%s'" % sNewPassword)
                               
                             # an additional log entry
@@ -1074,3 +1098,78 @@ class uiMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
+
+    def wmCreateUser(self):
+        """
+            This method will only update the values passed to it.
+        """
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            
+            args = uiCommon.getAjaxArgs()
+
+            u, sErr = user.User.DBCreateNew(args["LoginID"], args["FullName"], args["AuthenticationType"], args["Password"], 
+                                            args["GeneratePW"], args["ForceChange"], args["Role"], args["Email"], args["Status"], args["Groups"])
+            if sErr:
+                return "{\"error\" : \"" + sErr + "\"}"
+            if u == None:
+                return "{\"error\" : \"Unable to create User.\"}"
+
+            uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.User, u.ID, u.FullName, "User Created")
+
+            return u.AsJSON()
+        
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def wmDeleteUsers(self):
+        WhoAmI = uiCommon.GetSessionUserID()
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
+
+            now = []
+            later = []
+
+            aUsers = sDeleteArray.split(",")
+            print aUsers
+            for sUserID in aUsers:
+                print "@"
+                print sUserID
+                if len(sUserID) == 36: # a guid + quotes
+                    print WhoAmI
+                    # you cannot delete yourself!!!
+                    if sUserID != WhoAmI:
+                        # this will flag a user for later deletion by the system
+                        # it returns True if it's safe to delete now
+                        if user.User.HasHistory(sUserID):
+                            later.append(sUserID)
+                        else:
+                            now.append(sUserID)
+
+
+            #  delete some users...
+            if now:
+                sSQL = "delete from users where user_id in (%s)" % "'%s'" % "','".join(now)
+                print sSQL
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            #  flag the others...
+            if later:
+                sSQL = "update users set status = 86 where user_id in (%s)" % "'%s'" % "','".join(later)
+                print sSQL
+                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
+                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            uiGlobals.request.db.tran_commit()
+
+            return "{\"result\" : \"success\"}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+

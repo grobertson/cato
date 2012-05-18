@@ -10,6 +10,7 @@ import cgi
 import re
 import pickle
 import xml.etree.ElementTree as ET
+import settings
 from catocommon import catocommon
 
 # writes to stdout using the catocommon.server output function
@@ -37,17 +38,19 @@ def log_nouser(msg, debuglevel = 2):
                 print msg
 
 def check_roles(method):
-    # NOTE: if we wanted to turn on logging of every action a user takes,
-    # this is a good place to do it.  We know the user AND the function/page they requested.
+    # if you wanna enable verbose page view logging, this is the place to do it.
+    # HOWEVER, I was having issues where uiGlobals.request wasn't defined, and I didn't have time to track it down.
+#    s_set = settings.settings.security()
+#    if s_set.PageViewLogging:
+#        AddSecurityLog(uiGlobals.SecurityLogTypes.Usage, uiGlobals.SecurityLogActions.PageView, 0, method, "")
+
+    user_role = GetSessionUserRole()
+    if user_role == "Administrator":
+        return True
     
     if uiGlobals.RoleMethods.has_key(method):
         mapping = uiGlobals.RoleMethods[method]
         if mapping is True:
-            return True
-        
-        user_role = GetSessionUserRole()
-
-        if user_role == "Administrator":
             return True
         
         if user_role in mapping:
@@ -506,10 +509,3 @@ def HTTPGetNoFail(url):
         
     except Exception:
         log_nouser(traceback.format_exc(), 4)
-
-def GeneratePassword():
-    import string
-    from random import choice
-    chars = string.letters + string.digits
-    length = 12
-    return "".join(choice(chars) for _ in range(length))

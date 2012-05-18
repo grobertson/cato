@@ -5,7 +5,7 @@ $(document).ready(function () {
 
     //use this to define constants, set up jQuery objects, etc.
 
-    $("#main-menu").load("static/_menu.html", function() {
+    $("#main-menu").load("uiMethods/wmGetMenu", function() {
 	    $("ul.sf-menu").supersubs({
 	        minWidth: 18,   // minimum width of sub-menus in em units 
 	        maxWidth: 27,   // maximum width of sub-menus in em units 

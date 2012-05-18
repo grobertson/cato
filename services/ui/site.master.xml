@@ -64,19 +64,19 @@
 			</item>
 			<item roles="developer" label="Import a Backup File" icon="static/images/icons/import_24.png" onclick="showPleaseWait();" href="../pages/importLoadFile.aspx">
 			</item>
-			<item label="View Security Log" icon="static/images/icons/password.png" onclick="ShowLogViewDialog(0, '', true);">
+			<item roles="developer" label="View Security Log" icon="static/images/icons/password.png" onclick="ShowLogViewDialog(0, '', true);">
 			</item>
 		</menu>
 		<menu roles="all" label="Help" icon="static/images/icons/help_24.png">
-			<item label="Read the Documentation" icon="static/images/icons/documentation_24.png" target="_blank" href="http://projects.cloudsidekick.com/projects/cato/wiki/Guide?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app">
+			<item roles="all" label="Read the Documentation" icon="static/images/icons/documentation_24.png" target="_blank" href="http://projects.cloudsidekick.com/projects/cato/wiki/Guide?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app">
 			</item>
-			<item label="Browse the Forums" icon="static/images/icons/forums_24.png" target="_blank" href="http://projects.cloudsidekick.com/projects/cato/boards?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app">
+			<item roles="all" label="Browse the Forums" icon="static/images/icons/forums_24.png" target="_blank" href="http://projects.cloudsidekick.com/projects/cato/boards?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app">
 			</item>
-			<item label="Report an Issue" icon="static/images/icons/issue_24.png" onclick="openWindow('http://community.cloudsidekick.com/report-an-issue?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
+			<item roles="all" label="Report an Issue" icon="static/images/icons/issue_24.png" onclick="openWindow('http://community.cloudsidekick.com/report-an-issue?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
 			</item>
-			<item label="Ask a Question" icon="static/images/icons/ask_24.png" onclick="openWindow('http://community.cloudsidekick.com/ask-a-question?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
+			<item roles="all" label="Ask a Question" icon="static/images/icons/ask_24.png" onclick="openWindow('http://community.cloudsidekick.com/ask-a-question?utm_source=cato_app&amp;utm_medium=menu&amp;utm_campaign=app', 'ask', 'location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700');">
 			</item>
-			<item label="Register Cato" icon="static/images/icons/register_24.png" onclick="registerCato();">
+			<item roles="all" label="Register Cato" icon="static/images/icons/register_24.png" onclick="registerCato();">
 			</item>
 		</menu>
 		<menu roles="all" label="Logout" icon="static/images/icons/logout.png" href="/logout">

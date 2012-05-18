@@ -153,100 +153,90 @@ class User(object):
     #STATIC METHOD
     #creates this Cloud as a new record in the db
     #and returns the object
-#    @staticmethod
-#    def DBCreateNew(sAccountName, sAccountNumber, sProvider, sLoginID, sLoginPassword, sIsDefault):
-#        try:
-#            db = catocommon.new_conn()
-#
-#            # if there are no rows yet, make this one the default even if the box isn't checked.
-#            if sIsDefault == "0":
-#                iExists = -1
-#                
-#                sSQL = "select count(*) as cnt from cloud_account"
-#                iExists = db.select_col_noexcep(sSQL)
-#                if iExists == None:
-#                    if db.error:
-#                        db.tran_rollback()
-#                        return None, "Unable to count Cloud Accounts: " + db.error
-#                
-#                if iExists == 0:
-#                    sIsDefault = "1"
-#
-#            sNewID = catocommon.NewGUID()
-#            sPW = (catocommon.cato_encrypt(sLoginPassword) if sLoginPassword else "")
-#            
-#            sSQL = "insert into cloud_account" \
-#                " (account_id, account_name, account_number, provider, is_default, login_id, login_password, auto_manage_security)" \
-#                " values ('" + sNewID + "'," \
-#                "'" + sAccountName + "'," \
-#                "'" + sAccountNumber + "'," \
-#                "'" + sProvider + "'," \
-#                "'" + sIsDefault + "'," \
-#                "'" + sLoginID + "'," \
-#                "'" + sPW + "'," \
-#                "0)"
-#            
-#            if not db.tran_exec_noexcep(sSQL):
-#                if db.error == "key_violation":
-#                    sErr = "A Cloud Account with that name already exists.  Please select another name."
-#                    return None, sErr
-#                else: 
-#                    return None, db.error
-#            
-#            # if "default" was selected, unset all the others
-#            if sIsDefault == "1":
-#                sSQL = "update cloud_account set is_default = 0 where account_id <> '" + sNewID + "'"
-#                if not db.tran_exec_noexcep(sSQL):
-#                    raise Exception(db.error)
-#
-#            db.tran_commit()
-#            
-#            # now it's inserted... lets get it back from the db as a complete object for confirmation.
-#            ca = CloudAccount()
-#            ca.FromID(sNewID)
-#
-#            # yay!
-#            return ca, None
-#        except Exception, ex:
-#            raise ex
-#        finally:
-#            db.close()
-
-    def DBUpdate(self):
+    @staticmethod
+    def DBCreateNew(sUsername, sFullName, sAuthType, sPassword, sGeneratePW, sForcePasswordChange, sUserRole, sEmail, sStatus, sGroupArray):
         try:
+            # TODO: All the password testing, etc.
             db = catocommon.new_conn()
-            
-            #  only update the passwword if it has changed
-            # a password is required, so an empty value does NOT update!
-            sNewPassword = ""
-            if self.LoginPassword:
-                sNewPassword = (", password = '" + catocommon.cato_encrypt(self.Password) + "'" if self.Password else "")
 
-            sSQL = "update cloud_account set" \
-                    " account_name = '" + self.Name + "'," \
-                    " account_number = '" + self.AccountNumber + "'," \
-                    " provider = '" + self.Provider.Name + "'," \
-                    " is_default = '" + ("1" if self.IsDefault else "0") + "'," \
-                    " auto_manage_security = 0," \
-                    " login_id = '" + self.LoginID + "'" + \
-                    sNewPassword + \
-                    " where account_id = '" + self.ID + "'"
+            sNewID = catocommon.NewGUID()
+
+            if sAuthType == "local":
+                if sPassword:
+                    sEncPW = "'%s'" % catocommon.cato_encrypt(sPassword)
+                elif catocommon.IsTrue(sGeneratePW):
+                    sEncPW = "'%s'" % catocommon.cato_encrypt(catocommon.GeneratePassword())
+                else:
+                    return None, "Either an explicit password must be provided, or check the box to generate one."
+            elif sAuthType == "ldap":
+                sEncPW = " null"
             
-            if not db.exec_db_noexcep(sSQL):
+            sSQL = "insert into users" \
+                " (user_id, username, full_name, authentication_type, force_change, email, status, user_role, user_password)" \
+                " values ('" + sNewID + "'," \
+                "'" + sUsername + "'," \
+                "'" + sFullName + "'," \
+                "'" + sAuthType + "'," \
+                "'" + sForcePasswordChange + "'," \
+                "'" + (sEmail if sEmail else "") + "'," \
+                "'" + sStatus + "'," \
+                "'" + sUserRole + "'," \
+                "" + sEncPW + "" \
+                ")"
+            
+            if not db.tran_exec_noexcep(sSQL):
                 if db.error == "key_violation":
-                    sErr = "A Cloud Account with that name already exists.  Please select another name."
-                    return False, sErr
+                    return None, "A User with that Login ID already exists.  Please select another."
                 else: 
-                    return False, db.error
-            
-            # if "default" was selected, unset all the others
-            if self.IsDefault:
-                sSQL = "update cloud_account set is_default = 0 where account_id <> '" + self.ID + "'"
-                # not worth failing... we'll just end up with two defaults.
-                db.exec_db_noexcep(sSQL)
+                    return None, db.error
 
-            return True, None
+            db.tran_commit()
+            
+            if sGroupArray:
+                # if we can't create groups we don't actually fail...
+                for tag in sGroupArray:
+                    sql = "insert object_tags (object_type, object_id, tag_name) values (1, '%s','%s')" % (sNewID, tag)
+                    if not db.exec_db_noexcep(sql):
+                        print "Error creating Groups for new user %s." % sNewID
+            
+            # now it's inserted... lets get it back from the db as a complete object for confirmation.
+            u = User()
+            u.FromID(sNewID)
+
+            # yay!
+            return u, None
         except Exception, ex:
             raise ex
         finally:
             db.close()
+
+    @staticmethod
+    def HasHistory(user_id):
+        """Returns True if the user has historical data."""
+        try:
+            db = catocommon.new_conn()
+            #  history in user_session.
+            sql = "select count(*) from user_session where user_id = '" + user_id + "'"
+            iResults = db.select_col_noexcep(sql)
+            if db.error:
+                raise Exception(db.error)
+    
+            if iResults:
+                return True
+    
+            #  history in user_security_log
+            sql = "select count(*) from user_security_log where user_id = '" + user_id + "'"
+            iResults = db.select_col_noexcep(sql)
+            if db.error:
+                raise Exception(db.error)
+    
+            if iResults:
+                return True
+    
+            return False
+        except Exception, ex:
+            raise ex
+        finally:
+            if db: db.close()
+
+            
