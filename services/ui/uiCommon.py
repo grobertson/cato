@@ -202,7 +202,8 @@ def SafeHTML(sInput):
     return cgi.escape(sInput)
 
 def FixBreaks(sInput):
-    return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+    if sInput:
+        return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
 
 def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
     uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name

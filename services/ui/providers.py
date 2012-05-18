@@ -134,7 +134,6 @@ class Provider(object):
         self.Clouds = {}
         self.Products = {}
 
-    #get it by ID from the session
     @staticmethod
     def FromName(sProvider):
         try:
@@ -148,7 +147,6 @@ class Provider(object):
         except Exception, ex:
             raise ex
 
-    
     def GetAllObjectTypes(self):
         try:
             cots = {}
@@ -163,7 +161,7 @@ class Provider(object):
 
 
     def GetObjectTypeByName(self, sObjectType):
-        for p in self.Products:
+        for p in self.Products.itervalues():
             try:
                 cot = p.CloudObjectTypes[sObjectType]
                 if cot:
