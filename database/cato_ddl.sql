@@ -83,6 +83,8 @@ CREATE TABLE `action_schedule` (
   `debug_level` int(11) DEFAULT NULL,
   `label` varchar(64) DEFAULT NULL,
   `descr` varchar(512) DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified` int(11) DEFAULT '1',
   PRIMARY KEY (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
