@@ -184,6 +184,7 @@ function GetDetails() {
 }
 
 function CloudAccountWasChanged() {
+	showPleaseWait();
     location.href = "ecosystemManage";
 }
 function tabWasClicked(tab) {

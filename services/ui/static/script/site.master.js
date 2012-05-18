@@ -22,6 +22,10 @@ $(document).ready(function () {
     $("#header_cloud_accounts").change(function () {
     	$.cookie("selected_cloud_account", $(this).val());
     	$.cookie("selected_cloud_provider", $("#header_cloud_accounts option:selected").attr("provider"));
+    	
+        if (typeof CloudAccountWasChanged == 'function') {
+	    	CloudAccountWasChanged();
+        }
     });
 });
 

@@ -102,7 +102,7 @@ function FillEcotemplatesDropdown() {
     });
 }
 function CloudAccountWasChanged() {
-    location.reload();
+    GetItems();
 }
 
 function ShowItemAdd() {

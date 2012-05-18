@@ -93,13 +93,17 @@ function StopStorm() {
 	    $.ajax({
 	        async: false,
 	        type: "POST",
-	        url: "uiMethods.asmx/wmCallStormAPI",
+	        url: "ecoMethods/wmCallStormAPI",
 	        data: '{"sMethod":"stopstorm", "sArgs":"' + packJSON(args) + '"}',
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
-	        success: function (msg) {
-	            if (msg.d != "") {
-	                var data = unpackJSON(msg.d);
+	        success: function (response) {
+	        	if (response.info) {
+	    			showInfo(response.info);
+	        	} else if (response.error) {
+	        		showAlert(response.error);
+	            } else if (response.xml != "") {
+	                var data = unpackJSON(response.xml);
 	                response_xml = $.parseXML(data);
 	
 					err = $(response_xml).find("error");
