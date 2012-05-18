@@ -290,6 +290,7 @@ CREATE TABLE `ecosystem_log` (
   `status` varchar(32) NOT NULL,
   `log` text NULL,
   `update_dt` datetime DEFAULT NULL,
+  `event_id` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`ecosystem_log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
