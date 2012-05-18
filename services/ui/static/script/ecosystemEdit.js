@@ -166,6 +166,7 @@ function GetDetails() {
 				g_ecotemplate_id = ecosys.EcotemplateID
 				$("#txtEcosystemName").val(ecosys.Name);
 				$("#txtDescription").val(unpackJSON(ecosys.Description));
+				$("#lblEcotemplateName").html(ecosys.EcotemplateName);
 				$("#lblCreated").html(ecosys.CreatedDate);
 				
 				$("#txtStormFile").val(ecosys.StormFile);
