@@ -1052,7 +1052,7 @@ class ecoMethods:
                         drLog[3], 
                         drLog[4], 
                         uiCommon.packJSON(drLog[5]), 
-                        uiCommon.packJSON(uiCommon.FixBreaks(drLog[6])), 
+                        (uiCommon.packJSON(uiCommon.FixBreaks(drLog[6])) if drLog[6] else ""), 
                         drLog[7]))
                     
                 sb.append(",".join(sblog))
