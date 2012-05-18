@@ -23,7 +23,7 @@ $(document).ready(function () {
     //search button
     $(".search_text").live("keypress", function (e) {
         if (e.which == 13) {
-            $("#ctl00_phDetail_btnSearch").click();
+            GetItems();
             return false;
         }
     });
