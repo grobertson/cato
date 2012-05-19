@@ -1,5 +1,10 @@
+import urllib2
 import time
+import hmac
+import hashlib
+import base64
 import cloud
+from uiCommon import HTTPGet
 
 class awsInterface(object):
     def GetCloudObjectsAsXML(self, account_id, cloud_id, cloud_object_type, additional_args={}):
@@ -33,14 +38,16 @@ class awsInterface(object):
                 msg = "Failed to get Cloud details for Cloud ID [" + cloud_id + "]."
                 return None, msg
             
-            sURL, sErr = self.BuildURL(ca, c, cloud_object_type, additional_args);            
-#            if uiGlobals.request.db.error:
-#                return null
-#            
+            sURL, err = self.BuildURL(ca, c, cloud_object_type, additional_args);  
+            print "out"          
+            if err:
+                return None, err
+            
+            print sURL
 
-#            sXML = uiCommon.HTTPGet(sURL, 30000, null, 0000BYREF_ARG0000sErr)
-#            if uiGlobals.request.db.error:
-#                return null
+            sXML, err = HTTPGet(sURL, 30)
+            if err:
+                return None, err
 
             return sXML
         except Exception, ex:
@@ -96,6 +103,8 @@ class awsInterface(object):
             if prod.APIUri:
                 sResourceURI = prod.APIUri
             
+            print prod.__dict__
+            print sResourceURI
             
             # AWS auth parameters
             sAccessKeyID = ca.LoginID
@@ -108,97 +117,73 @@ class awsInterface(object):
             sQueryString = ""
             
             if prod.Name == "s3" or prod.Name == "walrus":
-                s = "delete me"
-#                # HARDCODE ALERT
-#                # Currently (2-10-2010) AWS has goofy endpoints for the s3 services, using a "s3-" instead of "ec2.", etc.
-#                # MOREOVER, unlike all the other products, you cannot explicitly ask for the us-east-1 region.
-#                # so, we do a little interception here.
-#                sHostName = sHostName.replace("s3-us-east-1","s3")
-#                # all other regions should work as defined.
-#                
-#                # s3 seems to need the epoch time "expires" value
-#                sEpoch = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds + 300)
-#                sortedRequestParams.Add("Expires", sEpoch)
-#
-#                # per http:# docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
-#                sStringToSign = "GET\n" \
-#                    "\n" + //Content-MD5
-#                    "\n" + //Content-Type
-#                    sEpoch + "\n" + //Expires
-#                    ("/" if not sResourceURI else sResourceURI) # CanonicalizedResource
-#
-#                # Console.Write("STS:\n" + sStringToSign + ":STS\n")
-#
-#                
-#                sQueryString = uiCommon.GetSortedParamsAsString(sortedRequestParams, True)
-#
-#                # and sign it
-#                sSignature = uiCommon.GetSHA1(sSecretAccessKeyID, sStringToSign)
-#                # Console.Write("SIG:" + sSignature + ":SIG\n")
-#                # finally, urlencode the signature
-#                sSignature = uiCommon.PercentEncodeRfc3986(sSignature)
-#                # Console.Write("SIG:" + sSignature + ":SIG\n")
-#                
+                # HARDCODE ALERT
+                # Currently (2-10-2010) AWS has goofy endpoints for the s3 services, using a "s3-" instead of "ec2.", etc.
+                # MOREOVER, unlike all the other products, you cannot explicitly ask for the us-east-1 region.
+                # so, we do a little interception here.
+                sHostName = sHostName.replace("s3-us-east-1","s3")
+                # all other regions should work as defined.
+                
+                # s3 seems to need the epoch time "expires" value
+                sEpoch = str(int(time.time()) + 300)
+                params["Expires"] = sEpoch
+
+                # per http:# docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
+                uri = ("/" if not sResourceURI else sResourceURI)
+                sStringToSign = "GET\n\n\n%s\n%s" % (sEpoch, uri)
+
+                paramsList = params.items()
+                paramsList.sort()
+                sQueryString = '&'.join(['%s=%s' % (k,urllib2.quote(str(v))) for (k,v) in paramsList if v])
+
+                # and sign it
+                digest = hmac.new(sSecretAccessKeyID, sStringToSign, hashlib.sha1).digest()
+                sSignature = base64.b64encode(digest)
+
+                # finally, urlencode the signature
+                sSignature = urllib2.quote(sSignature)
             else:                 
                 # other AWS/Euca calls use the current Timestamp
                 params["Timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
-
-#                sDate = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo)
-#                sortedRequestParams.Add("Timestamp", sDate)
-
                 params["Action"] = cot.APICall
 
-
-                print params
-                
                 # do we need to apply a group filter?  If it's defined on the table then YES!
                 if cot.APIRequestGroupFilter:
                     sTmp = cot.APIRequestGroupFilter.split('=')
                     params[sTmp[0]] = sTmp[1]
         
-#                # ADDITIONAL ARGUMENTS
-#                    if AdditionalArguments is not None:
-#                    # we have custom arguments... use them
-#                    # for each... add to sortedRequestParams
-#                    # if the same key from the group filter is defined as sAdditionalArguments it overrides the table!
-#        
+                # ADDITIONAL ARGUMENTS
+                #if AdditionalArguments is not None:
+                    # we have custom arguments... use them
+                    # for each... add to sortedRequestParams
+                    # if the same key from the group filter is defined as sAdditionalArguments it overrides the table!
+        
                 params["Version"] = prod.APIVersion
-
                 params["SignatureMethod"] = "HmacSHA256"
                 params["SignatureVersion"] = "2"
             
                 # now we have all the parameters in a list, build a sorted, encoded querystring string
                 # After the parameters are sorted in natural byte order and URL encoded, the next step is to concatenate them into a single text string.  
                 # The following method uses the PercentEncodeRfc3986 method to create the parameter string.
-                sQueryString = uiCommon.GetSortedParamsAsString(sortedRequestParams, True)
                 paramsList = params.items()
                 paramsList.sort()
-                sQueryString = '&'.join(['%s=%s' % (k,urllib.quote(str(v))) for (k,v) in paramsList if v])
+                sQueryString = '&'.join(['%s=%s' % (k,urllib2.quote(str(v))) for (k,v) in paramsList if v])
         
             
-#                # use the URL/URI plus the querystring to build the full request to be signed
-#                # per http:# docs.amazonwebservices.com/AWSEC2/latest/UserGuide/using-query-api.html
-#                sStringToSign = "GET\n" \
-#                    sHostName + "\n" + //ValueOfHostHeaderInLowercase
-#                    ("/" if not sResourceURI else sResourceURI) + "\n" + //HTTPRequestURI
-#                    sQueryString;  //CanonicalizedQueryString  (don't worry about encoding... was already encoded.)
-#
-#                # Console.Write("STS:" + sStringToSign + ":STS\n")
-#
-#                # and sign it
-#                # sSignature = GetAWS3_SHA1AuthorizationValue(sSecretAccessKeyID, sStringToSign)
-#                sSignature = uiCommon.GetSHA256(sSecretAccessKeyID, sStringToSign)
-#                # Console.Write("SIG:" + sSignature + ":SIG\n")
-#                # finally, urlencode the signature
-#                sSignature = uiCommon.PercentEncodeRfc3986(sSignature)
-#                # Console.Write("SIG:" + sSignature + ":SIG\n")
-#        
-#            
-#            sHostURL = c.APIProtocol.lower() + "://" + sHostName + sResourceURI
-#                        
-#            # Console.Write(" + sQueryString + "&Signature=" + sSignature + " if "URL:" + sHostURL + " else " + sHostURL + "" + sQueryString + "&Signature=" + sSignature + "URL\n")
-#
-#            return sHostURL + "?" + sQueryString + "&Signature=" + sSignature
-            return "", ""
+                # use the URL/URI plus the querystring to build the full request to be signed
+                # per http:# docs.amazonwebservices.com/AWSEC2/latest/UserGuide/using-query-api.html
+                uri = ("/" if not sResourceURI else sResourceURI)
+                sStringToSign = "GET\n%s\n%s\n%s" % (sHostName, uri, sQueryString.encode("utf-8"))
+
+                # and sign it
+                digest = hmac.new(sSecretAccessKeyID, sStringToSign, hashlib.sha256).digest()
+                sSignature = base64.b64encode(digest)
+
+                # finally, urlencode the signature
+                sSignature = urllib2.quote(sSignature)
+
+            sHostURL = c.APIProtocol.lower() + "://" + sHostName + sResourceURI
+            return sHostURL + "?" + sQueryString + "&Signature=" + sSignature, None
+
         except Exception, ex:
             raise Exception(ex)
