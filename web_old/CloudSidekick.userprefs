@@ -1,0 +1,24 @@
+﻿<Properties GitUserInfo="UsingGIT">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="classes/Globals.cs">
+    <Files>
+      <File FileName="pages/awsMethods.asmx.cs" Line="245" Column="6" />
+      <File FileName="classes/UI.cs" Line="886" Column="18" />
+      <File FileName="pages/userEdit.aspx" Line="260" Column="11" />
+      <File FileName="pages/userEdit.aspx.cs" Line="685" Column="1" />
+      <File FileName="classes/Globals.cs" Line="1617" Column="15" />
+      <File FileName="pages/uiMethods.asmx.cs" Line="4850" Column="23" />
+      <File FileName="pages/tagEdit.aspx.cs" Line="58" Column="39" />
+      <File FileName="pages/tagEdit.aspx" Line="63" Column="1" />
+      <File FileName="classes/dataAccess.cs" Line="151" Column="45" />
+      <File FileName="script/site.master.js" Line="64" Column="42" />
+      <File FileName="script/toolbox.js" Line="37" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches>
+    <Watch file="classes/Globals.cs" line="2815" offsetX="770" offsetY="36285" expression="Codeblocks" liveUpdate="False" />
+  </MonoDevelop.Ide.DebuggingService.PinnedWatches>
+</Properties>

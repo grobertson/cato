@@ -1,0 +1,76 @@
+<task original_task_id="e14386b3-dd1b-41ca-8f91-b0bf20273629" name="json var test" code="0" status="Development" version="1.000" concurrent_instances="" queue_depth="" on_conflict="cancel">
+  <description></description>
+  <codeblocks>
+    <codeblock name="MAIN">
+      <steps>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="set_variable">
+            <variable>
+              <name input_type="text">dict</name>
+              <value input_type="text">{
+    "server" : {
+        "name" : "foo",
+        "imageRef" : "123",
+        "flavorRef" : "abc",
+        "metadata" : {
+            "m1" : "v1",
+ "m2" : "v2",
+"m3" : "v3"
+        },
+        "personality" : [
+            {
+                "path" : "",
+                "contents" : "" 
+            } 
+        ] 
+    }
+}</value>
+              <modifier input_type="select">FROM_JSON</modifier>
+            </variable>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="log_msg">
+            <message input_type="text">Reading the dict: [[dict:server metadata]]</message>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="set_variable">
+            <variable>
+              <name input_type="text">xxx</name>
+              <value input_type="text">[[dict:server metadata]]</value>
+              <modifier input_type="select">DEFAULT</modifier>
+            </variable>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="set_variable">
+            <variable>
+              <name input_type="text">json</name>
+              <value input_type="text">[[dict]]</value>
+              <modifier input_type="select">TO_JSON</modifier>
+            </variable>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="log_msg">
+            <message input_type="text">the dict: [[dict]]
+Here's the original json: [[json]]
+
+What!? [[xxx:m1]]</message>
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+  </codeblocks>
+</task>

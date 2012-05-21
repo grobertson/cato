@@ -1,0 +1,389 @@
+<task original_id="758cb654-cafb-4e13-80af-9c8e2cf3fa1f" name="Chef Wordpress (Solo)" code="0" status="Development" version="1.000" concurrent_instances="" queue_depth="" on_conflict="cancel">
+  <description>Installs Chef on a vanilla Ubuntu instance, downloads a set of cookbooks from the OpsCode community site, creates a node.json file, then uses Chef Solo to install.</description>
+  <codeblocks>
+    <codeblock name="CONFIGURE_CHEF">
+      <steps>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="true">
+          <description>
+          </description>
+          <function command_type="log_msg">
+            <message input_type="text">--create the solo.rb config file
+--copy it to /etc/chef
+--clone the community repo</message>
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo echo -e "file_cache_path \"/var/chef-repo\"\ncookbook_path \"/var/chef-repo/cookbooks\"" | tee solo.rb</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo mv solo.rb /etc/chef</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">cd /var</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo git clone git://github.com/opscode/chef-repo.git</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+    <codeblock name="COOKBOOKS">
+      <steps>
+        <step id="a760a6cd-1542-418f-9e81-59f901a6176d" output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="loop">
+            <start input_type="text">1</start>
+            <counter input_type="text">x</counter>
+            <test input_type="select">&lt;=</test>
+            <compare_to input_type="text">[[cookbooks,*]]</compare_to>
+            <increment input_type="text">1</increment>
+            <action input_type="text">8b8de316-2178-4bb5-ac52-47d308e5c1b0</action>
+            <max input_type="text" />
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+    <codeblock name="DEFINE_NODE">
+      <steps>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="set_variable">
+            <variable>
+              <name input_type="text">NODE_JSON</name>
+              <value input_type="text">{
+    "wordpress": {
+        "db": {
+            "database": "mywpdb",
+            "host": "localhost",
+            "user": "mywp",
+            "password": "mywp"
+        }
+    },
+    "run_list": ["recipe[wordpress]"]
+}</value>
+              <modifier input_type="select">DEFAULT</modifier>
+            </variable>
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">echo '[[NODE_JSON]]' | tee ~/node.json</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+    <codeblock name="INSTALL_PACKAGES">
+      <steps>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo mkdir -p /etc/apt/trusted.gpg.d</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">gpg --keyserver keys.gnupg.net --recv-keys 83EF826A</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg &gt; /dev/null</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo apt-get update -y</command>
+            <timeout input_type="text">300</timeout>
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo apt-get install opscode-keyring # permanent upgradeable keyring</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="true">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo apt-get upgrade -y</command>
+            <timeout input_type="text">300</timeout>
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">echo "chef chef/chef_server_url string none" | sudo debconf-set-selections &amp;&amp; sudo apt-get install chef -y</command>
+            <timeout input_type="text">300</timeout>
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo apt-get install git -y</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+    <codeblock name="MAIN">
+      <steps>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="true">
+          <description>
+          </description>
+          <function command_type="set_variable">
+            <variable>
+              <name input_type="text">userdata</name>
+              <value input_type="text">#!/bin/sh
+set -e -x
+
+apt-get --yes --quiet update
+apt-get --yes --quiet install git</value>
+              <modifier input_type="select">DEFAULT</modifier>
+            </variable>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="aws_ec2_RunInstances">
+            <aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
+            <ImageId input_type="text">ami-1aad5273</ImageId>
+            <MinCount input_type="text">1</MinCount>
+            <MaxCount input_type="text">1</MaxCount>
+            <KeyName input_type="text">csk_www</KeyName>
+            <SecurityGroupId.n is_array="true">
+              <SecurityGroupId input_type="text" />
+            </SecurityGroupId.n>
+            <SecurityGroup.n is_array="true">
+              <SecurityGroup input_type="text">csk_cato_dev</SecurityGroup>
+            </SecurityGroup.n>
+            <UserData input_type="text">
+            </UserData>
+            <AddressingType input_type="text" />
+            <InstanceType input_type="text">t1.micro</InstanceType>
+            <Placement>
+              <AvailabilityZone input_type="text" />
+              <GroupName input_type="text" />
+              <Tenancy input_type="text" />
+            </Placement>
+            <KernelId input_type="text" />
+            <RamdiskId input_type="text" />
+            <BlockDeviceMapping.n is_array="true">
+              <BlockDeviceMapping>
+                <DeviceName input_type="text" />
+                <NoDevice input_type="text" />
+                <VirtualName input_type="text" />
+                <Ebs>
+                  <SnapshotId input_type="text" />
+                  <VolumeSize input_type="text" />
+                  <DeleteOnTermination input_type="text" />
+                </Ebs>
+              </BlockDeviceMapping>
+            </BlockDeviceMapping.n>
+            <Monitoring>
+              <Enabled input_type="text" />
+            </Monitoring>
+            <SubnetId input_type="text" />
+            <DisableApiTermination input_type="text" />
+            <InstanceInitiatedShutdownBehavior input_type="text" />
+            <PrivateIpAddress input_type="text" />
+            <ClientToken input_type="text" />
+            <instance_role input_type="text" label="Server Role" />
+            <result_name input_type="text">result</result_name>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="new_connection">
+            <conn_type input_type="select">ssh - ec2</conn_type>
+            <cloud_name input_type="dropdown" style="combo">
+            </cloud_name>
+            <asset input_type="text">ubuntu@[[result.//instanceId]]</asset>
+            <conn_name input_type="text">CONN1</conn_name>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="aws_ec2_CreateTags">
+            <aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" />
+            <ResourceId.n is_array="true">
+              <ResourceId input_type="text">[[result.//instanceId]]</ResourceId>
+            </ResourceId.n>
+            <Tag.n is_array="true">
+              <Tag>
+                <Key input_type="text">Name</Key>
+                <Value input_type="text">chef wp test</Value>
+              </Tag>
+            </Tag.n>
+            <result_name label="Result Variable" input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="codeblock">
+            <codeblock input_type="text">INSTALL_PACKAGES</codeblock>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="codeblock">
+            <codeblock input_type="text">CONFIGURE_CHEF</codeblock>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="codeblock">
+            <codeblock input_type="text">COOKBOOKS</codeblock>
+          </function>
+        </step>
+        <step output_parse_type="0" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="codeblock">
+            <codeblock input_type="text">DEFINE_NODE</codeblock>
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">cd ~</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+        <step output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo chef-solo -j node.json</command>
+            <timeout input_type="text">300</timeout>
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+    <codeblock name="a760a6cd-1542-418f-9e81-59f901a6176d">
+      <steps>
+        <step id="8b8de316-2178-4bb5-ac52-47d308e5c1b0" output_parse_type="2" output_column_delimiter="0" output_row_delimiter="0" commented="false">
+          <description>
+          </description>
+          <function command_type="cmd_line" parse_method="2">
+            <conn_name input_type="text">CONN1</conn_name>
+            <command input_type="text">sudo knife cookbook site install [[cookbooks,[[x]]]] --cookbook-path /var/chef-repo/cookbooks</command>
+            <timeout input_type="text" />
+            <positive_response input_type="text" />
+            <negative_response input_type="text" />
+          </function>
+        </step>
+      </steps>
+    </codeblock>
+  </codeblocks>
+  <parameters>
+    <parameter id="p_35ea8f4a-f160-4e61-9f81-d347ff231f91" required="true" prompt="true" encrypt="false" minlength="" maxlength="" minvalue="" maxvalue="" constraint="" constraint_msg="">
+      <name>cookbooks</name>
+      <desc />
+      <values present_as="list">
+        <value id="pv_cc1d13ed-268f-4a3d-a77e-6b4ed95e77b2">wordpress</value>
+      </values>
+    </parameter>
+  </parameters>
+</task>
