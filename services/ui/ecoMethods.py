@@ -1284,10 +1284,11 @@ class ecoMethods:
             #  we'll also check our internal tagging mechanism - the ecosystem_object_tags table.
             #  and similarly we'll get them all at once and just draw the ones we need.
 
-            sSQL = "select distinct cloud_id" \
-                " from ecosystem_object" \
-                " where ecosystem_id ='" + sEcosystemID + "'" \
-                " and ecosystem_object_type = '" + sType + "'"
+            sSQL = "select distinct eo.cloud_id, e.account_id" \
+                " from ecosystem_object eo" \
+                " join ecosystem e on eo.ecosystem_id = e.ecosystem_id" \
+                " where eo.ecosystem_id ='" + sEcosystemID + "'" \
+                " and eo.ecosystem_object_type = '" + sType + "'"
 
             dtClouds = uiGlobals.request.db.select_all_dict(sSQL)
             if uiGlobals.request.db.error:
@@ -1324,7 +1325,9 @@ class ecoMethods:
                     if dtObjects:
                         # we only need to hit the API once... this result will contain all the objects
                         # and our DrawProperties will filter the DataTable on the ID.
-#                        dtAPIResults = GetCloudObjectsAsDataTable(sCloudID, sType, 0000BYREF_ARG0000sErr)
+                        dtAPIResults, sErr = uiCommon.GetCloudObjectsAsList(drCloud["account_id"], sCloudID, sType)
+                        if sErr:
+                            sHTML += sErr
                         
                         for drObject in dtObjects:
                             # look up the cloud and get the name
@@ -1359,9 +1362,8 @@ class ecoMethods:
                                 # the details section
                                 sHTML += "<div class=\"ecosystem_item_detail\">"
         
-#                                if dtAPIResults is not None:
-#                                    if dtAPIResults.Rows.Count > 0:
-#                                        sHTML += DrawAllEcosystemObjectProperties(dtAPIResults, dtTags, sObjectID)
+                                if dtAPIResults:
+                                    sHTML += self.DrawAllEcosystemObjectProperties(dtAPIResults, dtTags, sObjectID)
         
         
                                 # end detail section
@@ -1381,6 +1383,106 @@ class ecoMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return ""
 
+    # two def functions to support the wmGetEcosystemObjectByType
+    def DrawAllEcosystemObjectProperties(self, dtProps, dtStormTags, sObjectID):
+        try:
+            sHTML = ""
+            sIDColumnName = "" # dtProps.Columns[0].ColumnName
+
+            # what is the name of the first column?
+            # all over the place with AWS we hardcode and assume the first column is the 'ID'.
+            # that's bad - so spin the columns looking for the one with the Extended Property that says it's the id
+#            for drProps in dtProps:
+#                for prop in drProps:
+#                    if prop.IsID:
+#                        sIDColumnName = prop.Name
+#                        break
+#
+#            # no sIDColumnName means we can't continue
+#            if not sIDColumnName:
+#                return "ID column not defined for Cloud Object " + sObjectID
+
+#            
+#
+#            DataRow[] drFound
+#            drFound = dtProps.Select(sIDColumnName + " = '" + sObjectID + "'")
+#            
+#            if drFound.Count() > 0:
+#### CHECK NEXT LINE for type declarations !!!
+#                for DataColumn dcAPIResultsColumn in dtProps.Columns:
+            if dtProps.has_key(sObjectID):
+                drFound = dtProps[sObjectID]
+                print drFound
+                # for each property
+                for prop in drFound:
+                    print prop.Name
+                    print prop.Value
+#                    # draw only the short list properties here.
+#                    bShortList = (dcAPIResultsColumn.ExtendedProperties["ShortList"] is not None ?
+#                                       (true  false) if dcAPIResultsColumn.ExtendedProperties["ShortList"] == "True" else false  false)
+#                    
+#                    # there should be only one row - that's why I'm using the explicit index of 0
+#                    if bShortList:
+#                        sHTML += DrawEcosystemObjectProperty(drFound[0], dcAPIResultsColumn.ColumnName)
+                    if prop.ShortList:
+                        sHTML += self.DrawEcosystemObjectProperty(prop)
+#                
+#                # there *might* be a column named "Tags"... if so, it's special and contains the xml of a tag set.
+#                # now draw the tag columns only
+#if drFound[0].Table.Columns["Tags"] is not None:
+#if drFound[0]["Tags"] is not None:
+#                        xDoc = XElement.Parse(drFound[0]["Tags"])
+#if xDoc is not None:
+#                            sHTML += "<div class=\"ui-widget-header\">AWS Tags</div>"
+#### CHECK NEXT LINE for type declarations !!!
+#                            for xeTag in xDoc.Elements("item"):
+#                                sHTML += "<div class=\"ecosystem_item_property\">" + xeTag.find("key", "") # WAS A .Value - confirm + 
+#                                    ": <span class=\"ecosystem_item_property_value\">" + xeTag.find("value", "") # WAS A .Value - confirm + "</span></div>"
+#            
+#
+#                # now lets draw the Storm tags
+#                #  ! NOT the same kind of set as above, this one is multiple simple key/value pairs for an object_id
+#                DataRow[] drStormTags
+#                drStormTags = dtStormTags.Select("ecosystem_object_id = '" + sObjectID + "'")
+#                if drFound.Count() > 0:
+#                    sHTML += "<div class=\"ui-widget-header\">Storm Tags</div>"
+#### CHECK NEXT LINE for type declarations !!!
+#                    for DataRow drTag in drStormTags:
+#                        sHTML += "<div class=\"ecosystem_item_property\">" + drTag["key_name"] + 
+#                            ": <span class=\"ecosystem_item_property_value\">" + drTag["value"] + "</span></div>"
+#            else { sHTML += "No data found for " + sObjectID; }
+            
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
+    
+    def DrawEcosystemObjectProperty(self, prop):
+        try:
+            sHTML = ""
+            sValue = ("" if not prop.Value else prop.Value)
+            sIcon = ""
+            sLabel = (prop.Label if prop.Label else prop.Name)
+
+            # some fields have a status or other icon.
+            # it's noted in the extended properties of the column in the AWS results.
+            # we are simply assuming to have an image file for every propery that might have an icon.
+            # the images will be named "property_value.png" 
+            # NOTE: collapsed for spaces of course... just to be safe
+            if prop.HasIcon:
+                if sValue != "":
+                    sIcon = "<img class=\"custom_icon\" src=\"static/images/custom/" + \
+                        prop.Name.replace(" ", "").lower() + "_" + \
+                        sValue.replace(" ", "") + ".png\" alt=\"\" />".lower()
+
+            if sValue:
+                sHTML += "<div class=\"ecosystem_item_property\">" + sLabel + ": <span class=\"ecosystem_item_property_value\">" + sIcon + sValue + "</span></div>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return ""
+        
     def wmUpdateEcosystemDetail(self):
         try:
             sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")

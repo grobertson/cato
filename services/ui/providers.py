@@ -161,6 +161,7 @@ class Provider(object):
     def GetObjectTypeByName(self, sObjectType):
         """Loops all the products, so you can get an object type by name without knowing the product."""
         for p in self.Products.itervalues():
+            # print "looking for %s in %s" % (sObjectType, p.Name)
             try:
                 cot = p.CloudObjectTypes[sObjectType]
                 if cot:
@@ -218,7 +219,7 @@ class Product(object):
         if self.Name:
             return True
         return False
-    
+       
 class CloudObjectType(object):
     ParentProduct = None
     ID = None
@@ -228,7 +229,8 @@ class CloudObjectType(object):
     APIRequestRecordFilter = None
     XMLRecordXPath = None
     Properties = [] #!!! This is a list, not a dictionary
-
+    Instances = {} # a dictionary of results, keyed by the unique 'id'
+    
     #constructor
     def __init__(self, parent):
         self.ParentProduct = parent
@@ -245,10 +247,11 @@ class CloudObjectTypeProperty:
     Label = None
     XPath = None
     SortOrder = None
-    HasIcon = None
-    IsID = None
-    ShortList = None
-    ValueIsXML = None
+    HasIcon = False
+    IsID = False
+    ShortList = True
+    ValueIsXML = False
+    Value = None
     
     #constructor
     def __init__(self, parent):

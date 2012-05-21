@@ -39,17 +39,16 @@ class awsInterface(object):
                 return None, msg
             
             sURL, err = self.BuildURL(ca, c, cloud_object_type, additional_args);  
-            print "out"          
             if err:
                 return None, err
             
-            print sURL
+            # print sURL
 
             sXML, err = HTTPGet(sURL, 30)
             if err:
                 return None, err
 
-            return sXML
+            return sXML, None
         except Exception, ex:
             raise Exception(ex)
 
@@ -102,9 +101,6 @@ class awsInterface(object):
             sResourceURI = ""
             if prod.APIUri:
                 sResourceURI = prod.APIUri
-            
-            print prod.__dict__
-            print sResourceURI
             
             # AWS auth parameters
             sAccessKeyID = ca.LoginID
