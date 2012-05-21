@@ -545,3 +545,137 @@ def HTTPGetNoFail(url):
     except Exception:
         log_nouser(traceback.format_exc(), 4)
         return ""
+
+def GetCloudObjectsAsList(sAccountID, sCloudID, sObjectType):
+    try:
+        import cloud
+        
+        # first, get the cloud
+        c = cloud.Cloud()
+        c.FromID(sCloudID)
+        if c is None:
+            return None,  "Unable to get Cloud for ID [" + sCloudID + "]"
+        
+        cot = c.Provider.GetObjectTypeByName(sObjectType)
+        if cot is not None:
+            if not cot.ID:
+                return None, "Cannot find definition for requested object type [" + sObjectType + "]"
+        else:
+            return None, "GetCloudObjectType failed for [" + sObjectType + "]"
+
+        # ok, kick out if there are no properties for this type
+        if not cot.Properties:
+            return None, "No properties defined for type [" + sObjectType + "]"
+        
+        # All good, let's hit the API
+        sXML = ""
+        
+        import aws
+        
+        if c.Provider.Name.lower() =="openstack":
+            """not yet implemented"""
+            #ACWebMethods.openstackMethods acOS = new ACWebMethods.openstackMethods()
+            #sXML = acOS.GetCloudObjectsAsXML(c.ID, cot, 0000BYREF_ARG0000sErr, null)
+        else: #Amazon aws, Eucalyptus, and OpenStackAws
+            awsi = aws.awsInterface()
+            sXML, err = awsi.GetCloudObjectsAsXML(sAccountID, sCloudID, cot)
+
+        if err:
+            return None, err
+        
+        if not sXML:
+            return None, "GetCloudObjectsAsXML returned an empty document."
+        
+
+        # Got results, objectify them.
+
+        # OK look, all this namespace nonsense is annoying.  Every AWS result I've witnessed HAS a namespace
+        #  (which messes up all our xpaths)
+        #  but I've yet to see a result that actually has two namespaces 
+        #  which is the only scenario I know of where you'd need them at all.
+
+        # So... to eliminate all namespace madness
+        # brute force... parse this text and remove anything that looks like [ xmlns="<crud>"] and it's contents.
+        sXML = RemoveDefaultNamespacesFromXML(sXML)
+
+        xDoc = ET.fromstring(sXML)
+        if xDoc is None:
+            return None, "API Response XML document is invalid."
+        
+        
+        print sXML
+
+        # FIRST ,we have to find which property is the 'id' value.  That'll be the key for our dictionary.
+        sIDColumnName = ""
+        for prop in cot.Properties:
+            if prop.IsID:
+                sIDColumnName = prop.Name
+                break
+
+        # no sIDColumnName means we can't continue
+        if not sIDColumnName:
+            return None, "ID column not defined for Cloud Object Type" + cot.Name
+
+        # for each result in the xml
+        #     for each column
+        xRecords = xDoc.findall(cot.XMLRecordXPath)
+        for xRecord in xRecords:
+            record_id = None
+            row = []
+            for prop in cot.Properties:
+                log("looking for property %s" % prop.Name, 4)
+
+                # ok look, the property may be an xml attribute, or it might be an element.
+                # if there is an XPath value on the column, that means it's an element.
+                # the absence of an XPath means we'll look for an attribute.
+                # NOTE: the attribute we're looking for is the 'name' of this property
+                # which is the DataColumn.name.
+                if not prop.XPath:
+                    xa = xRecord.attrib[prop.Name]
+                    if xa is not None:
+                        log(" -- found attribute [%s]" % xa, 4)
+                        prop.Value = xa
+                        row.append(prop)
+                else:
+                    # if it's a tagset column put the tagset xml in it
+                    #  for all other columns, they get a lookup
+                    xeProp = xRecord.find(prop.XPath)
+                    if xeProp is not None:
+                        # does this column have the extended property "ValueIsXML"?
+                        bAsXML = (True if prop.ValueIsXML else False)
+                        
+                        if bAsXML:
+                            prop.Value = ET.tostring(xeProp)
+                            log(" -- found node, (as xml) value is [%s]" % prop.Value, 4)
+                        else:
+                            prop.Value = xeProp.text
+                            log(" -- found node, value is [%s]" % prop.Value, 4)
+                        
+                        row.append(prop)
+
+                if prop.IsID:
+                    record_id = prop.Value
+                
+                # an id is required
+                if not record_id:
+                    return None, "Unable to determine which property is the 'id'."
+            
+            cot.Instances[record_id] = row 
+
+        return cot.Instances, None
+    except Exception:
+        log_nouser(traceback.format_exc(), 4)
+        return ""
+
+def RemoveDefaultNamespacesFromXML(xml):
+    try:
+        p = re.compile("xmlns=*[\"\"][^\"\"]*[\"\"]")
+        allmatches = p.finditer(xml)
+        for match in allmatches:
+            xml = xml.replace(match.group(), "")
+            
+        return xml
+    except Exception:
+        log_nouser(traceback.format_exc(), 4)
+        return ""
+    

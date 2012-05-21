@@ -81,7 +81,7 @@ class CloudProviders(dict):
                                 raise Exception("Cloud Providers XML: All Object Types must have the 'id' attribute.")
                             if xType.get("label", None) == None:
                                 raise Exception("Cloud Providers XML: All Object Types must have the 'label' attribute.")
-
+                            
                             cot = CloudObjectType(p)
                             cot.ID = xType.get("id")
                             cot.Label = xType.get("label")
@@ -89,7 +89,7 @@ class CloudProviders(dict):
                             cot.APIRequestGroupFilter = xType.get("request_group_filter", None)
                             cot.APIRequestRecordFilter = xType.get("request_record_filter", None)
                             cot.XMLRecordXPath = xType.get("xml_record_xpath", None)
-                            
+
                             #the type contains property definitions
                             xProperties = xType.findall("property")
                             for xProperty in xProperties:
@@ -110,9 +110,7 @@ class CloudProviders(dict):
                                 cot.Properties.append(cotp)
                             p.CloudObjectTypes[cot.ID] = cot
                         pv.Products[p.Name] = p
-                    
                     self[pv.Name] = pv
-                    
         except Exception, ex:
             raise ex
         finally:
@@ -161,7 +159,9 @@ class Provider(object):
 
 
     def GetObjectTypeByName(self, sObjectType):
+        """Loops all the products, so you can get an object type by name without knowing the product."""
         for p in self.Products.itervalues():
+            # print "looking for %s in %s" % (sObjectType, p.Name)
             try:
                 cot = p.CloudObjectTypes[sObjectType]
                 if cot:
@@ -213,12 +213,13 @@ class Product(object):
     #constructor
     def __init__(self, parent):
         self.ParentProvider = parent
+        self.CloudObjectTypes = {}
 
     def IsValidForCalls(self):
         if self.Name:
             return True
         return False
-    
+       
 class CloudObjectType(object):
     ParentProduct = None
     ID = None
@@ -228,10 +229,12 @@ class CloudObjectType(object):
     APIRequestRecordFilter = None
     XMLRecordXPath = None
     Properties = [] #!!! This is a list, not a dictionary
-
+    Instances = {} # a dictionary of results, keyed by the unique 'id'
+    
     #constructor
     def __init__(self, parent):
         self.ParentProduct = parent
+        self.Properties = []
 
     def IsValidForCalls(self):
         if self.XMLRecordXPath and self.ID:
@@ -244,10 +247,11 @@ class CloudObjectTypeProperty:
     Label = None
     XPath = None
     SortOrder = None
-    HasIcon = None
-    IsID = None
-    ShortList = None
-    ValueIsXML = None
+    HasIcon = False
+    IsID = False
+    ShortList = True
+    ValueIsXML = False
+    Value = None
     
     #constructor
     def __init__(self, parent):

@@ -441,19 +441,19 @@ if __name__ == "__main__":
     SetTaskCommands()
     CacheMenu()
     
-#    ### TESTING
-#    # some testing of the cloud api access
+    ### TESTING
+    # some testing of the cloud api access
 #    import aws
 #    import providers
 #    
 #    provider = providers.Provider.FromName("Amazon AWS")
-#    #print provider.Products["ec2"].CloudObjectTypes
-#    
-#    cot = provider.GetObjectTypeByName("aws_ec2_instance")
+#    cot = provider.GetObjectTypeByName("aws_s3_bucket")
 #    awsi = aws.awsInterface()
 #    awsi.GetCloudObjectsAsXML("856fa6f4-e36e-4029-b436-65dfeb06a36d", "4d6f35fc-faa7-11e0-b2ec-12313d0024c3", cot)
-#        
-        
+
+#    d, err = uiCommon.GetCloudObjectsAsList("856fa6f4-e36e-4029-b436-65dfeb06a36d", "4d6f35fc-faa7-11e0-b2ec-12313d0024c3", "aws_ec2_instance")
+#    print d
+#    print err
     ### END TESTING
     
     
