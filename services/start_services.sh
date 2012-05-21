@@ -16,9 +16,9 @@ fi
 export CATO_LOGS
 
 # All other processes go here.  No process should be in both sections though.
-FULL_PROCS[0]="$CATO_HOME/services/bin/cato_poller.tcl"
-FULL_PROCS[1]="$CATO_HOME/services/bin/cato_scheduler.tcl"
-FULL_PROCS[2]="$CATO_HOME/services/bin/cato_messenger.tcl"
+FULL_PROCS[0]="$CATO_HOME/services/bin/cato_poller.py"
+FULL_PROCS[1]="$CATO_HOME/services/bin/cato_scheduler.py"
+FULL_PROCS[2]="$CATO_HOME/services/bin/cato_messenger.py"
 FULL_PROCS[3]="$CATO_HOME/services/bin/cato_ecosync.tcl"
 
 FULL_LOGFILES[0]="$CATO_LOGS/cato_poller.log"
