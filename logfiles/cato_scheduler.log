@@ -1,0 +1,179 @@
+
+-> 2012-03-15 15:13:57 ####################################### Starting up cato_scheduler #######################################
+
+-> 2012-03-15 15:13:57 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-15 15:13:57 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-15 15:13:57 *****************************************************************
+
+-> 2012-03-15 15:13:57 Starting cato_scheduler, PID = 77539.... 
+
+-> 2012-03-15 15:13:57 Database library loaded, starting initialization...
+
+-> 2012-03-15 15:13:57 Initialization complete, connecting to the database...
+
+-> 2012-03-15 15:13:57 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-15 15:13:57 Connected
+
+-> 2012-03-15 15:13:57 Database connection complete.
+
+-> 2012-03-15 15:13:57 Mode is on
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 10)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_scheduler.tcl" line 365)
+
+-> 2012-03-19 12:14:05 ####################################### Starting up cato_scheduler #######################################
+
+-> 2012-03-19 12:14:05 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-19 12:14:06 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-19 12:14:06 *****************************************************************
+
+-> 2012-03-19 12:14:06 Starting cato_scheduler, PID = 25794.... 
+
+-> 2012-03-19 12:14:06 Database library loaded, starting initialization...
+
+-> 2012-03-19 12:14:06 Initialization complete, connecting to the database...
+
+-> 2012-03-19 12:14:06 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-19 12:14:06 Connected
+
+-> 2012-03-19 12:14:06 Database connection complete.
+
+-> 2012-03-19 12:14:06 Mode is on
+
+-> 2012-03-20 10:57:44 ####################################### Starting up cato_scheduler #######################################
+
+-> 2012-03-20 10:57:44 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-20 10:57:44 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-20 10:57:44 *****************************************************************
+
+-> 2012-03-20 10:57:44 Starting cato_scheduler, PID = 75517.... 
+
+-> 2012-03-20 10:57:44 Database library loaded, starting initialization...
+
+-> 2012-03-20 10:57:44 Initialization complete, connecting to the database...
+
+-> 2012-03-20 10:57:44 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-20 10:57:44 Connected
+
+-> 2012-03-20 10:57:44 Database connection complete.
+
+-> 2012-03-20 10:57:44 Mode is on
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 10)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_scheduler.tcl" line 365)
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 10)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_scheduler.tcl" line 365)
+
+-> 2012-03-23 11:37:40 ####################################### Starting up cato_scheduler #######################################
+
+-> 2012-03-23 11:37:40 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-23 11:37:40 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-23 11:37:40 *****************************************************************
+
+-> 2012-03-23 11:37:40 Starting cato_scheduler, PID = 20682.... 
+
+-> 2012-03-23 11:37:40 Database library loaded, starting initialization...
+
+-> 2012-03-23 11:37:40 Initialization complete, connecting to the database...
+
+-> 2012-03-23 11:37:40 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-23 11:37:40 Connected
+
+-> 2012-03-23 11:37:40 Database connection complete.
+
+-> 2012-03-23 11:37:40 Mode is on
+
+-> 2012-03-26 11:03:47 ####################################### Starting up cato_scheduler #######################################
+
+-> 2012-03-26 11:03:47 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-26 11:03:47 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-26 11:03:47 *****************************************************************
+
+-> 2012-03-26 11:03:47 Starting cato_scheduler, PID = 13877.... 
+
+-> 2012-03-26 11:03:47 Database library loaded, starting initialization...
+
+-> 2012-03-26 11:03:47 Initialization complete, connecting to the database...
+
+-> 2012-03-26 11:03:47 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-26 11:03:47 Connected
+
+-> 2012-03-26 11:03:47 Database connection complete.
+
+-> 2012-03-26 11:03:47 Mode is on
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 10)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_scheduler.tcl" line 365)
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 10)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_scheduler.tcl" line 365)
+2012-05-15 12:13:20 ####################################### Starting up cato_scheduler #######################################
+2012-05-15 12:13:20 cato_scheduler has not been registered, registering...
+2012-05-15 12:13:20 Registering application...
+2012-05-15 12:13:20 Application registered.

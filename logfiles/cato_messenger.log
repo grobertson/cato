@@ -1,0 +1,1769 @@
+
+-> 2012-03-15 15:13:57 ####################################### Starting up cato_messenger #######################################
+
+-> 2012-03-15 15:13:57 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-15 15:13:57 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-15 15:13:57 *****************************************************************
+
+-> 2012-03-15 15:13:57 Starting cato_messenger, PID = 77540.... 
+
+-> 2012-03-15 15:13:57 Database library loaded, starting initialization...
+
+-> 2012-03-15 15:13:57 Initialization complete, connecting to the database...
+
+-> 2012-03-15 15:13:57 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-15 15:13:57 Connected
+
+-> 2012-03-15 15:13:57 Database connection complete.
+
+-> 2012-03-15 15:13:57 Mode is on
+
+-> 2012-03-15 15:13:57 Processing 2 messages...
+
+-> 2012-03-15 15:13:57 Sending msg_id: 37
+
+-> 2012-03-15 15:13:57 in send_smtp, Nothing returned.  URL may be invalid.
+
+
+
+/pages/ecoTemplateManage.aspx, 
+
+-> 2012-03-15 15:13:57 ::mime::1
+
+-> 2012-03-15 15:14:00 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-15 15:14:00 Sending msg_id: 38
+
+-> 2012-03-15 15:14:00 in send_smtp, Name is required.
+
+
+
+/pages/ecoTemplateManage.aspx, 
+
+-> 2012-03-15 15:14:00 ::mime::5
+
+-> 2012-03-15 15:14:01 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-15 15:14:31 Processing 2 messages...
+
+-> 2012-03-15 15:14:31 Sending msg_id: 37
+
+-> 2012-03-15 15:14:31 in send_smtp, Nothing returned.  URL may be invalid.
+
+
+
+/pages/ecoTemplateManage.aspx, 
+
+-> 2012-03-15 15:14:31 ::mime::9
+
+-> 2012-03-15 15:14:31 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-15 15:14:31 Sending msg_id: 38
+
+-> 2012-03-15 15:14:31 in send_smtp, Name is required.
+
+
+
+/pages/ecoTemplateManage.aspx, 
+
+-> 2012-03-15 15:14:31 ::mime::13
+
+-> 2012-03-15 15:14:32 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 15:43:17 Processing 1 messages...
+
+-> 2012-03-16 15:43:17 Sending msg_id: 39
+
+-> 2012-03-16 15:43:17 in send_smtp, Could not find a part of the path "/Users/shannon/Projects/cato/web/temp/yay_1331926982.xml".
+
+  at ACWebMethods.uiMethods.wmExportEcotemplates (System.String sEcotemplateArray, System.String sIncludeTasks) [0x000e9] in /Users/shannon/Projects/cato/web/pages/uiMethods.asmx.cs:2011 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (System.Reflection.MonoMethod,object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000d0] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/corlib/System.Reflection/MonoMethod.cs:226 
+
+/pages/ecoTemplateManage.aspx, 
+
+-> 2012-03-16 15:43:17 ::mime::17
+
+-> 2012-03-16 15:43:17 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 15:43:47 Processing 1 messages...
+
+-> 2012-03-16 15:43:47 Sending msg_id: 39
+
+-> 2012-03-16 15:43:47 in send_smtp, Could not find a part of the path "/Users/shannon/Projects/cato/web/temp/yay_1331926982.xml".
+
+  at ACWebMethods.uiMethods.wmExportEcotemplates (System.String sEcotemplateArray, System.String sIncludeTasks) [0x000e9] in /Users/shannon/Projects/cato/web/pages/uiMethods.asmx.cs:2011 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (System.Reflection.MonoMethod,object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000d0] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/corlib/System.Reflection/MonoMethod.cs:226 
+
+/pages/ecoTemplateManage.aspx, 
+
+-> 2012-03-16 15:43:47 ::mime::21
+
+-> 2012-03-16 15:43:48 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:04:48 Processing 1 messages...
+
+-> 2012-03-16 16:04:48 Sending msg_id: 40
+
+-> 2012-03-16 16:04:48 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:04:48 ::mime::25
+
+-> 2012-03-16 16:04:49 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:05:19 Processing 3 messages...
+
+-> 2012-03-16 16:05:19 Sending msg_id: 40
+
+-> 2012-03-16 16:05:19 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:05:19 ::mime::29
+
+-> 2012-03-16 16:05:19 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:05:19 Sending msg_id: 41
+
+-> 2012-03-16 16:05:19 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:05:19 ::mime::33
+
+-> 2012-03-16 16:05:20 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:05:20 Sending msg_id: 42
+
+-> 2012-03-16 16:05:20 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:05:20 ::mime::37
+
+-> 2012-03-16 16:05:21 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:05:51 Processing 2 messages...
+
+-> 2012-03-16 16:05:51 Sending msg_id: 41
+
+-> 2012-03-16 16:05:51 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:05:51 ::mime::41
+
+-> 2012-03-16 16:05:51 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:05:51 Sending msg_id: 42
+
+-> 2012-03-16 16:05:51 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:05:51 ::mime::45
+
+-> 2012-03-16 16:05:52 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:06:22 Processing 2 messages...
+
+-> 2012-03-16 16:06:22 Sending msg_id: 43
+
+-> 2012-03-16 16:06:22 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:06:22 ::mime::49
+
+-> 2012-03-16 16:06:22 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:06:22 Sending msg_id: 44
+
+-> 2012-03-16 16:06:22 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:06:22 ::mime::53
+
+-> 2012-03-16 16:06:23 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:06:53 Processing 2 messages...
+
+-> 2012-03-16 16:06:53 Sending msg_id: 43
+
+-> 2012-03-16 16:06:53 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:06:53 ::mime::57
+
+-> 2012-03-16 16:06:54 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:06:54 Sending msg_id: 44
+
+-> 2012-03-16 16:06:54 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:06:54 ::mime::61
+
+-> 2012-03-16 16:06:54 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:09:24 Processing 1 messages...
+
+-> 2012-03-16 16:09:24 Sending msg_id: 45
+
+-> 2012-03-16 16:09:24 in send_smtp, Another Task with that ID or Name/Version exists.[42214c9b-a10a-472e-b757-afe3e0b4c3b4/hello/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:09:24 ::mime::65
+
+-> 2012-03-16 16:09:25 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:09:55 Processing 2 messages...
+
+-> 2012-03-16 16:09:55 Sending msg_id: 45
+
+-> 2012-03-16 16:09:55 in send_smtp, Another Task with that ID or Name/Version exists.[42214c9b-a10a-472e-b757-afe3e0b4c3b4/hello/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:09:55 ::mime::69
+
+-> 2012-03-16 16:09:55 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:09:55 Sending msg_id: 46
+
+-> 2012-03-16 16:09:55 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:09:55 ::mime::73
+
+-> 2012-03-16 16:09:56 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:10:26 Processing 2 messages...
+
+-> 2012-03-16 16:10:26 Sending msg_id: 46
+
+-> 2012-03-16 16:10:26 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:10:26 ::mime::77
+
+-> 2012-03-16 16:10:27 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:10:27 Sending msg_id: 47
+
+-> 2012-03-16 16:10:27 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:10:27 ::mime::81
+
+-> 2012-03-16 16:10:27 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:10:57 Processing 2 messages...
+
+-> 2012-03-16 16:10:57 Sending msg_id: 47
+
+-> 2012-03-16 16:10:57 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:10:57 ::mime::85
+
+-> 2012-03-16 16:10:58 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:10:58 Sending msg_id: 48
+
+-> 2012-03-16 16:10:58 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:10:58 ::mime::89
+
+-> 2012-03-16 16:10:58 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:11:28 Processing 1 messages...
+
+-> 2012-03-16 16:11:28 Sending msg_id: 48
+
+-> 2012-03-16 16:11:28 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:11:28 ::mime::93
+
+-> 2012-03-16 16:11:29 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:12:29 Processing 1 messages...
+
+-> 2012-03-16 16:12:29 Sending msg_id: 49
+
+-> 2012-03-16 16:12:29 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:12:29 ::mime::97
+
+-> 2012-03-16 16:12:30 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:13:00 Processing 1 messages...
+
+-> 2012-03-16 16:13:00 Sending msg_id: 49
+
+-> 2012-03-16 16:13:00 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:13:00 ::mime::101
+
+-> 2012-03-16 16:13:00 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:13:30 Processing 1 messages...
+
+-> 2012-03-16 16:13:30 Sending msg_id: 50
+
+-> 2012-03-16 16:13:30 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:13:30 ::mime::105
+
+-> 2012-03-16 16:13:31 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:01 Processing 3 messages...
+
+-> 2012-03-16 16:14:01 Sending msg_id: 50
+
+-> 2012-03-16 16:14:01 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:01 ::mime::109
+
+-> 2012-03-16 16:14:02 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:02 Sending msg_id: 51
+
+-> 2012-03-16 16:14:02 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:02 ::mime::113
+
+-> 2012-03-16 16:14:02 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:02 Sending msg_id: 52
+
+-> 2012-03-16 16:14:02 in send_smtp, SyntaxError: JSON.parse: unexpected character
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:02 ::mime::117
+
+-> 2012-03-16 16:14:03 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:33 Processing 5 messages...
+
+-> 2012-03-16 16:14:33 Sending msg_id: 51
+
+-> 2012-03-16 16:14:33 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:33 ::mime::121
+
+-> 2012-03-16 16:14:35 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:35 Sending msg_id: 52
+
+-> 2012-03-16 16:14:35 in send_smtp, SyntaxError: JSON.parse: unexpected character
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:35 ::mime::125
+
+-> 2012-03-16 16:14:36 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:36 Sending msg_id: 53
+
+-> 2012-03-16 16:14:36 in send_smtp, SyntaxError: JSON.parse: unexpected character
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:36 ::mime::129
+
+-> 2012-03-16 16:14:36 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:36 Sending msg_id: 54
+
+-> 2012-03-16 16:14:36 in send_smtp, SyntaxError: JSON.parse: unexpected character
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:36 ::mime::133
+
+-> 2012-03-16 16:14:37 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:14:37 Sending msg_id: 55
+
+-> 2012-03-16 16:14:37 in send_smtp, Another Task with that ID or Name/Version exists.[fabde60d-272e-4834-88a8-e7af9a34a681/Extension Test/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:14:37 ::mime::137
+
+-> 2012-03-16 16:14:37 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:15:07 Processing 3 messages...
+
+-> 2012-03-16 16:15:07 Sending msg_id: 53
+
+-> 2012-03-16 16:15:07 in send_smtp, SyntaxError: JSON.parse: unexpected character
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:15:07 ::mime::141
+
+-> 2012-03-16 16:15:08 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:15:08 Sending msg_id: 54
+
+-> 2012-03-16 16:15:08 in send_smtp, SyntaxError: JSON.parse: unexpected character
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:15:08 ::mime::145
+
+-> 2012-03-16 16:15:08 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:15:08 Sending msg_id: 55
+
+-> 2012-03-16 16:15:08 in send_smtp, Another Task with that ID or Name/Version exists.[fabde60d-272e-4834-88a8-e7af9a34a681/Extension Test/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:15:08 ::mime::149
+
+-> 2012-03-16 16:15:09 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:26:09 Processing 2 messages...
+
+-> 2012-03-16 16:26:09 Sending msg_id: 56
+
+-> 2012-03-16 16:26:09 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Step from XElement: Function attribute 'command_type' is required and missing.
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:26:09 ::mime::153
+
+-> 2012-03-16 16:26:10 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:26:10 Sending msg_id: 57
+
+-> 2012-03-16 16:26:10 in send_smtp, Another Ecotemplate with that ID or Name exists.  [e88db111-ed47-434b-af85-2275f599605c/yay]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:26:10 ::mime::157
+
+-> 2012-03-16 16:26:10 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:26:40 Processing 2 messages...
+
+-> 2012-03-16 16:26:40 Sending msg_id: 56
+
+-> 2012-03-16 16:26:40 in send_smtp, Could not create Ecotemplate from XML: Task.FromXML: Step from XElement: Function attribute 'command_type' is required and missing.
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:26:40 ::mime::161
+
+-> 2012-03-16 16:26:41 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:26:41 Sending msg_id: 57
+
+-> 2012-03-16 16:26:41 in send_smtp, Another Ecotemplate with that ID or Name exists.  [e88db111-ed47-434b-af85-2275f599605c/yay]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:26:41 ::mime::165
+
+-> 2012-03-16 16:26:41 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:32:41 Processing 1 messages...
+
+-> 2012-03-16 16:32:41 Sending msg_id: 58
+
+-> 2012-03-16 16:32:41 in send_smtp, Another Ecotemplate with that ID or Name exists.  [65a9a33c-3606-4e7c-98b4-88f578261598/yay3]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:32:41 ::mime::169
+
+-> 2012-03-16 16:32:42 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-16 16:33:12 Processing 1 messages...
+
+-> 2012-03-16 16:33:12 Sending msg_id: 58
+
+-> 2012-03-16 16:33:12 in send_smtp, Another Ecotemplate with that ID or Name exists.  [65a9a33c-3606-4e7c-98b4-88f578261598/yay3]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-16 16:33:12 ::mime::173
+
+-> 2012-03-16 16:33:13 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-19 12:14:05 ####################################### Starting up cato_messenger #######################################
+
+-> 2012-03-19 12:14:05 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-19 12:14:06 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-19 12:14:06 *****************************************************************
+
+-> 2012-03-19 12:14:06 Starting cato_messenger, PID = 25795.... 
+
+-> 2012-03-19 12:14:06 Database library loaded, starting initialization...
+
+-> 2012-03-19 12:14:06 Initialization complete, connecting to the database...
+
+-> 2012-03-19 12:14:06 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-19 12:14:06 Connected
+
+-> 2012-03-19 12:14:06 Database connection complete.
+
+-> 2012-03-19 12:14:06 Mode is on
+
+-> 2012-03-19 12:14:06 Processing 2 messages...
+
+-> 2012-03-19 12:14:06 Sending msg_id: 59
+
+-> 2012-03-19 12:14:06 in send_smtp, Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [544cd552-2e24-4bb7-aa16-3a26d6084d19] could be found.
+
+  at Globals.Cloud..ctor (System.String sCloudID) [0x00127] in /Users/shannon/Projects/cato/web/classes/Globals.cs:1779 
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-19 12:14:06 ::mime::1
+
+-> 2012-03-19 12:14:08 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-19 12:14:08 Sending msg_id: 60
+
+-> 2012-03-19 12:14:08 in send_smtp, Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [544cd552-2e24-4bb7-aa16-3a26d6084d19] could be found.
+
+  at Globals.Cloud..ctor (System.String sCloudID) [0x00127] in /Users/shannon/Projects/cato/web/classes/Globals.cs:1779 
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-19 12:14:08 ::mime::5
+
+-> 2012-03-19 12:14:09 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-19 12:14:39 Processing 2 messages...
+
+-> 2012-03-19 12:14:39 Sending msg_id: 59
+
+-> 2012-03-19 12:14:39 in send_smtp, Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [544cd552-2e24-4bb7-aa16-3a26d6084d19] could be found.
+
+  at Globals.Cloud..ctor (System.String sCloudID) [0x00127] in /Users/shannon/Projects/cato/web/classes/Globals.cs:1779 
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-19 12:14:39 ::mime::9
+
+-> 2012-03-19 12:14:39 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-19 12:14:39 Sending msg_id: 60
+
+-> 2012-03-19 12:14:39 in send_smtp, Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [544cd552-2e24-4bb7-aa16-3a26d6084d19] could be found.
+
+  at Globals.Cloud..ctor (System.String sCloudID) [0x00127] in /Users/shannon/Projects/cato/web/classes/Globals.cs:1779 
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-19 12:14:39 ::mime::13
+
+-> 2012-03-19 12:14:40 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-20 10:57:44 ####################################### Starting up cato_messenger #######################################
+
+-> 2012-03-20 10:57:44 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-20 10:57:44 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-20 10:57:44 *****************************************************************
+
+-> 2012-03-20 10:57:44 Starting cato_messenger, PID = 75518.... 
+
+-> 2012-03-20 10:57:44 Database library loaded, starting initialization...
+
+-> 2012-03-20 10:57:44 Initialization complete, connecting to the database...
+
+-> 2012-03-20 10:57:44 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-20 10:57:44 Connected
+
+-> 2012-03-20 10:57:44 Database connection complete.
+
+-> 2012-03-20 10:57:45 Mode is on
+
+-> 2012-03-23 11:37:40 ####################################### Starting up cato_messenger #######################################
+
+-> 2012-03-23 11:37:40 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-23 11:37:40 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-23 11:37:40 *****************************************************************
+
+-> 2012-03-23 11:37:40 Starting cato_messenger, PID = 20683.... 
+
+-> 2012-03-23 11:37:40 Database library loaded, starting initialization...
+
+-> 2012-03-23 11:37:40 Initialization complete, connecting to the database...
+
+-> 2012-03-23 11:37:40 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-23 11:37:40 Connected
+
+-> 2012-03-23 11:37:40 Database connection complete.
+
+-> 2012-03-23 11:37:41 Mode is on
+
+-> 2012-03-26 11:03:47 ####################################### Starting up cato_messenger #######################################
+
+-> 2012-03-26 11:03:47 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-26 11:03:47 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-26 11:03:47 *****************************************************************
+
+-> 2012-03-26 11:03:47 Starting cato_messenger, PID = 13878.... 
+
+-> 2012-03-26 11:03:47 Database library loaded, starting initialization...
+
+-> 2012-03-26 11:03:47 Initialization complete, connecting to the database...
+
+-> 2012-03-26 11:03:47 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-26 11:03:47 Connected
+
+-> 2012-03-26 11:03:47 Database connection complete.
+
+-> 2012-03-26 11:03:47 Mode is on
+
+-> 2012-03-26 12:52:44 Processing 1 messages...
+
+-> 2012-03-26 12:52:44 Sending msg_id: 61
+
+-> 2012-03-26 12:52:44 in send_smtp, Could not create Task from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 12:52:44 ::mime::1
+
+-> 2012-03-26 12:52:45 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 12:52:49 Processing 1 messages...
+
+-> 2012-03-26 12:52:49 Sending msg_id: 61
+
+-> 2012-03-26 12:52:49 in send_smtp, Could not create Task from XML: Task.FromXML: Object reference not set to an instance of an object
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 12:52:49 ::mime::1
+
+-> 2012-03-26 12:52:49 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 12:57:50 Processing 1 messages...
+
+-> 2012-03-26 12:57:50 Sending msg_id: 62
+
+-> 2012-03-26 12:57:50 in send_smtp, Could not create Task from XML: Task 'name' attribute is required.
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 12:57:50 ::mime::5
+
+-> 2012-03-26 12:57:50 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 12:58:15 Processing 1 messages...
+
+-> 2012-03-26 12:58:15 Sending msg_id: 62
+
+-> 2012-03-26 12:58:15 in send_smtp, Could not create Task from XML: Task 'name' attribute is required.
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 12:58:15 ::mime::5
+
+-> 2012-03-26 12:58:16 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 13:06:16 Processing 1 messages...
+
+-> 2012-03-26 13:06:16 Sending msg_id: 63
+
+-> 2012-03-26 13:06:16 in send_smtp, Another Task with that ID or Name/Version exists.[c59219f0-a7e8-4131-ae92-348dfb2a1415/a1/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 13:06:16 ::mime::9
+
+-> 2012-03-26 13:06:17 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 13:06:20 Processing 1 messages...
+
+-> 2012-03-26 13:06:20 Sending msg_id: 63
+
+-> 2012-03-26 13:06:20 in send_smtp, Another Task with that ID or Name/Version exists.[c59219f0-a7e8-4131-ae92-348dfb2a1415/a1/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 13:06:20 ::mime::9
+
+-> 2012-03-26 13:06:21 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 13:06:47 Processing 1 messages...
+
+-> 2012-03-26 13:06:47 Sending msg_id: 64
+
+-> 2012-03-26 13:06:47 in send_smtp, Another Task with that ID or Name/Version exists.[5e747ef1-d4b1-4e15-b50f-188703ec0196/a5/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 13:06:47 ::mime::13
+
+-> 2012-03-26 13:06:48 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 13:06:51 Processing 1 messages...
+
+-> 2012-03-26 13:06:51 Sending msg_id: 64
+
+-> 2012-03-26 13:06:51 in send_smtp, Another Task with that ID or Name/Version exists.[5e747ef1-d4b1-4e15-b50f-188703ec0196/a5/1.000]  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)
+
+
+
+/pages/importLoadFile.aspx, 
+
+-> 2012-03-26 13:06:51 ::mime::13
+
+-> 2012-03-26 13:06:52 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:42:50 Processing 2 messages...
+
+-> 2012-03-26 16:42:50 Sending msg_id: 65
+
+-> 2012-03-26 16:42:50 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:42:50 ::mime::17
+
+-> 2012-03-26 16:42:50 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:42:50 Sending msg_id: 66
+
+-> 2012-03-26 16:42:50 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:42:50 ::mime::21
+
+-> 2012-03-26 16:42:51 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:42:54 Processing 2 messages...
+
+-> 2012-03-26 16:42:54 Sending msg_id: 65
+
+-> 2012-03-26 16:42:54 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:42:54 ::mime::17
+
+-> 2012-03-26 16:42:55 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:42:55 Sending msg_id: 66
+
+-> 2012-03-26 16:42:55 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:42:55 ::mime::21
+
+-> 2012-03-26 16:42:55 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:43:55 Processing 2 messages...
+
+-> 2012-03-26 16:43:55 Sending msg_id: 67
+
+-> 2012-03-26 16:43:55 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:43:55 ::mime::25
+
+-> 2012-03-26 16:43:56 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:43:56 Sending msg_id: 68
+
+-> 2012-03-26 16:43:56 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:43:56 ::mime::29
+
+-> 2012-03-26 16:43:56 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:44:21 Processing 2 messages...
+
+-> 2012-03-26 16:44:21 Sending msg_id: 67
+
+-> 2012-03-26 16:44:21 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:44:21 ::mime::25
+
+-> 2012-03-26 16:44:22 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:44:22 Sending msg_id: 68
+
+-> 2012-03-26 16:44:22 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:44:22 ::mime::29
+
+-> 2012-03-26 16:44:22 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:44:52 Processing 2 messages...
+
+-> 2012-03-26 16:44:52 Sending msg_id: 69
+
+-> 2012-03-26 16:44:52 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:44:52 ::mime::33
+
+-> 2012-03-26 16:44:53 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:44:53 Sending msg_id: 70
+
+-> 2012-03-26 16:44:53 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:44:53 ::mime::37
+
+-> 2012-03-26 16:44:54 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:44:56 Processing 2 messages...
+
+-> 2012-03-26 16:44:56 Sending msg_id: 69
+
+-> 2012-03-26 16:44:56 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetProvidersList'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:44:56 ::mime::33
+
+-> 2012-03-26 16:44:57 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:44:57 Sending msg_id: 70
+
+-> 2012-03-26 16:44:57 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:44:57 ::mime::37
+
+-> 2012-03-26 16:44:57 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:45:24 Processing 1 messages...
+
+-> 2012-03-26 16:45:24 Sending msg_id: 71
+
+-> 2012-03-26 16:45:24 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:45:24 ::mime::41
+
+-> 2012-03-26 16:45:24 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:45:27 Processing 1 messages...
+
+-> 2012-03-26 16:45:27 Sending msg_id: 71
+
+-> 2012-03-26 16:45:27 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:45:27 ::mime::41
+
+-> 2012-03-26 16:45:28 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:46:24 Processing 1 messages...
+
+-> 2012-03-26 16:46:24 Sending msg_id: 72
+
+-> 2012-03-26 16:46:24 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:46:24 ::mime::45
+
+-> 2012-03-26 16:46:25 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:46:28 Processing 1 messages...
+
+-> 2012-03-26 16:46:28 Sending msg_id: 72
+
+-> 2012-03-26 16:46:28 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:46:28 ::mime::45
+
+-> 2012-03-26 16:46:29 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:49:55 Processing 1 messages...
+
+-> 2012-03-26 16:49:55 Sending msg_id: 73
+
+-> 2012-03-26 16:49:55 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:49:55 ::mime::49
+
+-> 2012-03-26 16:49:56 send email error -> 400: cannot open libcrypto.dylib
+
+-> 2012-03-26 16:49:59 Processing 1 messages...
+
+-> 2012-03-26 16:49:59 Sending msg_id: 73
+
+-> 2012-03-26 16:49:59 in send_smtp, <?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><title>Error 500</title><style type="text/css">body {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size: .7em;color:black;background-color: white}
+p {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;color:black;margin-top: -5px}
+b {font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:bold;color:black;margin-top: -5px}
+h1 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:18pt;color:red }
+h2 { font-family:"Verdana","DejaVu Sans",sans-serif;font-weight:normal;font-size:14pt;color:maroon }
+pre,code {font-family:"Lucida Console","DejaVu Sans Mono",monospace;font-size: 0.9em,white-space: pre-line}
+div.bodyText {font-family: "Verdana","DejaVu Sans",sans-serif}
+table.sampleCode {width: 100%; background-color: #ffffcc; }
+.errorText {color: red; font-weight: bold}
+.marker {font-weight: bold; color: black;text-decoration: none;}
+.version {color: gray;}
+.error {margin-bottom: 10px;}
+.expandable { text-decoration:underline; font-weight:bold; color:navy; cursor:pointer; }</style></head><body><h1>Server Error in '/' Application</h1><hr style="color: silver"/><h2><em>Request format is unrecognized unexpectedly ending in 'wmGetClouds'.</em></h2>
+<p><strong>Description: </strong>HTTP 500. Error processing request.</p>
+<p><strong>Stack Trace: </strong></p><table summary="Stack Trace" class="sampleCode">
+<tr><td><pre>System.InvalidOperationException: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+&lt;Pipeline&gt;c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 </pre></td></tr>
+</table>
+<hr style="color: silver"/><strong>Version information: </strong> Mono Runtime Version: <tt>2.10.9 (tarball Tue Feb 14 20:23:29 EST 2012)</tt>; ASP.NET Version: <tt>2.0.50727.1433</tt></body></html>
+
+<!--
+[System.InvalidOperationException]: Request format is unrecognized unexpectedly ending in 'wmGetClouds'.
+  at System.Web.Script.Services.RestHandler.ThrowInvalidOperationException (System.String pathInfo) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:108 
+  at System.Web.Script.Services.RestHandler..ctor (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00051] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:104 
+  at System.Web.Script.Services.RestHandler.GetHandler (System.Web.HttpContext context, System.Type type, System.String filePath) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/RestHandler.cs:115 
+  at System.Web.Script.Services.ScriptHandlerFactory.GetHandler (System.Web.HttpContext context, System.String requestType, System.String url, System.String pathTranslated) [0x00083] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web.Extensions/System.Web.Script.Services/ScriptHandlerFactory.cs:65 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url, Boolean ignoreContextHandler) [0x00055] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1633 
+  at System.Web.HttpApplication.GetHandler (System.Web.HttpContext context, System.String url) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1614 
+  at System.Web.HttpApplication+<Pipeline>c__Iterator6.MoveNext () [0x007c8] in /private/tmp/monobuild/build/BUILD/mono-2.10.9/mcs/class/System.Web/System.Web/HttpApplication.cs:1276 
+-->
+
+
+
+/pages/cloudEdit.aspx, 
+
+-> 2012-03-26 16:49:59 ::mime::49
+
+-> 2012-03-26 16:49:59 send email error -> 400: cannot open libcrypto.dylib
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 10)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_messenger.tcl" line 428)
+2012-05-15 12:00:17 ####################################### Starting up cato_messenger #######################################
+2012-05-15 12:00:17 cato_messenger has not been registered, registering...
+2012-05-15 12:00:17 Registering application...
+2012-05-15 12:00:17 Application registered.
+2012-05-15 12:00:57 ####################################### Starting up cato_messenger #######################################
+2012-05-15 12:00:57 cato_messenger has already been registered, updating...
+2012-05-15 12:00:57 application instance = 43
+2012-05-15 12:02:20 ####################################### Starting up cato_messenger #######################################
+2012-05-15 12:02:20 cato_messenger has already been registered, updating...
+2012-05-15 12:02:21 application instance = 43
+2012-05-15 12:02:21 Processing %d messages...10
+2012-05-21 17:29:36 ####################################### Starting up cato_messenger #######################################
+2012-05-21 17:29:36 cato_messenger has already been registered, updating...
+2012-05-21 17:29:36 application instance = 43

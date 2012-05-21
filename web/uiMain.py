@@ -7,8 +7,8 @@ import urllib
 import pickle
 import xml.etree.ElementTree as ET
 
-base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
-lib_path = os.path.join(base_path, "services", "lib")
+base_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+lib_path = os.path.join(base_path, "lib")
 sys.path.append(lib_path)
 conf_path = os.path.join(base_path, "conf")
 sys.path.append(conf_path)
@@ -370,7 +370,7 @@ def CacheMenu():
 if __name__ == "__main__":
     #this is a service, which has a db connection.
     # but we're not gonna use that for gui calls - we'll make our own when needed.
-    server = catocommon.CatoService("web_api")
+    server = catocommon.CatoService("admin_ui")
     server.startup()
 
     if len(sys.argv) < 2:

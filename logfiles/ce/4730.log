@@ -1,0 +1,906 @@
+
+2012-03-15 16:15:41 (main):: Task Instance: {4730} PID: {81656}
+
+2012-03-15 16:15:41 (process_task):: Task Name Chef Wordpress (Client) - Version 1.000 (DEBUG LEVEL: 4), Ecosystem id: 
+
+2012-03-15 16:15:41 (get_steps):: select step_id, upper(codeblock_name), step_order, function_name
+			, function_xml
+			, output_parse_type, output_row_delimiter, output_column_delimiter
+			, variable_xml
+		from task_step 
+		where task_id = 'b185734c-4ff0-4d55-83ee-80c6e043bffa'
+			and commented = 0
+		order by codeblock_name, step_order asc
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: 53d76887-fc8b-46e5-be07-28447561b912 DEFINE_NODE 3 cmd_line {<function name="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">sudo echo '[[validation_key]]' | tee /etc/chef/validation.pem</command><timeout input_type="text" /><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa398c4-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 1 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list</command><timeout input_type="text" /><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39b44-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 2 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">sudo mkdir -p /etc/apt/trusted.gpg.d</command><timeout input_type="text" /><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39a0e-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 3 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">gpg --keyserver keys.gnupg.net --recv-keys 83EF826A</command><timeout input_type="text" /><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39932-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 4 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg &gt; /dev/null</command><timeout input_type="text" /><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa397f2-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 5 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">sudo apt-get update -y</command><timeout input_type="text">300</timeout><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39860-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 6 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">sudo apt-get install opscode-keyring</command><timeout input_type="text" /><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa399a0-6ecc-11e1-94d3-2b562fe8fc39 INSTALL_PACKAGES 8 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">echo "chef chef/chef_server_url string [[chef_server]]" | sudo debconf-set-selections &amp;&amp; sudo apt-get install chef -y</command><timeout input_type="text">300</timeout><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa3a058-6ecc-11e1-94d3-2b562fe8fc39 MAIN 1 aws_ec2_RunInstances {<function command_type="aws_ec2_RunInstances"><aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" /><ImageId input_type="text">ami-1aad5273</ImageId><MinCount input_type="text">1</MinCount><MaxCount input_type="text">1</MaxCount><KeyName input_type="text">csk_www</KeyName><SecurityGroupId.n is_array="true"><SecurityGroupId input_type="text" /></SecurityGroupId.n><SecurityGroup.n is_array="true"><SecurityGroup input_type="text">csk_cato_dev</SecurityGroup></SecurityGroup.n><UserData input_type="text"></UserData><AddressingType input_type="text" /><InstanceType input_type="text">t1.micro</InstanceType><Placement><AvailabilityZone input_type="text" /><GroupName input_type="text" /><Tenancy input_type="text" /></Placement><KernelId input_type="text" /><RamdiskId input_type="text" /><BlockDeviceMapping.n is_array="true"><BlockDeviceMapping><DeviceName input_type="text" /><NoDevice input_type="text" /><VirtualName input_type="text" /><Ebs><SnapshotId input_type="text" /><VolumeSize input_type="text" /><DeleteOnTermination input_type="text" /></Ebs></BlockDeviceMapping></BlockDeviceMapping.n><Monitoring><Enabled input_type="text" /></Monitoring><SubnetId input_type="text" /><DisableApiTermination input_type="text" /><InstanceInitiatedShutdownBehavior input_type="text" /><PrivateIpAddress input_type="text" /><ClientToken input_type="text" /><instance_role input_type="text" label="Server Role" /><result_name input_type="text">result</result_name></function>} 0 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39e6e-6ecc-11e1-94d3-2b562fe8fc39 MAIN 2 new_connection {<function command_type="new_connection"><conn_type input_type="select">ssh - ec2</conn_type><cloud_name input_type="dropdown" style="combo"></cloud_name><asset input_type="text">ubuntu@[[result.//instanceId]]</asset><conn_name input_type="text">CONN1</conn_name></function>} 0 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39d9c-6ecc-11e1-94d3-2b562fe8fc39 MAIN 3 aws_ec2_CreateTags {<function command_type="aws_ec2_CreateTags"><aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" /><ResourceId.n is_array="true"><ResourceId input_type="text">[[result.//instanceId]]</ResourceId></ResourceId.n><Tag.n is_array="true"><Tag><Key input_type="text">Name</Key><Value input_type="text">chef wp client</Value></Tag></Tag.n><result_name label="Result Variable" input_type="text" /></function>} 0 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39e0a-6ecc-11e1-94d3-2b562fe8fc39 MAIN 4 codeblock {<function command_type="codeblock">
+  <codeblock input_type="text">INSTALL_PACKAGES</codeblock>
+</function>} 0 0 0 {}
+
+2012-03-15 16:15:41 (get_steps):: DEBUG: efa39edc-6ecc-11e1-94d3-2b562fe8fc39 MAIN 5 codeblock {<function command_type="codeblock"><codeblock input_type="text">DEFINE_NODE</codeblock></function>} 0 0 0 {}
+
+2012-03-15 16:15:41 (retrieve_params):: Task parameters ><parameters>
+  <parameter id="p_b78ad646-a019-450b-8c61-46d637cf0e20" required="true" prompt="true" encrypt="false" minlength="" maxlength="" minvalue="" maxvalue="" constraint="" constraint_msg="">
+    <name>chef_server</name>
+    <desc>
+    </desc>
+    <values present_as="value">
+      <value id="pv_dbab8f07-88a9-4156-bdd6-23ad1f4b5095">ec2-107-22-122-71.compute-1.amazonaws.com:4000</value>
+    </values>
+  </parameter>
+  <parameter id="p_aae979d3-4ab4-447b-b096-6c0e30fe5343" required="true" prompt="true" encrypt="false" minlength="" maxlength="" minvalue="" maxvalue="" constraint="" constraint_msg="">
+    <name>validation_key</name>
+    <desc>
+    </desc>
+    <values present_as="value">
+      <value id="pv_eba31b75-ea6d-4e42-9657-d7d2cbe30a33">-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEArxblKA7To3PJ+DpqX3lLs2Q/6huR7rCoe/t8wPG+vzQu6rcfAE+1
+GHzRI+S6tkbbLuianyn1jgYKVwnjCcasz2lcsXfJJxl1S+Y1IfQpAVDbU815onFN
+0XqwSoVNJ3n2tcWA1JUVjBkz8YdlvOfW1/OnDjHqRrjBA0Vzxljd/ubECeKwqiOg
+Et1yR/KYvD5s5CPasDTlWSFeLI3FUcC3863rdha9rgoS9xrz4Vq8OmCWYfcBm2oZ
+P8UdNknXf+toQAJ0DGUoctrEf7m4YQ89IhXx8m2tPtz6ovXcUwIoT54SHZyB3EA6
+U+pX5+zz94aKo99AtlMPcm5IZoPYFGTgVwIDAQAB
+-----END RSA PUBLIC KEY-----</value>
+    </values>
+  </parameter>
+</parameters><.
+
+2012-03-15 16:15:41 (parse_input_params):: value node CHEF_SERVER, ec2-107-22-122-71.compute-1.amazonaws.com:4000
+
+2012-03-15 16:15:41 (parse_input_params):: value node VALIDATION_KEY, -----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEArxblKA7To3PJ+DpqX3lLs2Q/6huR7rCoe/t8wPG+vzQu6rcfAE+1
+GHzRI+S6tkbbLuianyn1jgYKVwnjCcasz2lcsXfJJxl1S+Y1IfQpAVDbU815onFN
+0XqwSoVNJ3n2tcWA1JUVjBkz8YdlvOfW1/OnDjHqRrjBA0Vzxljd/ubECeKwqiOg
+Et1yR/KYvD5s5CPasDTlWSFeLI3FUcC3863rdha9rgoS9xrz4Vq8OmCWYfcBm2oZ
+P8UdNknXf+toQAJ0DGUoctrEf7m4YQ89IhXx8m2tPtz6ovXcUwIoT54SHZyB3EA6
+U+pX5+zz94aKo99AtlMPcm5IZoPYFGTgVwIDAQAB
+-----END RSA PUBLIC KEY-----
+
+2012-03-15 16:15:41 (retrieve_params):: Task parameters ><parameters><parameter id="p_b78ad646-a019-450b-8c61-46d637cf0e20" required="true"><name>chef_server</name><values present_as="value"><value>ec2-107-22-122-71.compute-1.amazonaws.com:4000</value></values></parameter><parameter id="p_aae979d3-4ab4-447b-b096-6c0e30fe5343" required="true"><name>validation_key</name><values present_as="value"><value>-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEArxblKA7To3PJ+DpqX3lLs2Q/6huR7rCoe/t8wPG+vzQu6rcfAE+1
+GHzRI+S6tkbbLuianyn1jgYKVwnjCcasz2lcsXfJJxl1S+Y1IfQpAVDbU815onFN
+0XqwSoVNJ3n2tcWA1JUVjBkz8YdlvOfW1/OnDjHqRrjBA0Vzxljd/ubECeKwqiOg
+Et1yR/KYvD5s5CPasDTlWSFeLI3FUcC3863rdha9rgoS9xrz4Vq8OmCWYfcBm2oZ
+P8UdNknXf+toQAJ0DGUoctrEf7m4YQ89IhXx8m2tPtz6ovXcUwIoT54SHZyB3EA6
+U+pX5+zz94aKo99AtlMPcm5IZoPYFGTgVwIDAQAB
+-----END RSA PUBLIC KEY-----</value></values></parameter></parameters><.
+
+2012-03-15 16:15:41 (parse_input_params):: value node CHEF_SERVER, ec2-107-22-122-71.compute-1.amazonaws.com:4000
+
+2012-03-15 16:15:41 (parse_input_params):: value node VALIDATION_KEY, -----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEArxblKA7To3PJ+DpqX3lLs2Q/6huR7rCoe/t8wPG+vzQu6rcfAE+1
+GHzRI+S6tkbbLuianyn1jgYKVwnjCcasz2lcsXfJJxl1S+Y1IfQpAVDbU815onFN
+0XqwSoVNJ3n2tcWA1JUVjBkz8YdlvOfW1/OnDjHqRrjBA0Vzxljd/ubECeKwqiOg
+Et1yR/KYvD5s5CPasDTlWSFeLI3FUcC3863rdha9rgoS9xrz4Vq8OmCWYfcBm2oZ
+P8UdNknXf+toQAJ0DGUoctrEf7m4YQ89IhXx8m2tPtz6ovXcUwIoT54SHZyB3EA6
+U+pX5+zz94aKo99AtlMPcm5IZoPYFGTgVwIDAQAB
+-----END RSA PUBLIC KEY-----
+
+2012-03-15 16:15:41 (run_commands):: ##### Processing Codeblock {MAIN}
+
+2012-03-15 16:15:41 (process_step):: **************************************************************
+
+2012-03-15 16:15:41 (process_step):: **** PROCESSING STEP efa3a058-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:15:41 (process_step):: **************************************************************
+
+2012-03-15 16:15:41 (process_step):: Command is {aws_ec2_RunInstances}
+
+2012-03-15 16:15:41 (aws_Generic):: tclcloud::call ec2 "" RunInstances
+
+2012-03-15 16:15:41 (aws_Generic):: tclcloud::call ec2 {} RunInstances {ImageId ami-1aad5273 MinCount 1 MaxCount 1 KeyName csk_www SecurityGroup.1 csk_cato_dev InstanceType t1.micro} {}
+
+2012-03-15 16:15:41 (insert_audit):: RunInstances ImageId ami-1aad5273 MinCount 1 MaxCount 1 KeyName csk_www SecurityGroup.1 csk_cato_dev InstanceType t1.micro
+OK
+<?xml version="1.0" encoding="UTF-8"?>
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>0e35f881-8e6b-439f-840b-33fc8f997bdc</requestId>
+    <reservationId>r-64b24507</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-71167615</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1b</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+2012-03-15 16:15:41 (aws_Generic):: result is <?xml version="1.0" encoding="UTF-8"?>
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>0e35f881-8e6b-439f-840b-33fc8f997bdc</requestId>
+    <reservationId>r-64b24507</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-71167615</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1b</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+2012-03-15 16:15:41 (aws_Generic):: varname is result
+
+2012-03-15 16:15:41 (aws_get_results):: setting result,1 to <RunInstancesResponse>
+    <requestId>0e35f881-8e6b-439f-840b-33fc8f997bdc</requestId>
+    <reservationId>r-64b24507</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-71167615</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1b</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+
+2012-03-15 16:15:41 (process_step):: **************************************************************
+
+2012-03-15 16:15:41 (process_step):: **** PROCESSING STEP efa39e6e-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:15:41 (process_step):: **************************************************************
+
+2012-03-15 16:15:41 (process_step):: Command is {new_connection}
+
+2012-03-15 16:15:41 (replace_variables):: var name is //instanceId
+
+2012-03-15 16:15:41 (replace_variables):: variable is result
+
+2012-03-15 16:15:41 (replace_variables):: //instanceId = i-71167615
+
+2012-03-15 16:15:42 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>b2bf6728-dc90-4820-a512-48f76f096eda</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-64b24507</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-71167615</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1b</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping/>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-15 16:15:42 (insert_audit):: Instance i-71167615 status is pending. Will check again in 10 seconds.
+
+2012-03-15 16:15:52 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>d2510176-2408-461c-8701-bf14c29f38aa</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-64b24507</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-71167615</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1b</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping/>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-15 16:15:52 (insert_audit):: Instance i-71167615 status is pending. Will check again in 10 seconds.
+
+2012-03-15 16:16:02 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>7878cdfb-961b-4f5f-83e8-03926cb13703</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-64b24507</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-71167615</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1b</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping/>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-15 16:16:02 (insert_audit):: Instance i-71167615 status is pending. Will check again in 10 seconds.
+
+2012-03-15 16:16:12 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>36364c7a-27a0-482e-aec8-a2988ca96bcc</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-64b24507</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-71167615</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>16</code>
+                        <name>running</name>
+                    </instanceState>
+                    <privateDnsName>ip-10-244-219-76.ec2.internal</privateDnsName>
+                    <dnsName>ec2-23-20-98-207.compute-1.amazonaws.com</dnsName>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-15T20:15:41.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1b</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <privateIpAddress>10.244.219.76</privateIpAddress>
+                    <ipAddress>23.20.98.207</ipAddress>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping>
+                        <item>
+                            <deviceName>/dev/sda1</deviceName>
+                            <ebs>
+                                <volumeId>vol-2d075841</volumeId>
+                                <status>attached</status>
+                                <attachTime>2012-03-15T20:16:02.000Z</attachTime>
+                                <deleteOnTermination>true</deleteOnTermination>
+                            </ebs>
+                        </item>
+                    </blockDeviceMapping>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-15 16:16:12 (gather_aws_system_info):: i-71167615 state = running, keyname = csk_www, platform = linux, address = ec2-23-20-98-207.compute-1.amazonaws.com
+
+2012-03-15 16:16:12 (insert_audit):: Connecting to (ubuntu@i-71167615)... 
+
+2012-03-15 16:16:12 (connect_system):: Going into system ec2-23-20-98-207.compute-1.amazonaws.com userid ubuntu with conn type of ssh - ec2
+spawn /usr/bin/ssh -i /tmp/502d2754-fd83-4845-7049-fb3f0ab10202.pem ubuntu@ec2-23-20-98-207.compute-1.amazonaws.com
+
+2012-03-15 16:16:13 (telnet_logon):: Opened ssh.
+
+2012-03-15 16:16:13 (telnet_logon):: Looking for password prompt...
+ssh: connect to host ec2-23-20-98-207.compute-1.amazonaws.com port 22: Connection refused
+
+2012-03-15 16:16:13 (insert_audit):: Timeout attempting to connect to ec2-23-20-98-207.compute-1.amazonaws.com. Will try again in 10 seconds.
+spawn /usr/bin/ssh -i /tmp/5ac18ab3-a77a-4773-4e9d-fbd2c6787095.pem ubuntu@ec2-23-20-98-207.compute-1.amazonaws.com
+
+2012-03-15 16:16:23 (telnet_logon):: Opened ssh.
+
+2012-03-15 16:16:23 (telnet_logon):: Looking for password prompt...
+The authenticity of host 'ec2-23-20-98-207.compute-1.amazonaws.com (23.20.98.207)' can't be established.
+RSA key fingerprint is cc:f8:67:6c:c3:2b:22:e4:22:9a:24:93:c5:35:dc:01.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'ec2-23-20-98-207.compute-1.amazonaws.com,23.20.98.207' (RSA) to the list of known hosts.
+Welcome to Ubuntu 11.04 (GNU/Linux 2.6.38-8-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Mar 15 20:16:23 UTC 2012
+
+  System load:  0.4              Processes:           60
+  Usage of /:   8.2% of 7.87GB   Users logged in:     0
+  Memory usage: 5%               IP address for eth0: 10.244.219.76
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+---------------------------------------------------------------------
+At the moment, only the core of the system is installed. To tune the 
+system to your needs, you can choose to install one or more          
+predefined collections of software by running the following          
+command:                                                             
+                                                                     
+   sudo tasksel --section server                                     
+---------------------------------------------------------------------
+New release 'oneiric' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+]0;ubuntu@ip-10-244-219-76: ~ubuntu@ip-10-244-219-76:~$ unset PROMPT_COMMAND;export PS1='PROMPT>'
+PROMPT>stty -onlcr;export PS2='';stty -echo;unalias ls
+PROMPT>PROMPT>
+2012-03-15 16:16:25 (insert_audit):: ssh connection to host=ec2-23-20-98-207.compute-1.amazonaws.com, user=ubuntu established.
+The authenticity of host 'ec2-23-20-98-207.compute-1.amazonaws.com (23.20.98.207)' can't be established.
+RSA key fingerprint is cc:f8:67:6c:c3:2b:22:e4:22:9a:24:93:c5:35:dc:01.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'ec2-23-20-98-207.compute-1.amazonaws.com,23.20.98.207' (RSA) to the list of known hosts.
+Welcome to Ubuntu 11.04 (GNU/Linux 2.6.38-8-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Mar 15 20:16:23 UTC 2012
+
+  System load:  0.4              Processes:           60
+  Usage of /:   8.2% of 7.87GB   Users logged in:     0
+  Memory usage: 5%               IP address for eth0: 10.244.219.76
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+---------------------------------------------------------------------
+At the moment, only the core of the system is installed. To tune the 
+system to your needs, you can choose to install one or more          
+predefined collections of software by running the following          
+command:                                                             
+                                                                     
+   sudo tasksel --section server                                     
+---------------------------------------------------------------------
+New release 'oneiric' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+]0;ubuntu@ip-10-244-219-76: ~ubuntu@ip-10-244-219-76:~$ )? yes
+Warning: Permanently added 'ec2-23-20-98-207.compute-1.amazonaws.com,23.20.98.207' (RSA) to the list of known hosts.
+Welcome to Ubuntu 11.04 (GNU/Linux 2.6.38-8-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Mar 15 20:16:23 UTC 2012
+
+  System load:  0.4              Processes:           60
+  Usage of /:   8.2% of 7.87GB   Users logged in:     0
+  Memory usage: 5%               IP address for eth0: 10.244.219.76
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+---------------------------------------------------------------------
+At the moment, only the core of the system is installed. To tune the 
+system to your needs, you can choose to install one or more          
+predefined collections of software by running the following          
+command:                                                             
+                                                                     
+   sudo tasksel --section server                                     
+---------------------------------------------------------------------
+New release 'oneiric' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+]0;ubuntu@ip-10-244-219-76: ~ubuntu@ip-10-244-219-76:~$ unset PROMPT_COMMAND;export PS1='PROMPT>'
+PROMPT>stty -onlcr;export PS2='';stty -echo;unalias ls
+PROMPT>
+
+2012-03-15 16:16:25 (new_connection):: New Connection Type = {ssh - ec2}, connection name {CONN1}, connection asset id {i-71167615}.
+
+2012-03-15 16:16:25 (insert_audit):: New connection named CONN1 to asset ubuntu@i-71167615 created with a connection type ssh - ec2
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: **** PROCESSING STEP efa39d9c-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: Command is {aws_ec2_CreateTags}
+
+2012-03-15 16:16:25 (replace_variables):: var name is //instanceId
+
+2012-03-15 16:16:25 (replace_variables):: variable is result
+
+2012-03-15 16:16:25 (replace_variables):: //instanceId = i-71167615
+
+2012-03-15 16:16:25 (aws_Generic):: tclcloud::call ec2 "" CreateTags
+
+2012-03-15 16:16:25 (aws_Generic):: tclcloud::call ec2 {} CreateTags {ResourceId.1 i-71167615 Tag.1.Key Name Tag.1.Value {chef wp client}} {}
+
+2012-03-15 16:16:25 (insert_audit):: CreateTags ResourceId.1 i-71167615 Tag.1.Key Name Tag.1.Value {chef wp client}
+OK
+<?xml version="1.0" encoding="UTF-8"?>
+<CreateTagsResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>98311ead-41e9-4eca-9779-bef016e0449b</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+2012-03-15 16:16:25 (aws_Generic):: result is <?xml version="1.0" encoding="UTF-8"?>
+<CreateTagsResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>98311ead-41e9-4eca-9779-bef016e0449b</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+2012-03-15 16:16:25 (aws_Generic):: varname is 
+
+2012-03-15 16:16:25 (aws_get_results):: setting ,1 to <CreateTagsResponse>
+    <requestId>98311ead-41e9-4eca-9779-bef016e0449b</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: **** PROCESSING STEP efa39e0a-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: Command is {codeblock}
+
+2012-03-15 16:16:25 (run_commands):: ##### Processing Codeblock {INSTALL_PACKAGES}
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: **** PROCESSING STEP efa398c4-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: Command is {cmd_line}
+
+2012-03-15 16:16:25 (process_step):: CONN1, , echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list, , 
+
+2012-03-15 16:16:25 (process_step):: Sending echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list to the process
+deb http://apt.opscode.com/ natty-0.10 main
+PROMPT>
+2012-03-15 16:16:25 (process_step):: **OK**
+
+2012-03-15 16:16:25 (process_step):: The buffer is ->deb http://apt.opscode.com/ natty-0.10 main
+PROMPT><-
+
+2012-03-15 16:16:25 (insert_audit):: echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list
+deb http://apt.opscode.com/ natty-0.10 main
+PROMPT>
+
+2012-03-15 16:16:25 (process_step):: The buffer is ->deb http://apt.opscode.com/ natty-0.10 main<-
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: **** PROCESSING STEP efa39b44-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: Command is {cmd_line}
+
+2012-03-15 16:16:25 (process_step):: CONN1, , sudo mkdir -p /etc/apt/trusted.gpg.d, , 
+
+2012-03-15 16:16:25 (process_step):: Sending sudo mkdir -p /etc/apt/trusted.gpg.d to the process
+PROMPT>
+2012-03-15 16:16:25 (process_step):: **OK**
+
+2012-03-15 16:16:25 (process_step):: The buffer is ->PROMPT><-
+
+2012-03-15 16:16:25 (insert_audit):: sudo mkdir -p /etc/apt/trusted.gpg.d
+PROMPT>
+
+2012-03-15 16:16:25 (process_step):: The buffer is -><-
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: **** PROCESSING STEP efa39a0e-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:25 (process_step):: **************************************************************
+
+2012-03-15 16:16:25 (process_step):: Command is {cmd_line}
+
+2012-03-15 16:16:25 (process_step):: CONN1, , gpg --keyserver keys.gnupg.net --recv-keys 83EF826A, , 
+
+2012-03-15 16:16:25 (process_step):: Sending gpg --keyserver keys.gnupg.net --recv-keys 83EF826A to the process
+gpg: directory `/home/ubuntu/.gnupg' created
+gpg: new configuration file `/home/ubuntu/.gnupg/gpg.conf' created
+gpg: WARNING: options in `/home/ubuntu/.gnupg/gpg.conf' are not yet active during this run
+gpg: keyring `/home/ubuntu/.gnupg/secring.gpg' created
+gpg: keyring `/home/ubuntu/.gnupg/pubring.gpg' created
+gpg: requesting key 83EF826A from hkp server keys.gnupg.net
+
+2012-03-15 16:16:45 (process_step):: **TIMED OUT**
+
+2012-03-15 16:16:45 (release_all):: Releasing all connections
+
+2012-03-15 16:16:45 (release_connection):: releasing CONN1
+
+2012-03-15 16:16:45 (release_system):: ******** Logging out {CONN1} ********
+
+2012-03-15 16:16:45 (release_system):: Sending {exit} to spawn_id {exp14}, conn_type {ssh - ec2}.
+
+2012-03-15 16:16:46 (release_system):: Timeout.
+
+2012-03-15 16:16:46 (release_all):: Deleting key file 502d2754-fd83-4845-7049-fb3f0ab10202.pem
+
+2012-03-15 16:16:46 (release_all):: Deleting key file 5ac18ab3-a77a-4773-4e9d-fbd2c6787095.pem
+
+2012-03-15 16:16:46 (insert_audit):: TIMEOUT on command:
+gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+gpg: directory `/home/ubuntu/.gnupg' created
+gpg: new configuration file `/home/ubuntu/.gnupg/gpg.conf' created
+gpg: WARNING: options in `/home/ubuntu/.gnupg/gpg.conf' are not yet active during this run
+gpg: keyring `/home/ubuntu/.gnupg/secring.gpg' created
+gpg: keyring `/home/ubuntu/.gnupg/pubring.gpg' created
+gpg: requesting key 83EF826A from hkp server keys.gnupg.net
+
+
+2012-03-15 16:16:46 (update_status):: Updating task instance {4730} to {Error}.
+
+2012-03-15 16:16:46 (run_task_instance):: ERROR -> Error Code: 2016, TIMEOUT while performing the command: gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+gpg: directory `/home/ubuntu/.gnupg' created
+gpg: new configuration file `/home/ubuntu/.gnupg/gpg.conf' created
+gpg: WARNING: options in `/home/ubuntu/.gnupg/gpg.conf' are not yet active during this run
+gpg: keyring `/home/ubuntu/.gnupg/secring.gpg' created
+gpg: keyring `/home/ubuntu/.gnupg/pubring.gpg' created
+gpg: requesting key 83EF826A from hkp server keys.gnupg.net
+
+ for step id efa39a0e-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:46 (run_task_instance):: TIMEOUT while performing the command: gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+gpg: directory `/home/ubuntu/.gnupg' created
+gpg: new configuration file `/home/ubuntu/.gnupg/gpg.conf' created
+gpg: WARNING: options in `/home/ubuntu/.gnupg/gpg.conf' are not yet active during this run
+gpg: keyring `/home/ubuntu/.gnupg/secring.gpg' created
+gpg: keyring `/home/ubuntu/.gnupg/pubring.gpg' created
+gpg: requesting key 83EF826A from hkp server keys.gnupg.net
+
+ for step id efa39a0e-6ecc-11e1-94d3-2b562fe8fc39
+    (procedure "error_out" line 1)
+    invoked from within
+"error_out $error_msg 2016"
+    invoked from within
+"expect {
+					-re "$negative_response" {
+								output "**ERROR**" 1
+						#if {$FILTER_BUFFER == 0} {
+							set output_buffer $expect_out(buffer)
+	..."
+    ("cmd_line" arm line 66)
+    invoked from within
+"switch -glob -- $function_name {
+	       "aws_*" {
+		      set aws_split [split $function_name "_"]
+		      aws_Generic [lindex $aws_split 1] [lindex ..."
+    (procedure "process_step" line 55)
+    invoked from within
+"process_step $codeblock_step $task_name"
+    (procedure "run_commands" line 44)
+    invoked from within
+"run_commands $task_name $new_codeblock"
+    ("codeblock" arm line 11)
+    invoked from within
+"switch -glob -- $function_name {
+	       "aws_*" {
+		      set aws_split [split $function_name "_"]
+		      aws_Generic [lindex $aws_split 1] [lindex ..."
+    (procedure "process_step" line 55)
+    invoked from within
+"process_step $codeblock_step $task_name"
+    (procedure "run_commands" line 44)
+    invoked from within
+"run_commands $TASK_ID MAIN"
+    (procedure "process_task" line 66)
+    invoked from within
+"process_task"
+
+2012-03-15 16:16:46 (insert_audit):: ERROR -> Error Code: 2016, TIMEOUT while performing the command: gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+gpg: directory `/home/ubuntu/.gnupg' created
+gpg: new configuration file `/home/ubuntu/.gnupg/gpg.conf' created
+gpg: WARNING: options in `/home/ubuntu/.gnupg/gpg.conf' are not yet active during this run
+gpg: keyring `/home/ubuntu/.gnupg/secring.gpg' created
+gpg: keyring `/home/ubuntu/.gnupg/pubring.gpg' created
+gpg: requesting key 83EF826A from hkp server keys.gnupg.net
+
+ for step id efa39a0e-6ecc-11e1-94d3-2b562fe8fc39
+
+2012-03-15 16:16:46 (run_task_instance):: can't read "::CE_NAME": no such variable
+
+2012-03-15 16:16:46 (update_status):: Updating task instance {4730} to {Error}.
+
+2012-03-15 16:16:46 (insert_audit):: Erroring task instance {4730}... error code {NONE}.
+
+2012-03-15 16:16:46 (update_status):: Updating task instance {4730} to {Error}.
+
+2012-03-15 16:16:46 (release_all):: Releasing all connections
+
+2012-03-15 16:16:46 (release_all):: Deleting key file 502d2754-fd83-4845-7049-fb3f0ab10202.pem
+
+2012-03-15 16:16:46 (release_all):: Deleting key file 5ac18ab3-a77a-4773-4e9d-fbd2c6787095.pem
+
+2012-03-15 16:16:46 (insert_audit):: <result_summary><items></items></result_summary>

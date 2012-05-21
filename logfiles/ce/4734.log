@@ -1,0 +1,364 @@
+
+2012-03-19 12:14:06 (main):: Task Instance: {4734} PID: {25800}
+
+2012-03-19 12:14:06 (process_task):: Task Name Chef Client (via userdata) - Version 1.000 (DEBUG LEVEL: 4), Ecosystem id: 
+
+2012-03-19 12:14:06 (get_steps):: select step_id, upper(codeblock_name), step_order, function_name
+			, function_xml
+			, output_parse_type, output_row_delimiter, output_column_delimiter
+			, variable_xml
+		from task_step 
+		where task_id = '9d48cc1f-1e5e-4fb4-89c0-ce91d4e9dd60'
+			and commented = 0
+		order by codeblock_name, step_order asc
+
+2012-03-19 12:14:06 (get_steps):: DEBUG: 069ef272-71dd-11e1-8593-6ac3918d0fa3 MAIN 1 set_variable {<function command_type="set_variable"><variable><name input_type="text">userdata</name><value input_type="text">#!/bin/sh
+set -e -x
+
+echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list
+
+sudo mkdir -p /etc/apt/trusted.gpg.d
+
+gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+
+gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg &gt; /dev/null
+
+
+
+
+
+
+
+apt-get --yes --quiet update
+
+sudo apt-get install opscode-keyring
+
+echo "chef chef/chef_server_url string none" | sudo debconf-set-selections &amp;&amp; sudo apt-get install chef -y
+
+apt-get --yes --quiet install git
+
+echo -e "file_cache_path \"/var/chef-repo\"\ncookbook_path \"/var/chef-repo/cookbooks\"" | sudo tee /etc/chef/solo.rb
+
+cd /var
+sudo git clone git://github.com/opscode/chef-repo.git
+
+sudo knife cookbook site install wordpress --cookbook-path /var/chef-repo/cookbooks
+
+
+echo '{
+    "wordpress": {
+        "db": {
+            "database": "mywpdb",
+            "host": "localhost",
+            "user": "mywp",
+            "password": "mywp"
+        }
+    },
+    "run_list": ["recipe[wordpress]"]
+}' | tee ~/node.json
+
+
+
+</value><modifier input_type="select">DEFAULT</modifier></variable></function>} 0 0 0 {}
+
+2012-03-19 12:14:06 (get_steps):: DEBUG: 069ef204-71dd-11e1-8593-6ac3918d0fa3 MAIN 2 aws_ec2_RunInstances {<function command_type="aws_ec2_RunInstances"><aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" /><ImageId input_type="text">ami-1aad5273</ImageId><MinCount input_type="text">1</MinCount><MaxCount input_type="text">1</MaxCount><KeyName input_type="text">csk_www</KeyName><SecurityGroupId.n is_array="true"><SecurityGroupId input_type="text" /></SecurityGroupId.n><SecurityGroup.n is_array="true"><SecurityGroup input_type="text">csk_cato_dev</SecurityGroup></SecurityGroup.n><UserData input_type="text"></UserData><AddressingType input_type="text" /><InstanceType input_type="text">t1.micro</InstanceType><Placement><AvailabilityZone input_type="text" /><GroupName input_type="text" /><Tenancy input_type="text" /></Placement><KernelId input_type="text" /><RamdiskId input_type="text" /><BlockDeviceMapping.n is_array="true"><BlockDeviceMapping><DeviceName input_type="text" /><NoDevice input_type="text" /><VirtualName input_type="text" /><Ebs><SnapshotId input_type="text" /><VolumeSize input_type="text" /><DeleteOnTermination input_type="text" /></Ebs></BlockDeviceMapping></BlockDeviceMapping.n><Monitoring><Enabled input_type="text" /></Monitoring><SubnetId input_type="text" /><DisableApiTermination input_type="text" /><InstanceInitiatedShutdownBehavior input_type="text" /><PrivateIpAddress input_type="text" /><ClientToken input_type="text" /><instance_role input_type="text" label="Server Role" /><result_name input_type="text">result</result_name></function>} 0 0 0 {}
+
+2012-03-19 12:14:06 (get_steps):: DEBUG: 069eef48-71dd-11e1-8593-6ac3918d0fa3 MAIN 4 aws_ec2_CreateTags {<function command_type="aws_ec2_CreateTags"><aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" /><ResourceId.n is_array="true"><ResourceId input_type="text">[[result.//instanceId]]</ResourceId></ResourceId.n><Tag.n is_array="true"><Tag><Key input_type="text">Name</Key><Value input_type="text">chef wp test</Value></Tag></Tag.n><result_name label="Result Variable" input_type="text" /></function>} 0 0 0 {}
+
+2012-03-19 12:14:06 (retrieve_params):: Task parameters ><parameters>
+</parameters><.
+
+2012-03-19 12:14:06 (retrieve_params):: Task parameters ><parameters><parameter id="p_35ea8f4a-f160-4e61-9f81-d347ff231f91" required="true"><name>cookbooks</name><values present_as="list"><value>wordpress</value></values></parameter></parameters><.
+
+2012-03-19 12:14:06 (parse_input_params):: value node COOKBOOKS, wordpress
+
+2012-03-19 12:14:06 (run_commands):: ##### Processing Codeblock {MAIN}
+
+2012-03-19 12:14:06 (process_step):: **************************************************************
+
+2012-03-19 12:14:06 (process_step):: **** PROCESSING STEP 069ef272-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 12:14:06 (process_step):: **************************************************************
+
+2012-03-19 12:14:06 (process_step):: Command is {set_variable}
+
+2012-03-19 12:14:06 (process_step):: userdata, #!/bin/sh
+set -e -x
+
+echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list
+
+sudo mkdir -p /etc/apt/trusted.gpg.d
+
+gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+
+gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg &gt; /dev/null
+
+
+
+
+
+
+
+apt-get --yes --quiet update
+
+sudo apt-get install opscode-keyring
+
+echo "chef chef/chef_server_url string none" | sudo debconf-set-selections &amp;&amp; sudo apt-get install chef -y
+
+apt-get --yes --quiet install git
+
+echo -e "file_cache_path \"/var/chef-repo\"\ncookbook_path \"/var/chef-repo/cookbooks\"" | sudo tee /etc/chef/solo.rb
+
+cd /var
+sudo git clone git://github.com/opscode/chef-repo.git
+
+sudo knife cookbook site install wordpress --cookbook-path /var/chef-repo/cookbooks
+
+
+echo '{
+    "wordpress": {
+        "db": {
+            "database": "mywpdb",
+            "host": "localhost",
+            "user": "mywp",
+            "password": "mywp"
+        }
+    },
+    "run_list": ["recipe[wordpress]"]
+}' | tee ~/node.json
+
+
+
+
+
+2012-03-19 12:14:06 (process_step):: **************************************************************
+
+2012-03-19 12:14:06 (process_step):: **** PROCESSING STEP 069ef204-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 12:14:06 (process_step):: **************************************************************
+
+2012-03-19 12:14:06 (process_step):: Command is {aws_ec2_RunInstances}
+
+2012-03-19 12:14:07 (aws_Generic):: tclcloud::call ec2 "" RunInstances
+
+2012-03-19 12:14:07 (aws_Generic):: tclcloud::call ec2 {} RunInstances {ImageId ami-1aad5273 MinCount 1 MaxCount 1 KeyName csk_www SecurityGroup.1 csk_cato_dev InstanceType t1.micro} {}
+
+2012-03-19 12:14:07 (insert_audit):: RunInstances ImageId ami-1aad5273 MinCount 1 MaxCount 1 KeyName csk_www SecurityGroup.1 csk_cato_dev InstanceType t1.micro
+OK
+<?xml version="1.0" encoding="UTF-8"?>
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>fc7702de-0a82-4286-b142-0bb8fa127c3f</requestId>
+    <reservationId>r-fe10d09d</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-2d235949</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-19T16:14:07.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1b</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+2012-03-19 12:14:07 (aws_Generic):: result is <?xml version="1.0" encoding="UTF-8"?>
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>fc7702de-0a82-4286-b142-0bb8fa127c3f</requestId>
+    <reservationId>r-fe10d09d</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-2d235949</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-19T16:14:07.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1b</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+2012-03-19 12:14:07 (aws_Generic):: varname is result
+
+2012-03-19 12:14:07 (aws_get_results):: setting result,1 to <RunInstancesResponse>
+    <requestId>fc7702de-0a82-4286-b142-0bb8fa127c3f</requestId>
+    <reservationId>r-fe10d09d</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-2d235949</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-19T16:14:07.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1b</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+
+2012-03-19 12:14:07 (process_step):: **************************************************************
+
+2012-03-19 12:14:07 (process_step):: **** PROCESSING STEP 069eef48-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 12:14:07 (process_step):: **************************************************************
+
+2012-03-19 12:14:07 (process_step):: Command is {aws_ec2_CreateTags}
+
+2012-03-19 12:14:07 (replace_variables):: var name is //instanceId
+
+2012-03-19 12:14:07 (replace_variables):: variable is result
+
+2012-03-19 12:14:07 (replace_variables):: //instanceId = i-2d235949
+
+2012-03-19 12:14:07 (aws_Generic):: tclcloud::call ec2 "" CreateTags
+
+2012-03-19 12:14:07 (aws_Generic):: tclcloud::call ec2 {} CreateTags {ResourceId.1 i-2d235949 Tag.1.Key Name Tag.1.Value {chef wp test}} {}
+
+2012-03-19 12:14:08 (insert_audit):: CreateTags ResourceId.1 i-2d235949 Tag.1.Key Name Tag.1.Value {chef wp test}
+OK
+<?xml version="1.0" encoding="UTF-8"?>
+<CreateTagsResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>956e3f50-17e4-47a3-97c8-beddf0fba240</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+2012-03-19 12:14:08 (aws_Generic):: result is <?xml version="1.0" encoding="UTF-8"?>
+<CreateTagsResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>956e3f50-17e4-47a3-97c8-beddf0fba240</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+2012-03-19 12:14:08 (aws_Generic):: varname is 
+
+2012-03-19 12:14:08 (aws_get_results):: setting ,1 to <CreateTagsResponse>
+    <requestId>956e3f50-17e4-47a3-97c8-beddf0fba240</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+
+2012-03-19 12:14:08 (run_task_instance):: Task Completed Normally
+
+2012-03-19 12:14:08 (update_status):: Updating task instance {4734} to {Completed}.
+
+2012-03-19 12:14:08 (release_all):: Releasing all connections
+
+2012-03-19 12:14:08 (insert_audit):: <result_summary><items></items></result_summary>

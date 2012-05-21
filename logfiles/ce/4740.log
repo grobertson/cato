@@ -1,0 +1,901 @@
+
+2012-03-19 15:43:16 (main):: Task Instance: {4740} PID: {40081}
+
+2012-03-19 15:43:16 (process_task):: Task Name Chef Client (via userdata) - Version 1.000 (DEBUG LEVEL: 4), Ecosystem id: 
+
+2012-03-19 15:43:16 (get_steps):: select step_id, upper(codeblock_name), step_order, function_name
+			, function_xml
+			, output_parse_type, output_row_delimiter, output_column_delimiter
+			, variable_xml
+		from task_step 
+		where task_id = '9d48cc1f-1e5e-4fb4-89c0-ce91d4e9dd60'
+			and commented = 0
+		order by codeblock_name, step_order asc
+
+2012-03-19 15:43:16 (get_steps):: DEBUG: 069ef272-71dd-11e1-8593-6ac3918d0fa3 MAIN 1 set_variable {<function command_type="set_variable"><variable><name input_type="text">userdata</name><value input_type="text">#!/bin/bash
+set -e -x
+
+echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list
+
+sudo mkdir -p /etc/apt/trusted.gpg.d
+gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg &gt; /dev/null
+
+sudo apt-get --yes --quiet update
+
+sudo apt-get install opscode-keyring
+
+#this line passes some config so the apt-get chef install doesn't prompt for values
+echo "chef chef/chef_server_url string none" | sudo debconf-set-selections &amp;&amp; sudo apt-get install chef -y
+
+sudo apt-get --yes --quiet install git
+
+
+cd /var
+sudo git clone git://github.com/opscode/chef-repo.git
+
+sudo knife cookbook site install wordpress --cookbook-path /var/chef-repo/cookbooks
+
+echo -e "file_cache_path \"/var/chef-repo\"\ncookbook_path \"/var/chef-repo/cookbooks\"" | sudo tee /etc/chef/solo.rb
+
+echo '{
+    "wordpress": {
+        "db": {
+            "database": "mywpdb",
+            "host": "localhost",
+            "user": "mywp",
+            "password": "mywp"
+        }
+    },
+    "run_list": ["recipe[wordpress]"]
+}' | sudo tee /home/ubuntu/node.json
+
+sudo touch /home/ubuntu/complete
+</value><modifier input_type="select">DEFAULT</modifier></variable></function>} 0 0 0 {}
+
+2012-03-19 15:43:16 (get_steps):: DEBUG: 069ef204-71dd-11e1-8593-6ac3918d0fa3 MAIN 2 aws_ec2_RunInstances {<function command_type="aws_ec2_RunInstances"><aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" /><ImageId input_type="text">ami-1aad5273</ImageId><MinCount input_type="text">1</MinCount><MaxCount input_type="text">1</MaxCount><KeyName input_type="text">csk_www</KeyName><SecurityGroupId.n is_array="true"><SecurityGroupId input_type="text" /></SecurityGroupId.n><SecurityGroup.n is_array="true"><SecurityGroup input_type="text">csk_cato_dev</SecurityGroup></SecurityGroup.n><UserData input_type="text">[[userdata]]</UserData><AddressingType input_type="text" /><InstanceType input_type="text">t1.micro</InstanceType><Placement><AvailabilityZone input_type="text" /><GroupName input_type="text" /><Tenancy input_type="text" /></Placement><KernelId input_type="text" /><RamdiskId input_type="text" /><BlockDeviceMapping.n is_array="true"><BlockDeviceMapping><DeviceName input_type="text" /><NoDevice input_type="text" /><VirtualName input_type="text" /><Ebs><SnapshotId input_type="text" /><VolumeSize input_type="text" /><DeleteOnTermination input_type="text" /></Ebs></BlockDeviceMapping></BlockDeviceMapping.n><Monitoring><Enabled input_type="text" /></Monitoring><SubnetId input_type="text" /><DisableApiTermination input_type="text" /><InstanceInitiatedShutdownBehavior input_type="text" /><PrivateIpAddress input_type="text" /><ClientToken input_type="text" /><instance_role input_type="text" label="Server Role" /><result_name input_type="text">result</result_name></function>} 0 0 0 {}
+
+2012-03-19 15:43:16 (get_steps):: DEBUG: 069ef024-71dd-11e1-8593-6ac3918d0fa3 MAIN 3 new_connection {<function command_type="new_connection"><conn_type input_type="select">ssh - ec2</conn_type><cloud_name input_type="dropdown" style="combo"></cloud_name><asset input_type="text">ubuntu@[[result.//instanceId]]</asset><conn_name input_type="text">CONN1</conn_name></function>} 0 0 0 {}
+
+2012-03-19 15:43:16 (get_steps):: DEBUG: 069eef48-71dd-11e1-8593-6ac3918d0fa3 MAIN 4 aws_ec2_CreateTags {<function command_type="aws_ec2_CreateTags"><aws_region input_type="dropdown" label="AWS Region" hr_after="true" style="combo" datasource="function" dataset="ddDataSource_GetAWSClouds" /><ResourceId.n is_array="true"><ResourceId input_type="text">[[result.//instanceId]]</ResourceId></ResourceId.n><Tag.n is_array="true"><Tag><Key input_type="text">Name</Key><Value input_type="text">chef wp test</Value></Tag></Tag.n><result_name label="Result Variable" input_type="text" /></function>} 0 0 0 {}
+
+2012-03-19 15:43:16 (get_steps):: DEBUG: 069eeeda-71dd-11e1-8593-6ac3918d0fa3 MAIN 5 cmd_line {<function command_type="cmd_line" parse_method="2"><conn_name input_type="text">CONN1</conn_name><command input_type="text">while [ ! -e complete ]; do
+sleep 10
+done;
+if \[\[ -a complete \]\]; then sudo chef-solo -j ~/node.json; fi;</command><timeout input_type="text">300</timeout><positive_response input_type="text" /><negative_response input_type="text" /></function>} 2 0 0 {}
+
+2012-03-19 15:43:16 (retrieve_params):: Task parameters ><parameters>
+</parameters><.
+
+2012-03-19 15:43:16 (retrieve_params):: Task parameters ><parameters></parameters><.
+
+2012-03-19 15:43:16 (run_commands):: ##### Processing Codeblock {MAIN}
+
+2012-03-19 15:43:16 (process_step):: **************************************************************
+
+2012-03-19 15:43:16 (process_step):: **** PROCESSING STEP 069ef272-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 15:43:16 (process_step):: **************************************************************
+
+2012-03-19 15:43:16 (process_step):: Command is {set_variable}
+
+2012-03-19 15:43:16 (process_step):: userdata, #!/bin/bash
+set -e -x
+
+echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | sudo tee /etc/apt/sources.list.d/opscode.list
+
+sudo mkdir -p /etc/apt/trusted.gpg.d
+gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg &gt; /dev/null
+
+sudo apt-get --yes --quiet update
+
+sudo apt-get install opscode-keyring
+
+#this line passes some config so the apt-get chef install doesn't prompt for values
+echo "chef chef/chef_server_url string none" | sudo debconf-set-selections &amp;&amp; sudo apt-get install chef -y
+
+sudo apt-get --yes --quiet install git
+
+
+cd /var
+sudo git clone git://github.com/opscode/chef-repo.git
+
+sudo knife cookbook site install wordpress --cookbook-path /var/chef-repo/cookbooks
+
+echo -e "file_cache_path \"/var/chef-repo\"\ncookbook_path \"/var/chef-repo/cookbooks\"" | sudo tee /etc/chef/solo.rb
+
+echo '{
+    "wordpress": {
+        "db": {
+            "database": "mywpdb",
+            "host": "localhost",
+            "user": "mywp",
+            "password": "mywp"
+        }
+    },
+    "run_list": ["recipe[wordpress]"]
+}' | sudo tee /home/ubuntu/node.json
+
+sudo touch /home/ubuntu/complete
+
+
+2012-03-19 15:43:16 (process_step):: **************************************************************
+
+2012-03-19 15:43:16 (process_step):: **** PROCESSING STEP 069ef204-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 15:43:16 (process_step):: **************************************************************
+
+2012-03-19 15:43:16 (process_step):: Command is {aws_ec2_RunInstances}
+
+2012-03-19 15:43:16 (aws_Generic):: tclcloud::call ec2 "" RunInstances
+
+2012-03-19 15:43:16 (aws_Generic):: tclcloud::call ec2 {} RunInstances {ImageId ami-1aad5273 MinCount 1 MaxCount 1 KeyName csk_www SecurityGroup.1 csk_cato_dev UserData {IyEvYmluL2Jhc2gKc2V0IC1lIC14CgplY2hvICJkZWIgaHR0cDovL2FwdC5vcHNjb2RlLmNvbS8g
+YGxzYl9yZWxlYXNlIC1jc2AtMC4xMCBtYWluIiB8IHN1ZG8gdGVlIC9ldGMvYXB0L3NvdXJjZXMu
+bGlzdC5kL29wc2NvZGUubGlzdAoKc3VkbyBta2RpciAtcCAvZXRjL2FwdC90cnVzdGVkLmdwZy5k
+CmdwZyAtLWtleXNlcnZlciBrZXlzLmdudXBnLm5ldCAtLXJlY3Yta2V5cyA4M0VGODI2QQpncGcg
+LS1leHBvcnQgcGFja2FnZXNAb3BzY29kZS5jb20gfCBzdWRvIHRlZSAvZXRjL2FwdC90cnVzdGVk
+LmdwZy5kL29wc2NvZGUta2V5cmluZy5ncGcgPiAvZGV2L251bGwKCnN1ZG8gYXB0LWdldCAtLXll
+cyAtLXF1aWV0IHVwZGF0ZQoKc3VkbyBhcHQtZ2V0IGluc3RhbGwgb3BzY29kZS1rZXlyaW5nCgoj
+dGhpcyBsaW5lIHBhc3NlcyBzb21lIGNvbmZpZyBzbyB0aGUgYXB0LWdldCBjaGVmIGluc3RhbGwg
+ZG9lc24ndCBwcm9tcHQgZm9yIHZhbHVlcwplY2hvICJjaGVmIGNoZWYvY2hlZl9zZXJ2ZXJfdXJs
+IHN0cmluZyBub25lIiB8IHN1ZG8gZGViY29uZi1zZXQtc2VsZWN0aW9ucyAmJiBzdWRvIGFwdC1n
+ZXQgaW5zdGFsbCBjaGVmIC15CgpzdWRvIGFwdC1nZXQgLS15ZXMgLS1xdWlldCBpbnN0YWxsIGdp
+dAoKCmNkIC92YXIKc3VkbyBnaXQgY2xvbmUgZ2l0Oi8vZ2l0aHViLmNvbS9vcHNjb2RlL2NoZWYt
+cmVwby5naXQKCnN1ZG8ga25pZmUgY29va2Jvb2sgc2l0ZSBpbnN0YWxsIHdvcmRwcmVzcyAtLWNv
+b2tib29rLXBhdGggL3Zhci9jaGVmLXJlcG8vY29va2Jvb2tzCgplY2hvIC1lICJmaWxlX2NhY2hl
+X3BhdGggXCIvdmFyL2NoZWYtcmVwb1wiXG5jb29rYm9va19wYXRoIFwiL3Zhci9jaGVmLXJlcG8v
+Y29va2Jvb2tzXCIiIHwgc3VkbyB0ZWUgL2V0Yy9jaGVmL3NvbG8ucmIKCmVjaG8gJ3sKICAgICJ3
+b3JkcHJlc3MiOiB7CiAgICAgICAgImRiIjogewogICAgICAgICAgICAiZGF0YWJhc2UiOiAibXl3
+cGRiIiwKICAgICAgICAgICAgImhvc3QiOiAibG9jYWxob3N0IiwKICAgICAgICAgICAgInVzZXIi
+OiAibXl3cCIsCiAgICAgICAgICAgICJwYXNzd29yZCI6ICJteXdwIgogICAgICAgIH0KICAgIH0s
+CiAgICAicnVuX2xpc3QiOiBbInJlY2lwZVt3b3JkcHJlc3NdIl0KfScgfCBzdWRvIHRlZSAvaG9t
+ZS91YnVudHUvbm9kZS5qc29uCgpzdWRvIHRvdWNoIC9ob21lL3VidW50dS9jb21wbGV0ZQo=} InstanceType t1.micro} {}
+
+2012-03-19 15:43:17 (insert_audit):: RunInstances ImageId ami-1aad5273 MinCount 1 MaxCount 1 KeyName csk_www SecurityGroup.1 csk_cato_dev UserData {IyEvYmluL2Jhc2gKc2V0IC1lIC14CgplY2hvICJkZWIgaHR0cDovL2FwdC5vcHNjb2RlLmNvbS8g
+YGxzYl9yZWxlYXNlIC1jc2AtMC4xMCBtYWluIiB8IHN1ZG8gdGVlIC9ldGMvYXB0L3NvdXJjZXMu
+bGlzdC5kL29wc2NvZGUubGlzdAoKc3VkbyBta2RpciAtcCAvZXRjL2FwdC90cnVzdGVkLmdwZy5k
+CmdwZyAtLWtleXNlcnZlciBrZXlzLmdudXBnLm5ldCAtLXJlY3Yta2V5cyA4M0VGODI2QQpncGcg
+LS1leHBvcnQgcGFja2FnZXNAb3BzY29kZS5jb20gfCBzdWRvIHRlZSAvZXRjL2FwdC90cnVzdGVk
+LmdwZy5kL29wc2NvZGUta2V5cmluZy5ncGcgPiAvZGV2L251bGwKCnN1ZG8gYXB0LWdldCAtLXll
+cyAtLXF1aWV0IHVwZGF0ZQoKc3VkbyBhcHQtZ2V0IGluc3RhbGwgb3BzY29kZS1rZXlyaW5nCgoj
+dGhpcyBsaW5lIHBhc3NlcyBzb21lIGNvbmZpZyBzbyB0aGUgYXB0LWdldCBjaGVmIGluc3RhbGwg
+ZG9lc24ndCBwcm9tcHQgZm9yIHZhbHVlcwplY2hvICJjaGVmIGNoZWYvY2hlZl9zZXJ2ZXJfdXJs
+IHN0cmluZyBub25lIiB8IHN1ZG8gZGViY29uZi1zZXQtc2VsZWN0aW9ucyAmJiBzdWRvIGFwdC1n
+ZXQgaW5zdGFsbCBjaGVmIC15CgpzdWRvIGFwdC1nZXQgLS15ZXMgLS1xdWlldCBpbnN0YWxsIGdp
+dAoKCmNkIC92YXIKc3VkbyBnaXQgY2xvbmUgZ2l0Oi8vZ2l0aHViLmNvbS9vcHNjb2RlL2NoZWYt
+cmVwby5naXQKCnN1ZG8ga25pZmUgY29va2Jvb2sgc2l0ZSBpbnN0YWxsIHdvcmRwcmVzcyAtLWNv
+b2tib29rLXBhdGggL3Zhci9jaGVmLXJlcG8vY29va2Jvb2tzCgplY2hvIC1lICJmaWxlX2NhY2hl
+X3BhdGggXCIvdmFyL2NoZWYtcmVwb1wiXG5jb29rYm9va19wYXRoIFwiL3Zhci9jaGVmLXJlcG8v
+Y29va2Jvb2tzXCIiIHwgc3VkbyB0ZWUgL2V0Yy9jaGVmL3NvbG8ucmIKCmVjaG8gJ3sKICAgICJ3
+b3JkcHJlc3MiOiB7CiAgICAgICAgImRiIjogewogICAgICAgICAgICAiZGF0YWJhc2UiOiAibXl3
+cGRiIiwKICAgICAgICAgICAgImhvc3QiOiAibG9jYWxob3N0IiwKICAgICAgICAgICAgInVzZXIi
+OiAibXl3cCIsCiAgICAgICAgICAgICJwYXNzd29yZCI6ICJteXdwIgogICAgICAgIH0KICAgIH0s
+CiAgICAicnVuX2xpc3QiOiBbInJlY2lwZVt3b3JkcHJlc3NdIl0KfScgfCBzdWRvIHRlZSAvaG9t
+ZS91YnVudHUvbm9kZS5qc29uCgpzdWRvIHRvdWNoIC9ob21lL3VidW50dS9jb21wbGV0ZQo=} InstanceType t1.micro
+OK
+<?xml version="1.0" encoding="UTF-8"?>
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>bdcd3ddf-bd33-4a9d-8630-896cfc23a5a4</requestId>
+    <reservationId>r-9014d7f3</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-db7035bf</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1a</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+2012-03-19 15:43:17 (aws_Generic):: result is <?xml version="1.0" encoding="UTF-8"?>
+<RunInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>bdcd3ddf-bd33-4a9d-8630-896cfc23a5a4</requestId>
+    <reservationId>r-9014d7f3</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-db7035bf</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1a</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+2012-03-19 15:43:17 (aws_Generic):: varname is result
+
+2012-03-19 15:43:17 (aws_get_results):: setting result,1 to <RunInstancesResponse>
+    <requestId>bdcd3ddf-bd33-4a9d-8630-896cfc23a5a4</requestId>
+    <reservationId>r-9014d7f3</reservationId>
+    <ownerId>168072514917</ownerId>
+    <groupSet>
+        <item>
+            <groupId>sg-49dfcd20</groupId>
+            <groupName>csk_cato_dev</groupName>
+        </item>
+    </groupSet>
+    <instancesSet>
+        <item>
+            <instanceId>i-db7035bf</instanceId>
+            <imageId>ami-1aad5273</imageId>
+            <instanceState>
+                <code>0</code>
+                <name>pending</name>
+            </instanceState>
+            <privateDnsName/>
+            <dnsName/>
+            <reason/>
+            <keyName>csk_www</keyName>
+            <amiLaunchIndex>0</amiLaunchIndex>
+            <productCodes/>
+            <instanceType>t1.micro</instanceType>
+            <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+            <placement>
+                <availabilityZone>us-east-1a</availabilityZone>
+                <groupName/>
+            </placement>
+            <kernelId>aki-427d952b</kernelId>
+            <monitoring>
+                <state>disabled</state>
+            </monitoring>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <stateReason>
+                <code>pending</code>
+                <message>pending</message>
+            </stateReason>
+            <architecture>x86_64</architecture>
+            <rootDeviceType>ebs</rootDeviceType>
+            <rootDeviceName>/dev/sda1</rootDeviceName>
+            <blockDeviceMapping/>
+            <virtualizationType>paravirtual</virtualizationType>
+            <clientToken/>
+            <hypervisor>xen</hypervisor>
+        </item>
+    </instancesSet>
+</RunInstancesResponse>
+
+
+2012-03-19 15:43:17 (process_step):: **************************************************************
+
+2012-03-19 15:43:17 (process_step):: **** PROCESSING STEP 069ef024-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 15:43:17 (process_step):: **************************************************************
+
+2012-03-19 15:43:17 (process_step):: Command is {new_connection}
+
+2012-03-19 15:43:17 (replace_variables):: var name is //instanceId
+
+2012-03-19 15:43:17 (replace_variables):: variable is result
+
+2012-03-19 15:43:17 (replace_variables):: //instanceId = i-db7035bf
+
+2012-03-19 15:43:17 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>8d5c3122-f6cc-4255-800a-5e1aa8157c38</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-9014d7f3</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-db7035bf</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1a</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping/>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-19 15:43:17 (insert_audit):: Instance i-db7035bf status is pending. Will check again in 10 seconds.
+
+2012-03-19 15:43:27 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>c17e2cc4-6a0a-43da-aa83-fe591da5b2db</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-9014d7f3</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-db7035bf</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1a</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping/>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-19 15:43:27 (insert_audit):: Instance i-db7035bf status is pending. Will check again in 10 seconds.
+
+2012-03-19 15:43:37 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>58bca05f-f98f-499e-8f03-d8b11be7c5e2</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-9014d7f3</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-db7035bf</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1a</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping/>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-19 15:43:37 (insert_audit):: Instance i-db7035bf status is pending. Will check again in 10 seconds.
+
+2012-03-19 15:43:47 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>f1e5e5ac-faa3-41f2-85d2-dd5c1c787fc6</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-9014d7f3</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-db7035bf</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>0</code>
+                        <name>pending</name>
+                    </instanceState>
+                    <privateDnsName/>
+                    <dnsName/>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1a</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping>
+                        <item>
+                            <deviceName>/dev/sda1</deviceName>
+                            <ebs>
+                                <volumeId>vol-9ff8d5f3</volumeId>
+                                <status>attaching</status>
+                                <attachTime>2012-03-19T19:43:22.000Z</attachTime>
+                                <deleteOnTermination>true</deleteOnTermination>
+                            </ebs>
+                        </item>
+                    </blockDeviceMapping>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-19 15:43:47 (insert_audit):: Instance i-db7035bf status is pending. Will check again in 10 seconds.
+
+2012-03-19 15:43:58 (gather_aws_system_info):: <?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>1a6dc02e-74f2-4543-90db-f7fccad18a43</requestId>
+    <reservationSet>
+        <item>
+            <reservationId>r-9014d7f3</reservationId>
+            <ownerId>168072514917</ownerId>
+            <groupSet>
+                <item>
+                    <groupId>sg-49dfcd20</groupId>
+                    <groupName>csk_cato_dev</groupName>
+                </item>
+            </groupSet>
+            <instancesSet>
+                <item>
+                    <instanceId>i-db7035bf</instanceId>
+                    <imageId>ami-1aad5273</imageId>
+                    <instanceState>
+                        <code>16</code>
+                        <name>running</name>
+                    </instanceState>
+                    <privateDnsName>domU-12-31-39-04-4A-79.compute-1.internal</privateDnsName>
+                    <dnsName>ec2-23-20-98-203.compute-1.amazonaws.com</dnsName>
+                    <reason/>
+                    <keyName>csk_www</keyName>
+                    <amiLaunchIndex>0</amiLaunchIndex>
+                    <productCodes/>
+                    <instanceType>t1.micro</instanceType>
+                    <launchTime>2012-03-19T19:43:16.000Z</launchTime>
+                    <placement>
+                        <availabilityZone>us-east-1a</availabilityZone>
+                        <groupName/>
+                    </placement>
+                    <kernelId>aki-427d952b</kernelId>
+                    <monitoring>
+                        <state>disabled</state>
+                    </monitoring>
+                    <privateIpAddress>10.240.77.131</privateIpAddress>
+                    <ipAddress>23.20.98.203</ipAddress>
+                    <groupSet>
+                        <item>
+                            <groupId>sg-49dfcd20</groupId>
+                            <groupName>csk_cato_dev</groupName>
+                        </item>
+                    </groupSet>
+                    <architecture>x86_64</architecture>
+                    <rootDeviceType>ebs</rootDeviceType>
+                    <rootDeviceName>/dev/sda1</rootDeviceName>
+                    <blockDeviceMapping>
+                        <item>
+                            <deviceName>/dev/sda1</deviceName>
+                            <ebs>
+                                <volumeId>vol-9ff8d5f3</volumeId>
+                                <status>attached</status>
+                                <attachTime>2012-03-19T19:43:48.000Z</attachTime>
+                                <deleteOnTermination>true</deleteOnTermination>
+                            </ebs>
+                        </item>
+                    </blockDeviceMapping>
+                    <virtualizationType>paravirtual</virtualizationType>
+                    <clientToken/>
+                    <hypervisor>xen</hypervisor>
+                </item>
+            </instancesSet>
+        </item>
+    </reservationSet>
+</DescribeInstancesResponse>
+
+2012-03-19 15:43:58 (gather_aws_system_info):: i-db7035bf state = running, keyname = csk_www, platform = linux, address = ec2-23-20-98-203.compute-1.amazonaws.com
+
+2012-03-19 15:43:58 (insert_audit):: Connecting to (ubuntu@i-db7035bf)... 
+
+2012-03-19 15:43:58 (connect_system):: Going into system ec2-23-20-98-203.compute-1.amazonaws.com userid ubuntu with conn type of ssh - ec2
+spawn /usr/bin/ssh -i /tmp/fb230d22-6486-478c-7b4d-f653eed75cde.pem ubuntu@ec2-23-20-98-203.compute-1.amazonaws.com
+
+2012-03-19 15:43:58 (telnet_logon):: Opened ssh.
+
+2012-03-19 15:43:58 (telnet_logon):: Looking for password prompt...
+Connection closed by 23.20.98.203
+
+2012-03-19 15:43:58 (insert_audit):: Timeout attempting to connect to ec2-23-20-98-203.compute-1.amazonaws.com. Will try again in 10 seconds.
+spawn /usr/bin/ssh -i /tmp/5a3ffbcf-8f5c-4590-6eb8-b91fc05e69bb.pem ubuntu@ec2-23-20-98-203.compute-1.amazonaws.com
+
+2012-03-19 15:44:08 (telnet_logon):: Opened ssh.
+
+2012-03-19 15:44:08 (telnet_logon):: Looking for password prompt...
+The authenticity of host 'ec2-23-20-98-203.compute-1.amazonaws.com (23.20.98.203)' can't be established.
+RSA key fingerprint is f0:15:77:5c:7a:45:75:fc:80:bf:5b:3e:2b:bf:85:36.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'ec2-23-20-98-203.compute-1.amazonaws.com,23.20.98.203' (RSA) to the list of known hosts.
+Welcome to Ubuntu 11.04 (GNU/Linux 2.6.38-8-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Mon Mar 19 19:44:09 UTC 2012
+
+  System load:  0.65             Processes:           72
+  Usage of /:   8.3% of 7.87GB   Users logged in:     0
+  Memory usage: 9%               IP address for eth0: 10.240.77.131
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+---------------------------------------------------------------------
+At the moment, only the core of the system is installed. To tune the 
+system to your needs, you can choose to install one or more          
+predefined collections of software by running the following          
+command:                                                             
+                                                                     
+   sudo tasksel --section server                                     
+---------------------------------------------------------------------
+New release 'oneiric' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+]0;ubuntu@domU-12-31-39-04-4A-79: ~ubuntu@domU-12-31-39-04-4A-79:~$ unset PROMPT_COMMAND;export PS1='PROMPT>'
+PROMPT>stty -onlcr;export PS2='';stty -echo;unalias ls
+PROMPT>PROMPT>
+2012-03-19 15:44:12 (insert_audit):: ssh connection to host=ec2-23-20-98-203.compute-1.amazonaws.com, user=ubuntu established.
+The authenticity of host 'ec2-23-20-98-203.compute-1.amazonaws.com (23.20.98.203)' can't be established.
+RSA key fingerprint is f0:15:77:5c:7a:45:75:fc:80:bf:5b:3e:2b:bf:85:36.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'ec2-23-20-98-203.compute-1.amazonaws.com,23.20.98.203' (RSA) to the list of known hosts.
+Welcome to Ubuntu 11.04 (GNU/Linux 2.6.38-8-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Mon Mar 19 19:44:09 UTC 2012
+
+  System load:  0.65             Processes:           72
+  Usage of /:   8.3% of 7.87GB   Users logged in:     0
+  Memory usage: 9%               IP address for eth0: 10.240.77.131
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+---------------------------------------------------------------------
+At the moment, only the core of the system is installed. To tune the 
+system to your needs, you can choose to install one or more          
+predefined collections of software by running the following          
+command:                                                             
+                                                                     
+   sudo tasksel --section server                                     
+---------------------------------------------------------------------
+New release 'oneiric' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+]0;ubuntu@domU-12-31-39-04-4A-79: ~ubuntu@domU-12-31-39-04-4A-79:~$ )? yes
+Warning: Permanently added 'ec2-23-20-98-203.compute-1.amazonaws.com,23.20.98.203' (RSA) to the list of known hosts.
+Welcome to Ubuntu 11.04 (GNU/Linux 2.6.38-8-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Mon Mar 19 19:44:09 UTC 2012
+
+  System load:  0.65             Processes:           72
+  Usage of /:   8.3% of 7.87GB   Users logged in:     0
+  Memory usage: 9%               IP address for eth0: 10.240.77.131
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+---------------------------------------------------------------------
+At the moment, only the core of the system is installed. To tune the 
+system to your needs, you can choose to install one or more          
+predefined collections of software by running the following          
+command:                                                             
+                                                                     
+   sudo tasksel --section server                                     
+---------------------------------------------------------------------
+New release 'oneiric' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+]0;ubuntu@domU-12-31-39-04-4A-79: ~ubuntu@domU-12-31-39-04-4A-79:~$ unset PROMPT_COMMAND;export PS1='PROMPT>'
+PROMPT>stty -onlcr;export PS2='';stty -echo;unalias ls
+PROMPT>
+
+2012-03-19 15:44:12 (new_connection):: New Connection Type = {ssh - ec2}, connection name {CONN1}, connection asset id {i-db7035bf}.
+
+2012-03-19 15:44:12 (insert_audit):: New connection named CONN1 to asset ubuntu@i-db7035bf created with a connection type ssh - ec2
+
+2012-03-19 15:44:12 (process_step):: **************************************************************
+
+2012-03-19 15:44:12 (process_step):: **** PROCESSING STEP 069eef48-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 15:44:12 (process_step):: **************************************************************
+
+2012-03-19 15:44:12 (process_step):: Command is {aws_ec2_CreateTags}
+
+2012-03-19 15:44:12 (replace_variables):: var name is //instanceId
+
+2012-03-19 15:44:12 (replace_variables):: variable is result
+
+2012-03-19 15:44:12 (replace_variables):: //instanceId = i-db7035bf
+
+2012-03-19 15:44:12 (aws_Generic):: tclcloud::call ec2 "" CreateTags
+
+2012-03-19 15:44:12 (aws_Generic):: tclcloud::call ec2 {} CreateTags {ResourceId.1 i-db7035bf Tag.1.Key Name Tag.1.Value {chef wp test}} {}
+
+2012-03-19 15:44:13 (insert_audit):: CreateTags ResourceId.1 i-db7035bf Tag.1.Key Name Tag.1.Value {chef wp test}
+OK
+<?xml version="1.0" encoding="UTF-8"?>
+<CreateTagsResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>9fad34ca-3808-4c0c-8c72-0b050009cf79</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+2012-03-19 15:44:13 (aws_Generic):: result is <?xml version="1.0" encoding="UTF-8"?>
+<CreateTagsResponse xmlns="http://ec2.amazonaws.com/doc/2011-01-01/">
+    <requestId>9fad34ca-3808-4c0c-8c72-0b050009cf79</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+2012-03-19 15:44:13 (aws_Generic):: varname is 
+
+2012-03-19 15:44:13 (aws_get_results):: setting ,1 to <CreateTagsResponse>
+    <requestId>9fad34ca-3808-4c0c-8c72-0b050009cf79</requestId>
+    <return>true</return>
+</CreateTagsResponse>
+
+
+2012-03-19 15:44:13 (process_step):: **************************************************************
+
+2012-03-19 15:44:13 (process_step):: **** PROCESSING STEP 069eeeda-71dd-11e1-8593-6ac3918d0fa3
+
+2012-03-19 15:44:13 (process_step):: **************************************************************
+
+2012-03-19 15:44:13 (process_step):: Command is {cmd_line}
+
+2012-03-19 15:44:13 (process_step):: CONN1, 300, while [ ! -e complete ]; do
+sleep 10
+done;
+if \[\[ -a complete \]\]; then sudo chef-solo -j ~/node.json; fi;, , 
+
+2012-03-19 15:44:13 (process_step):: Sending while [ ! -e complete ]; do
+sleep 10
+done;
+if \[\[ -a complete \]\]; then sudo chef-solo -j ~/node.json; fi; to the process
+PROMPT>
+2012-03-19 15:46:04 (process_step):: **OK**
+
+2012-03-19 15:46:04 (process_step):: The buffer is ->PROMPT><-
+
+2012-03-19 15:46:04 (insert_audit):: while [ ! -e complete ]; do
+sleep 10
+done;
+if \[\[ -a complete \]\]; then sudo chef-solo -j ~/node.json; fi;
+PROMPT>
+
+2012-03-19 15:46:04 (process_step):: The buffer is -><-
+
+2012-03-19 15:46:04 (run_task_instance):: Task Completed Normally
+
+2012-03-19 15:46:04 (update_status):: Updating task instance {4740} to {Completed}.
+
+2012-03-19 15:46:04 (release_all):: Releasing all connections
+
+2012-03-19 15:46:04 (release_connection):: releasing CONN1
+
+2012-03-19 15:46:04 (release_system):: ******** Logging out {CONN1} ********
+
+2012-03-19 15:46:04 (release_system):: Sending {exit} to spawn_id {exp14}, conn_type {ssh - ec2}.
+
+2012-03-19 15:46:05 (release_system):: Timeout.
+
+2012-03-19 15:46:05 (release_all):: Deleting key file fb230d22-6486-478c-7b4d-f653eed75cde.pem
+
+2012-03-19 15:46:05 (release_all):: Deleting key file 5a3ffbcf-8f5c-4590-6eb8-b91fc05e69bb.pem
+
+2012-03-19 15:46:05 (insert_audit):: <result_summary><items></items></result_summary>

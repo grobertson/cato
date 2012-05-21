@@ -1,0 +1,367 @@
+
+-> 2012-03-15 15:13:57 ####################################### Starting up cato_poller #######################################
+
+-> 2012-03-15 15:13:57 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-15 15:13:57 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-15 15:13:57 *****************************************************************
+
+-> 2012-03-15 15:13:57 Starting cato_poller, PID = 77538.... 
+
+-> 2012-03-15 15:13:57 Database library loaded, starting initialization...
+
+-> 2012-03-15 15:13:57 Initialization complete, connecting to the database...
+
+-> 2012-03-15 15:13:57 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-15 15:13:57 Connected
+
+-> 2012-03-15 15:13:57 Database connection complete.
+
+-> 2012-03-15 15:13:57 Mode is on
+
+-> 2012-03-15 15:14:58 Considering Task Instance: 4729 {} {}
+
+-> 2012-03-15 15:14:58 Starting process...
+
+-> 2012-03-15 15:14:58 Started Task Instance(s) 4729, process id, 77607.
+
+-> 2012-03-15 16:15:40 Considering Task Instance: 4730 {} {}
+
+-> 2012-03-15 16:15:40 Starting process...
+
+-> 2012-03-15 16:15:40 Started Task Instance(s) 4730, process id, 81656.
+
+-> 2012-03-15 16:30:17 Considering Task Instance: 4731 {} {}
+
+-> 2012-03-15 16:30:17 Starting process...
+
+-> 2012-03-15 16:30:17 Started Task Instance(s) 4731, process id, 83251.
+
+-> 2012-03-16 10:04:09 Considering Task Instance: 4732 {} {}
+
+-> 2012-03-16 10:04:09 Starting process...
+
+-> 2012-03-16 10:04:09 Started Task Instance(s) 4732, process id, 55033.
+
+-> 2012-03-16 10:20:07 Considering Task Instance: 4733 {} {}
+
+-> 2012-03-16 10:20:07 Starting process...
+
+-> 2012-03-16 10:20:07 Started Task Instance(s) 4733, process id, 56109.
+::mysql::sel/db server: Query execution was interrupted
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 11)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_poller.tcl" line 169)
+
+-> 2012-03-19 12:14:05 ####################################### Starting up cato_poller #######################################
+
+-> 2012-03-19 12:14:05 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-19 12:14:06 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-19 12:14:06 *****************************************************************
+
+-> 2012-03-19 12:14:06 Starting cato_poller, PID = 25793.... 
+
+-> 2012-03-19 12:14:06 Database library loaded, starting initialization...
+
+-> 2012-03-19 12:14:06 Initialization complete, connecting to the database...
+
+-> 2012-03-19 12:14:06 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-19 12:14:06 Connected
+
+-> 2012-03-19 12:14:06 Database connection complete.
+
+-> 2012-03-19 12:14:06 Mode is on
+
+-> 2012-03-19 12:14:06 Considering Task Instance: 4734 {} {}
+
+-> 2012-03-19 12:14:06 Starting process...
+
+-> 2012-03-19 12:14:06 Started Task Instance(s) 4734, process id, 25800.
+
+-> 2012-03-19 13:44:09 Considering Task Instance: 4735 {} {}
+
+-> 2012-03-19 13:44:09 Starting process...
+
+-> 2012-03-19 13:44:09 Started Task Instance(s) 4735, process id, 31927.
+
+-> 2012-03-19 13:54:43 Considering Task Instance: 4736 {} {}
+
+-> 2012-03-19 13:54:43 Starting process...
+
+-> 2012-03-19 13:54:43 Started Task Instance(s) 4736, process id, 32673.
+
+-> 2012-03-19 14:11:35 Considering Task Instance: 4737 {} {}
+
+-> 2012-03-19 14:11:35 Starting process...
+
+-> 2012-03-19 14:11:35 Started Task Instance(s) 4737, process id, 33810.
+
+-> 2012-03-19 14:17:07 Considering Task Instance: 4738 {} {}
+
+-> 2012-03-19 14:17:07 Starting process...
+
+-> 2012-03-19 14:17:07 Started Task Instance(s) 4738, process id, 34201.
+
+-> 2012-03-19 15:35:32 Considering Task Instance: 4739 {} {}
+
+-> 2012-03-19 15:35:32 Starting process...
+
+-> 2012-03-19 15:35:32 Started Task Instance(s) 4739, process id, 39529.
+
+-> 2012-03-19 15:43:15 Considering Task Instance: 4740 {} {}
+
+-> 2012-03-19 15:43:15 Starting process...
+
+-> 2012-03-19 15:43:15 Started Task Instance(s) 4740, process id, 40081.
+
+-> 2012-03-20 10:57:26 Considering Task Instance: 4741 {} {}
+
+-> 2012-03-20 10:57:26 Starting process...
+
+-> 2012-03-20 10:57:26 Started Task Instance(s) 4741, process id, 75497.
+
+-> 2012-03-20 10:57:44 ####################################### Starting up cato_poller #######################################
+
+-> 2012-03-20 10:57:44 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-20 10:57:44 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-20 10:57:44 *****************************************************************
+
+-> 2012-03-20 10:57:44 Starting cato_poller, PID = 75516.... 
+
+-> 2012-03-20 10:57:44 Database library loaded, starting initialization...
+
+-> 2012-03-20 10:57:44 Initialization complete, connecting to the database...
+
+-> 2012-03-20 10:57:44 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-20 10:57:44 Connected
+
+-> 2012-03-20 10:57:44 Database connection complete.
+
+-> 2012-03-20 10:57:44 Mode is on
+ps: No ruser named 'shannon'
+ps: No ruser named 'shannon'
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 11)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_poller.tcl" line 169)
+::mysql::sel/db server: MySQL server has gone away
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 11)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_poller.tcl" line 169)
+
+-> 2012-03-23 11:37:40 ####################################### Starting up cato_poller #######################################
+
+-> 2012-03-23 11:37:40 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-23 11:37:40 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-23 11:37:40 *****************************************************************
+
+-> 2012-03-23 11:37:40 Starting cato_poller, PID = 20681.... 
+
+-> 2012-03-23 11:37:40 Database library loaded, starting initialization...
+
+-> 2012-03-23 11:37:40 Initialization complete, connecting to the database...
+
+-> 2012-03-23 11:37:40 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-23 11:37:40 Connected
+
+-> 2012-03-23 11:37:40 Database connection complete.
+
+-> 2012-03-23 11:37:40 Mode is on
+
+-> 2012-03-23 11:37:40 Considering Task Instance: 4742 {} {}
+
+-> 2012-03-23 11:37:40 Starting process...
+
+-> 2012-03-23 11:37:41 Started Task Instance(s) 4742, process id, 20704.
+
+-> 2012-03-23 11:38:11 Considering Task Instance: 4743 {} {}
+
+-> 2012-03-23 11:38:11 Starting process...
+
+-> 2012-03-23 11:38:11 Started Task Instance(s) 4743, process id, 20743.
+
+-> 2012-03-23 11:39:54 Considering Task Instance: 4744 {} {}
+
+-> 2012-03-23 11:39:54 Starting process...
+
+-> 2012-03-23 11:39:54 Started Task Instance(s) 4744, process id, 20872.
+
+-> 2012-03-23 14:07:37 Considering Task Instance: 4745 {} {}
+
+-> 2012-03-23 14:07:37 Starting process...
+
+-> 2012-03-23 14:07:37 Started Task Instance(s) 4745, process id, 30941.
+
+-> 2012-03-23 15:01:28 Considering Task Instance: 4746 {} {}
+
+-> 2012-03-23 15:01:28 Starting process...
+
+-> 2012-03-23 15:01:28 Started Task Instance(s) 4746, process id, 34766.
+
+-> 2012-03-26 11:03:47 ####################################### Starting up cato_poller #######################################
+
+-> 2012-03-26 11:03:47 Home is /Users/shannon/Projects/cato
+
+-> 2012-03-26 11:03:47 Instance name is is shannon@aluminumoverdrive.local
+
+-> 2012-03-26 11:03:47 *****************************************************************
+
+-> 2012-03-26 11:03:47 Starting cato_poller, PID = 13876.... 
+
+-> 2012-03-26 11:03:47 Database library loaded, starting initialization...
+
+-> 2012-03-26 11:03:47 Initialization complete, connecting to the database...
+
+-> 2012-03-26 11:03:47 Connecting to localhost cato 3306, user cato
+
+-> 2012-03-26 11:03:47 Connected
+
+-> 2012-03-26 11:03:47 Database connection complete.
+
+-> 2012-03-26 11:03:47 Mode is on
+
+-> 2012-03-26 11:03:58 Considering Task Instance: 4747 {} {}
+
+-> 2012-03-26 11:03:58 Starting process...
+
+-> 2012-03-26 11:03:58 Started Task Instance(s) 4747, process id, 13905.
+
+-> 2012-04-13 09:09:01 Considering Task Instance: 4748 {} {}
+
+-> 2012-04-13 09:09:01 Starting process...
+
+-> 2012-04-13 09:09:01 Started Task Instance(s) 4748, process id, 61174.
+ps: No ruser named 'shannon'
+ps: No ruser named 'shannon'
+::mysql::sel/db server: Query execution was interrupted
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 11)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_poller.tcl" line 169)
+::mysql::sel/db server: Query execution was interrupted
+    while executing
+"::mysql::sel $::CONN $sql"
+    (procedure "get_settings" line 11)
+    invoked from within
+"get_settings"
+    (procedure "startup" line 26)
+    invoked from within
+"startup"
+    (procedure "main" line 10)
+    invoked from within
+"main"
+    (file "/Users/shannon/Projects/cato/services/bin/cato_poller.tcl" line 169)
+2012-05-14 22:42:41 ####################################### Starting up cato_poller #######################################
+2012-05-14 22:42:41 cato_poller has not been registered, registering...
+2012-05-14 22:42:41 Registering application...
+2012-05-14 22:42:41 Application registered.
+2012-05-14 22:42:42 Considering Task Instance: 4755
+2012-05-14 22:42:42 Starting process ...
+2012-05-14 22:42:42 Task instance 4755 started with return code of 0
+2012-05-14 22:42:42 Considering Task Instance: 4756
+2012-05-14 22:42:42 Starting process ...
+2012-05-14 22:42:42 Task instance 4756 started with return code of 0
+2012-05-14 22:42:42 Considering Task Instance: 4757
+2012-05-14 22:42:42 Starting process ...
+2012-05-14 22:42:42 Task instance 4757 started with return code of 0
+2012-05-14 22:42:42 Considering Task Instance: 4758
+2012-05-14 22:42:42 Starting process ...
+2012-05-14 22:42:42 Task instance 4758 started with return code of 0
+2012-05-14 22:42:42 Considering Task Instance: 4759
+2012-05-14 22:42:42 Starting process ...
+2012-05-14 22:42:42 Task instance 4759 started with return code of 0
+2012-05-14 22:42:42 Considering Task Instance: 4760
+2012-05-14 22:42:42 Starting process ...
+2012-05-14 22:42:42 Task instance 4760 started with return code of 0
+2012-05-14 22:42:43 Considering Task Instance: 4761
+2012-05-14 22:42:43 Starting process ...
+2012-05-14 22:42:43 Task instance 4761 started with return code of 0
+2012-05-14 22:42:43 Considering Task Instance: 4768
+2012-05-14 22:42:43 Starting process ...
+2012-05-14 22:42:43 Task instance 4768 started with return code of 0
+2012-05-14 22:46:05 ####################################### Starting up cato_poller #######################################
+2012-05-14 22:46:06 cato_poller has already been registered, updating...
+2012-05-14 22:46:06 application instance = 42
+2012-05-14 22:46:27 ####################################### Starting up cato_poller #######################################
+2012-05-14 22:46:27 cato_poller has already been registered, updating...
+2012-05-14 22:46:27 application instance = 42
+2012-05-14 22:49:03 ####################################### Starting up cato_poller #######################################
+2012-05-14 22:49:03 cato_poller has already been registered, updating...
+2012-05-14 22:49:03 application instance = 42
+2012-05-14 22:51:55 ####################################### Starting up cato_poller #######################################
+2012-05-14 22:51:55 cato_poller has already been registered, updating...
+2012-05-14 22:51:55 application instance = 42
+2012-05-14 22:52:19 ####################################### Starting up cato_poller #######################################
+2012-05-14 22:52:19 cato_poller has already been registered, updating...
+2012-05-14 22:52:19 application instance = 42
+2012-05-14 23:00:03 ####################################### Starting up cato_poller #######################################
+2012-05-14 23:00:03 cato_poller has already been registered, updating...
+2012-05-14 23:00:03 application instance = 42
+2012-05-14 23:00:18 *** Control Change: Mode is now True
+2012-05-14 23:00:38 ####################################### Starting up cato_poller #######################################
+2012-05-14 23:00:38 cato_poller has already been registered, updating...
+2012-05-14 23:00:38 application instance = 42
+2012-05-14 23:00:44 *** Control Change: Mode is now False
+2012-05-14 23:05:27 ####################################### Starting up cato_poller #######################################
+2012-05-14 23:05:27 cato_poller has already been registered, updating...
+2012-05-14 23:05:27 application instance = 42
+2012-05-14 23:05:55 ####################################### Starting up cato_poller #######################################
+2012-05-14 23:05:55 cato_poller has already been registered, updating...
+2012-05-14 23:05:55 application instance = 42
+2012-05-14 23:06:41 ####################################### Starting up cato_poller #######################################
+2012-05-14 23:06:41 cato_poller has already been registered, updating...
+2012-05-14 23:06:41 application instance = 42
+2012-05-14 23:06:53 *** Control Change: Enabled is now False
+2012-05-14 23:07:05 *** Control Change: Enabled is now True
+2012-05-14 23:19:45 ####################################### Starting up cato_poller #######################################
+2012-05-14 23:19:45 cato_poller has already been registered, updating...
+2012-05-14 23:19:45 application instance = 42
+2012-05-21 17:28:34 ####################################### Starting up cato_poller #######################################
+2012-05-21 17:28:34 cato_poller has already been registered, updating...
+2012-05-21 17:28:34 application instance = 42

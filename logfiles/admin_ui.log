@@ -1,0 +1,24 @@
+2012-05-21 17:30:42 ####################################### Starting up admin_ui #######################################
+2012-05-21 17:30:42 admin_ui has not been registered, registering...
+2012-05-21 17:30:42 Registering application...
+2012-05-21 17:30:42 Application registered.
+2012-05-21 17:30:42 Generating static html...
+2012-05-21 17:30:42 Parsing extension file extensions/awsCommands.xml
+2012-05-21 17:30:42 Parsing extension category = aws_as
+2012-05-21 17:30:42 Parsing extension category = aws_cfn
+2012-05-21 17:30:42 Parsing extension category = aws_cw
+2012-05-21 17:30:42 Parsing extension category = aws_ebs
+2012-05-21 17:30:42 Parsing extension category = aws_ec2
+2012-05-21 17:30:42 Parsing extension category = aws_elb
+2012-05-21 17:30:42 Parsing extension category = aws_emr
+2012-05-21 17:30:42 Parsing extension category = aws_iam
+2012-05-21 17:30:42 Parsing extension category = aws_rds
+2012-05-21 17:30:42 Parsing extension category = aws_sdb
+2012-05-21 17:30:42 Parsing extension category = aws_ses
+2012-05-21 17:30:42 Parsing extension category = aws_sns
+2012-05-21 17:30:42 Parsing extension category = aws_sqs
+2012-05-21 17:30:42 Parsing extension category = aws_vpc
+2012-05-21 17:30:42 Parsing extension file extensions/examples.xml
+2012-05-21 17:30:42 Parsing extension category = extensions
+2012-05-21 17:31:15 Serving /uiMethods/wmUpdateHeartbeat
+2012-05-21 17:33:15 Serving /uiMethods/wmUpdateHeartbeat

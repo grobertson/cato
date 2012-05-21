@@ -3,8 +3,8 @@
 import os
 import sys
 
-base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))
-lib_path = os.path.join(base_path, "services", "lib")
+base_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+lib_path = os.path.join(base_path, "lib")
 sys.path.append(lib_path)
 
 from catocommon import catocommon
