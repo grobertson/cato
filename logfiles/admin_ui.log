@@ -23,3 +23,210 @@
 2012-05-21 17:31:15 Serving /uiMethods/wmUpdateHeartbeat
 2012-05-21 17:33:15 Serving /uiMethods/wmUpdateHeartbeat
 2012-05-21 17:35:15 Serving /uiMethods/wmUpdateHeartbeat
+2012-05-21 18:42:16 ####################################### Starting up admin_ui #######################################
+2012-05-21 18:42:16 admin_ui has already been registered, updating...
+2012-05-21 18:42:16 application instance = 45
+2012-05-21 18:42:16 Generating static html...
+2012-05-21 18:42:16 Parsing extension file extensions/awsCommands.xml
+2012-05-21 18:42:16 Parsing extension category = aws_as
+2012-05-21 18:42:16 Parsing extension category = aws_cfn
+2012-05-21 18:42:16 Parsing extension category = aws_cw
+2012-05-21 18:42:16 Parsing extension category = aws_ebs
+2012-05-21 18:42:16 Parsing extension category = aws_ec2
+2012-05-21 18:42:16 Parsing extension category = aws_elb
+2012-05-21 18:42:16 Parsing extension category = aws_emr
+2012-05-21 18:42:16 Parsing extension category = aws_iam
+2012-05-21 18:42:16 Parsing extension category = aws_rds
+2012-05-21 18:42:16 Parsing extension category = aws_sdb
+2012-05-21 18:42:16 Parsing extension category = aws_ses
+2012-05-21 18:42:16 Parsing extension category = aws_sns
+2012-05-21 18:42:16 Parsing extension category = aws_sqs
+2012-05-21 18:42:16 Parsing extension category = aws_vpc
+2012-05-21 18:42:16 Parsing extension file extensions/examples.xml
+2012-05-21 18:42:16 Parsing extension category = extensions
+2012-05-21 18:42:23 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:42:23 Serving /ecoMethods/wmGetEcosystem
+2012-05-21 18:42:23 Serving /ecoMethods/wmGetEcotemplateActionCategories
+2012-05-21 18:42:23 Serving /ecoMethods/wmGetEcotemplateActionButtons
+2012-05-21 18:42:23 Serving /ecoMethods/wmGetEcosystemStormStatus
+2012-05-21 18:42:24 Serving /logout
+2012-05-21 18:42:24 Forcing logout with message: User Logged out.
+2012-05-21 18:42:24 Serving /login
+2012-05-21 18:42:24 Serving /announcement
+2012-05-21 18:42:24 Trying an HTTP GET to http://community.cloudsidekick.com/login-page-announcement?utm_source=cato_app&utm_medium=loginpage&utm_campaign=app
+2012-05-21 18:42:26 Serving /login
+2012-05-21 18:42:26 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: Login granted for: 
+2012-05-21 18:42:26 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: {'ip_address': u'127.0.0.1', 'role': 'Administrator', 'user_id': '0002bdaf-bfd5-4b9d-82d1-fd39c2947d19', 'email': 'shannon.cruey@cloudsidekick.com', 'full_name': 'Administrator'}
+2012-05-21 18:42:26 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: Creating session...
+2012-05-21 18:42:26 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: uiMethods.POST:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/uiMethods.py", line 72, in POST
+    raise uiGlobals.web.seeother('/home')
+SeeOther: 303 See Other
+
+2012-05-21 18:42:26 Serving /home
+2012-05-21 18:42:26 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:42:26 Serving /uiMethods/wmGetMenu
+2012-05-21 18:42:46 Serving /ecoTemplateManage
+2012-05-21 18:42:47 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:42:47 Serving /uiMethods/wmGetMenu
+2012-05-21 18:42:47 Serving /ecoMethods/wmGetEcotemplatesTable
+2012-05-21 18:42:49 Serving /ecoTemplateEdit
+2012-05-21 18:42:50 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:42:50 Serving /uiMethods/wmGetMenu
+2012-05-21 18:42:50 Serving /ecoMethods/wmGetEcotemplateActions
+2012-05-21 18:42:50 Serving /ecoMethods/wmGetEcotemplate
+2012-05-21 18:42:51 Serving /ecoMethods/wmGetActionIcons
+2012-05-21 18:42:53 Serving /cloudAccountEdit
+2012-05-21 18:42:53 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:42:53 Serving /uiMethods/wmGetMenu
+2012-05-21 18:42:53 Serving /cloudMethods/wmGetProvidersList
+2012-05-21 18:42:53 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.POST:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 84, in wmGetProvidersList
+    cp = providers.CloudProviders()
+  File "/Users/shannon/Projects/cato/web/providers.py", line 117, in __init__
+    db.close()
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:42:54 Serving /cloudMethods/wmGetCloudAccountsTable
+2012-05-21 18:42:56 Serving /cloudEdit
+2012-05-21 18:42:57 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:42:57 Serving /uiMethods/wmGetMenu
+2012-05-21 18:42:57 Serving /cloudMethods/wmGetProvidersList
+2012-05-21 18:42:57 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.POST:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 84, in wmGetProvidersList
+    cp = providers.CloudProviders()
+  File "/Users/shannon/Projects/cato/web/providers.py", line 117, in __init__
+    db.close()
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:42:57 Serving /cloudMethods/wmGetCloudsTable
+2012-05-21 18:43:08 Serving /cloudMethods/wmGetCloud
+2012-05-21 18:43:08 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.wmGetCloud:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 106, in wmGetCloud
+    c.FromID(sID)
+  File "/Users/shannon/Projects/cato/web/cloud.py", line 94, in FromID
+    raise ex
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:43:39 Serving /cloudEdit
+2012-05-21 18:43:39 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:43:39 Serving /uiMethods/wmGetMenu
+2012-05-21 18:43:39 Serving /cloudMethods/wmGetProvidersList
+2012-05-21 18:43:39 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.POST:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 84, in wmGetProvidersList
+    cp = providers.CloudProviders()
+  File "/Users/shannon/Projects/cato/web/providers.py", line 117, in __init__
+    db.close()
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:43:39 Serving /cloudMethods/wmGetCloudsTable
+2012-05-21 18:44:54 ####################################### Starting up admin_ui #######################################
+2012-05-21 18:44:54 admin_ui has already been registered, updating...
+2012-05-21 18:44:54 application instance = 45
+2012-05-21 18:44:54 Generating static html...
+2012-05-21 18:44:54 Parsing extension file extensions/awsCommands.xml
+2012-05-21 18:44:54 Parsing extension category = aws_as
+2012-05-21 18:44:54 Parsing extension category = aws_cfn
+2012-05-21 18:44:54 Parsing extension category = aws_cw
+2012-05-21 18:44:54 Parsing extension category = aws_ebs
+2012-05-21 18:44:54 Parsing extension category = aws_ec2
+2012-05-21 18:44:54 Parsing extension category = aws_elb
+2012-05-21 18:44:54 Parsing extension category = aws_emr
+2012-05-21 18:44:54 Parsing extension category = aws_iam
+2012-05-21 18:44:54 Parsing extension category = aws_rds
+2012-05-21 18:44:54 Parsing extension category = aws_sdb
+2012-05-21 18:44:54 Parsing extension category = aws_ses
+2012-05-21 18:44:54 Parsing extension category = aws_sns
+2012-05-21 18:44:54 Parsing extension category = aws_sqs
+2012-05-21 18:44:54 Parsing extension category = aws_vpc
+2012-05-21 18:44:54 Parsing extension file extensions/examples.xml
+2012-05-21 18:44:54 Parsing extension category = extensions
+2012-05-21 18:44:57 Serving /cloudEdit
+2012-05-21 18:44:58 Serving /uiMethods/wmGetMenu
+2012-05-21 18:44:58 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:44:58 Serving /cloudMethods/wmGetProvidersList
+2012-05-21 18:44:58 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.POST:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 84, in wmGetProvidersList
+    cp = providers.CloudProviders()
+  File "/Users/shannon/Projects/cato/web/providers.py", line 117, in __init__
+    db.close()
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:44:58 Serving /cloudMethods/wmGetCloudsTable
+2012-05-21 18:45:05 Serving /cloudMethods/wmGetCloud
+2012-05-21 18:45:05 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.wmGetCloud:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 106, in wmGetCloud
+    c.FromID(sID)
+  File "/Users/shannon/Projects/cato/web/cloud.py", line 94, in FromID
+    raise ex
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:45:28 ####################################### Starting up admin_ui #######################################
+2012-05-21 18:45:28 admin_ui has already been registered, updating...
+2012-05-21 18:45:28 application instance = 45
+2012-05-21 18:45:28 Generating static html...
+2012-05-21 18:45:28 Parsing extension file extensions/awsCommands.xml
+2012-05-21 18:45:28 Parsing extension category = aws_as
+2012-05-21 18:45:28 Parsing extension category = aws_cfn
+2012-05-21 18:45:28 Parsing extension category = aws_cw
+2012-05-21 18:45:28 Parsing extension category = aws_ebs
+2012-05-21 18:45:28 Parsing extension category = aws_ec2
+2012-05-21 18:45:28 Parsing extension category = aws_elb
+2012-05-21 18:45:28 Parsing extension category = aws_emr
+2012-05-21 18:45:28 Parsing extension category = aws_iam
+2012-05-21 18:45:28 Parsing extension category = aws_rds
+2012-05-21 18:45:28 Parsing extension category = aws_sdb
+2012-05-21 18:45:28 Parsing extension category = aws_ses
+2012-05-21 18:45:28 Parsing extension category = aws_sns
+2012-05-21 18:45:28 Parsing extension category = aws_sqs
+2012-05-21 18:45:28 Parsing extension category = aws_vpc
+2012-05-21 18:45:28 Parsing extension file extensions/examples.xml
+2012-05-21 18:45:28 Parsing extension category = extensions
+2012-05-21 18:45:31 Serving /cloudEdit
+2012-05-21 18:45:31 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:45:31 Serving /uiMethods/wmGetMenu
+2012-05-21 18:45:32 Serving /cloudMethods/wmGetProvidersList
+2012-05-21 18:45:32 0002bdaf-bfd5-4b9d-82d1-fd39c2947d19 :: cloudMethods.POST:: 
+Traceback (most recent call last):
+  File "/Users/shannon/Projects/cato/web/cloudMethods.py", line 84, in wmGetProvidersList
+    cp = providers.CloudProviders()
+  File "/Users/shannon/Projects/cato/web/providers.py", line 118, in __init__
+    db.close()
+UnboundLocalError: local variable 'db' referenced before assignment
+
+2012-05-21 18:45:32 Serving /cloudMethods/wmGetCloudsTable
+2012-05-21 18:46:40 ####################################### Starting up admin_ui #######################################
+2012-05-21 18:46:40 admin_ui has already been registered, updating...
+2012-05-21 18:46:40 application instance = 45
+2012-05-21 18:46:40 Generating static html...
+2012-05-21 18:46:40 Parsing extension file extensions/awsCommands.xml
+2012-05-21 18:46:40 Parsing extension category = aws_as
+2012-05-21 18:46:40 Parsing extension category = aws_cfn
+2012-05-21 18:46:40 Parsing extension category = aws_cw
+2012-05-21 18:46:40 Parsing extension category = aws_ebs
+2012-05-21 18:46:40 Parsing extension category = aws_ec2
+2012-05-21 18:46:40 Parsing extension category = aws_elb
+2012-05-21 18:46:40 Parsing extension category = aws_emr
+2012-05-21 18:46:40 Parsing extension category = aws_iam
+2012-05-21 18:46:40 Parsing extension category = aws_rds
+2012-05-21 18:46:40 Parsing extension category = aws_sdb
+2012-05-21 18:46:40 Parsing extension category = aws_ses
+2012-05-21 18:46:40 Parsing extension category = aws_sns
+2012-05-21 18:46:40 Parsing extension category = aws_sqs
+2012-05-21 18:46:40 Parsing extension category = aws_vpc
+2012-05-21 18:46:40 Parsing extension file extensions/examples.xml
+2012-05-21 18:46:40 Parsing extension category = extensions
+2012-05-21 18:46:44 Serving /cloudEdit
+2012-05-21 18:46:45 Serving /uiMethods/wmGetCloudAccountsForHeader
+2012-05-21 18:46:45 Serving /uiMethods/wmGetMenu
+2012-05-21 18:46:45 Serving /cloudMethods/wmGetProvidersList
+2012-05-21 18:46:45 Serving /cloudMethods/wmGetCloudsTable
+2012-05-21 18:46:47 Serving /cloudMethods/wmGetCloud
+2012-05-21 18:46:47 Serving /cloudMethods/wmGetCloudAccountsJSON

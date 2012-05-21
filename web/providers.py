@@ -8,7 +8,7 @@ class CloudProviders(dict):
     #the constructor requires an ET Document
     def __init__(self):
         try:
-            xRoot = ET.parse("../../conf/cloud_providers.xml")
+            xRoot = ET.parse("../conf/cloud_providers.xml")
             if not xRoot:
                 raise Exception("Error: Invalid or missing Cloud Providers XML.")
             else:

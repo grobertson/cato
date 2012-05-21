@@ -1,4 +1,4 @@
-services/web/sessions/*
+web/sessions/*
 
 web_old/Web.pidb
 
