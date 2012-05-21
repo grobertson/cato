@@ -1,5 +1,11 @@
 #!/bin/bash
 date
+OS=`uname`
+if [ "$OS" == "Darwin" ]; then
+    ### this script does not work on the Mac yet. 
+    echo "this script does not work on the Mac yet. Like to help?"
+    exit 
+fi
 if [ -z "$CATO_HOME" ]; then
 
     EX_FILE=`readlink -f $0`
@@ -10,14 +16,15 @@ if [ -z "$CATO_HOME" ]; then
 fi
 
 # All other processes go here.  No process should be in both sections though.
-FULL_PROCS[0]="$CATO_HOME/services/bin/cato_poller.tcl"
-FULL_PROCS[1]="$CATO_HOME/services/bin/cato_scheduler.tcl"
-FULL_PROCS[2]="$CATO_HOME/services/bin/cato_messenger.tcl"
+FULL_PROCS[0]="$CATO_HOME/services/bin/cato_poller.py"
+FULL_PROCS[1]="$CATO_HOME/services/bin/cato_scheduler.py"
+FULL_PROCS[2]="$CATO_HOME/services/bin/cato_messenger.py"
 FULL_PROCS[3]="$CATO_HOME/services/bin/cato_ecosync.tcl"
 
 count=0
 while [[ $count -lt ${#FULL_PROCS[*]} ]]; do
     PIDS=`ps -eafl | grep "${FULL_PROCS[$count]}" | grep -v "grep" | awk '{ print \$4 }'`
+
     if [ -z "$PIDS" ]; then
         echo "${FULL_PROCS[$count]} is not running"
     else
