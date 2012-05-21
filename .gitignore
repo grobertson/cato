@@ -1,34 +1,34 @@
-services/ui/sessions/*
+services/web/sessions/*
 
-web/Web.pidb
+web_old/Web.pidb
 
-web/CloudSidekick.userprefs
+web_old/CloudSidekick.userprefs
 
-web/bin/Web.dll
+web_old/bin/Web.dll
 
-web/bin/Web.dll.mdb
+web_old/bin/Web.dll.mdb
 
 conf/cato.conf
 
-web/conf
+web_old/conf
 
-web/config.log
+web_old/config.log
 
-web/obj/Debug/Web.dll.mdb
+web_old/obj/Debug/Web.dll.mdb
 
-web/obj/Debug/Web.dll
+web_old/obj/Debug/Web.dll
 
-web/obj/Debug/Web.csproj.FilesWrittenAbsolute.txt
+web_old/obj/Debug/Web.csproj.FilesWrittenAbsolute.txt
 
-web/Web.userprefs
+web_old/Web.userprefs
 
-web/bin/mysql.data.dll
+web_old/bin/mysql.data.dll
 
-web/bin/ICSharpCode.SharpZipLib.dll
+web_old/bin/ICSharpCode.SharpZipLib.dll
 
 web/temp/*
 
-web/obj/*
+web_old/obj/*
 
 services/python/*
 
@@ -40,22 +40,18 @@ services/python/*
 
 *.egg-info
 
-web/script/storm.js
-
-web/script/stormRunDialog.js
-
 *.o
 
-web/script/stormStopDialog.js
-
-services/logfiles/*
-
-services/conf
+logfiles/*
 
 services/mystart
 
-services/ui/convert.in
+services/web/convert.in
 
-services/ui/convert.out
+services/web/convert.out
 
-services/ui/test.py
+services/web/test.py
+
+logfiles/admin_ui.log
+
+web/sessions/2dd74a02a2a3c6b9dce890b02f7515766a3a520c
