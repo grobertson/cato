@@ -750,6 +750,22 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmGetEcosystemsJSON(self):
+        try:
+            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+        
+            sFilter = uiCommon.getAjaxArg("sFilter")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+
+            ets = ecosystem.Ecosystems(sAccountID, sFilter)
+            if ets:
+                return ets.AsJSON()
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Ecosystems using filter [" + sFilter + "].'}"
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
     def wmGetEcotemplatesJSON(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -1305,7 +1321,6 @@ class ecoMethods:
             if uiGlobals.request.db.error:
                 return uiGlobals.request.db.error
 
-
             if dtClouds:
                 for drCloud in dtClouds:
                     sCloudID = drCloud["cloud_id"]
@@ -1388,70 +1403,38 @@ class ecoMethods:
     def DrawAllEcosystemObjectProperties(self, dtProps, dtStormTags, sObjectID):
         try:
             sHTML = ""
-            sIDColumnName = "" # dtProps.Columns[0].ColumnName
 
             # what is the name of the first column?
             # all over the place with AWS we hardcode and assume the first column is the 'ID'.
             # that's bad - so spin the columns looking for the one with the Extended Property that says it's the id
-#            for drProps in dtProps:
-#                for prop in drProps:
-#                    if prop.IsID:
-#                        sIDColumnName = prop.Name
-#                        break
-#
-#            # no sIDColumnName means we can't continue
-#            if not sIDColumnName:
-#                return "ID column not defined for Cloud Object " + sObjectID
-
-#            
-#
-#            DataRow[] drFound
-#            drFound = dtProps.Select(sIDColumnName + " = '" + sObjectID + "'")
-#            
-#            if drFound.Count() > 0:
-#### CHECK NEXT LINE for type declarations !!!
-#                for DataColumn dcAPIResultsColumn in dtProps.Columns:
             if dtProps.has_key(sObjectID):
                 drFound = dtProps[sObjectID]
-                print drFound
                 # for each property
                 for prop in drFound:
-                    print prop.Name
-                    print prop.Value
-#                    # draw only the short list properties here.
-#                    bShortList = (dcAPIResultsColumn.ExtendedProperties["ShortList"] is not None ?
-#                                       (true  false) if dcAPIResultsColumn.ExtendedProperties["ShortList"] == "True" else false  false)
-#                    
-#                    # there should be only one row - that's why I'm using the explicit index of 0
-#                    if bShortList:
-#                        sHTML += DrawEcosystemObjectProperty(drFound[0], dcAPIResultsColumn.ColumnName)
+                    # draw only the short list properties here.
                     if prop.ShortList:
                         sHTML += self.DrawEcosystemObjectProperty(prop)
-#                
-#                # there *might* be a column named "Tags"... if so, it's special and contains the xml of a tag set.
-#                # now draw the tag columns only
-#if drFound[0].Table.Columns["Tags"] is not None:
-#if drFound[0]["Tags"] is not None:
-#                        xDoc = XElement.Parse(drFound[0]["Tags"])
-#if xDoc is not None:
-#                            sHTML += "<div class=\"ui-widget-header\">AWS Tags</div>"
-#### CHECK NEXT LINE for type declarations !!!
-#                            for xeTag in xDoc.Elements("item"):
-#                                sHTML += "<div class=\"ecosystem_item_property\">" + xeTag.find("key", "") # WAS A .Value - confirm + 
-#                                    ": <span class=\"ecosystem_item_property_value\">" + xeTag.find("value", "") # WAS A .Value - confirm + "</span></div>"
-#            
-#
-#                # now lets draw the Storm tags
-#                #  ! NOT the same kind of set as above, this one is multiple simple key/value pairs for an object_id
-#                DataRow[] drStormTags
-#                drStormTags = dtStormTags.Select("ecosystem_object_id = '" + sObjectID + "'")
-#                if drFound.Count() > 0:
-#                    sHTML += "<div class=\"ui-widget-header\">Storm Tags</div>"
-#### CHECK NEXT LINE for type declarations !!!
-#                    for DataRow drTag in drStormTags:
-#                        sHTML += "<div class=\"ecosystem_item_property\">" + drTag["key_name"] + 
-#                            ": <span class=\"ecosystem_item_property_value\">" + drTag["value"] + "</span></div>"
-#            else { sHTML += "No data found for " + sObjectID; }
+                    
+                    # there *might* be a column named "Tags"... if so, it's special and contains the xml of a tag set.
+                    # now draw the tag columns only
+                    if prop.Name == "Tags":
+                        xDoc = ET.fromstring(prop.Value)
+                        if xDoc is not None:
+                            sHTML += "<div class=\"ui-widget-header\">AWS Tags</div>"
+                            for xeTag in xDoc.findall("item"):
+                                sHTML += "<div class=\"ecosystem_item_property\">" + xeTag.findtext("key", "") + \
+                                    ": <span class=\"ecosystem_item_property_value\">" + xeTag.findtext("value", "") + "</span></div>"
+            
+
+                # now lets draw the Storm tags
+                #  ! NOT the same kind of set as above, this one is multiple simple key/value pairs for an object_id
+                # we have all the tags in dtStormTags - we need only the ones for sObjectID
+                if dtStormTags:
+                    sHTML += "<div class=\"ui-widget-header\">Storm Tags</div>"
+                    for drTag in dtStormTags:
+                        if drTag["ecosystem_object_id"] == sObjectID:
+                            sHTML += "<div class=\"ecosystem_item_property\">" + drTag["key_name"] + \
+                                ": <span class=\"ecosystem_item_property_value\">" + drTag["value"] + "</span></div>"
             
             return sHTML
         except Exception:

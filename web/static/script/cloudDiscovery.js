@@ -78,20 +78,19 @@ $(document).ready(function () {
 	//if an ecosystem_id was provided, select it from the dropdown
     var sel_eco_id = getQuerystringVariable("ecosystem_id");
     if (sel_eco_id != "") {
-		$("#ctl00_phDetail_ddlEcosystems").val(sel_eco_id);
+		$("#ddlEcosystems").val(sel_eco_id);
     }
 
-
     $("#add_to_ecosystem_btn").click(function () {
-            Save();
+        Save();
     });
 
     $(".ecosystem_link").live("click", function () {
         if ($(this).attr("ecosystem_id") != "")
-            location.href = "ecosystemEdit.aspx?ecosystem_id=" + $(this).attr("ecosystem_id");
+            location.href = "ecosystemEdit?ecosystem_id=" + $(this).attr("ecosystem_id");
     });
 
-    $(".group_tab").click(function () {
+    $(".group_tab").live("click", function () {
         showPleaseWait("Querying the Cloud...");
 
         //style tabs
@@ -105,7 +104,8 @@ $(document).ready(function () {
         var object_label = $(this).html();
         var object_type = $(this).attr("object_type");
 
-        var cloud_id = $("#ctl00_phDetail_ddlClouds").val();
+		var account_id = $.cookie("selected_cloud_account");
+        var cloud_id = $("#ddlClouds").val();
 
         //well, I have no idea why, but this ajax fires before the showPleaseWait can take effect.
         //delaying it is the only solution I've found... :-(
@@ -113,15 +113,15 @@ $(document).ready(function () {
             $.ajax({
                 async: false,
                 type: "POST",
-                url: "cloudDiscovery.aspx/wmGetCloudObjectList",
-                data: '{"sCloudID":"' + cloud_id + '", "sObjectType":"' + object_type + '"}',
+                url: "cloudMethods/wmGetCloudObjectList",
+                data: '{"sAccountID":"' + account_id + '", "sCloudID":"' + cloud_id + '", "sObjectType":"' + object_type + '"}',
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
+                dataType: "html",
+                success: function (response) {
                     $("#update_success_msg").fadeOut(2000);
 
                     $("#results_label").html(object_label);
-                    $("#results_list").html(msg.d);
+                    $("#results_list").html(response);
 
                     //set the cloud object type on a hidden field so we can use it later
                     $("#hidCloudObjectType").val(object_type);
@@ -139,17 +139,6 @@ $(document).ready(function () {
         }, 250);
     });
     
-    //the cloud accounts dropdown updates the server session
-    $("#ctl00_phDetail_ddlClouds").change(function () {
-		//changing the Cloud just clears the results and sets all tabs back to unselected.
-		$(".group_tab").removeClass("group_tab_selected");
-		$("#results_label").empty();
-		$("#results_list").empty();
-    });
-    
-});
-
-function pageLoad() {
     //the add button
     $("#add_to_ecosystem_btn").button({ icons: { primary: "ui-icon-plus"} });
 
@@ -157,15 +146,77 @@ function pageLoad() {
     //with a delay... for some reason it wasn't firing without the delay
     //BUT NOT unless there are cloud accounts and ecosystems defined.
     setTimeout("CheckReady()", 250)
+    
+    GetProvider();
+    FillEcosystemsDropdown();
+});
+
+function GetProvider() {
+	// when ADDING, we need to get the clouds for this provider
+	var provider = $.cookie("selected_cloud_provider");
+
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "cloudMethods/wmGetProvider",
+        data: '{"sProvider":"' + provider + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (provider) {
+            // loop the clouds
+            $("#ddlClouds").empty();
+            $.each(provider.Clouds, function(id, cloud){
+            	$("#ddlClouds").append("<option value=\"" + id + "\">" + cloud.Name + "</option>");
+			});
+			
+			$("#ddlClouds").change(function () {
+				//changing the Cloud just clears the results and sets all tabs back to unselected.
+				$(".group_tab").removeClass("group_tab_selected");
+				$("#results_label").empty();
+				$("#results_list").empty();
+			});
+
+			// draw the object type tabs
+            $.each(provider.Products, function(name, prod){
+            	$("#cloud_object_types").append("<li class=\"group_header\">" + prod.Label + "</li>");
+	            $.each(prod.CloudObjectTypes, function(id, cot){
+	            	$("#cloud_object_types").append("<li class=\"group_tab\" object_type=\"" + id + "\">" + cot.Label + "</li>");
+				});
+			});
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
+function FillEcosystemsDropdown() {
+	var account_id = $.cookie("selected_cloud_account");
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "ecoMethods/wmGetEcosystemsJSON",
+        data: '{"sAccountID":"' + account_id + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (ecosystems) {
+            $.each(ecosystems, function(index, ecosystem){
+            	$("#ddlEcosystems").append("<option value=\"" + ecosystem.ecosystem_id + "\">" + ecosystem.ecosystem_name + "</option>");
+			});
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
 
 function CheckReady() {
-    if ($("#header_cloud_accounts").val() == null || $("#ctl00_phDetail_ddlEcosystems").val() == null) {
+    if ($("#header_cloud_accounts").val() == null || $("#ddlEcosystems").val() == null) {
         var msg = '';
         if ($("#header_cloud_accounts").val() == null)
         	msg += 'A Cloud Account is required to use the Discovery page.  An Administrator must first create at least one Cloud Account.<br /><br />';
 
-        if ($("#ctl00_phDetail_ddlEcosystems").val() == null)
+        if ($("#ddlEcosystems").val() == null)
         	msg += 'At least one Ecosystem must be defined in a Cloud Account before doing Discovery.<br /><br /><a href="ecosystemManage.aspx">Click here</a> to manage Ecosystems.<br /><br />';
 
         showInfo("Configuration Incomplete", msg, true);
@@ -174,13 +225,13 @@ function CheckReady() {
     	//$('.group_tab_selected').trigger('click');
     }
 }
+
 function CloudAccountWasChanged() {
     location.reload();
 }
-//end copy from manage
-
 
 function Save() {
+	// THIS WILL NEED ACCOUNT_ID
     var bSave = true;
     var strValidationError = '';
 
@@ -193,8 +244,8 @@ function Save() {
         strValidationError += 'No Cloud Accounts are defined. An Administrator must first create at least one Cloud Account.<br /><br />';
     }
     
-    var ecosystem = $("#ctl00_phDetail_ddlEcosystems").val();
-    var cloud_id = $("#ctl00_phDetail_ddlClouds").val();
+    var ecosystem = $("#ddlEcosystems").val();
+    var cloud_id = $("#ddlClouds").val();
     var object_type = $("#hidCloudObjectType").val();
     var object_ids = $("#hidSelectedArray").val();
 

@@ -1,3 +1,4 @@
+import json
 import xml.etree.ElementTree as ET
 import cloud
 from catocommon import catocommon
@@ -57,7 +58,7 @@ class CloudProviders(dict):
                                     pv.Clouds[c.ID] = c
                         else:
                             raise Exception("Error building Cloud object: ")
-                
+                    
                     #get the cloudobjecttypes for this provider.                    
                     xProducts = xProvider.findall("products/product")
                     for xProduct in xProducts:
@@ -100,7 +101,8 @@ class CloudProviders(dict):
                                 cotp = CloudObjectTypeProperty(cot)
                                 cotp.Name = xProperty.get("name")
                                 cotp.XPath = xProperty.get("xpath", None)
-                                cotp.Label = xProperty.get("label", None)
+                                lbl = xProperty.get("label", None)
+                                cotp.Label = (lbl if lbl else cotp.Name)
                                 cotp.SortOrder = xProperty.get("sort_order", None)
                                 cotp.IsID = (True if xProperty.get("id_field", False) == "1" else False)
                                 cotp.HasIcon = (True if xProperty.get("has_icon") == "1" else False)
@@ -160,6 +162,7 @@ class Provider(object):
 
     def GetObjectTypeByName(self, sObjectType):
         """Loops all the products, so you can get an object type by name without knowing the product."""
+        cot = None
         for p in self.Products.itervalues():
             # print "looking for %s in %s" % (sObjectType, p.Name)
             try:
@@ -175,6 +178,7 @@ class Provider(object):
 
     def AsJSON(self):
         try:
+            # this is built manually, because clouds have a provider object, which would be recursive.
             sb = []
             sb.append("{")
             sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
@@ -182,16 +186,24 @@ class Provider(object):
             sb.append("\"%s\" : \"%s\"," % ("UserDefinedClouds", self.UserDefinedClouds))
             sb.append("\"%s\" : \"%s\"," % ("TestObject", self.TestObject))
             
-            # the clouds hooked to this account
+            # the clouds for this provider
             sb.append("\"Clouds\" : {")
             lst = []
             for c in self.Clouds.itervalues():
-                #stick em all in a list for now
                 s = "\"%s\" : %s" % (c.ID, c.AsJSON())
                 lst.append(s)
-            #join the list using commas!
             sb.append(",".join(lst))
 
+            sb.append("}, ")
+
+            
+            # the products and object types
+            sb.append("\"Products\" : {")
+            lst = []
+            for prod in self.Products.itervalues():
+                s = "\"%s\" : %s" % (prod.Name, prod.AsJSON())
+                lst.append(s)
+            sb.append(",".join(lst))
             sb.append("}")
 
             
@@ -201,7 +213,7 @@ class Provider(object):
             raise ex
 
 class Product(object):
-    ParentProvider = None
+    ParentProviderName = None
     Name = None
     Label = None
     APIUrlPrefix = None
@@ -212,13 +224,38 @@ class Product(object):
     
     #constructor
     def __init__(self, parent):
-        self.ParentProvider = parent
+        self.ParentProviderName = parent.Name
         self.CloudObjectTypes = {}
 
     def IsValidForCalls(self):
         if self.Name:
             return True
         return False
+    
+    def AsJSON(self):
+        try:
+            # this is built manually, because clouds have a provider object, which would be recursive.
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("Name", self.Name))
+            sb.append("\"%s\" : \"%s\"," % ("Label", self.Label))
+            sb.append("\"%s\" : \"%s\"," % ("APIUrlPrefix", self.APIUrlPrefix))
+            sb.append("\"%s\" : \"%s\"," % ("APIUri", self.APIUri))
+            sb.append("\"%s\" : \"%s\"," % ("APIVersion", self.APIVersion))
+            
+            # the clouds for this provider
+            sb.append("\"CloudObjectTypes\" : {")
+            lst = []
+            for c in self.CloudObjectTypes.itervalues():
+                s = "\"%s\" : %s" % (c.ID, c.AsJSON())
+                lst.append(s)
+            sb.append(",".join(lst))
+            sb.append("}")
+
+            sb.append("}")
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
        
 class CloudObjectType(object):
     ParentProduct = None
@@ -235,14 +272,38 @@ class CloudObjectType(object):
     def __init__(self, parent):
         self.ParentProduct = parent
         self.Properties = []
+        self.Instances = {}
 
     def IsValidForCalls(self):
         if self.XMLRecordXPath and self.ID:
             return True
         return False
-    
+
+    def AsJSON(self):
+        try:
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+            sb.append("\"%s\" : \"%s\"," % ("Label", self.Label))
+            sb.append("\"%s\" : \"%s\"," % ("APICall", self.APICall))
+            sb.append("\"%s\" : \"%s\"," % ("APIRequestGroupFilter", self.APIRequestGroupFilter))
+            sb.append("\"%s\" : \"%s\"," % ("APIRequestRecordFilter", self.APIRequestRecordFilter))
+            sb.append("\"%s\" : \"%s\"," % ("XMLRecordXPath", self.XMLRecordXPath))
+            
+            sb.append("\"Properties\" : [")
+            lst = []
+            for p in self.Properties:
+                lst.append(p.AsJSON())
+            sb.append(",".join(lst))
+            sb.append("]")
+
+            sb.append("}")
+            return "".join(sb)
+        except Exception, ex:
+            raise ex
+   
 class CloudObjectTypeProperty:
-    ParentObjectType = None
+    ParentObjectTypeID = None
     Name = None
     Label = None
     XPath = None
@@ -255,4 +316,9 @@ class CloudObjectTypeProperty:
     
     #constructor
     def __init__(self, parent):
-        self.ParentObjectType = parent
+        self.ParentObjectTypeID = parent.ID
+
+    def AsJSON(self):
+        return json.dumps(self.__dict__)
+    
+    

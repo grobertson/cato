@@ -90,6 +90,10 @@ class cloudEdit:
     def GET(self):
         return render.cloudEdit()
 
+class cloudDiscovery:        
+    def GET(self):
+        return render.cloudDiscovery()
+
 class systemStatus:        
     def GET(self):
         return render.systemStatus()
@@ -391,6 +395,7 @@ if __name__ == "__main__":
         '/notAllowed', 'notAllowed',
         '/cloudEdit', 'cloudEdit',
         '/cloudAccountEdit', 'cloudAccountEdit',
+        '/cloudDiscovery', 'cloudDiscovery',
         '/taskEdit', 'taskEdit',
         '/taskRunLog', 'taskRunLog',
         '/taskActivityLog', 'taskActivityLog',

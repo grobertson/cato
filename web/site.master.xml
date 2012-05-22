@@ -50,7 +50,7 @@
 			</item>
 			<item roles="developer user" label="Manage Ecosystems" icon="static/images/icons/ecosystems_24.png" onclick="showPleaseWait();" href="/ecosystemManage">
 			</item>
-			<item roles="developer user" label="Cloud Discovery" icon="static/images/icons/cloud_discovery_24.png" onclick="showPleaseWait();" href="../pages/cloudDiscovery.aspx">
+			<item roles="developer user" label="Cloud Discovery" icon="static/images/icons/cloud_discovery_24.png" onclick="showPleaseWait();" href="/cloudDiscovery">
 			</item>
 		</menu>
 		<menu roles="developer" label="Configuration" icon="static/images/icons/config_24.png">
@@ -58,7 +58,7 @@
 			</item>
 			<item label="Manage Clouds" icon="static/images/icons/clouds_24.png" onclick="showPleaseWait();" href="/cloudEdit">
 			</item>
-			<item roles="developer" label="Cloud API Tester" icon="static/images/icons/api_tester_24.png" onclick="showPleaseWait();" href="../pages/cloudAPITester.aspx">
+			<item roles="developer" label="Cloud API Tester" icon="static/images/icons/api_tester_24.png" onclick="showPleaseWait();" href="/cloudAPITester">
 			</item>
 			<item roles="developer" label="Manage Settings" icon="static/images/icons/login_24.png" onclick="showPleaseWait();" href="/settings">
 			</item>

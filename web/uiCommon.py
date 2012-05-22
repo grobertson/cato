@@ -10,8 +10,19 @@ import cgi
 import re
 import pickle
 import xml.etree.ElementTree as ET
-import settings
 from catocommon import catocommon
+
+
+"""The following is needed when serializing objects that have datetime or other non-serializable
+internal types"""
+def jsonSerializeHandler(obj):
+    if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+#    elif isinstance(obj, custom_object):
+#        tmp = some code to coerce your custom_object into something serializable
+#        return tmp
+    else:
+        raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
 
 # writes to stdout using the catocommon.server output function
 # also prints to the console.
@@ -548,6 +559,8 @@ def HTTPGetNoFail(url):
 
 def GetCloudObjectsAsList(sAccountID, sCloudID, sObjectType):
     try:
+        log("Querying the cloud for %s" % sObjectType, 4)
+        
         import cloud
         
         # first, get the cloud
@@ -602,70 +615,81 @@ def GetCloudObjectsAsList(sAccountID, sCloudID, sObjectType):
         if xDoc is None:
             return None, "API Response XML document is invalid."
         
-        
-        print sXML
+        log(sXML, 4)
 
-        # FIRST ,we have to find which property is the 'id' value.  That'll be the key for our dictionary.
+        # FIRST ,we have to find which properties are the 'id' value.  That'll be the key for our dictionary.
+        # an id can be a composite of several property values
+        # this is just so we can kick back an error if no IsID exists.  
+        # we build the actual id from values near the end
         sIDColumnName = ""
         for prop in cot.Properties:
             if prop.IsID:
-                sIDColumnName = prop.Name
-                break
+                sIDColumnName += prop.Name
 
         # no sIDColumnName means we can't continue
         if not sIDColumnName:
-            return None, "ID column not defined for Cloud Object Type" + cot.Name
+            return None, "ID column(s) not defined for Cloud Object Type" + cot.Name
 
         # for each result in the xml
         #     for each column
         xRecords = xDoc.findall(cot.XMLRecordXPath)
-        for xRecord in xRecords:
-            record_id = None
-            row = []
-            for prop in cot.Properties:
-                log("looking for property %s" % prop.Name, 4)
+        if len(xRecords):
+            for xRecord in xRecords:
+                record_id = ""
+                row = []
+                for prop in cot.Properties:
+                    log("looking for property %s" % prop.Name, 4)
+    
+                    # ok look, the property may be an xml attribute, or it might be an element.
+                    # if there is an XPath value on the column, that means it's an element.
+                    # the absence of an XPath means we'll look for an attribute.
+                    # NOTE: the attribute we're looking for is the 'name' of this property
+                    # which is the DataColumn.name.
+                    if not prop.XPath:
+                        xa = xRecord.attrib[prop.Name]
+                        if xa is not None:
+                            log(" -- found attribute [%s]" % xa, 4)
+                            prop.Value = xa
+                            row.append(prop)
+                    else:
+                        # if it's a tagset column put the tagset xml in it
+                        #  for all other columns, they get a lookup
+                        xeProp = xRecord.find(prop.XPath)
+                        if xeProp is not None:
+                            # does this column have the extended property "ValueIsXML"?
+                            bAsXML = (True if prop.ValueIsXML else False)
+                            
+                            if bAsXML:
+                                prop.Value = ET.tostring(xeProp)
+                                log(" -- found node, (as xml) value is [%s]" % prop.Value, 4)
+                            else:
+                                prop.Value = xeProp.text
+                                log(" -- found node, value is [%s]" % prop.Value, 4)
 
-                # ok look, the property may be an xml attribute, or it might be an element.
-                # if there is an XPath value on the column, that means it's an element.
-                # the absence of an XPath means we'll look for an attribute.
-                # NOTE: the attribute we're looking for is the 'name' of this property
-                # which is the DataColumn.name.
-                if not prop.XPath:
-                    xa = xRecord.attrib[prop.Name]
-                    if xa is not None:
-                        log(" -- found attribute [%s]" % xa, 4)
-                        prop.Value = xa
+                        # just because it's missing from the data doesn't mean we can omit the property
+                        # it just has an empty value.    
                         row.append(prop)
-                else:
-                    # if it's a tagset column put the tagset xml in it
-                    #  for all other columns, they get a lookup
-                    xeProp = xRecord.find(prop.XPath)
-                    if xeProp is not None:
-                        # does this column have the extended property "ValueIsXML"?
-                        bAsXML = (True if prop.ValueIsXML else False)
-                        
-                        if bAsXML:
-                            prop.Value = ET.tostring(xeProp)
-                            log(" -- found node, (as xml) value is [%s]" % prop.Value, 4)
+    
+                    if prop.IsID:
+                        log(prop.Name + " is part of the ID", 4)
+                        if not prop.Value:
+                            return None, "A property [%s] cannot be defined as an 'ID', and have an empty value." % prop.Name
                         else:
-                            prop.Value = xeProp.text
-                            log(" -- found node, value is [%s]" % prop.Value, 4)
-                        
-                        row.append(prop)
-
-                if prop.IsID:
-                    record_id = prop.Value
+                            print prop.Value + " becomes a part of the id"
+                            record_id += (prop.Value if prop.Value else "")
+                    
+                    # an id is required
+                    if not record_id:
+                        return None, "Unable to construct an 'id' from property values."
                 
-                # an id is required
-                if not record_id:
-                    return None, "Unable to determine which property is the 'id'."
-            
-            cot.Instances[record_id] = row 
+                cot.Instances[record_id] = row 
 
-        return cot.Instances, None
+            return cot.Instances, None
+        else:
+            return None, ""
     except Exception:
         log_nouser(traceback.format_exc(), 4)
-        return ""
+        return None, None
 
 def RemoveDefaultNamespacesFromXML(xml):
     try:

@@ -217,7 +217,7 @@ RoleMethods = {
     "/cloudMethods/wmGetCloudAccountsTable" : ["Developer"],
     "/cloudMethods/wmGetCloudsTable" : ["Developer"],
     "/cloudMethods/wmGetKeyPairs" : ["Developer"],
-    "/cloudMethods/wmGetProviderClouds" : ["Developer"],
+    "/cloudMethods/wmGetProvider" : ["Developer"],
     "/cloudMethods/wmGetProvidersList" : ["Developer"],
     "/cloudMethods/wmSaveAccount" : ["Developer"],
     "/cloudMethods/wmSaveCloud" : ["Developer"]

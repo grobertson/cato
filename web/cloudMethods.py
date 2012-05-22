@@ -1,5 +1,6 @@
 import sys
 import traceback
+import xml.etree.ElementTree as ET
 import uiGlobals
 import uiCommon
 import providers
@@ -297,7 +298,7 @@ class cloudMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
-    def wmGetProviderClouds(self):
+    def wmGetProvider(self):
         try:
             sProvider = uiCommon.getAjaxArg("sProvider")
             
@@ -413,3 +414,119 @@ class cloudMethods:
             return "{\"result\" : \"success\"}"
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmGetProviderObjectTypes(self):
+        try:
+            sProvider = uiCommon.getAjaxArg("sProvider")
+            sHTML = ""
+            cp = providers.CloudProviders()
+            if cp:
+                p = cp[sProvider]
+                for i in p.GetAllObjectTypes.items():
+                    print i
+                    
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+    
+    def wmGetCloudObjectList(self):
+        try:
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            sCloudID = uiCommon.getAjaxArg("sCloudID")
+            sObjectType = uiCommon.getAjaxArg("sObjectType")
+            sHTML = ""
+
+            dt, err = uiCommon.GetCloudObjectsAsList(sAccountID, sCloudID, sObjectType)
+            if not err:
+                if dt:
+                    # GetAssociatedEcosystems(0000BYREF_ARG0000dt, sObjectType)
+                    sHTML = self.DrawTableForType(sObjectType, dt)
+                else:
+                    sHTML = "No data returned from the Cloud Provider."
+            else:
+                sHTML += "<div class=\"ui-widget\" style=\"margin-top: 10px;\">"
+                sHTML += "<div style=\"padding: 10px;\" class=\"ui-state-highlight ui-corner-all\">"
+                sHTML += "<span style=\"float: left; margin-right: .3em;\" class=\"ui-icon ui-icon-info\"></span>"
+                sHTML += "<p>" + err + "</p>"
+                sHTML += "</div>"
+                sHTML += "</div>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()
+
+    def DrawTableForType(self, sObjectType, dt):
+        try:
+            sHTML = ""
+
+            # buld the table
+            sHTML += "<table class=\"jtable\" cellspacing=\"1\" cellpadding=\"1\" width=\"99%\">"
+            sHTML += "<tr>"
+            sHTML += "<th class=\"chkboxcolumn\">"
+            sHTML += "<input type=\"checkbox\" class=\"chkbox\" id=\"chkAll\" />"
+            sHTML += "</th>"
+
+            # loop column headers (by getting just one item in the dict)
+            for prop in dt.itervalues().next():
+                sHTML += "<th>"
+                sHTML += prop.Label
+                sHTML += "</th>"
+
+            sHTML += "</tr>"
+
+            # loop rows
+
+            # remember, the properties themselves have the value
+            for sObjectID, props in dt.iteritems():
+                # crush the spaces... a javascript ID can't have spaces
+                sJSID = sObjectID.strip().replace(" ","")
+
+                sHTML += "<tr>"
+                sHTML += "<td class=\"chkboxcolumn\">"
+                
+                # not drawing the checkbox if there's no ID defined, we can't add it to an ecosystem without an id
+                if sObjectID:
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                        " id=\"chk_" + sJSID + "\"" \
+                        " object_id=\"" + sObjectID + "\"" \
+                        " tag=\"chk\" />"
+                
+                    sHTML += "</td>"
+
+                # loop data columns
+                for prop in props:
+                    sValue = (prop.Value if prop.Value else "")
+                    sHTML += "<td>"
+
+                    # should we try to show an icon?
+                    if prop.HasIcon and sValue:
+                        sHTML += "<img class=\"custom_icon\" src=\"static/images/custom/" + prop.Name.replace(" ", "").lower() + "_" + sValue.replace(" ", "").lower() + ".png\" alt=\"\" />"
+                
+                    # if this is the "Tags" column, it might contain some xml... break 'em down
+                    if prop.Name == "Tags" and sValue:
+                        try:
+                            xDoc = ET.fromstring(sValue)
+                            if xDoc is not None:
+                                sTags = ""
+                                for xeTag in xDoc.findall("item"):
+                                    sTags += "<b>%s</b> : %s<br />" % (xeTag.findtext("key", ""), xeTag.findtext("value", ""))
+                                sHTML += sTags
+                        except: # couldn't parse it.  hmmm....
+                            print traceback.format_exc()
+                            # I guess just stick the value in there, but make it safe
+                            sHTML += uiCommon.SafeHTML(sValue)
+                    else:                         
+                        sHTML += (sValue if sValue else "&nbsp;") # we're building a table, empty cells should still have &nbsp;
+
+                    sHTML += "</td>"
+
+                sHTML += "</tr>"
+
+            sHTML += "</table>"
+
+            return sHTML
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()

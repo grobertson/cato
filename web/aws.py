@@ -78,7 +78,7 @@ class awsInterface(object):
             # is use of some variables to give flexibility in building the endpoint url.
             # but, for the immediate need we're just doing an explicity replacement here if it's IAM.
             
-            if prod.Name.lower() == "iam" and prod.ParentProvider.Name.lower() == "amazon aws":
+            if prod.Name.lower() == "iam" and prod.ParentProviderName.lower() == "amazon aws":
                 sHostName = "iam.amazonaws.com"
             
             # following is the right way.

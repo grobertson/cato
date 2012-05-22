@@ -203,7 +203,7 @@ function GetProviderClouds() {
     $.ajax({
         type: "POST",
         async: false,
-        url: "cloudMethods/wmGetProviderClouds",
+        url: "cloudMethods/wmGetProvider",
         data: '{"sProvider":"' + provider + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
