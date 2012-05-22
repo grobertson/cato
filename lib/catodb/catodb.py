@@ -240,7 +240,10 @@ class Db(object):
 		try:
 			self.exec_db(sql, params)
 		except Exception, e:
-			self.error = e.__str__()
+			if "1062" in e.__str__():
+				self.error = "key_violation"
+			else:
+				self.error = e.__str__()
 			return False
 
 		return True
