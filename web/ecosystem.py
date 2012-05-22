@@ -306,7 +306,7 @@ class Ecosystems(object):
                             "or e.ecosystem_desc like '%%" + term + "%%' " \
                             "or et.ecotemplate_name like '%%" + term + "%%') "
     
-            sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name, created_dt, last_update_dt," \
+            sSQL = "select e.ecosystem_id, e.ecosystem_name, e.ecosystem_desc, e.account_id, et.ecotemplate_name, e.storm_status, e.created_dt, e.last_update_dt," \
                 " (select count(*) from ecosystem_object where ecosystem_id = e.ecosystem_id) as num_objects" \
                 " from ecosystem e" \
                 " join ecotemplate et on e.ecotemplate_id = et.ecotemplate_id" \
