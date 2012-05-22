@@ -30,7 +30,7 @@ sys.path.append(lib_path)
 conf_path = os.path.join(base_path, "conf")
 sys.path.append(conf_path)
 
-import settings
+from settings import settings
 from catocommon import catocommon
 
 class Scheduler(catocommon.CatoService):

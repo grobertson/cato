@@ -28,7 +28,7 @@ conf_path = os.path.join(base_path, "conf")
 sys.path.append(conf_path)
 
 from catocommon import catocommon
-import settings
+from settings import settings
 
 class Poller(catocommon.CatoService):
 
