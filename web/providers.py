@@ -42,7 +42,7 @@ class CloudProviders(dict):
                         c = cloud.Cloud()
                         c.FromArgs(pv, False, xCloud.get("id", None), xCloud.get("name", None), xCloud.get("api_url", None), xCloud.get("api_protocol", None), sRegion)
                         if c.ID:
-                            pv.Clouds[c.ID] = c
+                            pv.Clouds.append(c)
 
                     #Let's also add any clouds that may be in the database...
                     #IF the "user_defined_clouds" flag is set.
@@ -55,7 +55,7 @@ class CloudProviders(dict):
                                 c = cloud.Cloud()
                                 c.FromArgs(pv, True, dr[0], dr[1], dr[2], dr[3], "")
                                 if c:
-                                    pv.Clouds[c.ID] = c
+                                    pv.Clouds.append(c)
                         else:
                             raise Exception("Error building Cloud object: ")
                     
@@ -131,7 +131,7 @@ class Provider(object):
         self.TestProduct = sTestProduct
         self.TestObject = sTestObject
         self.UserDefinedClouds = bUserDefinedClouds
-        self.Clouds = {}
+        self.Clouds = []
         self.Products = {}
 
     @staticmethod
@@ -189,7 +189,7 @@ class Provider(object):
             # the clouds for this provider
             sb.append("\"Clouds\" : {")
             lst = []
-            for c in self.Clouds.itervalues():
+            for c in self.Clouds:
                 s = "\"%s\" : %s" % (c.ID, c.AsJSON())
                 lst.append(s)
             sb.append(",".join(lst))

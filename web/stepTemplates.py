@@ -753,12 +753,12 @@ def ddDataSource_GetAWSClouds():
     # AWS regions
     p = providers.Provider.FromName("Amazon AWS")
     if p is not None:
-        for c in p.Clouds.itervalues():
+        for c in p.Clouds:
             data[c.Name] = c.Name
     # Eucalyptus clouds
     p = providers.Provider.FromName("Eucalyptus")
     if p is not None:
-        for c in p.Clouds.itervalues():
+        for c in p.Clouds:
             data[c.Name] = c.Name
 
     return data
