@@ -8,7 +8,7 @@ from catocommon import catocommon
 import cloud
 import user
 import tag
-import settings
+from settings import settings
 
 # unlike uiCommon, which is used for shared ui elements
 # this is a methods class mapped to urls for web.py
@@ -712,7 +712,7 @@ class uiMethods:
     def wmGetSettings(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            dir(settings)
             s = settings.settings()
             if s:
                 return s.AsJSON()
