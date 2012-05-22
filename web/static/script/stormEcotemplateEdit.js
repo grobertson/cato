@@ -219,13 +219,21 @@ function SaveStormFile() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmUpdateEcotemplateStorm",
+        url: "ecoMethods/wmUpdateEcotemplateStorm",
         data: '{"sEcoTemplateID":"' + g_id + '", "sStormFileSource":"' + sfs + '", "sStormFile":"' + sf + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (retval) {
-            ShowStorm();
-         	$("#storm_edit_dialog").dialog('close');
+        success: function (response) {
+        	if (response.error) {
+        		showAlert(response.error);
+        	} else if (response.info) {
+        		showInfo(response.info);
+        	} else if (response.result == "success") {
+	            ShowStorm();
+	         	$("#storm_edit_dialog").dialog('close');
+           	} else {
+                showInfo(response);
+            }
         },
         error: function (response) {
             showAlert(response.responseText);

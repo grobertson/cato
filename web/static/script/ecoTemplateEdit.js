@@ -236,7 +236,8 @@ function GetDetails() {
 		success : function(template) {
 			try {
 				$("#txtEcoTemplateName").val(template.Name);
-				$("#txtDescription").val(unpackJSON(template.Description));
+			 	$("#lblEcoTemplateHeader").html(template.Name);
+			 	$("#txtDescription").val(unpackJSON(template.Description));
 			} catch (ex) {
 				showAlert(template);
 			}
@@ -531,22 +532,23 @@ function doDetailFieldUpdate(ctl) {
 		$.ajax({
 			async : false,
 			type : "POST",
-			url : "uiMethods.asmx/wmUpdateEcoTemplateDetail",
+			url : "ecoMethods/wmUpdateEcotemplateDetail",
 			data : '{"sEcoTemplateID":"' + g_id + '","sColumn":"' + column + '","sValue":"' + value + '"}',
 			contentType : "application/json; charset=utf-8",
 			dataType : "json",
-			success : function(msg) {
-				if(msg.d != '') {
-					$("#update_success_msg").text("Update Failed").fadeOut(2000);
-					showInfo(msg.d);
-				} else {
-					$("#update_success_msg").text("Update Successful").fadeOut(2000);
+			success : function(response) {
+	        	if (response.error) {
+	        		showAlert(response.error);
+	        	} else if (response.info) {
+	        		showInfo(response.info);
+	        	} else if (response.result == "success") {
+                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
-					// Change the name in the header
-					if(column == "Name") {
-						$("#lblEcoTemplateHeader").html(unpackJSON(value));
-					};
-				}
+                    // Change the name in the header
+                    if (column == "Name") { $("#lblEcoTemplateHeader").html(unpackJSON(value)); };
+               	} else {
+                    showInfo(response);
+                }
 			},
 			error : function(response) {
 				$("#update_success_msg").fadeOut(2000);

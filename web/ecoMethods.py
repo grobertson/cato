@@ -129,6 +129,81 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmUpdateEcotemplateDetail(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+            sColumn = uiCommon.getAjaxArg("sColumn")
+            sValue = uiCommon.getAjaxArg("sValue")
+    
+            sUserID = uiCommon.GetSessionUserID()
+
+            if uiCommon.IsGUID(sEcoTemplateID) and uiCommon.IsGUID(sUserID):
+                et = ecosystem.Ecotemplate()
+                et.FromID(sEcoTemplateID)
+                
+                if et:
+                    # we encoded this in javascript before the ajax call.
+                    # the safest way to unencode it is to use the same javascript lib.
+                    # (sometimes the javascript and .net libs don't translate exactly, google it.)
+                    sValue = uiCommon.unpackJSON(sValue)
+
+                    #  check for existing name
+                    if sColumn == "Name":
+                        if et.Name == sValue:
+                            return sValue + " exists, please choose another name."
+
+                    # cool, update the class attribute by name, using getattr!
+                    # python is so cool.. I don't even need to check if the attribute I wanna set exists.
+                    # just set it
+                    setattr(et, sColumn, sValue)
+                    
+                    bSuccess, msg = et.DBUpdate()
+                    if bSuccess:
+                        uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcoTemplateID, sColumn, sValue)
+                        return "{\"result\" : \"success\"}"
+                    else:
+                        uiGlobals.request.Messages.append(msg)
+                        return "{\"info\" : \"%s\"}" % msg
+                else:
+                    uiGlobals.request.Messages.append("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].")
+                    return "Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "]."
+                
+                return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
+    def wmUpdateEcotemplateStorm(self):
+        try:
+            sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
+            sStormFileSource = uiCommon.getAjaxArg("sStormFileSource")
+            sStormFile = uiCommon.getAjaxArg("sStormFile")
+    
+            sUserID = uiCommon.GetSessionUserID()
+
+            if uiCommon.IsGUID(sEcoTemplateID) and uiCommon.IsGUID(sUserID):
+                et = ecosystem.Ecotemplate()
+                et.FromID(sEcoTemplateID)
+                
+                if et:
+                    et.StormFileType = uiCommon.unpackJSON(sStormFileSource)
+                    et.StormFile = uiCommon.unpackJSON(sStormFile)
+                    
+                    bSuccess, msg = et.DBUpdate()
+                    if bSuccess:
+                        uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcoTemplateID, "StormFileType", sStormFileSource)
+                        uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcoTemplateID, "StormFile", sStormFile)
+                        return "{\"result\" : \"success\"}"
+                    else:
+                        uiGlobals.request.Messages.append(msg)
+                        return "{\"info\" : \"%s\"}" % msg
+                else:
+                    uiGlobals.request.Messages.append("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].")
+                    return "Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "]."
+                
+                return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+
     def wmDeleteEcotemplates(self):
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -1476,10 +1551,10 @@ class ecoMethods:
             sUserID = uiCommon.GetSessionUserID()
 
             if uiCommon.IsGUID(sEcosystemID) and uiCommon.IsGUID(sUserID):
-                et = ecosystem.Ecosystem()
-                et.FromID(sEcosystemID)
+                e = ecosystem.Ecosystem()
+                e.FromID(sEcosystemID)
                 
-                if et:
+                if e:
                     # we encoded this in javascript before the ajax call.
                     # the safest way to unencode it is to use the same javascript lib.
                     # (sometimes the javascript and .net libs don't translate exactly, google it.)
@@ -1487,16 +1562,15 @@ class ecoMethods:
 
                     #  check for existing name
                     if sColumn == "Name":
-                        if et.Name == sValue:
+                        if e.Name == sValue:
                             return sValue + " exists, please choose another name."
 
                     # cool, update the class attribute by name, using getattr!
-                    bSuccess = False
                     # python is so cool.. I don't even need to check if the attribute I wanna set exists.
                     # just set it
-                    setattr(et, sColumn, sValue)
+                    setattr(e, sColumn, sValue)
                     
-                    bSuccess, msg = et.DBUpdate()
+                    bSuccess, msg = e.DBUpdate()
                     
                     if bSuccess:
                         uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcosystemID, sColumn, sValue)
@@ -1510,7 +1584,6 @@ class ecoMethods:
                 return ""
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
-        return ""
     
     def wmDeleteEcosystemObject(self):
         try:

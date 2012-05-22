@@ -165,7 +165,8 @@ function GetDetails() {
 			try {
 				g_ecotemplate_id = ecosys.EcotemplateID
 				$("#txtEcosystemName").val(ecosys.Name);
-				$("#txtDescription").val(unpackJSON(ecosys.Description));
+				$("#lblEcosystemNameHeader").html(ecosys.Name);
+				$("#txtDescription").val(ecosys.Description);
 				$("#lblEcotemplateName").html(ecosys.EcotemplateName);
 				$("#lblCreated").html(ecosys.CreatedDate);
 				
@@ -457,7 +458,6 @@ function doDetailFieldUpdate(ctl) {
             contentType: "application/json; charset=utf-8",
             dataType: "text",
             success: function (response) {
-
                 if (response != '') {
                     $("#update_success_msg").text("Update Failed").fadeOut(2000);
                     showInfo(response);
@@ -468,7 +468,6 @@ function doDetailFieldUpdate(ctl) {
                     // bugzilla 1037 Change the name in the header
                     if (column == "Name") { $("#lblEcosystemNameHeader").html(unpackJSON(value)); };
                 }
-
             },
             error: function (response) {
                 $("#update_success_msg").fadeOut(2000);

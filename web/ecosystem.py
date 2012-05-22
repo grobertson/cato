@@ -260,6 +260,33 @@ class Ecotemplate(object):
         except Exception, ex:
             raise ex
 
+    def DBUpdate(self):
+        try:
+            if not self.Name:
+                return False, "Name is required."
+
+            sSQL = "update ecotemplate set" \
+                " ecotemplate_name = '" + self.Name + "'," \
+                " ecotemplate_desc = " + (" null" if not self.Description else " '" + uiCommon.TickSlash(self.Description) + "'") + "," \
+                " storm_file_type = " + (" null" if not self.StormFileType else " '" + uiCommon.TickSlash(self.StormFileType) + "'") + "," \
+                " storm_file = " + (" null" if not self.StormFile else " '" + uiCommon.TickSlash(self.StormFile) + "'") + \
+                " where ecotemplate_id = '" + self.ID + "'"
+
+            db = catocommon.new_conn()
+            if not db.exec_db_noexcep(sSQL):
+                print db.error
+                if db.error == "key_violation":
+                    return None, "An Ecotemplate with that name already exists.  Please select another name."
+                else:
+                    return False, db.error
+            
+            return True, ""
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+
+
 class EcotemplateAction(object):
     ID = None
     Name = None
@@ -437,7 +464,7 @@ class Ecosystem(object):
                 self.Description = (dr["ecosystem_desc"] if dr["ecosystem_desc"] else "")
                 self.StormFile = (dr["storm_file"] if dr["storm_file"] else "")
                 self.StormStatus = (dr["storm_status"] if dr["storm_status"] else "")
-                self.CreatedDate = (str(dr["created_dt"]) if dr["storm_status"] else "")
+                self.CreatedDate = (str(dr["created_dt"]) if dr["created_dt"] else "")
                 self.LastUpdate = (str(dr["last_update_dt"]) if dr["storm_status"] else "")
                 self.NumObjects = str(dr["num_objects"])
             else: 
@@ -449,7 +476,7 @@ class Ecosystem(object):
 
     def AsJSON(self):
         try:
-            return json.dumps(self.__dict__)
+            return json.dumps(self.__dict__, default=uiCommon.jsonSerializeHandler)
 #            sb = []
 #            sb.append("{")
 #            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
