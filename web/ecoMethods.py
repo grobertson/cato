@@ -1780,3 +1780,37 @@ class ecoMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
     
+
+    def wmAddEcosystemObjects(self):
+        try:
+            sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
+            sCloudID = uiCommon.getAjaxArg("sCloudID")
+            sObjectType = uiCommon.getAjaxArg("sObjectType")
+            sObjectIDs = uiCommon.getAjaxArg("sObjectIDs")
+
+            if not sEcosystemID or not sObjectType or not sObjectIDs:
+                uiGlobals.request.Messages.append("Missing or invalid Ecosystem ID, Cloud Object Type or Object ID.")
+
+            aObjectIDs = sObjectIDs.split(",")
+            for sObjectID in aObjectIDs:
+                sSQL = "insert into ecosystem_object " \
+                     " (ecosystem_id, cloud_id, ecosystem_object_id, ecosystem_object_type, added_dt)" \
+                     " values (" \
+                     " '" + sEcosystemID + "'," \
+                     " '" + sCloudID + "'," \
+                     " '" + sObjectID + "'," \
+                     " '" + sObjectType + "'," \
+                     " now() " \
+                     ")"
+
+                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+                    if uiGlobals.request.db.error == "key_violation":
+                        """do nothing"""
+                    else:
+                        uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+
+            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcosystemID, "", "Objects Added : {" + sObjectIDs + "}")
+
+            return ""
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())

@@ -75,12 +75,6 @@ $(document).ready(function () {
     });
 
 
-	//if an ecosystem_id was provided, select it from the dropdown
-    var sel_eco_id = getQuerystringVariable("ecosystem_id");
-    if (sel_eco_id != "") {
-		$("#ddlEcosystems").val(sel_eco_id);
-    }
-
     $("#add_to_ecosystem_btn").click(function () {
         Save();
     });
@@ -203,6 +197,12 @@ function FillEcosystemsDropdown() {
             $.each(ecosystems, function(index, ecosystem){
             	$("#ddlEcosystems").append("<option value=\"" + ecosystem.ecosystem_id + "\">" + ecosystem.ecosystem_name + "</option>");
 			});
+
+			//if an ecosystem_id was provided, select it from the dropdown
+		    var sel_eco_id = getQuerystringVariable("ecosystem_id");
+		    if (sel_eco_id != "") {
+				$("#ddlEcosystems").val(sel_eco_id);
+		    }
         },
         error: function (response) {
             showAlert(response.responseText);
@@ -244,6 +244,7 @@ function Save() {
         strValidationError += 'No Cloud Accounts are defined. An Administrator must first create at least one Cloud Account.<br /><br />';
     }
     
+	var account_id = $.cookie("selected_cloud_account");
     var ecosystem = $("#ddlEcosystems").val();
     var cloud_id = $("#ddlClouds").val();
     var object_type = $("#hidCloudObjectType").val();
@@ -274,11 +275,11 @@ function Save() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmAddEcosystemObjects",
-        data: '{"sEcosystemID":"' + ecosystem + '","sCloudID":"' + cloud_id + '","sObjectType":"' + object_type + '","sObjectIDs":"' + object_ids + '"}',
+        url: "ecoMethods/wmAddEcosystemObjects",
+        data: '{"sAccountID":"' + account_id + '", "sEcosystemID":"' + ecosystem + '","sCloudID":"' + cloud_id + '","sObjectType":"' + object_type + '","sObjectIDs":"' + object_ids + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
+        dataType: "text",
+        success: function (response) {
             $("#update_success_msg").text("Add Successful.").show();
             //reload the grid so it will show the proper ecosystems (and uncheck everything)
             $(".group_tab_selected").trigger("click");

@@ -440,8 +440,7 @@ class cloudMethods:
             dt, err = uiCommon.GetCloudObjectsAsList(sAccountID, sCloudID, sObjectType)
             if not err:
                 if dt:
-                    # GetAssociatedEcosystems(0000BYREF_ARG0000dt, sObjectType)
-                    sHTML = self.DrawTableForType(sObjectType, dt)
+                    sHTML = self.DrawTableForType(sAccountID, sObjectType, dt)
                 else:
                     sHTML = "No data returned from the Cloud Provider."
             else:
@@ -457,8 +456,19 @@ class cloudMethods:
             uiGlobals.request.Messages.append(traceback.format_exc())
             return traceback.format_exc()
 
-    def DrawTableForType(self, sObjectType, dt):
+    def DrawTableForType(self, sAccountID, sObjectType, dt):
         try:
+            # we will need this at the bottom
+            sSQL = "select eo.ecosystem_object_id, e.ecosystem_id, e.ecosystem_name" \
+                " from ecosystem_object eo" \
+                " join ecosystem e on eo.ecosystem_id = e.ecosystem_id" \
+                " where e.account_id = '" + sAccountID + "'" \
+                " and eo.ecosystem_object_type = '" + sObjectType + "'"
+
+            ecosystems = uiGlobals.request.db.select_all_dict(sSQL)
+            if uiGlobals.request.db.error:
+                return uiGlobals.request.db.error
+
             sHTML = ""
 
             # buld the table
@@ -473,6 +483,9 @@ class cloudMethods:
                 sHTML += "<th>"
                 sHTML += prop.Label
                 sHTML += "</th>"
+
+            # the last column is hardcoded for ecosystems.
+            sHTML += "<th>Ecosystems</th>"
 
             sHTML += "</tr>"
 
@@ -522,6 +535,14 @@ class cloudMethods:
 
                     sHTML += "</td>"
 
+                # spin the ecosystems query here, building a list of ecosystems associated with this object
+                sHTML += "<td>"
+                if ecosystems:
+                    for ecosystem in ecosystems:
+                        if ecosystem["ecosystem_object_id"] == sObjectID:
+                            sHTML += "<span class=\"ecosystem_link pointer\" ecosystem_id=\"%s\">%s</span><br />" % (ecosystem["ecosystem_id"], ecosystem["ecosystem_name"])
+                sHTML += "</td>"
+                
                 sHTML += "</tr>"
 
             sHTML += "</table>"
