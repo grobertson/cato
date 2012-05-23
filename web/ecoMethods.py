@@ -1772,7 +1772,7 @@ class ecoMethods:
             try:
                 sXML, sErr = uiCommon.HTTPGet(sURL, 15)
                 if sErr:
-                    return "{\"error\" : \"Error communicating with Storm.  %s\"}" % sErr
+                    return "{\"error\" : \"Attempt to contact the Storm service failed.  Verify the Stormfront service is running, and check the logfile for errors.  %s\"}" % sErr
 
             except:
                 uiGlobals.request.Messages.append("Error calling Storm service." + traceback.format_exc())
