@@ -250,6 +250,7 @@ class ecoMethods:
                 et.FromID(sEcoTemplateID)
                 if et is not None:
                     result, msg = et.DBCopy(sNewName)
+                    print "out"
                     if not result:
                         return "{\"error\" : \"%s\"}" % msg
                     
@@ -257,6 +258,7 @@ class ecoMethods:
                     return "{\"ecotemplate_id\" : \"%s\"}" % et.ID
                 else:
                     uiGlobals.request.Messages.append("Unable to get Template [" + sEcoTemplateID + "] to copy.")
+                    return "{\"info\" : \"Unable to get Template [" + sEcoTemplateID + "] to copy.\"}"
             else:
                 return "{\"info\" : \"Unable to Copy - New name and source ID are both required.\"}"
         except Exception:

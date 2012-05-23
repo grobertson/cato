@@ -40,7 +40,7 @@ class Ecotemplates(object):
             raise ex
         
 class Ecotemplate(object):
-    ID = uiCommon.NewGUID()
+    ID = None
     Name = None
     Description = None
     StormFileType = None
@@ -50,6 +50,17 @@ class Ecotemplate(object):
     OnConflict = "cancel" #the default behavior for all conflicts is to cancel the operation
     Actions = {}
 
+    def __init__(self):
+        self.ID = uiCommon.NewGUID()
+        self.Name = None
+        self.Description = None
+        self.StormFileType = None
+        self.StormFile = None
+        self.IncludeTasks = False #used for export to xml
+        self.DBExists = None
+        self.OnConflict = "cancel" #the default behavior for all conflicts is to cancel the operation
+        self.Actions = {}
+        
     #the default constructor (manual creation)
     def FromArgs(self, sName, sDescription):
         if not sName:
@@ -118,10 +129,11 @@ class Ecotemplate(object):
             sSQL = "select ecotemplate_id from ecotemplate" \
                 " where ecotemplate_name = '" + self.Name + "'" \
                 " or ecotemplate_id = '" + self.ID + "'"
-            
+            print sSQL
             db = catocommon.new_conn()
             dr = db.select_row_dict(sSQL)
             if db.error:
+                print db.error
                 raise Exception("Ecotemplate Object: Unable to check for existing Name or ID. " + db.error)
             
             if dr is not None:
@@ -131,6 +143,7 @@ class Ecotemplate(object):
                     # we're setting the ids to the same as the database so it's more accurate.
                     
                     self.ID = dr["ecotemplate_id"]
+                    print dr["ecotemplate_id"]
                     return True
                 
             return False
@@ -194,6 +207,7 @@ class Ecotemplate(object):
             # actions aren't referenced by id anywhere, so we'll just give them a new guid
             # to prevent any risk of PK issues.
             for ea in self.Actions.itervalues():
+                print ea.Name
                 sSQL = "insert into ecotemplate_action" \
                     " (action_id, ecotemplate_id, action_name, action_desc, category, action_icon, original_task_id, task_version, parameter_defaults)" \
                     " values (" \
@@ -201,9 +215,9 @@ class Ecotemplate(object):
                     " '" + self.ID + "'," \
                     " '" + uiCommon.TickSlash(ea.Name) + "'," + \
                     ("null" if not ea.Description else " '" + uiCommon.TickSlash(ea.Description) + "'") + "," + \
-                    ("null" if not ea.Category else " '" + uiCommon.TickSlash(ea.Category) + "'") + "," \
-                    " '" + ea.Icon + "'," \
-                    " '" + ea.OriginalTaskID + "'," \
+                    ("null" if not ea.Category else " '" + uiCommon.TickSlash(ea.Category) + "'") + "," + \
+                    ("null" if not ea.Icon else " '" + ea.Icon + "'") + "," + \
+                    ("null" if not ea.OriginalTaskID else " '" + ea.OriginalTaskID + "'") + "," + \
                     ("null" if not ea.TaskVersion else " '" + ea.TaskVersion + "'") + "," + \
                     ("null" if not ea.ParameterDefaultsXML else " '" + uiCommon.TickSlash(ea.ParameterDefaultsXML) + "'") + \
                     ")"
@@ -228,6 +242,7 @@ class Ecotemplate(object):
                         ea.TaskVersion = ea.Task.Version
             
             # yay!
+            print "done"
             db.tran_commit()
             return True, None
 
@@ -238,9 +253,12 @@ class Ecotemplate(object):
 
     def DBCopy(self, sNewName):
         try:
+            #creating a new objects gets a new id.
             et = Ecotemplate()
             if et is not None:
-                # populate it
+                # populate it from self
+                print sNewName
+                print self.ID
                 et.Name = sNewName
                 et.Description = self.Description
                 et.StormFileType = self.StormFileType
@@ -249,7 +267,6 @@ class Ecotemplate(object):
                 
                 # we gave it a new name and id, recheck if it exists
                 et.DBExists = et.dbExists()
-                
                 result, msg = et.DBSave()
                 if not result:
                     return False, msg

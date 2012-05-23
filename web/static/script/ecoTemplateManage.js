@@ -294,7 +294,7 @@ function ShowItemCopy() {
         ClearSelectedRows();
         return false;
     }
-	
+	$("#txtCopyEcotemplateName").val("");
 	$("#copy_dialog").dialog('open');
 }
 function CopyTemplate() {
@@ -319,20 +319,19 @@ function CopyTemplate() {
         	} else if (response.error) {
         		showAlert(response.error);
             } else if (response.ecotemplate_id) {
-                $("#copy_dialog").dialog('close');
-                // clear the search field and reload the grid
-                $("#txtSearch").val("");
-               	GetItems();
-
-                hidePleaseWait();
                 showInfo('Copy Successful.');
+			    // clear the search field and reload the grid
+			    $("#txtSearch").val("");
+			   	GetItems();
             } else {
                 showInfo(response);
-            	$("#txtCopyEcotemplateName").val("");
             }
         },
         error: function (response) {
             showAlert(response.responseText);
         }
     });
+
+    hidePleaseWait();
+    $("#copy_dialog").dialog('close');
 }
