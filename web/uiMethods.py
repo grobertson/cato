@@ -7,6 +7,7 @@ import uiCommon
 from catocommon import catocommon
 import cloud
 import user
+import asset
 import tag
 from settings import settings
 
@@ -991,6 +992,8 @@ class uiMethods:
     def wmUpdateUser(self):
         """
             Updates a user.  Will only update the values passed to it.
+            
+            TODO: this should be moved to the user module.
         """
         try:
             uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
@@ -1172,4 +1175,30 @@ class uiMethods:
         except Exception:
             uiGlobals.request.Messages.append(traceback.format_exc())
 
+    def wmGetAssetsTable(self):
+        try:
+            sHTML = ""
+            sFilter = uiCommon.getAjaxArg("sSearch")
+
+            a = asset.Assets(sFilter)
+            if a.rows:
+                for row in a.rows:
+                    sHTML += "<tr asset_id=\"" + row["asset_id"] + "\">"
+                    sHTML += "<td class=\"chkboxcolumn\">"
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                    " id=\"chk_" + row["asset_id"] + "\"" \
+                    " tag=\"chk\" />"
+                    sHTML += "</td>"
+                    
+                    sHTML += "<td class=\"selectable\">" + row["asset_name"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["asset_status"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["address"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["credentials"] +  "</td>"
+                    
+                    sHTML += "</tr>"
+            return sHTML    
+        except Exception:
+            uiGlobals.request.Messages.append(traceback.format_exc())
+            return traceback.format_exc()           
+        
         
