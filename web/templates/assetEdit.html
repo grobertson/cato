@@ -1,0 +1,241 @@
+$def with ()
+$var jsfiles: assetEdit.js managePageCommon.js objectTag.js
+$var cssfiles:
+
+<style type="text/css">
+	.credential_selector {
+		height: 300px;
+		overflow: auto;
+	}
+	.select_credential {
+		background: #cccccc;
+		cursor: pointer;
+	}
+	.credentialinputs {
+		width: 200px;
+	}
+</style>
+<div style="display: none;">
+    <input id="hidPageSaveType" type="hidden" value="batch" />
+    <input id="hidMode" type="hidden" name="hidMode" />
+    <input id="hidEditCount" type="hidden" name="hidEditCount" />
+    <input id="hidCurrentEditID" type="hidden" name="hidCurrentEditID" />
+    <input id="hidSelectedArray" type="hidden" name="hidSelectedArray" />
+    <input id="hidCredentialID" type="hidden" name="hidCredentialID" />
+    <input id="hidCredentialType" type="hidden" name="hidCredentialID" />
+    <!-- Start visible elements -->
+</div>
+<div id="left_panel">
+    <div class="left_tooltip">
+        <img src="static/images/manage-assets-192x192.png" alt="" />
+        <div id="left_tooltip_box_outer">
+            <div id="left_tooltip_box_inner">
+                <h2>Assets</h2>
+                <p>
+                    The Manage Assets screen allows administrators
+                    to modify, add and delete Assets.
+                </p>
+                <p>
+                    Unlike Cloud instances, Assets are physical and persistent devices on which Tasks can perform work.
+                </p>
+                <p>
+                    Select one or more Assets from the list to the right, using the checkboxes. Select
+                    an action to modify or delete the Assets you've selected.
+                </p>
+                <p>
+                    <a href="http://projects.cloudsidekick.com/projects/cato/wiki/Assets?utm_source=cato_app&amp;utm_medium=helplink&amp;utm_campaign=app" target="_blank"><span class="ui-icon ui-icon-info forceinline"></span>Click here</a>
+                    for a more detailed introduction on Assets.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="content">
+    <span id="lblItemsSelected">0</span> Items Selected <span id="clear_selected_btn"></span>
+    <span id="item_create_btn">Create</span>
+    <span id="item_modify_btn">Modify</span>
+    <span id="item_delete_btn">Delete</span>
+    <input type="text" id="txtSearch" class="search_text" />
+    <span id="item_search_btn">Search</span>
+    <table class="jtable" cellspacing="1" cellpadding="1" width="99%">
+        <thead>
+            <tr>
+                <th class="chkboxcolumn">
+                <input type="checkbox" class="chkbox" id="chkAll" />
+                </th>
+                <th sortcolumn="asset_name" width="250px"> Asset </th>
+                <th sortcolumn="asset_status" width="100px"> Status </th>
+                <th sortcolumn="address" width="50px"> Address </th>
+                <th sortcolumn="credentials" width="125px"> Credential </th>
+            </tr>
+        </thead>
+        <tbody id="assets"></tbody>
+    </table>
+</div>
+<div id="edit_dialog" class="hidden" title="Create Asset">
+    <div id="AddAssetTabs" style="height: 500px;">
+        <ul>
+            <li>
+                <a href="#GeneralTab"><span>General</span></a>
+            </li>
+            <!--<li><a href="#TagsTab"><span>Tags</span></a></li>-->
+            <li>
+                <a href="#CredentialsTab"><span>Credentials</span></a>
+            </li>
+        </ul>
+        <div id="GeneralTab">
+            <table id="tblEdit" width="80%">
+                <tbody>
+                    <tr>
+                        <td> Asset Name </td>
+                        <td>
+                        <input id="txtAssetName" style="width: 200px;" type="text" name="txtAssetName" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> Status </td>
+                        <td>
+                        <select id="ddlAssetStatus" style="width: 200px;" name="ddlAssetStatus">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td> Address </td>
+                        <td>
+                        <input validate_as="hostname" id="txtAddress" style="width: 200px;" type="text" name="txtAddress" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> DB Name </td>
+                        <td>
+                        <input validate_as="identifier" id="txtDbName" style="width: 200px;" type="text" maxlength="1024" name="txtDbName" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> Port </td>
+                        <td>
+                        <input validate_as="posint" id="txtPort" style="width: 200px;" type="text" name="txtPort" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> Connection String </td>
+                        <td>                        <textarea id="txtConnString" style="width: 400px;" type="text" name="txtConnString" rows="4"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <center>
+                <span id="show_log_link">View Change Log</span>
+            </center>
+        </div>
+        <!--
+        <div id="TagsTab">
+        <span id="tag_add_btn" class="tag_add_btn pointer">
+        <img src="../images/icons/edit_add.png" alt="" />
+        click to add </span>
+        <hr />
+        <ul id="objects_tags">
+        </ul>
+        </div>
+        -->
+        <div id="CredentialsTab">
+            <table id="tblCredentials" width="80%">
+                <tbody>
+                    <tr>
+                        <td>
+                        <input id="btnCredSelect" type="submit" value="Select Shared Credential" name="btnCredSelect" />
+                        <input id="btnCredAdd" type="submit" value="New Credential" name="btnCredAdd" />
+                        <p>
+                            &nbsp;
+                        </p><div id="CredentialDetails" class="col_header"></div>
+                        <div id="CredentialSelectorTabs" style="height: 380px;">
+                            <div id="CredentialSelectorShared" class="credential_selector"></div>
+                        </div>
+                        <div id="EditCredential">
+                            <table width="100%">
+                                <tr>
+                                    <td align="center" colspan="2">
+                                    <div id="SharedLocalDiv">
+                                        <input id="rbLocal" type="radio" value="1" name="rbShared" checked="checked" />
+                                        <label for="rbLocal"> Local</label>
+                                        <input id="rbShared" type="radio" value="0" name="rbShared" />
+                                        <label for="rbShared"> Shared</label>
+                                    </div></td>
+                                </tr>
+                                <tr>
+                                    <td> Username </td>
+                                    <td>
+                                    <input validate_as="username" id="txtCredUsername" style="width: 200px;" name="txtCredUsername" />
+                                    </td>
+                                </tr>
+                                <tr class="SharedCredFields hidden">
+                                    <td> Name </td>
+                                    <td>
+                                    <input id="txtCredName" style="width: 200px;" name="txtCredName" />
+                                    </td>
+                                </tr>
+                                <tr class="SharedCredFields hidden">
+                                    <td> Description </td>
+                                    <td>
+                                    <input id="txtCredDescription" style="width: 200px;" name="txtCredDescription" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Domain </td>
+                                    <td>
+                                    <input id="txtCredDomain" style="width: 200px;" name="txtCredDomain" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Password </td>
+                                    <td>
+                                    <input id="txtCredPassword" style="width: 200px;" type="password" name="txtCredPassword" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Password Confirm </td>
+                                    <td>
+                                    <input id="txtCredPasswordConfirm" style="width: 200px;" type="password" name="txtCredPasswordConfirm" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"> &nbsp; </td>
+                                </tr>
+                                <tr>
+                                    <td> Privileged Mode Password </td>
+                                    <td> &nbsp; </td>
+                                </tr>
+                                <tr>
+                                    <td> Password </td>
+                                    <td>
+                                    <input id="txtPrivilegedPassword" style="width: 200px;" type="password" name="txtPrivilegedPassword" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Password Confirm </td>
+                                    <td>
+                                    <input id="txtPrivilegedConfirm" style="width: 200px;" type="password" name="txtPrivilegedConfirm" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="delete_dialog" class="hidden" title="Delete Asset">
+    <table>
+        <tr>
+            <td> Are you sure you want to delete these Assets? </td>
+        </tr>
+        <tr>
+            <td><span id="lblDeleteList" Text=""></span></td>
+        </tr>
+        <tr>
+            <td><span id="lblDeleteProgress" Text=""></span></td>
+        </tr>
+    </table>
+</div>

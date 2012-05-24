@@ -9,45 +9,35 @@ import cloud
 
 # methods for dealing with clouds and cloud accounts
 
+# the db connection that is used in this module.
+db = None
+
 class cloudMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception, ex:
+        except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception, ex:
+        except Exception as ex:
             raise ex
-            return traceback.format_exc()
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            if self.db.conn.socket:
+                self.db.close()
 
     """ Clouds edit page """
     def wmGetCloudsTable(self):
@@ -75,7 +65,7 @@ class cloudMethods:
     
             return sHTML    
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetProvidersList(self):
@@ -94,13 +84,11 @@ class cloudMethods:
                     
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
     
     def wmGetCloud(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sID = uiCommon.getAjaxArg("sID")
             c = cloud.Cloud()
             if c:
@@ -111,13 +99,11 @@ class cloudMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetCloudAccountsJSON(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             provider = uiCommon.getAjaxArg("sProvider")
             ca = cloud.CloudAccounts(sFilter="", sProvider=provider)
             if ca:
@@ -126,12 +112,10 @@ class cloudMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + provider + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmSaveCloud(self):
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
         sMode = uiCommon.getAjaxArg("sMode")
         sCloudID = uiCommon.getAjaxArg("sCloudID")
         sCloudName = uiCommon.getAjaxArg("sCloudName")
@@ -162,7 +146,7 @@ class cloudMethods:
                 c.Provider = providers.Provider.FromName(sProvider)
                 result, msg = c.DBUpdate()
                 if not result:
-                    uiGlobals.request.Messages.append(msg)
+                    uiCommon.log(msg, 2)
                     return "{\"info\" : \"%s\"}" % msg
                 
                 uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Cloud, c.ID, c.Name, sCloudName, c.Name)
@@ -172,13 +156,11 @@ class cloudMethods:
             else:
                 return "{\"error\" : \"Unable to save Cloud using mode [" + sMode + "].\"}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmDeleteClouds(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
                 return "{\"info\" : \"Unable to delete - no selection.\"}"
@@ -187,11 +169,11 @@ class cloudMethods:
             
             #get important data that will be deleted for the log
             sSQL = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")"
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
+            rows = self.db.select_all_dict(sSQL)
 
             sSQL = "delete from clouds where cloud_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
             
             #if we made it here, save the logs
             for dr in rows:
@@ -200,15 +182,13 @@ class cloudMethods:
             return "{\"result\" : \"success\"}"
             
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
         
     """ Cloud Accounts Edit page"""
     def wmGetCloudAccountsTable(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sFilter = uiCommon.getAjaxArg("sSearch")
             sHTML = ""
             
@@ -242,13 +222,11 @@ class cloudMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sFilter + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetCloudAccount(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sID = uiCommon.getAjaxArg("sID")
             a = cloud.CloudAccount()
             if a:
@@ -259,7 +237,7 @@ class cloudMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get details for Cloud Account [" + sID + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetKeyPairs(self):
@@ -271,9 +249,9 @@ class cloudMethods:
                 " from cloud_account_keypair" \
                 " where account_id = '" + sID + "'"
     
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
     
             if dt:
                 sHTML += "<ul>"
@@ -295,7 +273,7 @@ class cloudMethods:
     
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetProvider(self):
@@ -312,7 +290,7 @@ class cloudMethods:
                 else:
                     return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmSaveAccount(self):
@@ -359,7 +337,7 @@ class cloudMethods:
                     ca.Provider = providers.Provider.FromName(sProvider)
                     result, msg = ca.DBUpdate()
                     if not result:
-                        uiGlobals.request.Messages.append(msg);  
+                        uiCommon.log(msg, 2)
                         return "{\"info\" : \"%s\"}" % msg
 
 #            # what's the original name?
@@ -377,15 +355,13 @@ class cloudMethods:
                 return "{\"error\" : \"Unable to save Cloud Account using mode [" + sMode + "].\"}"
 
         except Exception:
-            uiGlobals.request.Messages.append("Error: General Exception: " + traceback.format_exc())
+            uiCommon.log("Error: General Exception: " + traceback.format_exc())
         
         #  no errors to here, so return an empty object
         return "{}"
 
     def wmDeleteAccounts(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
                 return "{\"info\" : \"Unable to delete - no selection.\"}"
@@ -394,18 +370,18 @@ class cloudMethods:
 
             #  get data that will be deleted for the log
             sSQL = "select account_id, account_name, provider, login_id from cloud_account where account_id in (" + sDeleteArray + ")"
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
+            rows = self.db.select_all_dict(sSQL)
 
 
             sSQL = "delete from cloud_account_keypair where account_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from cloud_account where account_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             #  if we made it here, so save the logs
             for dr in rows:
@@ -413,7 +389,7 @@ class cloudMethods:
 
             return "{\"result\" : \"success\"}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetProviderObjectTypes(self):
         try:
@@ -427,7 +403,7 @@ class cloudMethods:
                     
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
     
     def wmGetCloudObjectList(self):
@@ -453,7 +429,7 @@ class cloudMethods:
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def DrawTableForType(self, sAccountID, sObjectType, dt):
@@ -465,9 +441,9 @@ class cloudMethods:
                 " where e.account_id = '" + sAccountID + "'" \
                 " and eo.ecosystem_object_type = '" + sObjectType + "'"
 
-            ecosystems = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            ecosystems = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             sHTML = ""
 
@@ -549,5 +525,5 @@ class cloudMethods:
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()

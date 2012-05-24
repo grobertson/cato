@@ -1,4 +1,3 @@
-import sys
 import traceback
 from uiCommon import log
 import uiCommon
@@ -7,9 +6,13 @@ import providers
 from uiGlobals import ConnectionTypes
 import uiGlobals
 import task
+from catocommon import catocommon
 
-# LIKE uiCommon - this isn't a class that gets instantiated ... it's just a collection of 
-# all the functions used to draw the Task Steps.
+"""
+LIKE uiCommon - this isn't a class that gets instantiated ... it's just a collection of 
+all the functions used to draw the Task Steps.
+"""
+
 def GetSingleStep(sStepID, sUserID):
     return task.Step.ByIDWithSettings(sStepID, sUserID)
     
@@ -42,7 +45,7 @@ def DrawFullStep(oStep):
     sExpandedClass = ("" if oStep.UserSettings.Visible else "step_collapsed")
     sSkipStepClass = ("step_skip" if oStep.Commented else "")
     sSkipHeaderClass = ("step_header_skip" if oStep.Commented else "")
-    sSkipIcon = ("pause" if oStep.Commented else "play")
+    sSkipIcon = ("play" if oStep.Commented else "pause")
     sSkipVal = ("1" if oStep.Commented else "0")
 
     # pay attention
@@ -484,7 +487,7 @@ def DrawField(xe, sXPath, oStep):
                         
                     f.close()
             except Exception:
-                uiGlobals.request.Messages.append(traceback.format_exc())
+                uiCommon.log_nouser(traceback.format_exc(), 0)
                 return "Unable to render input element [" + sXPath + "]. Lookup file [" + sDataSet + "] not found or incorrect format."
         elif sDatasource == "function":
             log("---- Function datasource ... executing [" + sDataSet + "] ...", 4)
@@ -499,7 +502,7 @@ def DrawField(xe, sXPath, oStep):
                             sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
                             if key == sNodeValue: bValueWasInData = True
             except Exception:
-                uiGlobals.request.Messages.append(traceback.format_exc())
+                uiCommon.log_nouser(traceback.format_exc(), 0)
         else: # default is "local"
             log("---- Inline datasource ... reading my own 'dataset' attribute ...", 4)
             # data is pipe delimited
@@ -765,267 +768,47 @@ def ddDataSource_GetAWSClouds():
 
 def AddToCommandXML(sStepID, sXPath, sXMLToAdd):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
         if not uiCommon.IsGUID(sStepID):
-            uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "].")
+            uiCommon.log("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "].")
 
-        # this select is only for logging
-        sSQL = "select task_id, codeblock_name, function_name, step_order from task_step where step_id = '" + sStepID + "'"
-        dr = uiGlobals.request.db.select_row_dict(sSQL)
-        if uiGlobals.request.db.error:
-            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-
-        if dr is not None:
-            AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sXPath, sXMLToAdd)
-
-            # log it
-            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], dr["function_name"],
-                "Added a new property to Command Type:" + dr["function_name"] + \
-                " Codeblock:" + dr["codeblock_name"] + \
-                " Step Order:" + str(dr["step_order"]))
+        uiCommon.AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sXPath, sXMLToAdd)
 
         return
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
-
-def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
-    # BE WARNED! this function is shared by many things, and should not be enhanced
-    # with sorting or other niceties.  If you need that stuff, build your own function.
-    # AddRegistry:Node is a perfect example... we wanted sorting on the registries, and also we don't allow array.
-    # but parameters for example are by definition arrays of parameter nodes.
-    uiCommon.log("Adding node [%s] to [%s] in [%s.%s where %s]." % (sXMLToAdd, sXPath, sTable, sXMLColumn, sWhereClause), 4)
-    try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
-        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-        if not sXML:
-            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
-        else:
-            # parse the doc from the table
-            uiCommon.log(sXML, 4)
-            xd = ET.fromstring(sXML)
-            if xd is None:
-                uiGlobals.request.Messages.append("Error: Unable to parse XML.")
-
-            # get the specified node from the doc, IF IT'S NOT THE ROOT
-            # either a blank xpath, or a single word that matches the root, both match the root.
-            # any other path DOES NOT require the root prefix.
-            if sXPath == "":
-                xNodeToEdit = xd
-            elif xd.tag == sXPath:
-                xNodeToEdit = xd
-            else:
-                xNodeToEdit = xd.find(sXPath)
-            
-            if xNodeToEdit is None:
-                uiGlobals.request.Messages.append("Error: XML does not contain path [" + sXPath + "].")
-                return
-
-            # now parse the new section from the text passed in
-            xNew = ET.fromstring(sXMLToAdd)
-            if xNew is None:
-                uiGlobals.request.Messages.append("Error: XML to be added cannot be parsed.")
-
-            # if the node we are adding to has a text value, sadly it has to go.
-            # we can't detect that, as the Value property shows the value of all children.
-            # but this works, even if it seems backwards.
-            # if the node does not have any children, then clear it.  that will safely clear any
-            # text but not stomp the text of the children.
-            if len(xNodeToEdit) == 0:
-                xNodeToEdit.text = ""
-            # add it to the doc
-            xNodeToEdit.append(xNew)
-
-
-            # then send the whole doc back to the database
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
-                " where " + sWhereClause
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
-
-        return
-    except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
 
 def SetNodeValueinCommandXML(sStepID, sNodeToSet, sValue):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
         if not uiCommon.IsGUID(sStepID):
-            uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
+            uiCommon.log("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
 
-        SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sValue)
-
-        return
-    except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
-
-def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue):
-    uiCommon.log("Setting node [%s] to [%s] in [%s.%s where %s]." % (sNodeToSet, sValue, sTable, sXMLColumn, sWhereClause), 4)
-    try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
-        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
-        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-        if not sXML:
-            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
-        else:
-            # parse the doc from the table
-            xd = ET.fromstring(sXML)
-            if xd is None:
-                uiGlobals.request.Messages.append("Error: Unable to parse XML.")
-
-            # get the specified node from the doc, IF IT'S NOT THE ROOT
-            if xd.tag == sNodeToSet:
-                xNodeToSet = xd
-            else:
-                xNodeToSet = xd.find(sNodeToSet)
-
-            if xNodeToSet is not None:
-                xNodeToSet.text = sValue
-
-                # then send the whole doc back to the database
-                sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "' where " + sWhereClause
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
-            else:
-                uiGlobals.request.Messages.append("Unable to update XML Column ... [" + sNodeToSet + "] not found.")
+        uiCommon.SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sValue)
 
         return
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
 
 def SetNodeAttributeinCommandXML(sStepID, sNodeToSet, sAttribute, sValue):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
         if not uiCommon.IsGUID(sStepID):
-            uiGlobals.request.Messages.append("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
+            uiCommon.log("Unable to modify step. Invalid or missing Step ID. [" + sStepID + "] ")
 
-        SetNodeAttributeinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sAttribute, sValue)
+        uiCommon.SetNodeAttributeinXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToSet, sAttribute, sValue)
 
         return
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
-
-def SetNodeAttributeinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sAttribute, sValue):
-    # THIS ONE WILL do adds if the attribute doesn't exist, or update it if it does.
-    try:
-        uiCommon.log("Setting [%s] attribute [%s] to [%s] in [%s.%s where %s]" % (sNodeToSet, sAttribute, sValue, sTable, sXMLColumn, sWhereClause), 4 )
-
-        sXML = ""
-
-        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
-        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-        if uiGlobals.request.db.error:
-            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
-            return ""
- 
-        if sXML:
-            # parse the doc from the table
-            xd = ET.fromstring(sXML)
-            if xd is None:
-                uiGlobals.request.Messages.append("Unable to parse xml." + uiGlobals.request.db.error)
-                return ""
-
-            # get the specified node from the doc
-            # here's the rub - the request might be or the "root" node,
-            # which "find" will not, er ... find.
-            # so let's first check if the root node is the name we want.
-            xNodeToSet = None
-            
-            if xd.tag == sNodeToSet:
-                xNodeToSet = xd
-            else:
-                xNodeToSet = xd.find(sNodeToSet)
-            
-            if xNodeToSet is None:
-            # do nothing if we didn't find the node
-                return ""
-            else:
-                # set it
-                xNodeToSet.attrib[sAttribute] = sValue
-
-
-            # then send the whole doc back to the database
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
-                " where " + sWhereClause
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
-
-        return ""
-    except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
 
 def RemoveFromCommandXML(sStepID, sNodeToRemove):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
         if not uiCommon.IsGUID(sStepID):
-            uiGlobals.request.Messages.append("Unable to modify step.<br />Invalid or missing Step ID. [" + sStepID + "]<br />")
-
-        sSQL = "select task_id, codeblock_name, function_name, step_order from task_step where step_id = '" + sStepID + "'"
-        dr = uiGlobals.request.db.select_row_dict(sSQL)
-        if uiGlobals.request.db.error:
-            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-
-        if dr is not None:
-            RemoveNodeFromXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToRemove)
-
-            # log it
-            uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], dr["function_name"],
-                "Removed a property to Command Type:" + dr["function_name"] + \
-                " Codeblock:" + dr["codeblock_name"] + \
-                " Step Order:" + str(dr["step_order"]))
-
-        return
-    except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
-
-def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
-    uiCommon.log("Removing node [%s] from [%s.%s where %s]." % (sNodeToRemove, sTable, sXMLColumn, sWhereClause), 4)
-    try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
+            uiCommon.log("Unable to modify step.<br />Invalid or missing Step ID. [" + sStepID + "]<br />")
         
-        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
-        sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-        if not sXML:
-            uiGlobals.request.Messages.append("Unable to get xml." + uiGlobals.request.db.error)
-        else:
-            # parse the doc from the table
-            xd = ET.fromstring(sXML)
-            if xd is None:
-                uiGlobals.request.Messages.append("Error: Unable to parse XML.")
-
-            # get the specified node from the doc
-            xNodeToWhack = xd.find(sNodeToRemove)
-            if xNodeToWhack is None:
-                uiCommon.log("INFO: attempt to remove [%s] - the element was not found." % sNodeToRemove, 3)
-                # no worries... what you want to delete doesn't exist?  perfect!
-                return
-
-            # OK, here's the deal...
-            # we have found the node we want to delete, but we found it using an xpath,
-            # ElementTree doesn't support deleting by xpath.
-            # so, we'll use a parent map to find the immediate parent of the node we found,
-            # and on the parent we can call ".remove"
-            parent_map = dict((c, p) for p in xd.getiterator() for c in p)
-            xParentOfNodeToWhack = parent_map[xNodeToWhack]
-            
-            # whack it
-            if xParentOfNodeToWhack is not None:
-                xParentOfNodeToWhack.remove(xNodeToWhack)
-
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + uiCommon.TickSlash(ET.tostring(xd)) + "'" \
-                " where " + sWhereClause
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + uiGlobals.request.db.error)
+        uiCommon.RemoveNodeFromXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sNodeToRemove)
 
         return
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
 
 def DrawDropZone(oStep, xEmbeddedFunction, sXPath, sLabel, bRequired):
     # drop zones are common for all the steps that can contain embedded steps.
@@ -1458,8 +1241,6 @@ def GetEcosystemObjects(oStep):
         This one could easily be moved out of hardcode and into the commands.xml using a function based lookup.
     """
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         xd = oStep.FunctionXDoc
 
         sObjectType = xd.findtext("object_type", "")
@@ -1496,7 +1277,7 @@ def GetEcosystemObjects(oStep):
 
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def SqlExec(oStep):
@@ -1504,8 +1285,6 @@ def SqlExec(oStep):
         This should return a tuple, the html and a flag of whether or not to draw the variable button
     """
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
 
@@ -1606,13 +1385,13 @@ def SqlExec(oStep):
             sHTML += "<textarea " + sCommonAttribsForTA + " help=\"Enter a SQL query or procedure.\">" + sCommand + "</textarea>"
         return sHTML, bDrawVarButton
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def RunTask(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
+        db = catocommon.new_conn()
+
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -1645,10 +1424,10 @@ def RunTask(oStep):
                 " where original_task_id = '" + sOriginalTaskID + "'" + \
                 (" and default_version = 1" if not sVersion else " and version = '" + sVersion + "'")
     
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                return "Error retrieving target Task.(1)" + uiGlobals.request.db.error
+            dr = db.select_row_dict(sSQL)
+            if db.error:
+                uiCommon.log_nouser(db.error, 0)
+                return "Error retrieving target Task.(1)" + db.error
     
             if dr is not None:
                 sLabel = dr["task_code"] + " : " + dr["task_name"]
@@ -1662,10 +1441,10 @@ def RunTask(oStep):
                     " where original_task_id = '" + sOriginalTaskID + "'" \
                     " and default_version = 1"
     
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                    return "Error retrieving target Task.(2)<br />" + uiGlobals.request.db.error
+                dr = db.select_row_dict(sSQL)
+                if db.error:
+                    uiCommon.log_nouser(db.error, 0)
+                    return "Error retrieving target Task.(2)<br />" + db.error
     
                 if dr is not None:
                     sLabel = dr["task_code"] + " : " + dr["task_name"]
@@ -1676,7 +1455,7 @@ def RunTask(oStep):
                     SetNodeValueinCommandXML(sStepID, "//version", "")
                 else:
                     # a default doesnt event exist, really fail...
-                    return "Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "]." + uiGlobals.request.db.error
+                    return "Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "]." + db.error
     
     
         # IF IT's A GUID...
@@ -1686,12 +1465,12 @@ def RunTask(oStep):
         if uiCommon.IsGUID(sAssetID):
             sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
     
-            sAssetName = uiGlobals.request.db.select_col_noexcep(sSQL)
-            if uiGlobals.request.db.error:
-                return "Error retrieving Run Task Asset Name." + uiGlobals.request.db.error
+            sAssetName = db.select_col_noexcep(sSQL)
+            if db.error:
+                return "Error retrieving Run Task Asset Name." + db.error
     
             if sAssetName == "":
-                return "Unable to find Asset by ID - [" + sAssetID + "]." + uiGlobals.request.db.error
+                return "Unable to find Asset by ID - [" + sAssetID + "]." + db.error
         else:
             sAssetName = sAssetID
     
@@ -1734,10 +1513,10 @@ def RunTask(oStep):
             sSQL = "select version from task" \
                 " where original_task_id = '" + sOriginalTaskID + "'" \
                 " order by version"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                return "Database Error:" + uiGlobals.request.db.error
+            dt = db.select_all_dict(sSQL)
+            if db.error:
+                uiCommon.log_nouser(db.error, 0)
+                return "Database Error:" + db.error
     
             if dt:
                 for dr in dt:
@@ -1808,13 +1587,16 @@ def RunTask(oStep):
         
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
+    finally:
+        if db.conn.socket:
+            db.close()
 
 def Subtask(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
+        db = catocommon.new_conn()
+
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -1831,10 +1613,10 @@ def Subtask(oStep):
                 " where original_task_id = '" + sOriginalTaskID + "'" + \
                 (" and default_version = 1" if not sVersion else " and version = '" + sVersion + "'")
     
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append("Error retrieving subtask.(1)<br />" + uiGlobals.request.db.error)
-                return "Error retrieving subtask.(1)<br />" + uiGlobals.request.db.error
+            dr = db.select_row_dict(sSQL)
+            if db.error:
+                uiCommon.log("Error retrieving subtask.(1)<br />" + db.error)
+                return "Error retrieving subtask.(1)<br />" + db.error
 
             if dr is not None:
                 sLabel = dr["task_code"] + " : " + dr["task_name"]
@@ -1847,10 +1629,10 @@ def Subtask(oStep):
                     " where original_task_id = '" + sOriginalTaskID + "'" \
                     " and default_version = 1"
     
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append("Error retrieving subtask.(2)<br />" + uiGlobals.request.db.error)
-                    return "Error retrieving subtask.(2)<br />" + uiGlobals.request.db.error
+                dr = db.select_row_dict(sSQL)
+                if db.error:
+                    uiCommon.log("Error retrieving subtask.(2)<br />" + db.error)
+                    return "Error retrieving subtask.(2)<br />" + db.error
     
                 if dr is not None:
                     sLabel = dr["task_code"] + " : " + dr["task_name"]
@@ -1860,7 +1642,7 @@ def Subtask(oStep):
                     SetNodeValueinCommandXML(sStepID, "version", "")
                 else:
                     # a default doesnt event exist, really fail...
-                    uiGlobals.request.Messages.append("Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "].")
+                    uiCommon.log("Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "].")
                     return "Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "]."
     
         # all good, draw the widget
@@ -1899,10 +1681,9 @@ def Subtask(oStep):
             sSQL = "select version from task" \
                 " where original_task_id = '" + sOriginalTaskID + "'" \
                 " order by version"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-    
+            dt = db.select_all_dict(sSQL)
+            if db.error:
+                uiCommon.log_nouser(db.error, 0)
             if dt:
                 for dr in dt:
                     sHTML += "<option " + SetOption(str(dr["version"]), sVersion) + " value=\"" + str(dr["version"]) + "\">" + str(dr["version"]) + "</option>\n"
@@ -1918,13 +1699,14 @@ def Subtask(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
+    finally:
+        if db.conn.socket:
+            db.close()
 
 def WaitForTasks(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -1961,7 +1743,7 @@ def WaitForTasks(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def Dataset(oStep):
@@ -1969,8 +1751,6 @@ def Dataset(oStep):
 
 def ClearVariable(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -2011,13 +1791,11 @@ def ClearVariable(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def SetVariable(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -2089,13 +1867,11 @@ def SetVariable(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def NewConnection(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         log("New Connection command:", 4)
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
@@ -2164,12 +1940,14 @@ def NewConnection(oStep):
             #  make the sAssetName value be what's in sAssetID (a literal value in [[variable]] format)
             if uiCommon.IsGUID(sAssetID):
                 sSQL = "select asset_name from asset where asset_id = '" + sAssetID + "'"
-                sAssetName = uiGlobals.request.db.select_col_noexcep(sSQL)
+                db = catocommon.new_conn()
+                sAssetName = db.select_col_noexcep(sSQL)
                 if not sAssetName:
-                    if uiGlobals.request.db.error:
-                        uiGlobals.request.Messages.append("Unable to look up Asset name." + uiGlobals.request.db.error)
+                    if db.error:
+                        uiCommon.log("Unable to look up Asset name." + db.error)
                     else:
                         SetNodeValueinCommandXML(sStepID, "asset", "")
+                db.close()
             else:
                 sAssetName = sAssetID
     
@@ -2202,13 +1980,11 @@ def NewConnection(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def If(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -2299,13 +2075,11 @@ def If(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def Loop(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         xd = oStep.FunctionXDoc
     
         sStart = xd.findtext("start", "")
@@ -2363,13 +2137,11 @@ def Loop(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def While(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         xd = oStep.FunctionXDoc
     
         sTest = xd.findtext("test", "")
@@ -2393,13 +2165,11 @@ def While(oStep):
     
         return sHTML
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def Exists(oStep):
     try:
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
         xd = oStep.FunctionXDoc
     
         sHTML = ""
@@ -2474,7 +2244,7 @@ def Exists(oStep):
         return sHTML
 
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
 def Codeblock(oStep):

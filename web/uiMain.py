@@ -62,6 +62,10 @@ class settings:
     def GET(self):
         return render.settings()
 
+class assetEdit:        
+    def GET(self):
+        return render.assetEdit()
+
 class userEdit:        
     def GET(self):
         return render.userEdit()
@@ -407,6 +411,7 @@ if __name__ == "__main__":
         '/ecosystemManage', 'ecosystemManage',
         '/ecosystemEdit', 'ecosystemEdit',
         '/userEdit', 'userEdit',
+        '/assetEdit', 'assetEdit',
         '/announcement', 'announcement',
         '/upload', 'upload',
         '/settings', 'settings',

@@ -1,4 +1,3 @@
-import sys
 import traceback
 import urllib
 import json
@@ -7,6 +6,7 @@ import uiCommon
 from catocommon import catocommon
 import cloud
 import user
+import asset
 import tag
 from settings import settings
 
@@ -30,19 +30,8 @@ class login:
 
     def POST(self):
         try:
-            # HERE WE WILL get the security policy and use it to test the various steps along the login process.
-#            policy = settings.security()
-#            print "@" + policy.LoginMessage
-        
-
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
             in_name = uiGlobals.web.input(username=None).username
             in_pwd = uiGlobals.web.input(password=None).password
-    
 
             u = user.User()
             if not u.Authenticate(in_name, in_pwd):
@@ -63,20 +52,15 @@ class login:
             uiCommon.log(uiGlobals.session.user, 4)
     
             #update the security log
-#            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
-#                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
-#                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
+            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
+                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
+                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
     
             uiCommon.log("Creating session...", 3)
                 
             raise uiGlobals.web.seeother('/home')
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
-        finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
 class logout:        
     def GET(self):
@@ -89,41 +73,33 @@ class logout:
 class uiMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
+
+    # the db connection that is used in this module.
+    db = None
+    
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            if self.db.conn.socket:
+                self.db.close()
 
     def wmGetCloudAccountsForHeader(self):
         try:
@@ -148,11 +124,9 @@ class uiMethods:
             #should not get here if all is well
             return "<option>ERROR</option>"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmUpdateHeartbeat(self):
-        uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
         #NOTE: this needs all the kick and warn stuff
         uid = uiCommon.GetSessionUserID()
         ip = uiCommon.GetSessionObject("user", "ip_address")
@@ -160,15 +134,13 @@ class uiMethods:
         if uid and ip:
             sSQL = "update user_session set heartbeat = now() where user_id = '" + uid + "' \
                 and address = '" + ip + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         return ""
     
     def wmGetMenu(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
-            #NOTE: this needs all the kick and warn stuff
+                #NOTE: this needs all the kick and warn stuff
             role = uiCommon.GetSessionUserRole()
             
             if not role:
@@ -186,12 +158,10 @@ class uiMethods:
             if f:
                 return f.read()
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
     
     def wmGetSystemStatus(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sProcessHTML = ""
             sSQL = "select app_instance as Instance," \
                 " app_name as Component," \
@@ -201,7 +171,7 @@ class uiMethods:
                 " load_value as LoadValue, platform, hostname" \
                 " from application_registry " \
                 " order by component, master desc"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = self.db.select_all(sSQL)
             for dr in rows:
                 sProcessHTML += "<tr>" \
                     "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
@@ -219,7 +189,7 @@ class uiMethods:
                 " from user_session us join users u on u.user_id = us.user_id " \
                 " where timestampdiff(MINUTE,us.heartbeat, now()) < 10" \
                 " order by us.heartbeat desc"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = self.db.select_all(sSQL)
             for dr in rows:
                 sUserHTML += "<tr>" \
                     "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
@@ -236,7 +206,7 @@ class uiMethods:
                 " convert(date_time_entered, CHAR(20)) as entered_dt, convert(date_time_completed, CHAR(20)) as completed_dt" \
                 " from message" \
                 " order by msg_id desc limit 100"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = self.db.select_all(sSQL)
             for dr in rows:
                 sMessageHTML += "<tr>" \
                     "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
@@ -250,12 +220,10 @@ class uiMethods:
             return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetLog(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
             sObjectID = uiCommon.getAjaxArg("sObjectID")
             sObjectType = uiCommon.getAjaxArg("sObjectType")
             sSearch = uiCommon.getAjaxArg("sSearch")
@@ -296,9 +264,9 @@ class uiMethods:
                 " limit " + (sRecords if sRecords else "100")
                 
             sLog = ""
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return "{ \"error\" : \"Unable to get log. %s\" }" % (uiGlobals.request.db.error)
+            rows = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return "{ \"error\" : \"Unable to get log. %s\" }" % (self.db.error)
             if rows:
                 i = 1
                 sb = []
@@ -320,12 +288,12 @@ class uiMethods:
             return "{ \"log\" : [ %s ] }" % (sLog)
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetDatabaseTime(self):
-        sNow = uiGlobals.request.db.select_col_noexcep("select now()")
-        if uiGlobals.request.db.error:
-            return uiGlobals.request.db.error
+        sNow = self.db.select_col_noexcep("select now()")
+        if self.db.error:
+            return self.db.error
         
         if sNow:
             return str(sNow)
@@ -348,9 +316,9 @@ class uiMethods:
                 (" and ap.action_id = '" + sActionID + "'" if sActionID else "") + \
                 (" and ap.ecosystem_id = '" + sEcosystemID + "'" if sEcosystemID else "") + \
                 " order by ap.run_on_dt"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             else:
                 if dt:
                     for dr in dt:
@@ -392,7 +360,7 @@ class uiMethods:
             return sHTML
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetActionSchedules(self):
         sTaskID = uiCommon.getAjaxArg("sTaskID")
@@ -407,9 +375,9 @@ class uiMethods:
                 " left outer join ecosystem e on s.ecosystem_id = e.ecosystem_id" \
                 " where s.task_id = '" + sTaskID + "'" + \
                 (" and e.ecosystem_id = '" +sEcosystemID + "'" if sEcosystemID else "")
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             else:
                 if dt:
                     for dr in dt:
@@ -446,13 +414,13 @@ class uiMethods:
             return sHTML
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetRecurringPlan(self):
         sScheduleID = uiCommon.getAjaxArg("sScheduleID")
         # tracing this backwards, if the action_plan table has a row marked "schedule" but no schedule_id, problem.
         if not sScheduleID:
-            uiGlobals.request.Messages.append("Unable to retrieve Reccuring Plan - schedule id argument not provided.")
+            uiCommon.log("Unable to retrieve Reccuring Plan - schedule id argument not provided.")
         
         sb = []
 
@@ -460,9 +428,9 @@ class uiMethods:
         sSQL = "select schedule_id, months, days, hours, minutes, days_or_weeks, label" \
             " from action_schedule" \
             " where schedule_id = '" + sScheduleID + "'"
-        dt = uiGlobals.request.db.select_all_dict(sSQL)
-        if uiGlobals.request.db.error:
-            uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        dt = self.db.select_all_dict(sSQL)
+        if self.db.error:
+            uiCommon.log_nouser(self.db.error, 0)
 
         if dt:
             for dr in dt:
@@ -482,7 +450,7 @@ class uiMethods:
                 sb.append("\"sDaysOrWeeks\" : \"%s\"" % sDW)
                 sb.append("}")
         else:
-            uiGlobals.request.Messages.append("Unable to find details for Recurring Action Plan. " + uiGlobals.request.db.error + " ScheduleID [" + sScheduleID + "]")
+            uiCommon.log("Unable to find details for Recurring Action Plan. " + self.db.error + " ScheduleID [" + sScheduleID + "]")
 
         return "".join(sb)
     
@@ -491,43 +459,43 @@ class uiMethods:
             sScheduleID = uiCommon.getAjaxArg("sScheduleID")
     
             if not sScheduleID:
-                uiGlobals.request.Messages.append("Missing Schedule ID.")
+                uiCommon.log("Missing Schedule ID.")
                 return "Missing Schedule ID."
     
             sSQL = "delete from action_plan where schedule_id = '" + sScheduleID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from action_schedule where schedule_id = '" + sScheduleID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
     
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Schedule [" + sScheduleID + "] deleted.")
     
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmDeleteActionPlan(self):
         try:
             iPlanID = uiCommon.getAjaxArg("iPlanID")
     
             if iPlanID < 1:
-                uiGlobals.request.Messages.append("Missing Action Plan ID.")
+                uiCommon.log("Missing Action Plan ID.")
                 return "Missing Action Plan ID."
     
             sSQL = "delete from action_plan where plan_id = " + iPlanID
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Action Plan [" + iPlanID + "] deleted.")
     
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
     
     def wmRunLater(self):
         try:
@@ -540,7 +508,7 @@ class uiMethods:
             sAccountID = uiCommon.getAjaxArg("sAccountID")
             
             if not sTaskID or not sRunOn:
-                uiGlobals.request.Messages.append("Missing Action Plan date or Task ID.")
+                uiCommon.log("Missing Action Plan date or Task ID.")
 
             # we encoded this in javascript before the ajax call.
             # the safest way to unencode it is to use the same javascript lib.
@@ -563,10 +531,10 @@ class uiMethods:
                 " 'manual'" \
                 ")"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmRunRepeatedly(self):
         try:
@@ -583,7 +551,7 @@ class uiMethods:
             sAccountID = uiCommon.getAjaxArg("sAccountID")
             
             if not sTaskID or not sMonths or not sDays or not sHours or not sMinutes or not sDaysOrWeeks:
-                uiGlobals.request.Messages.append("Missing or invalid Schedule timing or Task ID.")
+                uiCommon.log("Missing or invalid Schedule timing or Task ID.")
 
             # we encoded this in javascript before the ajax call.
             # the safest way to unencode it is to use the same javascript lib.
@@ -616,10 +584,10 @@ class uiMethods:
                 + (iDebugLevel if iDebugLevel > "-1" else "null") + \
                 ")"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmSavePlan(self):
         try:
@@ -634,7 +602,7 @@ class uiMethods:
              * """
     
             if not iPlanID:
-                uiGlobals.request.Messages.append("Missing Action Plan ID.")
+                uiCommon.log("Missing Action Plan ID.")
 
             # we encoded this in javascript before the ajax call.
             # the safest way to unencode it is to use the same javascript lib.
@@ -649,10 +617,10 @@ class uiMethods:
                 " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
                 " where plan_id = " + iPlanID
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
 
     def wmSaveSchedule(self):
@@ -673,7 +641,7 @@ class uiMethods:
 
         try:
             if not sScheduleID or not sMonths or not sDays or not sHours or not sMinutes or not sDaysOrWeeks:
-                uiGlobals.request.Messages.append("Missing Schedule ID or invalid timetable.")
+                uiCommon.log("Missing Schedule ID or invalid timetable.")
 
             # we encoded this in javascript before the ajax call.
             # the safest way to unencode it is to use the same javascript lib.
@@ -685,8 +653,8 @@ class uiMethods:
 
             # whack all plans for this schedule, it's been changed
             sSQL = "delete from action_plan where schedule_id = '" + sScheduleID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
 
             # figure out a label
@@ -704,14 +672,13 @@ class uiMethods:
                 " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
                 " where schedule_id = '" + sScheduleID + "'"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetSettings(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
             dir(settings)
             s = settings.settings()
             if s:
@@ -720,7 +687,7 @@ class uiMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Error getting settings.'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmSaveSettings(self):
@@ -728,8 +695,6 @@ class uiMethods:
             In this method, the values come from the browser in a jQuery serialized array of name/value pairs.
         """
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-
             sType = uiCommon.getAjaxArg("sType")
             sValues = uiCommon.getAjaxArg("sValues")
         
@@ -757,7 +722,7 @@ class uiMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Error saving settings - no type provided.'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetMyAccount(self):
@@ -769,10 +734,10 @@ class uiMethods:
                 ifnull(security_answer, '') as security_question
                 from users
                 where user_id = '%s'""" % user_id
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                raise Exception(uiGlobals.request.db.error)
+            dr = self.db.select_row_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
+                raise Exception(self.db.error)
             else:
                 # here's the deal - we aren't even returning the 'local' settings if the type is ldap.
                 if dr["authentication_type"] == "local":
@@ -782,7 +747,7 @@ class uiMethods:
                     return json.dumps(d)
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             
     def wmSaveMyAccount(self):
         """
@@ -793,8 +758,6 @@ class uiMethods:
         # TODO: must do checking for password complexity, see if it's already been used, etc.
 
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-
             user_id = uiCommon.GetSessionUserID()
             sValues = uiCommon.getAjaxArg("sValues")
         
@@ -816,15 +779,15 @@ class uiMethods:
 
             sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
 
-            if not uiGlobals.request.db.exec_db_noexcep(sql):
-                uiCommon.log(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            if not self.db.exec_db_noexcep(sql):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "My Account settings updated.")
                 
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetUsersTable(self):
@@ -852,13 +815,11 @@ class uiMethods:
     
             return sHTML    
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()           
         
     def wmGetUser(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sID = uiCommon.getAjaxArg("sUserID")
             u = user.User()
             if u:
@@ -869,7 +830,22 @@ class uiMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get details for User [" + sID + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmGetAsset(self):
+        try:
+            sID = uiCommon.getAjaxArg("sAssetID")
+            a = asset.Asset()
+            if a:
+                a.FromID(sID)
+                if a.ID:
+                    return a.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get details for Asset [" + sID + "].'}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetObjectsTags(self):
@@ -890,7 +866,7 @@ class uiMethods:
                     sHTML += " </li>"
             return sHTML    
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()           
         
     def wmGetTagList(self):
@@ -912,9 +888,9 @@ class uiMethods:
                     " from tags" \
                     " order by tag_name"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             if dt:                
                 sHTML += "<ul>"
@@ -932,7 +908,7 @@ class uiMethods:
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmAddObjectTag(self):
         try:
@@ -953,14 +929,14 @@ class uiMethods:
                 (object_id, object_type, tag_name)
                 values ('%s', '%d', '%s')""" % (sObjectID, iObjectType, sTagName)
     
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
     
             uiCommon.WriteObjectChangeLog(iObjectType, sObjectID, "", "Tag [" + sTagName + "] added.")
     
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmRemoveObjectTag(self):
         try:
@@ -979,22 +955,22 @@ class uiMethods:
     
             sSQL = """delete from object_tags where object_id = '%s' and tag_name = '%s'""" & (sObjectID, sTagName)
     
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
     
             uiCommon.WriteObjectChangeLog(iObjectType, sObjectID, "", "Tag [" + sTagName + "] removed.")
     
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmUpdateUser(self):
         """
             Updates a user.  Will only update the values passed to it.
+            
+            TODO: this should be moved to the user module.
         """
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-
             # TODO: must do checking for password complexity, see if it's already been used, etc.
             
             # FIRST THINGS FIRST - it's critical we make sure the current user making this call
@@ -1076,9 +1052,9 @@ class uiMethods:
             
             sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
 
-            if not uiGlobals.request.db.exec_db_noexcep(sql):
-                uiCommon.log(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            if not self.db.exec_db_noexcep(sql):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "User updated.")
                
@@ -1087,16 +1063,16 @@ class uiMethods:
                 if args["Groups"]:
                     # now, lets do any groups that were passed in. 
                     sql = "delete from object_tags where object_id = '%s'" % user_id
-                    if not uiGlobals.request.db.exec_db_noexcep(sql):
-                        uiCommon.log(uiGlobals.request.db.error, 0)
+                    if not self.db.exec_db_noexcep(sql):
+                        uiCommon.log_nouser(self.db.error, 0)
                     for tag in args["Groups"]:
                         sql = "insert object_tags (object_type, object_id, tag_name) values (1, '%s','%s')" % (user_id, tag)
-                        if not uiGlobals.request.db.exec_db_noexcep(sql):
-                            uiCommon.log(uiGlobals.request.db.error, 0)
+                        if not self.db.exec_db_noexcep(sql):
+                            uiCommon.log_nouser(self.db.error, 0)
             
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmCreateUser(self):
@@ -1104,8 +1080,6 @@ class uiMethods:
             This method will only update the values passed to it.
         """
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-            
             args = uiCommon.getAjaxArgs()
 
             u, sErr = user.User.DBCreateNew(args["LoginID"], args["FullName"], args["AuthenticationType"], args["Password"], 
@@ -1120,14 +1094,12 @@ class uiMethods:
             return u.AsJSON()
         
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmDeleteUsers(self):
         WhoAmI = uiCommon.GetSessionUserID()
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
                 return "{\"info\" : \"Unable to delete - no selection.\"}"
@@ -1156,20 +1128,46 @@ class uiMethods:
             if now:
                 sSQL = "delete from users where user_id in (%s)" % "'%s'" % "','".join(now)
                 print sSQL
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
 
             #  flag the others...
             if later:
                 sSQL = "update users set status = 86 where user_id in (%s)" % "'%s'" % "','".join(later)
                 print sSQL
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             return "{\"result\" : \"success\"}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
+    def wmGetAssetsTable(self):
+        try:
+            sHTML = ""
+            sFilter = uiCommon.getAjaxArg("sSearch")
+
+            a = asset.Assets(sFilter)
+            if a.rows:
+                for row in a.rows:
+                    sHTML += "<tr asset_id=\"" + row["asset_id"] + "\">"
+                    sHTML += "<td class=\"chkboxcolumn\">"
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                    " id=\"chk_" + row["asset_id"] + "\"" \
+                    " tag=\"chk\" />"
+                    sHTML += "</td>"
+                    
+                    sHTML += "<td class=\"selectable\">" + row["asset_name"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["asset_status"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["address"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">" + row["credentials"] +  "</td>"
+                    
+                    sHTML += "</tr>"
+            return sHTML    
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()           
+        
         

@@ -1,4 +1,36 @@
+#########################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#########################################################################
+
 #!/usr/bin/env python
+
+"""
+    Conversion Utility for C#.NET to Python.
+    
+    5-1-2012 NSC
+    
+    Use is simple:
+    1) create a file called convert.in, and place the block of C# code in it.
+        (This utility works best one function at a time.)
+    2) run this script (./convert.py)
+    3) the results of the conversion will be written to convert.out.
+    
+    NOTE: there is a mode that makes a fair attempt at converting .aspx files to standard html.
+    To try that:
+    1) place your .aspx markup in convert.in
+    2) run this script with an argument (./convert.py aspx)
+    3) results are in convert.out.
+"""
 
 import re
 import sys
@@ -41,6 +73,8 @@ with open("convert.in", 'r') as f_in:
                 line = line.replace("<asp:Literal", "#######<asp:Literal")
 
         else:
+            
+            # This is the C# -> Python conversion
             INDENT = 0
             sINDENTp4 = "    "
     
@@ -107,28 +141,33 @@ with open("convert.in", 'r') as f_in:
             # common C# functions and keywords
             line = line.replace(".ToString()", "") # no equivalent, not necessary
             line = line.replace(".ToLower()", ".lower()")
-            line = line.replace("\" + Environment.NewLine", "\\n\"")
             line = line.replace(".IndexOf(", ".find(")
             line = line.replace(".Replace", ".replace")
             line = line.replace(".Split", ".split")
             line = line.replace(".Trim()", ".strip()")
-            line = line.replace("HttpContext.Current.Server.MapPath(", "") # this will leave a trailing paren !
-            line = line.replace(").Value", ", \"\") # WAS A .Value - confirm") #should work most of the time for Cato code
             line = line.replace("else if", "elif")
             line = line.replace("!string.IsNullOrEmpty(", "")
             line = line.replace("string.IsNullOrEmpty(", "not ")
             line = line.replace("this.", "self.")
-            line = line.replace(".Length", ".__LENGTH")
-            
-    
+
             # Try/Catch blocks
             line = line.replace("try", "try:")
             line = line.replace("catch (Exception ex)", "except Exception:")
             # I often threw "new exceptions" - python doesn't need the extra stuff
             line = line.replace("new Exception", "Exception")
             line = line.replace("throw", "raise")
+
+            # NULL testing
+            line = line.replace("== null", "is None")
+            line = line.replace("!= null", "is not None")
             
-            
+
+            ##### CUSTOM REPLACEMENTS #####
+            line = line.replace("\" + Environment.NewLine", "\\n\"")
+            line = line.replace("HttpContext.Current.Server.MapPath(", "") # this will leave a trailing paren !
+            line = line.replace(").Value", ", \"\") # WAS A .Value - confirm") #should work most of the time for Cato code
+            line = line.replace(".Length", ".__LENGTH")
+    
             #these commonly appear on a line alone, and we aren't using them any more
             if line.strip() == "dataAccess dc = new dataAccess()": continue
             if line.strip() == "acUI.acUI ui = new acUI.acUI()": continue
@@ -148,25 +187,25 @@ with open("convert.in", 'r') as f_in:
             line = line.replace("../images", "static/images")
             line = line.replace("dc.EnCrypt", "catocommon.cato_encrypt")
     
-            #99% of the time we won't want a None return
+            #99% of the time we won't want a None return, but an empty string instead
             line = line.replace("return\n", "return \"\"\n")
             
             
             
             # this will *usually work
-            line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not uiGlobals.request.db.exec_db_noexcep(sSQL):")
+            line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not self.db.exec_db_noexcep(sSQL):")
             if "!dc.sqlGetSingleString" in line:
-                line = sINDENT + "00000 = uiGlobals.request.db.select_col_noexcep(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+                line = sINDENT + "00000 = self.db.select_col_noexcep(sSQL)\n" + sINDENT + "if self.db.error:\n"
 
             if "!dc.sqlGetDataTable" in line:
-                line = sINDENT + "00000 = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+                line = sINDENT + "00000 = self.db.select_all_dict(sSQL)\n" + sINDENT + "if self.db.error:\n"
 
-            line = line.replace("+ sErr", "+ uiGlobals.request.db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
-            line = line.replace("(sErr)", "(uiGlobals.request.db.error)") # sometimes it's in a log message as the only arg
-            line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not uiGlobals.request.db.tran_exec_noexcep(sSQL):")
+            line = line.replace("+ sErr", "+ self.db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
+            line = line.replace("(sErr)", "(self.db.error)") # sometimes it's in a log message as the only arg
+            line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not self.db.tran_exec_noexcep(sSQL):")
             line = line.replace("oTrans.Command.CommandText", "sSQL") # transactions are different, regular sSQL variable
-            line = line.replace("oTrans.Commit()", "uiGlobals.request.db.tran_commit()")
-            line = line.replace("oTrans.RollBack()", "uiGlobals.request.db.tran_rollback()")
+            line = line.replace("oTrans.Commit()", "self.db.tran_commit()")
+            line = line.replace("oTrans.RollBack()", "self.db.tran_rollback()")
             line = line.replace("DataRow dr in dt.Rows", "dr in dt")
             line = line.replace("dt.Rows.Count > 0", "dt")
             line = line.replace("Step oStep", "oStep")
@@ -176,21 +215,25 @@ with open("convert.in", 'r') as f_in:
             # this will be helpful
             if " CommonAttribs" in line:
                 line = "### CommonAttribsWithID ????\nuiCommon.NewGUID()\n" + line
-            
+
+
             # random stuff that may or may not work
-            line = line.replace("== null", "is None")
-            line = line.replace("!= null", "is not None")
             if line.strip() == "if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))":
-                line = sINDENT + "dr = uiGlobals.request.db.select_row_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
+                line = sINDENT + "dr = self.db.select_row_dict(sSQL)\n" + sINDENT + "if self.db.error:\n" + sINDENTp4 + "raise Exception(self.db.error)\n"
             if line.strip() == "if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))":
-                line = sINDENT + "dt = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
-            # xml/Linq stuff
-            line = line.replace(".Attribute(", ".get(")
-            line = line.replace(".Element(", ".find(")
-    
+                line = sINDENT + "dt = self.db.select_all_dict(sSQL)\n" + sINDENT + "if self.db.error:\n" + sINDENTp4 + "raise Exception(self.db.error)\n"
+
             # true/false may be problematic, but these should be ok
             line = line.replace(", true", ", True").replace(", false", ", False")
             
+            ##### END CUSTOM #####
+
+            
+            # xml/Linq stuff
+            # the following lines were useful, but NOT foolproof, in converting some Linq XDocument/XElement stuff
+            # to Python's ElementTree module.
+            line = line.replace(".Attribute(", ".get(")
+            line = line.replace(".Element(", ".find(")
             
             line = line.replace("XDocument.Load", "ET.parse")
             line = line.replace("XDocument ", "").replace("XElement ", "")
@@ -203,14 +246,16 @@ with open("convert.in", 'r') as f_in:
             
             line = line.replace("ex.Message", "traceback.format_exc()")
     
+    
+            ##### CUSTOM #####
             #!!! this has to be done after the database stuff, because they all use a "ref sErr" and we're matching on that!
             # passing arguments by "ref" doesn't work in python, mark that code obviously
             # because it need attention
             line = line.replace("ref ", "0000BYREF_ARG0000")
     
             # the new way of doing exceptions - not raising them, appending them to an output object
-            line = line.replace("raise ex", "uiGlobals.request.Messages.append(traceback.format_exc())")
-            line = line.replace("raise Exception(", "uiGlobals.request.Messages.append(")
+            line = line.replace("raise ex", "uiCommon.log_nouser(traceback.format_exc(), 0)")
+            line = line.replace("raise Exception(", "uiCommon.log(")
             
     
             # if this is a function declaration and it's a "wm" web method, 
@@ -226,6 +271,8 @@ with open("convert.in", 'r') as f_in:
                     
                 line = line.replace(args, "self") + s
     
+            ##### END CUSTOM #####
+            
             # else statements on their own line
             if line.strip() == "else":
                 line = line.replace("else", "else:")
@@ -266,7 +313,7 @@ with open("convert.in", 'r') as f_in:
                 line = "### CHECK NEXT LINE for type declarations !!!\n" + line
     
             # this is a crazy one.  Trying to convert inline 'if' statements
-            #first, does it look like a c# inline if?
+            #first, does it look like a C# inline if?
             p = re.compile("\(.*\?.*:.*\)")
             m = p.search(line)
             if m:
@@ -302,11 +349,7 @@ with open("convert.in", 'r') as f_in:
                 line = line.replace("||", "or")
                 # line = "### VERIFY 'ORs' !!!\n" + line
         
-        
 
-
-
-        
         # ALL DONE!
         out += line
     

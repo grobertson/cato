@@ -52,10 +52,6 @@ $(document).ready(function() {
     // remove the header and x, to prevent the user from clicking on them
     $("#edit_dialog").dialog().parents(".ui-dialog").find(".ui-dialog-titlebar").remove();
 
-    $("[tag='selectable']").live("click", function() {
-        LoadEditDialog(0, $(this).parent().attr("asset_id"));
-    });
-
     //the hook for the 'show log' link
     $("#show_log_link").button({ icons: { primary: "ui-icon-document"} });
     $("#show_log_link").click(function() {
@@ -118,33 +114,30 @@ $(document).ready(function() {
         return false;
     });
 
-
-
-    // at page load grab the list of connection types available
-    // for the edit/add dialog
-    $.ajax({
-        type: "POST",
-        url: "assetEdit.aspx/GetConnectionTypes",
-        data: '{}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(msg) {
-            //update the list in the dialog
-            //alert(msg.d);
-            if (msg.d.length == 0) {
-                showAlert('Could not load connection types.' + response.responseText);
-            } else {
-                $("#ConnectionType").html(msg.d);
-            }
-        },
-        error: function(response) {
-            showAlert('error ' + response.responseText);
-        }
-    });
+	GetItems();
+    ManagePageLoad();
 });
 
-function pageLoad() {
-    ManagePageLoad();
+function GetItems() {
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "uiMethods/wmGetAssetsTable",
+        data: '{"sSearch":"' + $("#txtSearch").val() + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "html",
+        success: function (response) {
+            $("#assets").html(response);
+            //gotta restripe the table
+            initJtable(true, true);
+		    $("#assets .selectable").click(function () {
+		        LoadEditDialog(0, $(this).parent().attr("asset_id"));
+		    });
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
 
 function ShowItemAdd() {
@@ -311,11 +304,6 @@ function SaveAsset() {
         return false;
     }
 
-    var ddlConnectionType = "";
-    if ($("#ddlConnectionType").val() != null) {
-        ddlConnectionType = $("#ddlConnectionType").val();
-    }
-
     //put the tags in a string for submission
     var sTags = "";
     $("#objects_tags .tag").each(function(intIndex) {
@@ -331,7 +319,6 @@ function SaveAsset() {
     stuff[1] = sAssetName;
     stuff[2] = $("#txtDbName").val();
     stuff[3] = sPort;
-    stuff[4] = ddlConnectionType;
     stuff[5] = $("#txtAddress").val();
     stuff[6] = $("#hidMode").val();
     stuff[7] = sCredentialID;
@@ -498,84 +485,75 @@ function LoadCredentialSelector() {
 function FillEditForm(sAssetID) {
     $.ajax({
         type: "POST",
-        url: "assetEdit.aspx/LoadAssetData",
+        url: "uiMethods/wmGetAsset",
         data: '{"sAssetID":"' + sAssetID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function(response) {
-            //update the list in the dialog
-            if (response.d.length == 0) {
-                showAlert('error no response');
-                // do we close the dialog, leave it open to allow adding more? what?
+        success: function(asset) {
+            // show the assets current values
+            $("#txtAssetName").val(asset.Name);
+            $("#ddlAssetStatus").val(asset.Status);
+            $("#txtPort").val(asset.Port)
+            $("#txtDbName").val(asset.DbName);
+            var sAddress = asset.Address.replace("||", "\\\\");
+            sAddress = sAddress.replace(/\|/g, "\\");
+            $("#txtAddress").val(sAddress);
+            $("#txtConnString").val(asset.ConnString);
+            
+            $("#hidCredentialID").val(asset.CredentialID);
+            var sCredentialID = asset.CredentialID;
+            $("#hidCredentialID").val(sCredentialID);
+            $('#CredentialSelectorTabs').hide();
+            var CredentialUser = asset.UserName;
+
+            $('#btnCredAdd').hide();
+
+            if (sCredentialID == '') {
+                // no existing credential, just show the add dialog
+                $("#hidCredentialType").val("new");
+                $("#CredentialDetails").html("");
+                $('#SharedLocalDiv').show();
+                $('#EditCredential').show();
+                $('.SharedCredFields').hide();
+
             } else {
-                var oResultData = jQuery.parseJSON(response.d);
-
-                // show the assets current values
-                $("#txtAssetName").val(unpackJSON(oResultData.sAssetName));
-                $("#ddlAssetStatus").val(oResultData.sAssetStatus);
-                $("#txtPort").val(oResultData.sPort)
-                $("#txtDbName").val(oResultData.sDbName);
-                var sAddress = oResultData.sAddress.replace("||", "\\\\");
-                sAddress = sAddress.replace(/\|/g, "\\");
-                $("#txtAddress").val(sAddress);
-                $("#txtConnString").val(unpackJSON(oResultData.sConnString));
-                $("#ddlConnectionType").val(oResultData.sConnectionType);
-                
-                $("#hidCredentialID").val(oResultData.sCredentialID);
-                var sCredentialID = oResultData.sCredentialID;
-                $("#hidCredentialID").val(sCredentialID);
-                $('#CredentialSelectorTabs').hide();
-                var CredentialUser = oResultData.sUserName;
-
-                $('#btnCredAdd').hide();
-
-                if (sCredentialID == '') {
-                    // no existing credential, just show the add dialog
-                    $("#hidCredentialType").val("new");
-                    $("#CredentialDetails").html("");
-                    $('#SharedLocalDiv').show();
-                    $('#EditCredential').show();
-                    $('.SharedCredFields').hide();
-
-                } else {
-                    // display the credentials if they exist, if not display only the add button
-                    if (oResultData.sPassword != '') {
-                        var CredentialShared = oResultData.sSharedOrLocal;
-                        if (CredentialShared == 'Local') {
-                            $("#CredentialDetails").html("");
-                            $("#hidCredentialType").val("existing");
-                            $("input[name=rbShared]:checked").val("1");
-                            $('#txtCredUsername').val(oResultData.sUserName);
-                            $('#txtCredDomain').val(oResultData.sDomain);
-                            $('#txtCredPassword').val(oResultData.sPassword);
-                            $('#txtCredPasswordConfirm').val(oResultData.sPassword);
-                            $('#txtPrivilegedPassword').val(oResultData.sPriviledgedPassword);
-                            $('#txtPrivilegedConfirm').val(oResultData.sPriviledgedPassword);
-                            $('.SharedCredFields').hide();
-                            $('#SharedLocalDiv').hide();
-                            $('#EditCredential').show();
-                        } else {
-                            // display the existing shared credential
-                            $("#CredentialDetails").html(CredentialShared + ' - ' + oResultData.sUserName + '<br />Domain - ' + oResultData.sDomain + '<br />Name - ' + oResultData.sSharedCredName + '<br />Description - ' + unpackJSON(oResultData.sSharedCredDesc));
-                            $('#CredentialRemove').show();
-                            $('#CredentialDetails').show();
-                            $('#imgCredClear').show();
-                            $('#btnCredAdd').show();
-                        }
-                    } else {
-                        $('#imgCredClear').hide();
+                // display the credentials if they exist, if not display only the add button
+                if (asset.UserName != '') {
+                    var CredentialShared = asset.SharedOrLocal;
+                    if (CredentialShared == 'Local') {
                         $("#CredentialDetails").html("");
-                        $('#CredentialRemove').hide();
-                        $('#CredentialDetails').hide();
+                        $("#hidCredentialType").val("existing");
+                        $("input[name=rbShared]:checked").val("1");
+                        $('#txtCredUsername').val(asset.UserName);
+                        $('#txtCredDomain').val(asset.Domain);
+                        //$('#txtCredPassword').val(asset.Password);
+                        //$('#txtCredPasswordConfirm').val(asset.Password);
+                        //$('#txtPrivilegedPassword').val(asset.PriviledgedPassword);
+                        //$('#txtPrivilegedConfirm').val(asset.PriviledgedPassword);
+                        $('.SharedCredFields').hide();
+                        $('#SharedLocalDiv').hide();
+                        $('#EditCredential').show();
+                    } else {
+                        // display the existing shared credential
+                        $("#CredentialDetails").html(CredentialShared + ' - ' + asset.UserName + '<br />Domain - ' + asset.Domain + '<br />Name - ' + asset.SharedCredName + '<br />Description - ' + asset.SharedCredDesc);
+                        $('#CredentialRemove').show();
+                        $('#CredentialDetails').show();
+                        $('#imgCredClear').show();
+                        $('#btnCredAdd').show();
                     }
+                } else {
+                    $('#imgCredClear').hide();
+                    $("#CredentialDetails").html("");
+                    $('#CredentialRemove').hide();
+                    $('#CredentialDetails').hide();
                 }
-
-                $("#CredentialSelectorLocal").empty();
-
-                // at load default to the first tab
-                $('#AddAssetTabs').tabs('select', 0);
-
             }
+
+            $("#CredentialSelectorLocal").empty();
+
+            // at load default to the first tab
+            $('#AddAssetTabs').tabs('select', 0);
+
         },
         error: function(response) {
             showAlert(response.responseText);

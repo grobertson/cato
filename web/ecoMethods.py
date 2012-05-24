@@ -21,49 +21,38 @@ import cloud
 # (apparently it does the instantiation itself, or maybe not - it might just look into it.)
 # it expects these classes to have GET and POST methods
 
+# the db connection that is used in this module.
+db = None
+
 class ecoMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
-                uiCommon.log(uiGlobals.request.DumpMessages(), 0)
+            if self.db.conn.socket:
+                self.db.close()
 
     def wmGetEcotemplate(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sID = uiCommon.getAjaxArg("sID")
             et = ecosystem.Ecotemplate()
             if et:
@@ -74,13 +63,11 @@ class ecoMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Ecotemplate details for ID [" + sID + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcotemplatesTable(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sHTML = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
             ets = ecosystem.Ecotemplates(sFilter)
@@ -101,7 +88,7 @@ class ecoMethods:
     
             return sHTML    
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             
     def wmCreateEcotemplate(self):
         try:
@@ -122,12 +109,12 @@ class ecoMethods:
                     uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Ecosystem, et.ID, et.Name, "Ecotemplate created.")
                     return "{\"ecotemplate_id\" : \"%s\"}" % et.ID
                 else:
-                    uiGlobals.request.Messages.append(msg)
+                    uiCommon.log(msg, 2)
                     return "{\"info\" : \"%s\"}" % msg
             else:
                 return "{\"error\" : \"Unable to create Ecotemplate.\"}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmUpdateEcotemplateDetail(self):
         try:
@@ -162,15 +149,15 @@ class ecoMethods:
                         uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcoTemplateID, sColumn, sValue)
                         return "{\"result\" : \"success\"}"
                     else:
-                        uiGlobals.request.Messages.append(msg)
+                        uiCommon.log(msg, 2)
                         return "{\"info\" : \"%s\"}" % msg
                 else:
-                    uiGlobals.request.Messages.append("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].")
+                    uiCommon.log("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].")
                     return "Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "]."
                 
                 return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmUpdateEcotemplateStorm(self):
         try:
@@ -194,20 +181,18 @@ class ecoMethods:
                         uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcoTemplateID, "StormFile", sStormFile)
                         return "{\"result\" : \"success\"}"
                     else:
-                        uiGlobals.request.Messages.append(msg)
+                        uiCommon.log(msg, 2)
                         return "{\"info\" : \"%s\"}" % msg
                 else:
-                    uiGlobals.request.Messages.append("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].")
+                    uiCommon.log("Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "].")
                     return "Unable to update Ecotemplate. Missing or invalid id [" + sEcoTemplateID + "]."
                 
                 return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmDeleteEcotemplates(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
             if len(sDeleteArray) < 36:
                 return "{\"info\" : \"Unable to delete - no selection.\"}"
@@ -216,16 +201,16 @@ class ecoMethods:
             
             # can't delete it if it's referenced.
             sSQL = "select count(*) from ecosystem where ecotemplate_id in (" + sDeleteArray + ")"
-            iResults = uiGlobals.request.db.select_col_noexcep(sSQL)
+            iResults = self.db.select_col_noexcep(sSQL)
 
             if not iResults:
                 sSQL = "delete from ecotemplate_action where ecotemplate_id in (" + sDeleteArray + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
                 
                 sSQL = "delete from ecotemplate where ecotemplate_id in (" + sDeleteArray + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
                 
                 #if we made it here, save the logs
                 uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Ecosystem Templates(s) Deleted [" + sDeleteArray + "]")
@@ -235,7 +220,7 @@ class ecoMethods:
             return "{\"result\" : \"success\"}"
             
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmCopyEcotemplate(self):
@@ -257,12 +242,12 @@ class ecoMethods:
                     # returning the ID indicates success...
                     return "{\"ecotemplate_id\" : \"%s\"}" % et.ID
                 else:
-                    uiGlobals.request.Messages.append("Unable to get Template [" + sEcoTemplateID + "] to copy.")
+                    uiCommon.log("Unable to get Template [" + sEcoTemplateID + "] to copy.")
                     return "{\"info\" : \"Unable to get Template [" + sEcoTemplateID + "] to copy.\"}"
             else:
                 return "{\"info\" : \"Unable to Copy - New name and source ID are both required.\"}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetEcotemplateEcosystems(self):
         try:
@@ -277,9 +262,9 @@ class ecoMethods:
                     " and account_id = '" + uiCommon.GetCookie("selected_cloud_account") + "'" \
                     " order by ecosystem_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     sHTML += "<ul>"
@@ -308,11 +293,11 @@ class ecoMethods:
 
                     sHTML += "</ul>"
             else:
-                uiGlobals.request.Messages.append("Unable to get Ecosystems - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Ecosystems - Missing Ecotemplate ID")
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmAddEcotemplateAction(self):
         try:
@@ -321,7 +306,7 @@ class ecoMethods:
             sOTID = uiCommon.getAjaxArg("sOTID")
     
             if not sEcoTemplateID or not sActionName or not sOTID:
-                uiGlobals.request.Messages.append("Missing or invalid Ecotemplate ID, Action Name or Task.")
+                uiCommon.log("Missing or invalid Ecotemplate ID, Action Name or Task.")
     
             sSQL = "insert into ecotemplate_action " \
                  " (action_id, action_name, ecotemplate_id, original_task_id)" \
@@ -332,16 +317,16 @@ class ecoMethods:
                  " '" + sOTID + "'" \
                  ")"
     
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+            if not self.db.exec_db_noexcep(sSQL):
                 # don't raise an error if its just a PK collision.  That just means it's already there.
-                if "Duplicate entry:" not in uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                if "Duplicate entry:" not in self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
     
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.EcoTemplate, sEcoTemplateID, "", "Action Added : [" + sActionName + "]")
     
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     # delete an Action
     def wmDeleteEcotemplateAction(self):
@@ -353,25 +338,25 @@ class ecoMethods:
 
             sSQL = "delete from action_plan where action_id = '" + sActionID + "'"
             sSQL = sSQL
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from action_schedule where action_id = '" + sActionID + "'"
             sSQL = sSQL
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecotemplate_action where action_id = '" + sActionID + "'"
             sSQL = sSQL
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Action [" + sActionID + "] removed from Ecotemplate.")
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
         return ""
 
@@ -391,24 +376,23 @@ class ecoMethods:
                     " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" \
                     " order by ea.category, ea.action_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     for dr in dt:
                         sHTML += " <li class=\"ui-widget-content ui-corner-all action pointer\" id=\"ac_" + dr["action_id"] + "\">"
-                        sHTML += ecoMethods.DrawEcotemplateAction(dr)
+                        sHTML += self.DrawEcotemplateAction(dr)
                         sHTML += " </li>"
             else:
-                uiGlobals.request.Messages.append("Unable to get Actions - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Actions - Missing Ecotemplate ID")
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
     
-    @staticmethod
-    def DrawEcotemplateAction(dr):
+    def DrawEcotemplateAction(self, dr):
         try:
             sHTML = ""
 
@@ -509,9 +493,9 @@ class ecoMethods:
                 sSQL = "select version from task" \
                     " where original_task_id = '" + sOriginalTaskID + "'" \
                     " order by version"
-                dtVer = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    return "Database Error:" + uiGlobals.request.db.error
+                dtVer = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    return "Database Error:" + self.db.error
 
                 if dtVer:
                     for drVer in dtVer:
@@ -561,7 +545,7 @@ class ecoMethods:
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcotemplateAction(self):
@@ -579,19 +563,19 @@ class ecoMethods:
                     " and t.default_version = 1" \
                     " where ea.action_id = '" + sActionID + "'"
 
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                dr = self.db.select_row_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 # GetDataRow returns a message if there are no rows...
                 if dr:
-                    sHTML = ecoMethods.DrawEcotemplateAction(dr)
+                    sHTML = self.DrawEcotemplateAction(dr)
             else:
-                uiGlobals.request.Messages.append("Unable to get Actions - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Actions - Missing Ecotemplate ID")
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
 
     
@@ -617,9 +601,9 @@ class ecoMethods:
                             " action_name = '" + sValue + "'" \
                             " and ecotemplate_id = '" + sEcoTemplateID + "'"
 
-                    sValueExists = uiGlobals.request.db.select_col_noexcep(sSQL)
-                    if uiGlobals.request.db.error:
-                        uiGlobals.request.Messages.append("Unable to check for existing names [" + sEcoTemplateID + "]." + uiGlobals.request.db.error)
+                    sValueExists = self.db.select_col_noexcep(sSQL)
+                    if self.db.error:
+                        uiCommon.log("Unable to check for existing names [" + sEcoTemplateID + "]." + self.db.error)
 
                     if sValueExists:
                         return sValue + " exists, please choose another value."
@@ -635,16 +619,16 @@ class ecoMethods:
 
                 sSQL = "update ecotemplate_action set " + sSetClause + " where action_id = '" + sActionID + "'"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiGlobals.request.Messages.append("Unable to update Ecotemplate Action [" + sActionID + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to update Ecotemplate Action [" + sActionID + "]." + self.db.error)
 
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.EcoTemplate, sEcoTemplateID, sActionID, "Action updated: [" + sSetClause + "]")
             else:
-                uiGlobals.request.Messages.append("Unable to update Ecotemplate Action. Missing or invalid Ecotemplate/Action ID.")
+                uiCommon.log("Unable to update Ecotemplate Action. Missing or invalid Ecotemplate/Action ID.")
 
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
         
     def wmGetActionIcons(self):
         try:
@@ -657,7 +641,7 @@ class ecoMethods:
         
             return sIconHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcotemplateStorm(self):
@@ -670,7 +654,7 @@ class ecoMethods:
             sStormFileJSON = ""
             bIsValid = False
             
-            bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = ecoMethods.GetEcotemplateStormJSON(sEcoTemplateID)
+            bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = self.GetEcotemplateStormJSON(sEcoTemplateID)
             
             sb = []
             
@@ -687,11 +671,10 @@ class ecoMethods:
             
             return "".join(sb)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
-    @staticmethod
-    def GetEcotemplateStormJSON(sEcoTemplateID): 
+    def GetEcotemplateStormJSON(self, sEcoTemplateID): 
         bIsValid = False
         sErr = ""
         sFileType = ""
@@ -704,9 +687,9 @@ class ecoMethods:
                     " from ecotemplate" \
                     " where ecotemplate_id = '" + sEcoTemplateID + "'"
 
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                dr = self.db.select_row_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
                 
                 # now, we'll validate the json here as a safety precaution, but we're sending the whole storm file to the client
                 # where the parameters and description will be parsed out and displayed.
@@ -757,12 +740,12 @@ class ecoMethods:
                 else:
                     sErr = "No Storm File or URL defined."
             else:
-                uiGlobals.request.Messages.append("Unable to get Storm Details - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Storm Details - Missing Ecotemplate ID")
 
             # returns a big tuple
             return bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetStormFileFromURL(self):
         try:
@@ -774,13 +757,11 @@ class ecoMethods:
             else:
                 return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
 
     def wmGetEcosystem(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sID = uiCommon.getAjaxArg("sID")
             e = ecosystem.Ecosystem()
             if e:
@@ -791,13 +772,11 @@ class ecoMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Ecosystem details for ID [" + sID + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcosystemsTable(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sFilter = uiCommon.getAjaxArg("sSearch")
             sAccountID = uiCommon.getAjaxArg("sAccountID")
 
@@ -825,12 +804,10 @@ class ecoMethods:
     
             return sHTML    
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetEcosystemsJSON(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sFilter = uiCommon.getAjaxArg("sFilter")
             sAccountID = uiCommon.getAjaxArg("sAccountID")
 
@@ -840,13 +817,11 @@ class ecoMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Ecosystems using filter [" + sFilter + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcotemplatesJSON(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sFilter = uiCommon.getAjaxArg("sFilter")
             ets = ecosystem.Ecotemplates(sFilter)
             if ets:
@@ -854,13 +829,11 @@ class ecoMethods:
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Ecotemplates using filter [" + sFilter + "].'}"
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmCreateEcosystem(self):
         try:
-            uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-        
             sName = uiCommon.getAjaxArg("sName")
             sDescription = uiCommon.getAjaxArg("sDescription")
             sEcotemplateID = uiCommon.getAjaxArg("sEcotemplateID")
@@ -886,7 +859,7 @@ class ecoMethods:
             return "{\"id\" : \"%s\"}" % e.ID
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmDeleteEcosystems(self):
@@ -898,37 +871,37 @@ class ecoMethods:
             sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
 
             sSQL = "delete from action_plan where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from action_schedule where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from object_registry where object_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecosystem_object where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecosystem_log where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecosystem where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
             
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
                 
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Ecosystem, "", "", "Ecosystem(s) Deleted [" + sDeleteArray + "]")
 
             return "{\"result\" : \"success\"}"
             
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcotemplateActionCategories(self):
@@ -952,9 +925,9 @@ class ecoMethods:
                     " and category != 'all'" \
                     " order by category"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     for dr in dt:
@@ -965,11 +938,11 @@ class ecoMethods:
                         sHTML += "<span>" + dr["category"] + "</span>"
                         sHTML += " </div>"
             else:
-                uiGlobals.request.Messages.append("Unable to get Action Categories - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Action Categories - Missing Ecotemplate ID")
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetEcotemplateActionButtons(self):
         try:
@@ -1001,9 +974,9 @@ class ecoMethods:
                     " ) foo" \
                     " order by action_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     # i = 0
@@ -1083,11 +1056,11 @@ class ecoMethods:
                     sHTML += "<div class=\"clearfloat\"></div>"
 
             else:
-                uiGlobals.request.Messages.append("Unable to get Actions - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Actions - Missing Ecotemplate ID")
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetEcosystemStormStatus(self):
         try:
@@ -1098,9 +1071,9 @@ class ecoMethods:
             
             # status and parameters
             sSQL = "select storm_status, storm_parameter_xml, last_update_dt from ecosystem where ecosystem_id = '" + sEcosystemID + "'"
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            dr = self.db.select_row_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
 
             sStormStatus = ("" if not dr["storm_status"] else dr["storm_status"])
             sStormParameterXML = ("" if not dr["storm_parameter_xml"] else dr["storm_parameter_xml"])
@@ -1112,9 +1085,9 @@ class ecoMethods:
                     " where ecosystem_id = '" + sEcosystemID + "'" \
                     " order by ecosystem_log_id desc"
             
-            dtLog = uiGlobals.request.db.select_all(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            dtLog = self.db.select_all(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             
             # output
             sSQL = "select output_key, output_desc, output_value" \
@@ -1122,9 +1095,9 @@ class ecoMethods:
                     " where ecosystem_id = '" + sEcosystemID + "'" \
                     " order by output_key"
             
-            dtOut = uiGlobals.request.db.select_all(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+            dtOut = self.db.select_all(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             
             
             # build the json
@@ -1187,7 +1160,7 @@ class ecoMethods:
 
             return "".join(sb)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetEcosystemSchedules(self):
         try:
@@ -1199,10 +1172,10 @@ class ecoMethods:
                 " join task t on s.task_id = t.task_id" \
                 " left outer join ecotemplate_action a on s.action_id = a.action_id" \
                 " where s.ecosystem_id = '" + sEcosystemID + "'"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             if dt:
                 for dr in dt:
@@ -1239,7 +1212,7 @@ class ecoMethods:
             return sHTML
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
 
     def wmGetEcosystemPlans(self):
@@ -1254,10 +1227,10 @@ class ecoMethods:
                 " left outer join ecotemplate_action ea on ap.action_id = ea.action_id" \
                 " where ap.ecosystem_id = '" + sEcosystemID + "'" \
                 " order by ap.run_on_dt, ea.action_name, t.task_name"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             if dt:
                 for dr in dt:
@@ -1303,7 +1276,7 @@ class ecoMethods:
             return sHTML
 
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
 
     def wmGetEcosystemObjects(self):
@@ -1317,9 +1290,9 @@ class ecoMethods:
                 " group by eo.ecosystem_object_type" \
                 " order by eo.ecosystem_object_type"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             if dt:
                 for dr in dt:
@@ -1358,7 +1331,7 @@ class ecoMethods:
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
 
     def wmGetEcosystemObjectByType(self):
@@ -1384,9 +1357,9 @@ class ecoMethods:
                 " where eo.ecosystem_id ='" + sEcosystemID + "'" \
                 " and eo.ecosystem_object_type = '" + sType + "'"
 
-            dtClouds = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dtClouds = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
 
             sSQL = "select ecosystem_object_id, key_name, value " \
@@ -1394,9 +1367,9 @@ class ecoMethods:
                 " where ecosystem_id ='" + sEcosystemID + "'" \
                 " order by key_name"
 
-            dtTags = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dtTags = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             if dtClouds:
                 for drCloud in dtClouds:
@@ -1410,9 +1383,9 @@ class ecoMethods:
                         " and eo.cloud_id = '" + sCloudID + "'" \
                         " order by eo.ecosystem_object_type"
     
-                    dtObjects = uiGlobals.request.db.select_all_dict(sSQL)
-                    if uiGlobals.request.db.error:
-                        return uiGlobals.request.db.error
+                    dtObjects = self.db.select_all_dict(sSQL)
+                    if self.db.error:
+                        return self.db.error
     
     
                     if dtObjects:
@@ -1468,12 +1441,12 @@ class ecoMethods:
 
             
             # at this point, sErr will have any issues that occured doing the AWS API call.  display it.
-            if uiGlobals.request.db.error:
-                sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try: again.<!--" + uiGlobals.request.db.error + "--></span>"
+            if self.db.error:
+                sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try: again.<!--" + self.db.error + "--></span>"
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
 
     # two def functions to support the wmGetEcosystemObjectByType
@@ -1515,7 +1488,7 @@ class ecoMethods:
             
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
     
     def DrawEcosystemObjectProperty(self, prop):
@@ -1541,7 +1514,7 @@ class ecoMethods:
 
             return sHTML
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
         
     def wmUpdateEcosystemDetail(self):
@@ -1577,15 +1550,15 @@ class ecoMethods:
                     if bSuccess:
                         uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcosystemID, sColumn, sValue)
                     else: 
-                        uiGlobals.request.Messages.append("Error updating Ecosystem. " + msg)
+                        uiCommon.log("Error updating Ecosystem. " + msg)
                         return "Error updating Ecosystem. " + msg
                 else:
-                    uiGlobals.request.Messages.append("Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "].")
+                    uiCommon.log("Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "].")
                     return "Unable to update Ecosystem. Missing or invalid id [" + sEcosystemID + "]."
                 
                 return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
     
     def wmDeleteEcosystemObject(self):
         try:
@@ -1601,26 +1574,26 @@ class ecoMethods:
                 " and ecosystem_object_id ='" + sObjectID + "'" \
                 " and ecosystem_object_type ='" + sObjectType + "'"
 
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                return uiGlobals.request.db.error
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             sSQL = "delete from ecosystem_object_tag" \
                 " where ecosystem_id ='" + sEcosystemID + "'" \
                 " and ecosystem_object_id ='" + sObjectID + "'"
 
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiGlobals.request.Messages.append(uiGlobals.request.db.error)
-                return uiGlobals.request.db.error
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
             
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
     
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Ecosystem, "", "", "Object [" + sObjectID + "] removed from Ecosystem [" + sEcosystemID + "]")
     
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
     def wmGetEcotemplateStormParameterXML(self):
@@ -1628,7 +1601,7 @@ class ecoMethods:
             sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
 
             if sEcoTemplateID:
-                bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = ecoMethods.GetEcotemplateStormJSON(sEcoTemplateID)
+                bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = self.GetEcotemplateStormJSON(sEcoTemplateID)
                 
                 sb = []
                 
@@ -1710,12 +1683,12 @@ class ecoMethods:
                     return "".join(sb)
                         # no... this parser isn't as accurate as the client one.
                         # don't raise an exception, just dont' return parameters.
-                        # uiGlobals.request.Messages.append("The Storm File is invalid. " + traceback.format_exc())
+                        # uiCommon.log("The Storm File is invalid. " + traceback.format_exc())
                 return ""
             else:
-                uiGlobals.request.Messages.append("Unable to get Storm Details - Missing Ecotemplate ID")
+                uiCommon.log("Unable to get Storm Details - Missing Ecotemplate ID")
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
     
     def wmCallStormAPI(self):
         try:
@@ -1744,9 +1717,9 @@ class ecoMethods:
             
             # 1:
             sKey = uiCommon.GetSessionUserID()
-            sPW = uiGlobals.request.db.select_col_noexcep("select user_password from users where user_id = '%s'" % sKey)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            sPW = self.db.select_col_noexcep("select user_password from users where user_id = '%s'" % sKey)
+            if self.db.error:
+                return self.db.error
             
             sPW = catocommon.cato_decrypt(sPW)
             
@@ -1775,12 +1748,12 @@ class ecoMethods:
                     return "{\"error\" : \"Attempt to contact the Storm service failed.  Verify the Stormfront service is running, and check the logfile for errors.  %s\"}" % sErr
 
             except:
-                uiGlobals.request.Messages.append("Error calling Storm service." + traceback.format_exc())
+                uiCommon.log("Error calling Storm service." + traceback.format_exc())
                 return "{\"error\" : \"Error calling Storm service.\"}"
             
             return "{\"xml\" : \"%s\"}" % uiCommon.packJSON(sXML)
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
     
 
     def wmAddEcosystemObjects(self):
@@ -1791,7 +1764,7 @@ class ecoMethods:
             sObjectIDs = uiCommon.getAjaxArg("sObjectIDs")
 
             if not sEcosystemID or not sObjectType or not sObjectIDs:
-                uiGlobals.request.Messages.append("Missing or invalid Ecosystem ID, Cloud Object Type or Object ID.")
+                uiCommon.log("Missing or invalid Ecosystem ID, Cloud Object Type or Object ID.")
 
             aObjectIDs = sObjectIDs.split(",")
             for sObjectID in aObjectIDs:
@@ -1805,14 +1778,14 @@ class ecoMethods:
                      " now() " \
                      ")"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    if uiGlobals.request.db.error == "key_violation":
+                if not self.db.exec_db_noexcep(sSQL):
+                    if self.db.error == "key_violation":
                         """do nothing"""
                     else:
-                        uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+                        uiCommon.log_nouser(self.db.error, 0)
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcosystemID, "", "Objects Added : {" + sObjectIDs + "}")
 
             return ""
         except Exception:
-            uiGlobals.request.Messages.append(traceback.format_exc())
+            uiCommon.log_nouser(traceback.format_exc(), 0)
