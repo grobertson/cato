@@ -143,7 +143,7 @@ $(document).ready(function() {
         	skip = 0;
             $(this).attr("skip", "0");
 
-            $(this).removeClass("ui-icon-pause").addClass("ui-icon-play");
+            $(this).removeClass("ui-icon-play").addClass("ui-icon-pause");
             $("#" + step_id).removeClass("step_skip");
             $("#step_header_" + step_id).removeClass("step_header_skip");
             $("#step_detail_" + step_id).removeClass("step_collapsed");
@@ -151,7 +151,7 @@ $(document).ready(function() {
         	skip = 1;
             $(this).attr("skip", "1");
 
-            $(this).removeClass("ui-icon-play").addClass("ui-icon-pause");
+            $(this).removeClass("ui-icon-pause").addClass("ui-icon-play");
             $("#" + step_id).addClass("step_skip");
 
 			//remove the validation nag

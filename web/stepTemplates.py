@@ -45,7 +45,7 @@ def DrawFullStep(oStep):
     sExpandedClass = ("" if oStep.UserSettings.Visible else "step_collapsed")
     sSkipStepClass = ("step_skip" if oStep.Commented else "")
     sSkipHeaderClass = ("step_header_skip" if oStep.Commented else "")
-    sSkipIcon = ("pause" if oStep.Commented else "play")
+    sSkipIcon = ("play" if oStep.Commented else "pause")
     sSkipVal = ("1" if oStep.Commented else "0")
 
     # pay attention
