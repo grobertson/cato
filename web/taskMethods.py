@@ -1,4 +1,3 @@
-import sys
 import traceback
 import json
 import xml.etree.ElementTree as ET
@@ -625,7 +624,7 @@ class taskMethods:
 
                 if dtSteps:
                     for dr in dtSteps:
-                        ST.SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + dr["step_id"] + "'", "codeblock[.='" + sOldCodeblockName + "']", sNewCodeblockName)
+                        uiCommon.SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + dr["step_id"] + "'", "codeblock[.='" + sOldCodeblockName + "']", sNewCodeblockName)
 
                 # all done
                 self.db.tran_commit()
@@ -2024,7 +2023,7 @@ class taskMethods:
                         # BUT! in order to be able to delete it, we need enough xpath information to identify it.
                         # it has an 'id' attribute ... use that.
                         if sDefID:
-                            ST.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sDefID + "']")           
+                            uiCommon.RemoveNodeFromXMLColumn("ecotemplate_action", "parameter_defaults", "action_id = '" + sID + "'", "parameter[@id='" + sDefID + "']")           
                         continue
             
                     if xTaskParam is not None:
@@ -2550,7 +2549,7 @@ class taskMethods:
     
     
                 # Here's the real work ... do the whack
-                ST.RemoveNodeFromXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "parameter[@id='" + sParamID + "']")
+                uiCommon.RemoveNodeFromXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "parameter[@id='" + sParamID + "']")
     
                 return ""
             else:
@@ -2642,22 +2641,22 @@ class taskMethods:
                     bParamAdd = True
                 else:
                     # XML exists, add the node to it
-                    ST.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "", sAddXML)
+                    uiCommon.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", "", sAddXML)
                     bParamAdd = True
             else:
                 # update the node values
-                ST.SetNodeValueinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/name", sName)
-                ST.SetNodeValueinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/desc", sDesc)
+                uiCommon.SetNodeValueinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/name", sName)
+                uiCommon.SetNodeValueinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/desc", sDesc)
                 # and the attributes
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "required", sRequired)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "prompt", sPrompt)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "encrypt", sEncrypt)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minlength", sMinLength)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxlength", sMaxLength)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minvalue", sMinValue)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxvalue", sMaxValue)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint", sConstraint)
-                ST.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint_msg", sConstraintMsg)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "required", sRequired)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "prompt", sPrompt)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "encrypt", sEncrypt)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minlength", sMinLength)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxlength", sMaxLength)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "minvalue", sMinValue)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "maxvalue", sMaxValue)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint", sConstraint)
+                uiCommon.SetNodeAttributeinXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, "constraint_msg", sConstraintMsg)
 
                 bParamAdd = False
 
@@ -2700,8 +2699,8 @@ class taskMethods:
 
 
             # whack-n-add
-            ST.RemoveNodeFromXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/values")
-            ST.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, sValueXML)
+            uiCommon.RemoveNodeFromXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath + "/values")
+            uiCommon.AddNodeToXMLColumn(sTable, "parameter_xml", sType + "_id = '" + sID + "'", sParameterXPath, sValueXML)
 
             return ""
         except Exception:
