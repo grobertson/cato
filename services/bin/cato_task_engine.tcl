@@ -162,7 +162,19 @@ proc register_security_group {apply_to_group port region} {
 
 proc gather_account_info {account_id} {
 	set proc_name gather_account_info
-	set sql "select ca.account_name, ca.provider, ca.login_id, ca.login_password from cloud_account ca where ca.account_id = '$account_id'"
+
+    if {![is_guid $account_id]} {
+        set sql "select account_id from cloud_account where account_name = '$account_id'"
+        output $sql 
+        $::db_query $::CONN $sql
+        set row [$::db_fetch $::CONN]
+        set ::CLOUD_ACCOUNT [lindex $row 0]
+        if {"$::CLOUD_ACCOUNT" eq ""} {
+            error_out "Cloud account name '$account_id' is invalid. Check that the cloud account is defined in this environment." 9999
+        }
+        set account_id $::CLOUD_ACCOUNT
+    }
+    set sql "select ca.account_name, ca.provider, ca.login_id, ca.login_password from cloud_account ca where ca.account_id= '$account_id'"
 	$::db_query $::CONN $sql
 	set row [$::db_fetch $::CONN]
 	set ::CLOUD_NAME [lindex $row 0]
@@ -690,7 +702,7 @@ proc pre_initialize {} {
 	set proc_name pre_initialize
 #!/usr/bin/env tclsh
 	#lappend ::auto_path [file join $::CATO_HOME lib]
-	set BIN_DIR [file join $::CATO_HOME services bin]
+	set ::BIN_DIR [file join $::CATO_HOME services bin]
 	#package require cato_common
 	
 	read_config
@@ -3660,6 +3672,9 @@ proc process_step {step_id task_name} {
 		      set aws_split [split $function_name "_"]
 		      aws_Generic [lindex $aws_split 1] [lindex $aws_split 2] {} $command
 	       }
+		"r53_dns_change" {
+			r53_dns_change $command
+		}
 		"store_private_key" {
 			store_private_key $command
 		}
@@ -3714,9 +3729,12 @@ proc process_step {step_id task_name} {
 					default {
 					}
 				}
-				
 				output "$variable_name, $value"
-				set_variable $variable_name $value
+                if {$variable_name eq "_CLOUD_ACCOUNT"} {
+                    gather_account_info $value
+                } else {
+                    set_variable $variable_name $value
+                }
 			}
 			$root delete
 			$xmldoc delete
@@ -5343,6 +5361,19 @@ proc get_instance_handle {command} {
 	set ::HANDLE_ARR(#${handle}.INSTANCE) $task_instance
 	refresh_handles
 }
+proc r53_dns_change {command} {
+    set proc_name r53_dns_change
+
+	get_xml_root $command
+	set dns_name [replace_variables_all [$::ROOT selectNodes string(dns_name)]]
+	set ip_address [replace_variables_all [$::ROOT selectNodes string(ip_address)]]
+	set ttl [replace_variables_all [$::ROOT selectNodes string(ttl)]]
+	del_xml_root
+    set result [exec $::BIN_DIR/r53_change_dns $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $dns_name $ip_address $ttl]
+    insert_audit $::STEP_ID "" "r53_change_dns $dns_name $ip_address $ttl\012$result" ""
+}
+
+    
 proc cancel_tasks {command} {
 	set proc_name cancel_tasks
 
