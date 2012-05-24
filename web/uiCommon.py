@@ -1,7 +1,6 @@
 import urllib
 import urllib2
 import uiGlobals
-import sys
 import traceback
 import json
 import uuid
@@ -11,6 +10,7 @@ import re
 import pickle
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
+from settings import settings
 
 
 """The following is needed when serializing objects that have datetime or other non-serializable
@@ -50,10 +50,9 @@ def log_nouser(msg, debuglevel = 2):
 
 def check_roles(method):
     # if you wanna enable verbose page view logging, this is the place to do it.
-    # HOWEVER, I was having issues where uiGlobals.request wasn't defined, and I didn't have time to track it down.
-#    s_set = settings.settings.security()
-#    if s_set.PageViewLogging:
-#        AddSecurityLog(uiGlobals.SecurityLogTypes.Usage, uiGlobals.SecurityLogActions.PageView, 0, method, "")
+    s_set = settings.settings.security()
+    if s_set.PageViewLogging:
+        AddSecurityLog(uiGlobals.SecurityLogTypes.Usage, uiGlobals.SecurityLogActions.PageView, 0, method, method)
 
     user_role = GetSessionUserRole()
     if user_role == "Administrator":
@@ -223,8 +222,10 @@ def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
             sTrimmedLog = sTrimmedLog[:7998]
     sSQL = """insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg)
         values ('%s', '%s', '%s', now(), %d, '%s', '%s')""" % (LogType, Action, GetSessionUserID(), ObjectType, ObjectID, sTrimmedLog)
-    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-        log_nouser(uiGlobals.request.db.error, 0)
+    db = catocommon.new_conn()
+    if not db.exec_db_noexcep(sSQL):
+        log_nouser(db.error, 0)
+    db.close()
 
 def WriteObjectAddLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
@@ -532,7 +533,7 @@ def HTTPGetNoFail(url):
     This function does not fail.  For any errors it returns an empty result.
 
     NOTE: this function is called by unauthenticated pages.
-    DO NOT use any of the helper functions like uiCommon.log - they look for a user and kick back to the login page 
+    DO NOT use any of the helper functions like ".log" - they look for a user and kick back to the login page 
     if none is found.  (infinite_loop = bad)
     
     That's why we're using log_nouser.
@@ -701,3 +702,236 @@ def RemoveDefaultNamespacesFromXML(xml):
         log_nouser(traceback.format_exc(), 4)
         return ""
     
+def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, sDebugLevel):
+    try:
+        if not sUserID: return ""
+        if not sTaskID: return ""
+        
+        sParameterXML = unpackJSON(sParameterXML)
+                        
+        # we gotta peek into the XML and encrypt any newly keyed values
+        sParameterXML = PrepareAndEncryptParameterXML(sParameterXML);                
+    
+        if IsGUID(sTaskID) and IsGUID(sUserID):
+            sSQL = "call addTaskInstance ('" + sTaskID + "','" + \
+                sUserID + "',NULL," + \
+                sDebugLevel + ",NULL,'" + \
+                TickSlash(sParameterXML) + "','" + \
+                sEcosystemID + "','" + \
+                sAccountID + "')"
+            
+            db = catocommon.new_conn()
+            row = db.exec_proc(sSQL)
+            if db.error:
+                log("Unable to run task [" + sTaskID + "]." + db.error)
+            db.close()
+            
+            # this needs fixing, this whole weird result set.
+            log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row[0]["_task_instance"]), 3)
+            
+            return row[0]["_task_instance"]
+        else:
+            log("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.")
+
+        #uh oh, return nothing
+        return ""
+    except Exception:
+        log_nouser(traceback.format_exc(), 0)
+        return ""
+    
+def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
+    # BE WARNED! this function is shared by many things, and should not be enhanced
+    # with sorting or other niceties.  If you need that stuff, build your own function.
+    # AddRegistry:Node is a perfect example... we wanted sorting on the registries, and also we don't allow array.
+    # but parameters for example are by definition arrays of parameter nodes.
+    try:
+        db = catocommon.new_conn()
+        log("Adding node [%s] to [%s] in [%s.%s where %s]." % (sXMLToAdd, sXPath, sTable, sXMLColumn, sWhereClause), 4)
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = db.select_col_noexcep(sSQL)
+        if not sXML:
+            log("Unable to get xml." + db.error)
+        else:
+            # parse the doc from the table
+            log(sXML, 4)
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                log("Error: Unable to parse XML.")
+
+            # get the specified node from the doc, IF IT'S NOT THE ROOT
+            # either a blank xpath, or a single word that matches the root, both match the root.
+            # any other path DOES NOT require the root prefix.
+            if sXPath == "":
+                xNodeToEdit = xd
+            elif xd.tag == sXPath:
+                xNodeToEdit = xd
+            else:
+                xNodeToEdit = xd.find(sXPath)
+            
+            if xNodeToEdit is None:
+                log("Error: XML does not contain path [" + sXPath + "].")
+                return
+
+            # now parse the new section from the text passed in
+            xNew = ET.fromstring(sXMLToAdd)
+            if xNew is None:
+                log("Error: XML to be added cannot be parsed.")
+
+            # if the node we are adding to has a text value, sadly it has to go.
+            # we can't detect that, as the Value property shows the value of all children.
+            # but this works, even if it seems backwards.
+            # if the node does not have any children, then clear it.  that will safely clear any
+            # text but not stomp the text of the children.
+            if len(xNodeToEdit) == 0:
+                xNodeToEdit.text = ""
+            # add it to the doc
+            xNodeToEdit.append(xNew)
+
+
+            # then send the whole doc back to the database
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "'" \
+                " where " + sWhereClause
+            if not db.exec_db_noexcep(sSQL):
+                log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
+
+        return
+    except Exception:
+        log_nouser(traceback.format_exc(), 0)
+    finally:
+        if db.conn.socket:
+            db.close()
+
+def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue):
+    try:
+        db = catocommon.new_conn()
+        log("Setting node [%s] to [%s] in [%s.%s where %s]." % (sNodeToSet, sValue, sTable, sXMLColumn, sWhereClause), 4)
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = db.select_col_noexcep(sSQL)
+        if not sXML:
+            log("Unable to get xml." + db.error)
+        else:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                log("Error: Unable to parse XML.")
+
+            # get the specified node from the doc, IF IT'S NOT THE ROOT
+            if xd.tag == sNodeToSet:
+                xNodeToSet = xd
+            else:
+                xNodeToSet = xd.find(sNodeToSet)
+
+            if xNodeToSet is not None:
+                xNodeToSet.text = sValue
+
+                # then send the whole doc back to the database
+                sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "' where " + sWhereClause
+                if not db.exec_db_noexcep(sSQL):
+                    log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
+            else:
+                log("Unable to update XML Column ... [" + sNodeToSet + "] not found.")
+
+        return
+    except Exception:
+        log_nouser(traceback.format_exc(), 0)
+    finally:
+        if db.conn.socket:
+            db.close()
+
+def SetNodeAttributeinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sAttribute, sValue):
+    # THIS ONE WILL do adds if the attribute doesn't exist, or update it if it does.
+    try:
+        db = catocommon.new_conn()
+        log("Setting [%s] attribute [%s] to [%s] in [%s.%s where %s]" % (sNodeToSet, sAttribute, sValue, sTable, sXMLColumn, sWhereClause), 4 )
+
+        sXML = ""
+
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = db.select_col_noexcep(sSQL)
+        if db.error:
+            log("Unable to get xml." + db.error)
+            return ""
+ 
+        if sXML:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                log("Unable to parse xml." + db.error)
+                return ""
+
+            # get the specified node from the doc
+            # here's the rub - the request might be or the "root" node,
+            # which "find" will not, er ... find.
+            # so let's first check if the root node is the name we want.
+            xNodeToSet = None
+            
+            if xd.tag == sNodeToSet:
+                xNodeToSet = xd
+            else:
+                xNodeToSet = xd.find(sNodeToSet)
+            
+            if xNodeToSet is None:
+            # do nothing if we didn't find the node
+                return ""
+            else:
+                # set it
+                xNodeToSet.attrib[sAttribute] = sValue
+
+
+            # then send the whole doc back to the database
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "'" \
+                " where " + sWhereClause
+            if not db.exec_db_noexcep(sSQL):
+                log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
+
+        return ""
+    except Exception:
+        log_nouser(traceback.format_exc(), 0)
+    finally:
+        if db.conn.socket:
+            db.close()
+
+def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
+    try:
+        db = catocommon.new_conn()
+        log("Removing node [%s] from [%s.%s where %s]." % (sNodeToRemove, sTable, sXMLColumn, sWhereClause), 4)
+        sSQL = "select " + sXMLColumn + " from " + sTable + " where " + sWhereClause
+        sXML = db.select_col_noexcep(sSQL)
+        if not sXML:
+            log("Unable to get xml." + db.error)
+        else:
+            # parse the doc from the table
+            xd = ET.fromstring(sXML)
+            if xd is None:
+                log("Error: Unable to parse XML.")
+
+            # get the specified node from the doc
+            xNodeToWhack = xd.find(sNodeToRemove)
+            if xNodeToWhack is None:
+                log("INFO: attempt to remove [%s] - the element was not found." % sNodeToRemove, 3)
+                # no worries... what you want to delete doesn't exist?  perfect!
+                return
+
+            # OK, here's the deal...
+            # we have found the node we want to delete, but we found it using an xpath,
+            # ElementTree doesn't support deleting by xpath.
+            # so, we'll use a parent map to find the immediate parent of the node we found,
+            # and on the parent we can call ".remove"
+            parent_map = dict((c, p) for p in xd.getiterator() for c in p)
+            xParentOfNodeToWhack = parent_map[xNodeToWhack]
+            
+            # whack it
+            if xParentOfNodeToWhack is not None:
+                xParentOfNodeToWhack.remove(xNodeToWhack)
+
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "'" \
+                " where " + sWhereClause
+            if not db.exec_db_noexcep(sSQL):
+                log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
+
+        return
+    except Exception:
+        log_nouser(traceback.format_exc(), 0)
+    finally:
+        if db.conn.socket:
+            db.close()

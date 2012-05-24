@@ -10,38 +10,35 @@ import stepTemplates as ST
 
 # task-centric web methods
 
+# the db connection that is used in this module.
+db = None
+
 class taskMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception, ex:
+        except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception, ex:
+        except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def wmGetTasksTable(self):
         try:
@@ -151,7 +148,7 @@ class taskMethods:
                     " order by ti.task_instance desc" \
                     " limit " + sRecords
 
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
+            rows = self.db.select_all_dict(sSQL)
     
             if rows:
                 for row in rows:
@@ -201,10 +198,10 @@ class taskMethods:
 
         try:
             sSQL = "select task_code from task where original_task_id = '" + sOriginalTaskID + "' and default_version = 1"
-            sTaskCode = uiGlobals.request.db.select_col_noexcep(sSQL)
+            sTaskCode = self.db.select_col_noexcep(sSQL)
             if not sTaskCode:
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get task code." + uiGlobals.request.db.error)
+                if self.db.error:
+                    uiCommon.log("Unable to get task code." + self.db.error)
                 else:
                     return ""
             else:
@@ -221,9 +218,9 @@ class taskMethods:
                 " from task " \
                 " where original_task_id = '" + sOriginalTaskID + "'" \
                 " order by default_version desc, version"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            dt = self.db.select_all_dict(sSQL)
             if not dt:
-                uiCommon.log("Error selecting versions: " + uiGlobals.request.db.error)
+                uiCommon.log("Error selecting versions: " + self.db.error)
             else:
                 for dr in dt:
                     sLabel = str(dr["version"]) + (" (default)" if dr["default_version"] == 1 else "")
@@ -247,10 +244,10 @@ class taskMethods:
                 " (select original_task_id from task where task_id = '" + sTaskID + "')" \
                 " order by version"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                sHTML = "Error selecting versions: " + uiGlobals.request.db.error
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                sHTML = "Error selecting versions: " + self.db.error
+                uiCommon.log_nouser(self.db.error, 0)
             else:
                 if dt:
                     for dr in dt:
@@ -368,34 +365,34 @@ class taskMethods:
             sSQL = "select task_name from task t " \
                     " where t.original_task_id in (" + sDeleteArray + ")" \
                     " and t.task_id in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)"
-            sTaskNames = uiGlobals.request.db.select_csv(sSQL, True)
+            sTaskNames = self.db.select_csv(sSQL, True)
 
             # list of tasks that will be deleted
             # we have an array of 'original_task_id' - we need an array of task_id
             sSQL = "select t.task_id from task t " \
                 " where t.original_task_id in (" + sDeleteArray + ")" \
                 " and t.task_id not in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)"
-            sTaskIDs = uiGlobals.request.db.select_csv(sSQL, True)
+            sTaskIDs = self.db.select_csv(sSQL, True)
             if len(sTaskIDs) > 1:
                 sSQL = "delete from task_step_user_settings" \
                     " where step_id in" \
                     " (select step_id from task_step where task_id in (" + sTaskIDs + "))"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log(uiGlobals.request.db)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log(self.db)
     
                 sSQL = "delete from task_step where task_id in (" + sTaskIDs + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
     
                 sSQL = "delete from task_codeblock where task_id in (" + sTaskIDs + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log(uiGlobals.request.db)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log(self.db)
     
                 sSQL = "delete from task where task_id in (" + sTaskIDs + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log(uiGlobals.request.db)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log(self.db)
     
-                uiGlobals.request.db.tran_commit()
+                self.db.tran_commit()
     
                 uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Task, "Multiple", "Original Task IDs", sDeleteArray)
             
@@ -422,10 +419,10 @@ class taskMethods:
                 sValue = uiCommon.TickSlash(sValue)
 
                 sSQL = "select original_task_id from task where task_id = '" + sTaskID + "'"
-                sOriginalTaskID = uiGlobals.request.db.select_col_noexcep(sSQL)
+                sOriginalTaskID = self.db.select_col_noexcep(sSQL)
 
                 if not sOriginalTaskID:
-                    uiCommon.log("ERROR: Unable to get original_task_id for [" + sTaskID + "]." + uiGlobals.request.db.error)
+                    uiCommon.log("ERROR: Unable to get original_task_id for [" + sTaskID + "]." + self.db.error)
                     return "{\"error\" : \"Unable to get original_task_id for [" + sTaskID + "].\"}"
 
 
@@ -438,9 +435,9 @@ class taskMethods:
                         sColumn + "='" + sValue + "'" \
                         " and original_task_id <> '" + sOriginalTaskID + "'"
 
-                    sValueExists = uiGlobals.request.db.select_col_noexcep(sSQL)
-                    if uiGlobals.request.db.error:
-                        uiCommon.log("ERROR: Unable to check for existing names [" + sTaskID + "]." + uiGlobals.request.db.error)
+                    sValueExists = self.db.select_col_noexcep(sSQL)
+                    if self.db.error:
+                        uiCommon.log("ERROR: Unable to check for existing names [" + sTaskID + "]." + self.db.error)
 
                     if sValueExists:
                         return "{\"info\" : \"" + sValue + " exists, please choose another value.\"}"
@@ -463,8 +460,8 @@ class taskMethods:
                     sSQL = "update task set " + sSetClause + " where task_id = '" + sTaskID + "'"
                 
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to update task [" + sTaskID + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to update task [" + sTaskID + "]." + self.db.error)
 
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sColumn, sValue)
 
@@ -487,7 +484,7 @@ class taskMethods:
             
             sNewTaskID = oTask.Copy((1 if sMinorMajor == "Major" else 2), "", "")
             if not sNewTaskID:
-                return "Unable to create new Version." + uiGlobals.request.db.error
+                return "Unable to create new Version." + self.db.error
 
             return sNewTaskID
         except Exception:
@@ -543,8 +540,8 @@ class taskMethods:
                        "'" + sNewCodeblockName + "'" \
                        ")"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to add Codeblock [" + sNewCodeblockName + "]. " + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to add Codeblock [" + sNewCodeblockName + "]. " + self.db.error)
 
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sNewCodeblockName, "Added Codeblock.")
             else:
@@ -562,22 +559,22 @@ class taskMethods:
                 " join task_step ts on u.step_id = ts.step_id" \
                 " where ts.task_id = '" + sTaskID + "'" \
                 " and ts.codeblock_name = '" + sCodeblockID + "'"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to delete Steps user settings for Steps in Codeblock." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to delete Steps user settings for Steps in Codeblock." + self.db.error)
 
             sSQL = "delete from task_step" \
                 " where task_id = '" + sTaskID + "'" \
                 " and codeblock_name = '" + sCodeblockID + "'"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to delete Steps from Codeblock." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to delete Steps from Codeblock." + self.db.error)
 
             sSQL = "delete from task_codeblock" \
                 " where task_id = '" + sTaskID + "'" \
                 " and codeblock_name = '" + sCodeblockID + "'"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to delete Codeblock." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to delete Codeblock." + self.db.error)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sCodeblockID, "Deleted Codeblock.")
 
@@ -595,9 +592,9 @@ class taskMethods:
                 #  first make sure we are not try:ing to rename it something that already exists.
                 sSQL = "select count(*) from task_codeblock where task_id = '" + sTaskID + "'" \
                     " and codeblock_name = '" + sNewCodeblockName + "'"
-                iCount = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to check codeblock names for task." + uiGlobals.request.db.error)
+                iCount = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to check codeblock names for task." + self.db.error)
                 if iCount != 0:
                     return ("Codeblock Name already in use, choose another.")
 
@@ -607,31 +604,31 @@ class taskMethods:
                 sSQL = "update task_codeblock set codeblock_name = '" + sNewCodeblockName + \
                     "' where codeblock_name = '" + sOldCodeblockName + \
                     "' and task_id = '" + sTaskID + "'"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 # and any steps in that codeblock
                 sSQL = "update task_step set codeblock_name = '" + sNewCodeblockName + \
                     "' where codeblock_name = '" + sOldCodeblockName + \
                     "' and task_id = '" + sTaskID + "'"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 # the fun part... rename it where it exists in any steps
                 # but this must be in a loop of only the steps where that codeblock reference exists.
                 sSQL = "select step_id from task_step" \
                     " where task_id = '" + sTaskID + "'" \
                     " and ExtractValue(function_xml, '//codeblock[1]') = '" + sOldCodeblockName + "'"
-                dtSteps = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get steps referencing the Codeblock." + uiGlobals.request.db.error)
+                dtSteps = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get steps referencing the Codeblock." + self.db.error)
 
                 if dtSteps:
                     for dr in dtSteps:
                         ST.SetNodeValueinXMLColumn("task_step", "function_xml", "step_id = '" + dr["step_id"] + "'", "codeblock[.='" + sOldCodeblockName + "']", sNewCodeblockName)
 
                 # all done
-                uiGlobals.request.db.tran_commit()
+                self.db.tran_commit()
                 
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sOldCodeblockName, "Renamed Codeblock [%s -> %s]" % (sOldCodeblockName, sNewCodeblockName))
 
@@ -655,13 +652,13 @@ class taskMethods:
                     " and codeblock_name = '" + sCodeblockName + "'" \
                     " order by step_order desc"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     for dr in dt:
-                        taskMethods.CopyStepToClipboard(dr["step_id"])
+                        self.CopyStepToClipboard(dr["step_id"])
 
                 return ""
             else:
@@ -793,8 +790,8 @@ class taskMethods:
                     " where user_id = '" + sUserID + "'" \
                     " and step_id = '" + sItem + "'"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to add step." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to add step." + self.db.error)
 
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
                     "Added Command from Clipboard to Codeblock:" + sCodeblockName)
@@ -847,8 +844,8 @@ class taskMethods:
                         "'" + func.Name + "'," \
                         "'" + ET.tostring(xe) + "'" \
                         ")"
-                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                        uiCommon.log("Unable to add step." + uiGlobals.request.db.error)
+                    if not self.db.exec_db_noexcep(sSQL):
+                        uiCommon.log("Unable to add step." + self.db.error)
     
                     uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, sItem,
                         "Added Command Type:" + sItem + " to Codeblock:" + sCodeblockName)
@@ -920,9 +917,9 @@ class taskMethods:
                 # get the command from the clipboard, and then update the XML of the parent step
                 sSQL = "select function_xml from task_step_clipboard where user_id = '" + sUserID + "' and step_id = '" + sItem + "'"
 
-                sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to add step." + uiGlobals.request.db.error)
+                sXML = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to add step." + self.db.error)
 
                 if sXML:
                     # we'll need this below to return the html
@@ -999,8 +996,8 @@ class taskMethods:
 
                 # there will be no sSQL if there were no steps, so just skip it.
                 if sSQL:
-                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                        uiCommon.log("Unable to update steps." + uiGlobals.request.db.error)
+                    if not self.db.exec_db_noexcep(sSQL):
+                        uiCommon.log("Unable to update steps." + self.db.error)
                     
                 i += 1
 
@@ -1021,7 +1018,7 @@ class taskMethods:
             sSQL = "select task_id, codeblock_name, step_order, function_name, function_xml" \
                 " from task_step where step_id = '" + sStepID + "'"
 
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
+            dr = self.db.select_row_dict(sSQL)
             if dr:
                 sDeletedStepOrder = str(dr["step_order"])
                 sTaskID = dr["task_id"]
@@ -1040,27 +1037,27 @@ class taskMethods:
             # "embedded" steps have a codeblock name referencing their "parent" step.
             # if we're deleting a parent, whack all the children
             sSQL = "delete from task_step where codeblock_name = '" + sStepID + "'"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to delete step." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to delete step." + self.db.error)
 
             # step might have user_settings
             sSQL = "delete from task_step_user_settings where step_id = '" + sStepID + "'"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to delete step user settings." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to delete step user settings." + self.db.error)
 
             # now whack the parent
             sSQL = "delete from task_step where step_id = '" + sStepID + "'"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to delete step." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to delete step." + self.db.error)
 
             sSQL = "update task_step set step_order = step_order - 1" \
                 " where task_id = '" + sTaskID + "'" \
                 " and codeblock_name = '" + sCodeblock + "'" \
                 " and step_order > " + sDeletedStepOrder
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log("Unable to reorder steps after deletion." + uiGlobals.request.db.error)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log("Unable to reorder steps after deletion." + self.db.error)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
             
             return ""
         except Exception:
@@ -1097,8 +1094,8 @@ class taskMethods:
 #                sValue = uiCommon.TickSlash(sValue) # escape single quotes for the SQL insert
 #                sSQL = "update task_step set " + sXPath + " = '" + sValue + "' where step_id = '" + sStepID + "'"
 #    
-#                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-#                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+#                if not self.db.exec_db_noexcep(sSQL):
+#                    uiCommon.log_nouser(self.db.error, 0)
 #    
 #            else:
 
@@ -1106,9 +1103,9 @@ class taskMethods:
             # get the xml from the step table and update it
             sSQL = "select function_xml from task_step where step_id = '" + sStepID + "'"
 
-            sXMLTemplate = uiGlobals.request.db.select_col_noexcep(sSQL)
+            sXMLTemplate = self.db.select_col_noexcep(sSQL)
 
-            if uiGlobals.request.db.error:
+            if self.db.error:
                 uiCommon.log("Unable to get XML data for step [" + sStepID + "].")
 
             xDoc = ET.fromstring(sXMLTemplate)
@@ -1183,14 +1180,14 @@ class taskMethods:
                 " function_xml = '" + uiCommon.TickSlash(ET.tostring(xDoc)) + "'" \
                 " where step_id = '" + sStepID + "';"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log(uiGlobals.request.db)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log(self.db)
     
     
             sSQL = "select task_id, codeblock_name, step_order from task_step where step_id = '" + sStepID + "'"
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dr = self.db.select_row_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
     
             if dr is not None:
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Task, dr["task_id"], sFunction,
@@ -1214,7 +1211,7 @@ class taskMethods:
                 sButton = ("null" if sButton == "" else "'" + sButton + "'")
     
                 #is there a row?
-                iRowCount = uiGlobals.request.db.select_col_noexcep("select count(*) from task_step_user_settings" \
+                iRowCount = self.db.select_col_noexcep("select count(*) from task_step_user_settings" \
                     " where user_id = '" + sUserID + "'" \
                     " and step_id = '" + sStepID + "'")
                 if iRowCount == 0:
@@ -1224,8 +1221,8 @@ class taskMethods:
                 else:
                     sSQL = "update task_step_user_settings set button = " + sButton + " where step_id = '" + sStepID + "'"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to toggle step button [" + sStepID + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to toggle step button [" + sStepID + "]." + self.db.error)
 
                 return ""
             else:
@@ -1245,7 +1242,7 @@ class taskMethods:
                 sVisible = ("1" if sVisible == "1" else "0")
     
                 #is there a row?
-                iRowCount = uiGlobals.request.db.select_col_noexcep("select count(*) from task_step_user_settings" \
+                iRowCount = self.db.select_col_noexcep("select count(*) from task_step_user_settings" \
                     " where user_id = '" + sUserID + "'" \
                     " and step_id = '" + sStepID + "'")
                 if iRowCount == 0:
@@ -1255,8 +1252,8 @@ class taskMethods:
                 else:
                     sSQL = "update task_step_user_settings set visible = '" + sVisible + "' where step_id = '" + sStepID + "'"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to toggle step visibility [" + sStepID + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to toggle step visibility [" + sStepID + "]." + self.db.error)
                 
                 return ""
             else:
@@ -1270,8 +1267,8 @@ class taskMethods:
             sSkip = uiCommon.getAjaxArg("sSkip")
 
             sSQL = "update task_step set commented = " + str(sSkip) + " where step_id = '" + sStepID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log("Unable to update steps." + uiGlobals.request.db.error)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log("Unable to update steps." + self.db.error)
 
             return ""
         except Exception:
@@ -1420,9 +1417,9 @@ class taskMethods:
                    sWhereString + \
                    " order by task_name, default_version desc, version"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
 
             sHTML = "<hr />"
 
@@ -1598,9 +1595,9 @@ class taskMethods:
                 " and s.codeblock_name is null" \
                 " order by s.clip_dt desc"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log("Unable to get clipboard data for user [" + sUserID + "].<br />" + uiGlobals.request.db.error)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log("Unable to get clipboard data for user [" + sUserID + "].<br />" + self.db.error)
 
             if dt:
                 for dr in dt:
@@ -1672,13 +1669,12 @@ class taskMethods:
     def wmCopyStepToClipboard(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            taskMethods.CopyStepToClipboard(sStepID)
+            self.CopyStepToClipboard(sStepID)
             return ""
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
-    @staticmethod
-    def CopyStepToClipboard(sStepID):
+    def CopyStepToClipboard(self, sStepID):
         try:
             if uiCommon.IsGUID(sStepID):
                 sUserID = uiCommon.GetSessionUserID()
@@ -1693,8 +1689,8 @@ class taskMethods:
                 sSQL = "delete from task_step_clipboard" \
                     " where user_id = '" + sUserID + "'" \
                     " and src_step_id = '" + sStepID + "'"
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to clean clipboard." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to clean clipboard." + self.db.error)
     
                 sSQL = " insert into task_step_clipboard" \
                     " (user_id, clip_dt, src_step_id, root_step_id, step_id, function_name, function_xml, step_desc," \
@@ -1704,8 +1700,8 @@ class taskMethods:
                         " output_parse_type, output_row_delimiter, output_column_delimiter, variable_xml" \
                     " from task_step" \
                     " where step_id = '" + sStepID + "'"
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to copy step [" + sStepID + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to copy step [" + sStepID + "]." + self.db.error)
     
                 return ""
             else:
@@ -1725,14 +1721,14 @@ class taskMethods:
                 sSQL = "delete from task_step_clipboard" \
                     " where user_id = '" + sUserID + "'" \
                     " and root_step_id = '" + sStepID + "'"
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to remove step [" + sStepID + "] from clipboard." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to remove step [" + sStepID + "] from clipboard." + self.db.error)
 
                 return ""
             elif sStepID == "ALL":
                 sSQL = "delete from task_step_clipboard where user_id = '" + sUserID + "'"
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to remove step [" + sStepID + "] from clipboard." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to remove step [" + sStepID + "] from clipboard." + self.db.error)
 
                 return ""
         except Exception:
@@ -1749,48 +1745,9 @@ class taskMethods:
             sDebugLevel = uiCommon.getAjaxArg("iDebugLevel")
             
             sUserID = uiCommon.GetSessionUserID()
-            return taskMethods.AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, sDebugLevel)
+            return uiCommon.AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, sDebugLevel)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    # NOT a web method
-    @staticmethod
-    def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParameterXML, sDebugLevel):
-        try:
-            if not sUserID: return ""
-            if not sTaskID: return ""
-            
-            sParameterXML = uiCommon.unpackJSON(sParameterXML)
-                            
-            # we gotta peek into the XML and encrypt any newly keyed values
-            sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);                
-        
-            if uiCommon.IsGUID(sTaskID) and uiCommon.IsGUID(sUserID):
-                sSQL = "call addTaskInstance ('" + sTaskID + "','" + \
-                    sUserID + "',NULL," + \
-                    sDebugLevel + ",NULL,'" + \
-                    uiCommon.TickSlash(sParameterXML) + "','" + \
-                    sEcosystemID + "','" + \
-                    sAccountID + "')"
-                
-                row = uiGlobals.request.db.exec_proc(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to run task [" + sTaskID + "]." + uiGlobals.request.db.error)
-    
-                # this needs fixing, this whole weird result set.
-                uiCommon.log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row[0]["_task_instance"]), 3)
-                
-                return row[0]["_task_instance"]
-            else:
-                uiCommon.log("Unable to run task. Missing or invalid task [" + sTaskID + "] or user [" + sUserID + "] id.")
-    
-            #uh oh, return nothing
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-            return ""
-        
-
 
     def wmGetAccountEcosystems(self):
         sAccountID = uiCommon.getAjaxArg("sAccountID")
@@ -1808,7 +1765,7 @@ class taskMethods:
                      " where account_id = '" + sAccountID + "'" \
                      " order by ecosystem_name"; 
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
+            dt = self.db.select_all_dict(sSQL)
     
             if dt:
                 sHTML += "<option value=''></option>"
@@ -1832,14 +1789,13 @@ class taskMethods:
         sType = uiCommon.getAjaxArg("sType")
         sID = uiCommon.getAjaxArg("sID")
         sFilterByEcosystemID = uiCommon.getAjaxArg("sFilterByEcosystemID")
-        return taskMethods.GetParameterXML(sType, sID, sFilterByEcosystemID)
+        return self.GetParameterXML(sType, sID, sFilterByEcosystemID)
 
-    @staticmethod
-    def GetParameterXML(sType, sID, sFilterByEcosystemID):
+    def GetParameterXML(self, sType, sID, sFilterByEcosystemID):
         if sType == "task":
-            return taskMethods.GetObjectParameterXML(sType, sID, "")
+            return self.GetObjectParameterXML(sType, sID, "")
         else:
-            return taskMethods.GetMergedParameterXML(sType, sID, sFilterByEcosystemID); # Merging is happening here!
+            return self.GetMergedParameterXML(sType, sID, sFilterByEcosystemID); # Merging is happening here!
 
     # """
     #  This method simply gets the XML directly from the db for the type.
@@ -1852,10 +1808,9 @@ class taskMethods:
         sType = uiCommon.getAjaxArg("sType")
         sID = uiCommon.getAjaxArg("sID")
         sFilterByEcosystemID = uiCommon.getAjaxArg("sFilterByEcosystemID")
-        return taskMethods.GetObjectParameterXML(sType, sID, sFilterByEcosystemID)
+        return self.GetObjectParameterXML(sType, sID, sFilterByEcosystemID)
 
-    @staticmethod
-    def GetObjectParameterXML(sType, sID, sFilterByEcosystemID):
+    def GetObjectParameterXML(self, sType, sID, sFilterByEcosystemID):
         try:
             if sType == "instance":
                 # if sID is a guid, it's a task_id ... get the most recent run
@@ -1887,9 +1842,9 @@ class taskMethods:
             elif sType == "task":
                 sSQL = "select parameter_xml from task where task_id = '" + sID + "'"
     
-            sParameterXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            sParameterXML = self.db.select_col_noexcep(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
     
             if sParameterXML:
                 xParams = ET.fromstring(sParameterXML)
@@ -1924,7 +1879,7 @@ class taskMethods:
         sType = uiCommon.getAjaxArg("sType")
         sID = uiCommon.getAjaxArg("sID")
         sEcosystemID = uiCommon.getAjaxArg("sEcosystemID")
-        return taskMethods.GetMergedParameterXML(sType, sID, sEcosystemID)
+        return self.GetMergedParameterXML(sType, sID, sEcosystemID)
 
     # """
     #  * This method does MERGING!
@@ -1934,8 +1889,7 @@ class taskMethods:
     #  * the master task XML.
     #  * 
     #  * """
-    @staticmethod
-    def GetMergedParameterXML(sType, sID, sEcosystemID):
+    def GetMergedParameterXML(self, sType, sID, sEcosystemID):
         try:
             if not sID:
                 uiCommon.log("ID required to look up default Parameter values.")
@@ -1946,7 +1900,7 @@ class taskMethods:
             sTaskID = ""
         
             if sType == "action":
-                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+                sDefaultsXML = self.GetObjectParameterXML(sType, sID, "")
         
                 sSQL = "select t.task_id" \
                      " from ecotemplate_action ea" \
@@ -1970,14 +1924,14 @@ class taskMethods:
                 # get the parameters off the step itself.
                 # which is also goofy, as they are embedded *inside* the function xml of the step.
                 # but don't worry that's handled in here
-                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+                sDefaultsXML = self.GetObjectParameterXML(sType, sID, "")
                 
                 # now, we will want to get the parameters for the task *referenced by the command* down below
                 # but no sql is necessary to get the ID... we already know it!
                 sTaskID = sEcosystemID
                 
             elif sType == "instance":
-                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, sEcosystemID)
+                sDefaultsXML = self.GetObjectParameterXML(sType, sID, sEcosystemID)
         
                 # IMPORTANT!!! if the ID is not a guid, it's a specific instance ID, and we'll need to get the task_id
                 # but if it is a GUID, but the type is "instance", taht means the most recent INSTANCE for this TASK_ID
@@ -1988,13 +1942,13 @@ class taskMethods:
                          " from task_instance" \
                          " where task_instance = '" + sID + "'"
             elif sType == "plan":
-                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+                sDefaultsXML = self.GetObjectParameterXML(sType, sID, "")
         
                 sSQL = "select task_id" \
                     " from action_plan" \
                     " where plan_id = '" + sID + "'"
             elif sType == "schedule":
-                sDefaultsXML = taskMethods.GetObjectParameterXML(sType, sID, "")
+                sDefaultsXML = self.GetObjectParameterXML(sType, sID, "")
         
                 sSQL = "select task_id" \
                     " from action_schedule" \
@@ -2003,16 +1957,16 @@ class taskMethods:
         
             # if we didn't get a task id directly, use the SQL to look it up
             if not sTaskID:
-                sTaskID = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                sTaskID = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
         
             if not uiCommon.IsGUID(sTaskID):
                 uiCommon.log("Unable to find Task ID for record.")
         
         
             # get the parameter XML from the TASK
-            sTaskParamXML = taskMethods.GetParameterXML("task", sTaskID, "")
+            sTaskParamXML = self.GetParameterXML("task", sTaskID, "")
             xTPParams = None
             if sTaskParamXML:
                 xTPParams = ET.fromstring(sTaskParamXML)
@@ -2151,9 +2105,9 @@ class taskMethods:
                         " join task t on ea.original_task_id = t.original_task_id" \
                         " and t.default_version = 1" \
                         " where ea.action_id = '" + sID + "'"
-                    sTaskID = uiGlobals.request.db.select_col_noexcep(sSQL)
-                    if uiGlobals.request.db.error:
-                        uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                    sTaskID = self.db.select_col_noexcep(sSQL)
+                    if self.db.error:
+                        uiCommon.log_nouser(self.db.error, 0)
     
                 if not uiCommon.IsGUID(sTaskID):
                     uiCommon.log("Unable to find Task ID for Action, or no Task ID provided.")
@@ -2164,7 +2118,7 @@ class taskMethods:
                 xADDoc = None
     
                 # get the parameter XML from the TASK
-                sTaskParamXML = taskMethods.GetParameterXML("task", sTaskID, "")
+                sTaskParamXML = self.GetParameterXML("task", sTaskID, "")
                 if sTaskParamXML:
                     xTPDoc = ET.fromstring(sTaskParamXML)
                     if xTPDoc is None:
@@ -2271,8 +2225,8 @@ class taskMethods:
                         " parameter_defaults = '" + sOverrideXML + "'" \
                         " where action_id = '" + sID + "'"
     
-                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                        uiCommon.log("Unable to update Action [" + sID + "]." + uiGlobals.request.db.error)
+                    if not self.db.exec_db_noexcep(sSQL):
+                        uiCommon.log("Unable to update Action [" + sID + "]." + self.db.error)
     
                     uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.EcoTemplate, sID, sID, "Default parameters updated: [" + sOverrideXML + "]")
                 elif sType == "runtask":
@@ -2313,9 +2267,9 @@ class taskMethods:
 
             sSQL = "select parameter_xml from " + sTable + " where " + sType + "_id = '" + sID + "'"
 
-            sParameterXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            sParameterXML = self.db.select_col_noexcep(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
 
             if sParameterXML:
                 xParams = ET.fromstring(sParameterXML)
@@ -2431,9 +2385,9 @@ class taskMethods:
                         " from " + sTable + \
                         " where " + sType + "_id = '" + sID + "'"
 
-                sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get parameter_xml.  " + uiGlobals.request.db.error)
+                sXML = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get parameter_xml.  " + self.db.error)
                     return "Unable to get parameter_xml.  See log for details."
 
                 if sXML:
@@ -2574,9 +2528,9 @@ class taskMethods:
                     " from " + sTable + \
                     " where " + sType + "_id = '" + sID + "'"
     
-                sXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get parameter_xml.  " + uiGlobals.request.db.error)
+                sXML = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get parameter_xml.  " + self.db.error)
     
                 if sXML != "":
                     xd = ET.fromstring(sXML)
@@ -2660,9 +2614,9 @@ class taskMethods:
 
                 # does the task already have parameters?
                 sSQL = "select parameter_xml from " + sTable + " where " + sType + "_id = '" + sID + "'"
-                sCurrentXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                sCurrentXML = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 sAddXML = "<parameter id=\"" + sParamID + "\"" \
                     " required=\"" + sRequired + "\" prompt=\"" + sPrompt + "\" encrypt=\"" + sEncrypt + "\"" \
@@ -2682,8 +2636,8 @@ class taskMethods:
                         " parameter_xml = '" + sAddXML + "'" \
                         " where " + sType + "_id = '" + sID + "'"
 
-                    if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                        uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                    if not self.db.exec_db_noexcep(sSQL):
+                        uiCommon.log_nouser(self.db.error, 0)
 
                     bParamAdd = True
                 else:
@@ -2773,9 +2727,9 @@ class taskMethods:
                     if uiCommon.IsGUID(sAssetID):
                         sSQL += " and asset_id = '" + sAssetID + "'"
 
-                    sTaskInstance = str(uiGlobals.request.db.select_col_noexcep(sSQL))
-                    if uiGlobals.request.db.error:
-                        uiCommon.log("Unable to get task_instance from task/asset id.  " + uiGlobals.request.db.error)
+                    sTaskInstance = str(self.db.select_col_noexcep(sSQL))
+                    if self.db.error:
+                        uiCommon.log("Unable to get task_instance from task/asset id.  " + self.db.error)
             
             if sTaskInstance:
                 # the task instance must be a number, die if it isn't
@@ -2797,9 +2751,9 @@ class taskMethods:
                    " from tv_task_instance ti join task t on ti.task_id = t.task_id" \
                    " where ti.task_instance = '" + sTaskInstance + "'"
 
-                sOTID = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get original_task_id for task instance.  " + uiGlobals.request.db.error)
+                sOTID = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get original_task_id for task instance.  " + self.db.error)
 
                 # now we know the ID, see if we are grouped with it
                 # this will kick out if they DONT match tags and they AREN'T in a role with sufficient privileges
@@ -2824,9 +2778,9 @@ class taskMethods:
                     " left outer join ecosystem d on ti.ecosystem_id = d.ecosystem_id" \
                     " where task_instance = " + sTaskInstance
 
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get instance details for task instance.  " + uiGlobals.request.db.error)
+                dr = self.db.select_row_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get instance details for task instance.  " + self.db.error)
 
                 if dr is not None:
                     output["task_id"] = dr["task_id"]
@@ -2877,9 +2831,9 @@ class taskMethods:
                     sSQL = "select count(*) from tv_task_instance where task_id = '" + dr["task_id"] + "'" \
                         " and task_instance <> '" + sTaskInstance + "'" \
                         " and task_status in ('processing','submitted','pending','aborting','queued','staged')"
-                    iActiveCount = uiGlobals.request.db.select_col_noexcep(sSQL)
-                    if uiGlobals.request.db.error:
-                        uiCommon.log("Unable to get active instance count.  " + uiGlobals.request.db.error)
+                    iActiveCount = self.db.select_col_noexcep(sSQL)
+                    if self.db.error:
+                        uiCommon.log("Unable to get active instance count.  " + self.db.error)
 
 
                     # and hide the resubmit button if we're over the limit
@@ -2911,9 +2865,9 @@ class taskMethods:
                             " and task_status in ('processing','submitted','pending','aborting','queued','staged')" \
                             " order by task_status"
 
-                        dt = uiGlobals.request.db.select_all_dict(sSQL)
-                        if uiGlobals.request.db.error:
-                            uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                        dt = self.db.select_all_dict(sSQL)
+                        if self.db.error:
+                            uiCommon.log_nouser(self.db.error, 0)
 
                         # build a list of the other instances
                         for dr in dt:
@@ -2964,9 +2918,9 @@ class taskMethods:
                 " where til.task_instance = " + sTaskInstance + \
                 " order by til.id" + sLimitClause
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
 
             sLog = ""
             sSummary = ""
@@ -3109,9 +3063,9 @@ class taskMethods:
                     "count(*) as AllStatuses " \
                     "from tv_task_instance) foo"
 
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log("Unable to get instance details for task instance.  " + uiGlobals.request.db.error)
+            dr = self.db.select_row_dict(sSQL)
+            if self.db.error:
+                uiCommon.log("Unable to get instance details for task instance.  " + self.db.error)
 
             if dr is not None:
                 output["Processing"] = dr["Processing"]
@@ -3165,9 +3119,9 @@ class taskMethods:
                 # the value is the var "name"
                 lVars = []
 
-                dtStupidVars = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get variables for task." + uiGlobals.request.db.error)
+                dtStupidVars = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get variables for task." + self.db.error)
 
                 if dtStupidVars is not None:
                     for drStupidVars in dtStupidVars:
@@ -3191,9 +3145,9 @@ class taskMethods:
                 # PARAMETERS
                 sSQL = "select parameter_xml from task where task_id = '" + sTaskID + "'"
 
-                sParameterXML = uiGlobals.request.db.select_col_noexcep(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                sParameterXML = self.db.select_col_noexcep(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if sParameterXML:
                     xParams = ET.fromstring(sParameterXML)
@@ -3237,9 +3191,9 @@ class taskMethods:
                     " and codeblock_name not in (select codeblock_name from task_step where step_id = '" + sStepID + "')" \
                     " order by codeblock_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get codeblocks for task." + uiGlobals.request.db.error)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get codeblocks for task." + self.db.error)
 
                 sHTML = ""
 
@@ -3267,9 +3221,9 @@ class taskMethods:
                     " where ifnull(conn_name,'') <> ''" \
                     " order by conn_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log("Unable to get connections for task." + uiGlobals.request.db.error)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log("Unable to get connections for task." + self.db.error)
 
                 sHTML = ""
 
@@ -3292,15 +3246,15 @@ class taskMethods:
                     " where task_instance = '" + sInstance + "'" \
                     " and task_status in ('Processing');"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to stop task instance [" + sInstance + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to stop task instance [" + sInstance + "]." + self.db.error)
 
                 sSQL = "update task_instance set task_status = 'Cancelled'" \
                     " where task_instance = '" + sInstance + "'" \
                     " and task_status in ('Submitted','Queued','Staged')"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to stop task instance [" + sInstance + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to stop task instance [" + sInstance + "]." + self.db.error)
 
                 return ""
             else:
@@ -3325,7 +3279,7 @@ class taskMethods:
                     " (select original_task_id from task where task_id = '" + sTaskID + "')" \
                     " and task_status = 'Approved'"
 
-                iCount = uiGlobals.request.db.select_col_noexcep(sSQL)
+                iCount = self.db.select_col_noexcep(sSQL)
                 if not iCount:
                     sMakeDefault = "1"
 
@@ -3335,8 +3289,8 @@ class taskMethods:
                         " default_version = 0" \
                         " where original_task_id =" \
                         " (select original_task_id from (select original_task_id from task where task_id = '" + sTaskID + "') as x)"
-                    if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                        uiCommon.log("Unable to update task [" + sTaskID + "]." + uiGlobals.request.db.error)
+                    if not self.db.tran_exec_noexcep(sSQL):
+                        uiCommon.log("Unable to update task [" + sTaskID + "]." + self.db.error)
 
                     sSQL = "update task set" \
                     " task_status = 'Approved'," \
@@ -3348,10 +3302,10 @@ class taskMethods:
                         " where task_id = '" + sTaskID + "'"
 
                 sSQL = sSQL
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log("Unable to update task [" + sTaskID + "]." + uiGlobals.request.db.error)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log("Unable to update task [" + sTaskID + "]." + self.db.error)
 
-                uiGlobals.request.db.tran_commit()
+                self.db.tran_commit()
 
                 uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Task, sTaskID, "Status", "Development", "Approved")
                 if sMakeDefault == "1":

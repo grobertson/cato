@@ -193,19 +193,19 @@ with open("convert.in", 'r') as f_in:
             
             
             # this will *usually work
-            line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not uiGlobals.request.db.exec_db_noexcep(sSQL):")
+            line = line.replace("if (!dc.sqlExecuteUpdate(sSQL, ref sErr))", "if not self.db.exec_db_noexcep(sSQL):")
             if "!dc.sqlGetSingleString" in line:
-                line = sINDENT + "00000 = uiGlobals.request.db.select_col_noexcep(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+                line = sINDENT + "00000 = self.db.select_col_noexcep(sSQL)\n" + sINDENT + "if self.db.error:\n"
 
             if "!dc.sqlGetDataTable" in line:
-                line = sINDENT + "00000 = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n"
+                line = sINDENT + "00000 = self.db.select_all_dict(sSQL)\n" + sINDENT + "if self.db.error:\n"
 
-            line = line.replace("+ sErr", "+ uiGlobals.request.db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
-            line = line.replace("(sErr)", "(uiGlobals.request.db.error)") # sometimes it's in a log message as the only arg
-            line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not uiGlobals.request.db.tran_exec_noexcep(sSQL):")
+            line = line.replace("+ sErr", "+ self.db.error") # + sErr is *usually used for displaying a db error.  Just switch it.
+            line = line.replace("(sErr)", "(self.db.error)") # sometimes it's in a log message as the only arg
+            line = line.replace("if (!oTrans.ExecUpdate(ref sErr))", "if not self.db.tran_exec_noexcep(sSQL):")
             line = line.replace("oTrans.Command.CommandText", "sSQL") # transactions are different, regular sSQL variable
-            line = line.replace("oTrans.Commit()", "uiGlobals.request.db.tran_commit()")
-            line = line.replace("oTrans.RollBack()", "uiGlobals.request.db.tran_rollback()")
+            line = line.replace("oTrans.Commit()", "self.db.tran_commit()")
+            line = line.replace("oTrans.RollBack()", "self.db.tran_rollback()")
             line = line.replace("DataRow dr in dt.Rows", "dr in dt")
             line = line.replace("dt.Rows.Count > 0", "dt")
             line = line.replace("Step oStep", "oStep")
@@ -219,9 +219,9 @@ with open("convert.in", 'r') as f_in:
 
             # random stuff that may or may not work
             if line.strip() == "if (!dc.sqlGetDataRow(ref dr, sSQL, ref sErr))":
-                line = sINDENT + "dr = uiGlobals.request.db.select_row_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
+                line = sINDENT + "dr = self.db.select_row_dict(sSQL)\n" + sINDENT + "if self.db.error:\n" + sINDENTp4 + "raise Exception(self.db.error)\n"
             if line.strip() == "if (!dc.sqlGetDataTable(ref dt, sSQL, ref sErr))":
-                line = sINDENT + "dt = uiGlobals.request.db.select_all_dict(sSQL)\n" + sINDENT + "if uiGlobals.request.db.error:\n" + sINDENTp4 + "raise Exception(uiGlobals.request.db.error)\n"
+                line = sINDENT + "dt = self.db.select_all_dict(sSQL)\n" + sINDENT + "if self.db.error:\n" + sINDENTp4 + "raise Exception(self.db.error)\n"
 
             # true/false may be problematic, but these should be ok
             line = line.replace(", true", ", True").replace(", false", ", False")

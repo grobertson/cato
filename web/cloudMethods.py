@@ -9,39 +9,35 @@ import cloud
 
 # methods for dealing with clouds and cloud accounts
 
+# the db connection that is used in this module.
+db = None
+
 class cloudMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception, ex:
+        except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
-        except Exception, ex:
+        except Exception as ex:
             raise ex
-            return traceback.format_exc()
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     """ Clouds edit page """
     def wmGetCloudsTable(self):
@@ -173,11 +169,11 @@ class cloudMethods:
             
             #get important data that will be deleted for the log
             sSQL = "select cloud_id, cloud_name, provider from clouds where cloud_id in (" + sDeleteArray + ")"
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
+            rows = self.db.select_all_dict(sSQL)
 
             sSQL = "delete from clouds where cloud_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
             
             #if we made it here, save the logs
             for dr in rows:
@@ -253,9 +249,9 @@ class cloudMethods:
                 " from cloud_account_keypair" \
                 " where account_id = '" + sID + "'"
     
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
     
             if dt:
                 sHTML += "<ul>"
@@ -374,18 +370,18 @@ class cloudMethods:
 
             #  get data that will be deleted for the log
             sSQL = "select account_id, account_name, provider, login_id from cloud_account where account_id in (" + sDeleteArray + ")"
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
+            rows = self.db.select_all_dict(sSQL)
 
 
             sSQL = "delete from cloud_account_keypair where account_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from cloud_account where account_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             #  if we made it here, so save the logs
             for dr in rows:
@@ -445,9 +441,9 @@ class cloudMethods:
                 " where e.account_id = '" + sAccountID + "'" \
                 " and eo.ecosystem_object_type = '" + sObjectType + "'"
 
-            ecosystems = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            ecosystems = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             sHTML = ""
 

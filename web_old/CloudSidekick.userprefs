@@ -1,18 +1,11 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="classes/Globals.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="pages/assetEdit.aspx.cs">
     <Files>
-      <File FileName="pages/awsMethods.asmx.cs" Line="245" Column="6" />
-      <File FileName="classes/UI.cs" Line="886" Column="18" />
-      <File FileName="pages/userEdit.aspx" Line="260" Column="11" />
-      <File FileName="pages/userEdit.aspx.cs" Line="685" Column="1" />
-      <File FileName="classes/Globals.cs" Line="1617" Column="15" />
-      <File FileName="pages/uiMethods.asmx.cs" Line="4850" Column="23" />
-      <File FileName="pages/tagEdit.aspx.cs" Line="58" Column="39" />
-      <File FileName="pages/tagEdit.aspx" Line="63" Column="1" />
-      <File FileName="classes/dataAccess.cs" Line="151" Column="45" />
-      <File FileName="script/site.master.js" Line="64" Column="42" />
-      <File FileName="script/toolbox.js" Line="37" Column="1" />
+      <File FileName="classes/Globals.cs" Line="864" Column="28" />
+      <File FileName="pages/uiMethods.asmx.cs" Line="1400" Column="1" />
+      <File FileName="pages/assetEdit.aspx" Line="348" Column="1" />
+      <File FileName="pages/assetEdit.aspx.cs" Line="697" Column="90" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

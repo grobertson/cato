@@ -21,38 +21,35 @@ import cloud
 # (apparently it does the instantiation itself, or maybe not - it might just look into it.)
 # it expects these classes to have GET and POST methods
 
+# the db connection that is used in this module.
+db = None
+
 class ecoMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def wmGetEcotemplate(self):
         try:
@@ -204,16 +201,16 @@ class ecoMethods:
             
             # can't delete it if it's referenced.
             sSQL = "select count(*) from ecosystem where ecotemplate_id in (" + sDeleteArray + ")"
-            iResults = uiGlobals.request.db.select_col_noexcep(sSQL)
+            iResults = self.db.select_col_noexcep(sSQL)
 
             if not iResults:
                 sSQL = "delete from ecotemplate_action where ecotemplate_id in (" + sDeleteArray + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
                 
                 sSQL = "delete from ecotemplate where ecotemplate_id in (" + sDeleteArray + ")"
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
                 
                 #if we made it here, save the logs
                 uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Ecosystem Templates(s) Deleted [" + sDeleteArray + "]")
@@ -265,9 +262,9 @@ class ecoMethods:
                     " and account_id = '" + uiCommon.GetCookie("selected_cloud_account") + "'" \
                     " order by ecosystem_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     sHTML += "<ul>"
@@ -320,10 +317,10 @@ class ecoMethods:
                  " '" + sOTID + "'" \
                  ")"
     
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
+            if not self.db.exec_db_noexcep(sSQL):
                 # don't raise an error if its just a PK collision.  That just means it's already there.
-                if "Duplicate entry:" not in uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if "Duplicate entry:" not in self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
     
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.EcoTemplate, sEcoTemplateID, "", "Action Added : [" + sActionName + "]")
     
@@ -341,20 +338,20 @@ class ecoMethods:
 
             sSQL = "delete from action_plan where action_id = '" + sActionID + "'"
             sSQL = sSQL
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from action_schedule where action_id = '" + sActionID + "'"
             sSQL = sSQL
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecotemplate_action where action_id = '" + sActionID + "'"
             sSQL = sSQL
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Action [" + sActionID + "] removed from Ecotemplate.")
@@ -379,14 +376,14 @@ class ecoMethods:
                     " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" \
                     " order by ea.category, ea.action_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     for dr in dt:
                         sHTML += " <li class=\"ui-widget-content ui-corner-all action pointer\" id=\"ac_" + dr["action_id"] + "\">"
-                        sHTML += ecoMethods.DrawEcotemplateAction(dr)
+                        sHTML += self.DrawEcotemplateAction(dr)
                         sHTML += " </li>"
             else:
                 uiCommon.log("Unable to get Actions - Missing Ecotemplate ID")
@@ -395,8 +392,7 @@ class ecoMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
     
-    @staticmethod
-    def DrawEcotemplateAction(dr):
+    def DrawEcotemplateAction(self, dr):
         try:
             sHTML = ""
 
@@ -497,9 +493,9 @@ class ecoMethods:
                 sSQL = "select version from task" \
                     " where original_task_id = '" + sOriginalTaskID + "'" \
                     " order by version"
-                dtVer = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    return "Database Error:" + uiGlobals.request.db.error
+                dtVer = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    return "Database Error:" + self.db.error
 
                 if dtVer:
                     for drVer in dtVer:
@@ -567,13 +563,13 @@ class ecoMethods:
                     " and t.default_version = 1" \
                     " where ea.action_id = '" + sActionID + "'"
 
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dr = self.db.select_row_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 # GetDataRow returns a message if there are no rows...
                 if dr:
-                    sHTML = ecoMethods.DrawEcotemplateAction(dr)
+                    sHTML = self.DrawEcotemplateAction(dr)
             else:
                 uiCommon.log("Unable to get Actions - Missing Ecotemplate ID")
 
@@ -605,9 +601,9 @@ class ecoMethods:
                             " action_name = '" + sValue + "'" \
                             " and ecotemplate_id = '" + sEcoTemplateID + "'"
 
-                    sValueExists = uiGlobals.request.db.select_col_noexcep(sSQL)
-                    if uiGlobals.request.db.error:
-                        uiCommon.log("Unable to check for existing names [" + sEcoTemplateID + "]." + uiGlobals.request.db.error)
+                    sValueExists = self.db.select_col_noexcep(sSQL)
+                    if self.db.error:
+                        uiCommon.log("Unable to check for existing names [" + sEcoTemplateID + "]." + self.db.error)
 
                     if sValueExists:
                         return sValue + " exists, please choose another value."
@@ -623,8 +619,8 @@ class ecoMethods:
 
                 sSQL = "update ecotemplate_action set " + sSetClause + " where action_id = '" + sActionID + "'"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    uiCommon.log("Unable to update Ecotemplate Action [" + sActionID + "]." + uiGlobals.request.db.error)
+                if not self.db.exec_db_noexcep(sSQL):
+                    uiCommon.log("Unable to update Ecotemplate Action [" + sActionID + "]." + self.db.error)
 
                 uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.EcoTemplate, sEcoTemplateID, sActionID, "Action updated: [" + sSetClause + "]")
             else:
@@ -658,7 +654,7 @@ class ecoMethods:
             sStormFileJSON = ""
             bIsValid = False
             
-            bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = ecoMethods.GetEcotemplateStormJSON(sEcoTemplateID)
+            bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = self.GetEcotemplateStormJSON(sEcoTemplateID)
             
             sb = []
             
@@ -678,8 +674,7 @@ class ecoMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
-    @staticmethod
-    def GetEcotemplateStormJSON(sEcoTemplateID): 
+    def GetEcotemplateStormJSON(self, sEcoTemplateID): 
         bIsValid = False
         sErr = ""
         sFileType = ""
@@ -692,9 +687,9 @@ class ecoMethods:
                     " from ecotemplate" \
                     " where ecotemplate_id = '" + sEcoTemplateID + "'"
 
-                dr = uiGlobals.request.db.select_row_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dr = self.db.select_row_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
                 
                 # now, we'll validate the json here as a safety precaution, but we're sending the whole storm file to the client
                 # where the parameters and description will be parsed out and displayed.
@@ -876,30 +871,30 @@ class ecoMethods:
             sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
 
             sSQL = "delete from action_plan where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from action_schedule where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from object_registry where object_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecosystem_object where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecosystem_log where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from ecosystem where ecosystem_id in (" + sDeleteArray + ")"
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
             
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
                 
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Ecosystem, "", "", "Ecosystem(s) Deleted [" + sDeleteArray + "]")
 
@@ -930,9 +925,9 @@ class ecoMethods:
                     " and category != 'all'" \
                     " order by category"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     for dr in dt:
@@ -979,9 +974,9 @@ class ecoMethods:
                     " ) foo" \
                     " order by action_name"
 
-                dt = uiGlobals.request.db.select_all_dict(sSQL)
-                if uiGlobals.request.db.error:
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                dt = self.db.select_all_dict(sSQL)
+                if self.db.error:
+                    uiCommon.log_nouser(self.db.error, 0)
 
                 if dt:
                     # i = 0
@@ -1076,9 +1071,9 @@ class ecoMethods:
             
             # status and parameters
             sSQL = "select storm_status, storm_parameter_xml, last_update_dt from ecosystem where ecosystem_id = '" + sEcosystemID + "'"
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dr = self.db.select_row_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
 
             sStormStatus = ("" if not dr["storm_status"] else dr["storm_status"])
             sStormParameterXML = ("" if not dr["storm_parameter_xml"] else dr["storm_parameter_xml"])
@@ -1090,9 +1085,9 @@ class ecoMethods:
                     " where ecosystem_id = '" + sEcosystemID + "'" \
                     " order by ecosystem_log_id desc"
             
-            dtLog = uiGlobals.request.db.select_all(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dtLog = self.db.select_all(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             
             # output
             sSQL = "select output_key, output_desc, output_value" \
@@ -1100,9 +1095,9 @@ class ecoMethods:
                     " where ecosystem_id = '" + sEcosystemID + "'" \
                     " order by output_key"
             
-            dtOut = uiGlobals.request.db.select_all(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dtOut = self.db.select_all(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             
             
             # build the json
@@ -1177,10 +1172,10 @@ class ecoMethods:
                 " join task t on s.task_id = t.task_id" \
                 " left outer join ecotemplate_action a on s.action_id = a.action_id" \
                 " where s.ecosystem_id = '" + sEcosystemID + "'"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             if dt:
                 for dr in dt:
@@ -1232,10 +1227,10 @@ class ecoMethods:
                 " left outer join ecotemplate_action ea on ap.action_id = ea.action_id" \
                 " where ap.ecosystem_id = '" + sEcosystemID + "'" \
                 " order by ap.run_on_dt, ea.action_name, t.task_name"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             if dt:
                 for dr in dt:
@@ -1295,9 +1290,9 @@ class ecoMethods:
                 " group by eo.ecosystem_object_type" \
                 " order by eo.ecosystem_object_type"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             if dt:
                 for dr in dt:
@@ -1362,9 +1357,9 @@ class ecoMethods:
                 " where eo.ecosystem_id ='" + sEcosystemID + "'" \
                 " and eo.ecosystem_object_type = '" + sType + "'"
 
-            dtClouds = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dtClouds = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
 
             sSQL = "select ecosystem_object_id, key_name, value " \
@@ -1372,9 +1367,9 @@ class ecoMethods:
                 " where ecosystem_id ='" + sEcosystemID + "'" \
                 " order by key_name"
 
-            dtTags = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dtTags = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             if dtClouds:
                 for drCloud in dtClouds:
@@ -1388,9 +1383,9 @@ class ecoMethods:
                         " and eo.cloud_id = '" + sCloudID + "'" \
                         " order by eo.ecosystem_object_type"
     
-                    dtObjects = uiGlobals.request.db.select_all_dict(sSQL)
-                    if uiGlobals.request.db.error:
-                        return uiGlobals.request.db.error
+                    dtObjects = self.db.select_all_dict(sSQL)
+                    if self.db.error:
+                        return self.db.error
     
     
                     if dtObjects:
@@ -1446,8 +1441,8 @@ class ecoMethods:
 
             
             # at this point, sErr will have any issues that occured doing the AWS API call.  display it.
-            if uiGlobals.request.db.error:
-                sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try: again.<!--" + uiGlobals.request.db.error + "--></span>"
+            if self.db.error:
+                sHTML += "<span class='ui-state-highlight'>An issue occured while communicating with the Cloud Provider.  Click the refresh button above to try: again.<!--" + self.db.error + "--></span>"
 
             return sHTML
         except Exception:
@@ -1579,19 +1574,19 @@ class ecoMethods:
                 " and ecosystem_object_id ='" + sObjectID + "'" \
                 " and ecosystem_object_type ='" + sObjectType + "'"
 
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             sSQL = "delete from ecosystem_object_tag" \
                 " where ecosystem_id ='" + sEcosystemID + "'" \
                 " and ecosystem_object_id ='" + sObjectID + "'"
 
-            if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
             
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
     
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Ecosystem, "", "", "Object [" + sObjectID + "] removed from Ecosystem [" + sEcosystemID + "]")
@@ -1606,7 +1601,7 @@ class ecoMethods:
             sEcoTemplateID = uiCommon.getAjaxArg("sEcoTemplateID")
 
             if sEcoTemplateID:
-                bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = ecoMethods.GetEcotemplateStormJSON(sEcoTemplateID)
+                bIsValid, sErr, sFileType, sURL, sFileDesc, sStormFileJSON = self.GetEcotemplateStormJSON(sEcoTemplateID)
                 
                 sb = []
                 
@@ -1722,9 +1717,9 @@ class ecoMethods:
             
             # 1:
             sKey = uiCommon.GetSessionUserID()
-            sPW = uiGlobals.request.db.select_col_noexcep("select user_password from users where user_id = '%s'" % sKey)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            sPW = self.db.select_col_noexcep("select user_password from users where user_id = '%s'" % sKey)
+            if self.db.error:
+                return self.db.error
             
             sPW = catocommon.cato_decrypt(sPW)
             
@@ -1783,11 +1778,11 @@ class ecoMethods:
                      " now() " \
                      ")"
 
-                if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                    if uiGlobals.request.db.error == "key_violation":
+                if not self.db.exec_db_noexcep(sSQL):
+                    if self.db.error == "key_violation":
                         """do nothing"""
                     else:
-                        uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                        uiCommon.log_nouser(self.db.error, 0)
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.Ecosystem, sEcosystemID, "", "Objects Added : {" + sObjectIDs + "}")
 

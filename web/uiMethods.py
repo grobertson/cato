@@ -35,13 +35,8 @@ class login:
 #            policy = settings.security()
 #            print "@" + policy.LoginMessage
         
-
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
             in_name = uiGlobals.web.input(username=None).username
             in_pwd = uiGlobals.web.input(password=None).password
-    
 
             u = user.User()
             if not u.Authenticate(in_name, in_pwd):
@@ -71,10 +66,6 @@ class login:
             raise uiGlobals.web.seeother('/home')
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
-        finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
 
 class logout:        
     def GET(self):
@@ -87,35 +78,33 @@ class logout:
 class uiMethods:
     #the GET and POST methods here are hooked by web.py.
     #whatever method is requested, that function is called.
+
+    # the db connection that is used in this module.
+    db = None
+    
     def GET(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def POST(self, method):
         try:
-            # EVERY new HTTP request sets up the "request" in uiGlobals.
-            # ALL functions chained from this HTTP request handler share that request
-            uiGlobals.request = uiGlobals.Request(catocommon.new_conn())
+            self.db = catocommon.new_conn()
             methodToCall = getattr(self, method)
             result = methodToCall()
             return result
         except Exception as ex:
             raise ex
         finally:
-            if uiGlobals.request:
-                if uiGlobals.request.db.conn.socket:
-                    uiGlobals.request.db.close()
+            if self.db.conn.socket:
+                self.db.close()
 
     def wmGetCloudAccountsForHeader(self):
         try:
@@ -150,8 +139,8 @@ class uiMethods:
         if uid and ip:
             sSQL = "update user_session set heartbeat = now() where user_id = '" + uid + "' \
                 and address = '" + ip + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         return ""
     
     def wmGetMenu(self):
@@ -187,7 +176,7 @@ class uiMethods:
                 " load_value as LoadValue, platform, hostname" \
                 " from application_registry " \
                 " order by component, master desc"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = self.db.select_all(sSQL)
             for dr in rows:
                 sProcessHTML += "<tr>" \
                     "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
@@ -205,7 +194,7 @@ class uiMethods:
                 " from user_session us join users u on u.user_id = us.user_id " \
                 " where timestampdiff(MINUTE,us.heartbeat, now()) < 10" \
                 " order by us.heartbeat desc"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = self.db.select_all(sSQL)
             for dr in rows:
                 sUserHTML += "<tr>" \
                     "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
@@ -222,7 +211,7 @@ class uiMethods:
                 " convert(date_time_entered, CHAR(20)) as entered_dt, convert(date_time_completed, CHAR(20)) as completed_dt" \
                 " from message" \
                 " order by msg_id desc limit 100"
-            rows = uiGlobals.request.db.select_all(sSQL)
+            rows = self.db.select_all(sSQL)
             for dr in rows:
                 sMessageHTML += "<tr>" \
                     "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
@@ -280,9 +269,9 @@ class uiMethods:
                 " limit " + (sRecords if sRecords else "100")
                 
             sLog = ""
-            rows = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return "{ \"error\" : \"Unable to get log. %s\" }" % (uiGlobals.request.db.error)
+            rows = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return "{ \"error\" : \"Unable to get log. %s\" }" % (self.db.error)
             if rows:
                 i = 1
                 sb = []
@@ -307,9 +296,9 @@ class uiMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmGetDatabaseTime(self):
-        sNow = uiGlobals.request.db.select_col_noexcep("select now()")
-        if uiGlobals.request.db.error:
-            return uiGlobals.request.db.error
+        sNow = self.db.select_col_noexcep("select now()")
+        if self.db.error:
+            return self.db.error
         
         if sNow:
             return str(sNow)
@@ -332,9 +321,9 @@ class uiMethods:
                 (" and ap.action_id = '" + sActionID + "'" if sActionID else "") + \
                 (" and ap.ecosystem_id = '" + sEcosystemID + "'" if sEcosystemID else "") + \
                 " order by ap.run_on_dt"
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             else:
                 if dt:
                     for dr in dt:
@@ -391,9 +380,9 @@ class uiMethods:
                 " left outer join ecosystem e on s.ecosystem_id = e.ecosystem_id" \
                 " where s.task_id = '" + sTaskID + "'" + \
                 (" and e.ecosystem_id = '" +sEcosystemID + "'" if sEcosystemID else "")
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
             else:
                 if dt:
                     for dr in dt:
@@ -444,9 +433,9 @@ class uiMethods:
         sSQL = "select schedule_id, months, days, hours, minutes, days_or_weeks, label" \
             " from action_schedule" \
             " where schedule_id = '" + sScheduleID + "'"
-        dt = uiGlobals.request.db.select_all_dict(sSQL)
-        if uiGlobals.request.db.error:
-            uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+        dt = self.db.select_all_dict(sSQL)
+        if self.db.error:
+            uiCommon.log_nouser(self.db.error, 0)
 
         if dt:
             for dr in dt:
@@ -466,7 +455,7 @@ class uiMethods:
                 sb.append("\"sDaysOrWeeks\" : \"%s\"" % sDW)
                 sb.append("}")
         else:
-            uiCommon.log("Unable to find details for Recurring Action Plan. " + uiGlobals.request.db.error + " ScheduleID [" + sScheduleID + "]")
+            uiCommon.log("Unable to find details for Recurring Action Plan. " + self.db.error + " ScheduleID [" + sScheduleID + "]")
 
         return "".join(sb)
     
@@ -479,12 +468,12 @@ class uiMethods:
                 return "Missing Schedule ID."
     
             sSQL = "delete from action_plan where schedule_id = '" + sScheduleID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             sSQL = "delete from action_schedule where schedule_id = '" + sScheduleID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
     
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Schedule [" + sScheduleID + "] deleted.")
@@ -503,8 +492,8 @@ class uiMethods:
     
             sSQL = "delete from action_plan where plan_id = " + iPlanID
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
             #  if we made it here, so save the logs
             uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.EcoTemplate, "", "", "Action Plan [" + iPlanID + "] deleted.")
@@ -547,8 +536,8 @@ class uiMethods:
                 " 'manual'" \
                 ")"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -600,8 +589,8 @@ class uiMethods:
                 + (iDebugLevel if iDebugLevel > "-1" else "null") + \
                 ")"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -633,8 +622,8 @@ class uiMethods:
                 " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
                 " where plan_id = " + iPlanID
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -669,8 +658,8 @@ class uiMethods:
 
             # whack all plans for this schedule, it's been changed
             sSQL = "delete from action_plan where schedule_id = '" + sScheduleID + "'"
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
 
 
             # figure out a label
@@ -688,8 +677,8 @@ class uiMethods:
                 " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
                 " where schedule_id = '" + sScheduleID + "'"
 
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -750,10 +739,10 @@ class uiMethods:
                 ifnull(security_answer, '') as security_question
                 from users
                 where user_id = '%s'""" % user_id
-            dr = uiGlobals.request.db.select_row_dict(sSQL)
-            if uiGlobals.request.db.error:
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                raise Exception(uiGlobals.request.db.error)
+            dr = self.db.select_row_dict(sSQL)
+            if self.db.error:
+                uiCommon.log_nouser(self.db.error, 0)
+                raise Exception(self.db.error)
             else:
                 # here's the deal - we aren't even returning the 'local' settings if the type is ldap.
                 if dr["authentication_type"] == "local":
@@ -795,9 +784,9 @@ class uiMethods:
 
             sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
 
-            if not uiGlobals.request.db.exec_db_noexcep(sql):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            if not self.db.exec_db_noexcep(sql):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "My Account settings updated.")
                 
@@ -889,9 +878,9 @@ class uiMethods:
                     " from tags" \
                     " order by tag_name"
 
-            dt = uiGlobals.request.db.select_all_dict(sSQL)
-            if uiGlobals.request.db.error:
-                return uiGlobals.request.db.error
+            dt = self.db.select_all_dict(sSQL)
+            if self.db.error:
+                return self.db.error
 
             if dt:                
                 sHTML += "<ul>"
@@ -930,8 +919,8 @@ class uiMethods:
                 (object_id, object_type, tag_name)
                 values ('%s', '%d', '%s')""" % (sObjectID, iObjectType, sTagName)
     
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
     
             uiCommon.WriteObjectChangeLog(iObjectType, sObjectID, "", "Tag [" + sTagName + "] added.")
     
@@ -956,8 +945,8 @@ class uiMethods:
     
             sSQL = """delete from object_tags where object_id = '%s' and tag_name = '%s'""" & (sObjectID, sTagName)
     
-            if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
     
             uiCommon.WriteObjectChangeLog(iObjectType, sObjectID, "", "Tag [" + sTagName + "] removed.")
     
@@ -1053,9 +1042,9 @@ class uiMethods:
             
             sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
 
-            if not uiGlobals.request.db.exec_db_noexcep(sql):
-                uiCommon.log_nouser(uiGlobals.request.db.error, 0)
-                return uiGlobals.request.db.error
+            if not self.db.exec_db_noexcep(sql):
+                uiCommon.log_nouser(self.db.error, 0)
+                return self.db.error
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "User updated.")
                
@@ -1064,12 +1053,12 @@ class uiMethods:
                 if args["Groups"]:
                     # now, lets do any groups that were passed in. 
                     sql = "delete from object_tags where object_id = '%s'" % user_id
-                    if not uiGlobals.request.db.exec_db_noexcep(sql):
-                        uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                    if not self.db.exec_db_noexcep(sql):
+                        uiCommon.log_nouser(self.db.error, 0)
                     for tag in args["Groups"]:
                         sql = "insert object_tags (object_type, object_id, tag_name) values (1, '%s','%s')" % (user_id, tag)
-                        if not uiGlobals.request.db.exec_db_noexcep(sql):
-                            uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                        if not self.db.exec_db_noexcep(sql):
+                            uiCommon.log_nouser(self.db.error, 0)
             
             return ""
         except Exception:
@@ -1129,17 +1118,17 @@ class uiMethods:
             if now:
                 sSQL = "delete from users where user_id in (%s)" % "'%s'" % "','".join(now)
                 print sSQL
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
 
             #  flag the others...
             if later:
                 sSQL = "update users set status = 86 where user_id in (%s)" % "'%s'" % "','".join(later)
                 print sSQL
-                if not uiGlobals.request.db.tran_exec_noexcep(sSQL):
-                    uiCommon.log_nouser(uiGlobals.request.db.error, 0)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
 
-            uiGlobals.request.db.tran_commit()
+            self.db.tran_commit()
 
             return "{\"result\" : \"success\"}"
         except Exception:

@@ -75,3 +75,5 @@ web/convert.in
 logfiles/cato_poller.log
 
 web/static/storm.js
+
+web/static/script/storm.js
