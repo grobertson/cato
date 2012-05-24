@@ -73,3 +73,5 @@ web/static/_umenu.html
 web/convert.in
 
 logfiles/cato_poller.log
+
+web/static/storm.js
