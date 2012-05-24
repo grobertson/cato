@@ -70,7 +70,10 @@ proc get_ecosystem_objects {command} {
 
 proc aws_get_result_var {result path} {
 	set proc_name aws_get_result_var
-	set xmldoc [dom parse -simple $result]
+	if [catch {set xmldoc [dom parse -simple $result]} result] {
+        output "Variable is not XML, $result, continuing"
+        return ""
+    }
 	set root [$xmldoc documentElement]
 	set value [$root selectNodes string($path)]
 	return $value	
@@ -216,11 +219,9 @@ proc get_eco_tags {var_name params} {
 	set sql "select ecosystem_object_id from ecosystem_object_tag where ecosystem_id = '$::ECOSYSTEM_ID'"
 	set msg "DescribeTags $params"
 	foreach {a b c d} $params {
-		#if {[string match "Filter.*.Name" $a]} {
-		#	set sql "$sql and key_name = '$d'"
-		#} elseif {[string match "Filter.*.Value" $a]} {
-		#	set sql "$sql and value = '$d'"
-		#}
+        if {"key" eq $b && $d eq "instance"} {
+            continue
+        }
 		if {"key" == "$b"} {
 			set sql "$sql and key_name = '$d'"
 		} elseif {"value" == "$b"} {
