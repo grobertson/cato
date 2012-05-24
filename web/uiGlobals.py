@@ -11,30 +11,12 @@ config = None
 debuglevel = 2 #defaults to 2
 
 request = None
-
 ConnectionTypes = ["ssh - ec2", "ssh", "telnet", "mysql", "oracle", "sqlserver", "sybase", "informix"]
    
 class Request(object):
-    db = None
-    Function = ""
-    Messages = []
-
     def __init__(self, db):
         self.db = db
-        self.Function = ""
-        self.Messages = []
-    
-    def DumpMessages(self):
-        s = ""
         
-        if self.Messages:
-            s = (self.Function if self.Function else "Unknown") + ":: "
-            for msg in self.Messages:
-                s += "\n%s" % msg
-        
-        return s
-        
-    
 class SecurityLogTypes(object):
     Object = "Object"
     Security = "Security"

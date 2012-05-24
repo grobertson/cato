@@ -110,7 +110,7 @@ def SetCookie(sCookie, sValue):
         uiGlobals.web.setcookie(sCookie, sValue)
     except Exception:
         log_nouser("Warning: Attempt to set cookie [%s] failed." % sCookie, 2)
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        log_nouser(traceback.format_exc(), 0)
 
 def NewGUID():
     return str(uuid.uuid1())
@@ -217,8 +217,6 @@ def FixBreaks(sInput):
         return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
 
 def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
-    uiGlobals.request.Function = __name__ + "." + sys._getframe().f_code.co_name
-    
     sTrimmedLog = TickSlash(LogMessage).strip()
     if sTrimmedLog:
         if len(sTrimmedLog) > 7999:
@@ -226,7 +224,7 @@ def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
     sSQL = """insert into user_security_log (log_type, action, user_id, log_dt, object_type, object_id, log_msg)
         values ('%s', '%s', '%s', now(), %d, '%s', '%s')""" % (LogType, Action, GetSessionUserID(), ObjectType, ObjectID, sTrimmedLog)
     if not uiGlobals.request.db.exec_db_noexcep(sSQL):
-        uiGlobals.request.Messages.append(uiGlobals.request.db.error)
+        log_nouser(uiGlobals.request.db.error, 0)
 
 def WriteObjectAddLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
@@ -266,7 +264,7 @@ def PrepareAndEncryptParameterXML(sParameterXML):
         if sParameterXML:
             xDoc = ET.fromstring(sParameterXML)
             if xDoc is None:
-                uiGlobals.request.Messages.append("Parameter XML data is invalid.")
+                log("Parameter XML data is invalid.")
     
             # now, all we're doing here is:
             #  a) encrypting any new values
@@ -286,7 +284,7 @@ def PrepareAndEncryptParameterXML(sParameterXML):
         else:
             return ""
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        log_nouser(traceback.format_exc(), 0)
 
 def GenerateScheduleLabel(sMo, sDa, sHo, sMi, sDW):
     sDesc = ""
@@ -398,7 +396,7 @@ def GetSessionUserID():
         else:
             ForceLogout("Server Session has expired (1). Please log in again.")
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        log_nouser(traceback.format_exc(), 0)
 
 def GetSessionUserRole():
     try:
@@ -408,7 +406,7 @@ def GetSessionUserRole():
         else:
             ForceLogout("Server Session has expired (2). Please log in again.")
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        log_nouser(traceback.format_exc(), 0)
 
 def GetSessionObject(category, key):
     try:
@@ -429,7 +427,7 @@ def GetSessionObject(category, key):
         
         return ""
     except Exception:
-        uiGlobals.request.Messages.append(traceback.format_exc())
+        log_nouser(traceback.format_exc(), 0)
 
 def SetSessionObject(key, obj, category=""):
     if category:

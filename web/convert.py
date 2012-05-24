@@ -254,8 +254,8 @@ with open("convert.in", 'r') as f_in:
             line = line.replace("ref ", "0000BYREF_ARG0000")
     
             # the new way of doing exceptions - not raising them, appending them to an output object
-            line = line.replace("raise ex", "uiGlobals.request.Messages.append(traceback.format_exc())")
-            line = line.replace("raise Exception(", "uiGlobals.request.Messages.append(")
+            line = line.replace("raise ex", "uiCommon.log_nouser(traceback.format_exc(), 0)")
+            line = line.replace("raise Exception(", "uiCommon.log(")
             
     
             # if this is a function declaration and it's a "wm" web method, 

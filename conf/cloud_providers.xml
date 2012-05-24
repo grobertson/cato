@@ -13,18 +13,18 @@
 			<products>
 				<product name="ec2" label="EC2" api_version="2011-12-01" api_url_prefix="ec2.">
 					<object_types>
-						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
+						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="//addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
 							<property name="Domain" label="" xpath="domain" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
+						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="//imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
 							<property name="ImageId" label="" xpath="imageId" id_field="1" short_list="1" sort_order="1" />
 							<property name="ImageType" label="" xpath="imageType" short_list="1" sort_order="3" />
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
 							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
-						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="reservationSet/item/instancesSet/item" request_record_filter="InstanceId">
+						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="//reservationSet/item/instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Architecture" label="" xpath="architecture" short_list="1" sort_order="9" />
 							<property name="DNS Name" label="" xpath="dnsName" short_list="1" sort_order="1" />
@@ -37,15 +37,15 @@
 							<property name="Status" label="" xpath="instanceState/name" has_icon="1" short_list="1" sort_order="2" />
 							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
-						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="keySet/item">
+						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="//keySet/item">
 							<property name="KeyName" label="" xpath="keyName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Fingerprint" label="" xpath="keyFingerprint" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="securityGroupInfo/item">
+						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
 							<property name="GroupName" label="" xpath="groupName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
+						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="//snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Description" label="" xpath="description" short_list="1" sort_order="5" />
 							<property name="Status" label="" xpath="status" has_icon="1" short_list="1" sort_order="2" />
@@ -53,13 +53,13 @@
 							<property name="VolumeSize" label="" xpath="volumeSize" short_list="1" sort_order="4" />
 							<property name="Tags" label="" xpath="tagSet" has_icon="0" short_list="0" sort_order="10" value_is_xml="1" />
 						</type>
-						<type id="aws_ec2_spotinstance" label="EC2 Spot Instances" api_call="DescribeSpotInstanceRequests" xml_record_xpath="spotInstanceRequestSet/item">
+						<type id="aws_ec2_spotinstance" label="EC2 Spot Instances" api_call="DescribeSpotInstanceRequests" xml_record_xpath="//spotInstanceRequestSet/item">
 							<property name="ImageID" label="" xpath="launchSpecification/imageId" id_field="1" short_list="1" sort_order="2" />
 							<property name="InstanceID" label="" xpath="instanceId" short_list="1" sort_order="4" />
 							<property name="RequestID" label="" xpath="spotInstanceRequestId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="state" has_icon="1" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="volumeSet/item">
+						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="//volumeSet/item">
 							<property name="VolumeId" label="" xpath="volumeId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Device" label="" xpath="attachmentSet/item/device" short_list="1" sort_order="6" />
 							<property name="Size" label="" xpath="size" short_list="1" sort_order="5" />
@@ -71,12 +71,12 @@
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="iam." api_version="2010-05-08">
 					   <object_types>
-							   <type id="aws_iam_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="ListGroupsResult/Groups/member">
+							   <type id="aws_iam_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
 									   <property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
 									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
 									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
 							   </type>
-							   <type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="ListUsersResult/Users/member">
+							   <type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
 									   <property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
 									   <property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
 									   <property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
@@ -85,7 +85,7 @@
 			   </product>
 			   <product name="autoscaling" label="Auto Scaling" api_url_prefix="autoscaling." api_version="2010-08-01">
 					<object_types>
-						<type id="aws_as_group" label="Auto Scaling Groups" api_call="DescribeAutoScalingGroups" xml_record_xpath="AutoScalingGroups/member">
+						<type id="aws_as_group" label="Auto Scaling Groups" api_call="DescribeAutoScalingGroups" xml_record_xpath="//AutoScalingGroups/member">
 							<property name="GroupName" label="" xpath="AutoScalingGroupName" id_field="1" short_list="1" sort_order="1" />
 							<property name="DesiredCapacity" label="" xpath="DesiredCapacity" short_list="1" sort_order="2" />
 							<property name="MaxSize" label="" xpath="MaxSize" short_list="1" sort_order="3" />
@@ -94,7 +94,7 @@
 				</product>
 				<product name="elasticloadbalancing" label="ELB" api_url_prefix="elasticloadbalancing." api_version="2011-04-05">
 					<object_types>
-						<type id="aws_elb_balancer" label="Elastic Load Balancers" api_call="DescribeLoadBalancers" xml_record_xpath="LoadBalancerDescriptions/member">
+						<type id="aws_elb_balancer" label="Elastic Load Balancers" api_call="DescribeLoadBalancers" xml_record_xpath="//LoadBalancerDescriptions/member">
 							<property name="Name" label="" xpath="LoadBalancerName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Created Time" label="" xpath="CreatedTime" short_list="1" sort_order="3" />
 							<property name="DNS Name" label="" xpath="DNSName" short_list="1" sort_order="2" />
@@ -103,7 +103,7 @@
 				</product>
 				<product name="elasticmapreduce" label="EMR" api_url_prefix="elasticmapreduce." api_version="2009-03-31">
 					<object_types>
-						<type id="aws_emr_jobflow" label="Elastic MapReduce Jobflow" api_call="DescribeJobFlows" xml_record_xpath="jobFlows/member">
+						<type id="aws_emr_jobflow" label="Elastic MapReduce Jobflow" api_call="DescribeJobFlows" xml_record_xpath="//jobFlows/member">
 							<property name="JobFlowId" label="" xpath="JobFlowId" id_field="1" short_list="1" sort_order="1" />
 							<property name="LogUri" label="" xpath="LogUri" short_list="1" sort_order="3" />
 							<property name="Name" label="" xpath="Name" short_list="1" sort_order="2" />
@@ -112,14 +112,14 @@
 				</product>
 				<product name="rds" label="RDS" api_url_prefix="rds." api_version="2011-04-01">
 					<object_types>
-						<type id="aws_rds_instance" label="RDS Instances" api_call="DescribeDBInstances" xml_record_xpath="DBInstances/DBInstance">
+						<type id="aws_rds_instance" label="RDS Instances" api_call="DescribeDBInstances" xml_record_xpath="//DBInstances/DBInstance">
 							<property name="ID" label="" xpath="DBInstanceIdentifier" id_field="1" short_list="1" sort_order="1" />
 							<property name="Address" label="" xpath="Endpoint/Address" short_list="1" sort_order="4" />
 							<property name="Name" label="" xpath="DBName" short_list="1" sort_order="2" />
 							<property name="Port" label="" xpath="Endpoint/Port" short_list="1" sort_order="5" />
 							<property name="Status" label="" xpath="DBInstanceStatus" has_icon="1" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_rds_snapshot" label="RDS Snapshots" api_call="DescribeDBSnapshots" xml_record_xpath="DBSnapshots/DBSnapshot">
+						<type id="aws_rds_snapshot" label="RDS Snapshots" api_call="DescribeDBSnapshots" xml_record_xpath="//DBSnapshots/DBSnapshot">
 							<property name="SnapshotID" label="" xpath="DBSnapshotIdentifier" id_field="1" short_list="1" sort_order="1" />
 							<property name="AllocatedStorage" label="" xpath="AllocatedStorage" short_list="1" sort_order="5" />
 							<property name="Engine" label="" xpath="Engine" short_list="1" sort_order="4" />
@@ -132,14 +132,14 @@
 				</product>
 				<product name="sdb" label="SDB" api_url_prefix="sdb." api_version="2009-04-14">
 					<object_types>
-						<type id="aws_sdb_domain" label="SDB Domains" api_call="ListDomains" xml_record_xpath="ListDomainsResult">
+						<type id="aws_sdb_domain" label="SDB Domains" api_call="ListDomains" xml_record_xpath="//ListDomainsResult">
 							<property name="DomainName" label="" xpath="DomainName" id_field="1" short_list="1" sort_order="1" />
 						</type>
 					</object_types>
 				</product>
 				<product name="s3" label="S3" api_url_prefix="s3-" api_version="2006-03-01" api_uri="/">
 					<object_types>
-						<type id="aws_s3_bucket" label="S3 Bucket" api_call="" xml_record_xpath="Buckets/Bucket">
+						<type id="aws_s3_bucket" label="S3 Bucket" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
 							<property name="CreationDate" label="" xpath="CreationDate" short_list="1" sort_order="2" />
 						</type>
@@ -151,17 +151,17 @@
 			<products>
 				<product name="eucalyptus" label="Eucalyptus" type="compute" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Eucalyptus/">
 					<object_types>
-						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
+						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="//addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
 							<property name="Domain" label="" xpath="domain" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
+						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="//imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
 							<property name="ImageId" label="" xpath="imageId" id_field="1" short_list="1" sort_order="1" />
 							<property name="ImageType" label="" xpath="imageType" short_list="1" sort_order="3" />
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="instancesSet/item" request_record_filter="InstanceId">
+						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="//instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Architecture" label="" xpath="architecture" short_list="1" sort_order="9" />
 							<property name="DNS Name" label="" xpath="dnsName" short_list="1" sort_order="1" />
@@ -173,20 +173,20 @@
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="instanceState/name" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="keySet/item">
+						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="//keySet/item">
 							<property name="KeyName" label="" xpath="keyName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Fingerprint" label="" xpath="keyFingerprint" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="securityGroupInfo/item">
+						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
 							<property name="GroupName" label="" xpath="groupName" id_field="1" short_list="1" sort_order="2" />
 							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
+						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="//snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="status" has_icon="1" short_list="1" sort_order="2" />
 							<property name="VolumeId" label="" xpath="volumeId" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="volumeSet/item">
+						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="//volumeSet/item">
 							<property name="VolumeId" label="" xpath="volumeId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Device" label="" xpath="attachmentSet/item/device" short_list="1" sort_order="6" />
 							<property name="Size" label="" xpath="size" short_list="1" sort_order="5" />
@@ -197,12 +197,12 @@
 				</product>
 				<product name="iam" label="IAM" type="identity" api_url_prefix="" api_version="2010-05-08" api_uri="/services/Euare/">
 					<object_types>
-						<type id="aws_iam_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="ListGroupsResult/Groups/member">
+						<type id="aws_iam_group" label="IAM User Group" api_call="ListGroups" xml_record_xpath="//ListGroupsResult/Groups/member">
 							<property name="GroupName" label="" xpath="GroupName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
 							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="ListUsersResult/Users/member">
+						<type id="aws_iam_user" label="IAM User" api_call="ListUsers" xml_record_xpath="//ListUsersResult/Users/member">
 							<property name="UserName" label="" xpath="UserName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Path" label="" xpath="Path" short_list="1" sort_order="2" />
 							<property name="Arn" label="" xpath="Arn" short_list="1" sort_order="3" />
@@ -212,7 +212,7 @@
 				<!-- NOTE: the api_uri for walrus is required, unlike S3.  Walrus uses this as a required path component when calculating the signature.-->
 				<product name="walrus" label="Walrus" type="storage" api_url_prefix="" api_version="2006-03-01" api_uri="/services/Walrus/">
 					<object_types>
-						<type id="aws_s3_bucket" label="Walrus Bucket" api_call="" xml_record_xpath="Buckets/Bucket">
+						<type id="aws_s3_bucket" label="Walrus Bucket" api_call="" xml_record_xpath="//Buckets/Bucket">
 							<property name="Name" label="" xpath="Name" id_field="1" short_list="1" sort_order="1" />
 							<property name="CreationDate" label="" xpath="CreationDate" short_list="1" sort_order="2" />
 						</type>
@@ -224,17 +224,17 @@
 			<products>
 				<product name="compute" label="Compute" type="compute" api_version="2010-08-31" api_url_prefix="" api_uri="/services/Cloud">
 					<object_types>
-						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="addressesSet/item">
+						<type id="aws_ec2_address" label="Elastic IP Addresses" api_call="DescribeAddresses" xml_record_xpath="//addressesSet/item">
 							<property name="PublicIp" label="" xpath="publicIp" id_field="1" short_list="1" sort_order="1" />
 							<property name="Domain" label="" xpath="domain" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
+						<type id="aws_ec2_image" label="EC2 Images" api_call="DescribeImages" xml_record_xpath="//imagesSet/item" request_group_filter="Owner=self" request_record_filter="ImageId">
 							<property name="ImageId" label="" xpath="imageId" id_field="1" short_list="1" sort_order="1" />
 							<property name="ImageType" label="" xpath="imageType" short_list="1" sort_order="3" />
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="instancesSet/item" request_record_filter="InstanceId">
+						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="//instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Architecture" label="" xpath="architecture" short_list="1" sort_order="9" />
 							<property name="DNS Name" label="" xpath="dnsName" short_list="1" sort_order="1" />
@@ -246,20 +246,20 @@
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="instanceState/name" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="keySet/item">
+						<type id="aws_ec2_keypair" label="EC2 Keypair" api_call="DescribeKeyPairs" xml_record_xpath="//keySet/item">
 							<property name="KeyName" label="" xpath="keyName" id_field="1" short_list="1" sort_order="1" />
 							<property name="Fingerprint" label="" xpath="keyFingerprint" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="securityGroupInfo/item">
+						<type id="aws_ec2_security_group" label="EC2 Security Group" api_call="DescribeSecurityGroups" xml_record_xpath="//securityGroupInfo/item">
 							<property name="GroupName" label="" xpath="groupName" id_field="1" short_list="1" sort_order="2" />
 							<property name="Description" label="" xpath="groupDescription" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
+						<type id="aws_ec2_snapshot" label="EC2 Snapshots" api_call="DescribeSnapshots" xml_record_xpath="//snapshotSet/item" request_group_filter="Owner=self" request_record_filter="SnapshotId">
 							<property name="SnapshotId" label="" xpath="snapshotId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Status" label="" xpath="status" has_icon="1" short_list="1" sort_order="2" />
 							<property name="VolumeId" label="" xpath="volumeId" short_list="1" sort_order="3" />
 						</type>
-						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="volumeSet/item">
+						<type id="aws_ec2_volume" label="EC2 Volumes" api_call="DescribeVolumes" xml_record_xpath="//volumeSet/item">
 							<property name="VolumeId" label="" xpath="volumeId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Device" label="" xpath="attachmentSet/item/device" short_list="1" sort_order="6" />
 							<property name="Size" label="" xpath="size" short_list="1" sort_order="5" />
@@ -274,16 +274,16 @@
 			<products>
 				<product name="compute" label="Compute" api_version="v1.1" api_url_prefix="az-1." api_uri="/">
 					<object_types>
-						<type id="os_servers" label="Servers" api_call="/{tenant}/servers/detail" xml_record_xpath="servers/server">
+						<type id="os_servers" label="Servers" api_call="/{tenant}/servers/detail" xml_record_xpath="//servers/server">
 							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
 							<property name="name" label="Name" short_list="1" sort_order="2" />
 							<property name="status" label="Status" short_list="1" sort_order="2" />
 						</type>
-						<type id="os_images" label="Images" api_call="/{tenant}/images" xml_record_xpath="images/image">
+						<type id="os_images" label="Images" api_call="/{tenant}/images" xml_record_xpath="//images/image">
 							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
 							<property name="name" label="Name" short_list="1" sort_order="2" />
 						</type>
-						<type id="os_flavors" label="Flavors" api_call="/{tenant}/flavors/detail" xml_record_xpath="flavors/flavor">
+						<type id="os_flavors" label="Flavors" api_call="/{tenant}/flavors/detail" xml_record_xpath="//flavors/flavor">
 							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
 							<property name="name" label="Name" short_list="1" sort_order="2" />
 							<property name="disk" label="Disk" short_list="1" sort_order="3" />
@@ -294,7 +294,7 @@
 				</product>
 				<product name="identity" label="Identity" api_version="v2.0" api_url_prefix="" api_uri=":35357/">
 					<object_types>
-						<type id="os_tenants" label="Tenants" api_call="/tenants" xml_record_xpath="tenants/tenant">
+						<type id="os_tenants" label="Tenants" api_call="/tenants" xml_record_xpath="//tenants/tenant">
 							<property name="id" label="ID" id_field="1" short_list="1" sort_order="1" />
 							<property name="name" label="Name" short_list="1" sort_order="2" />
 							<property name="enabled" label="Enabled?" short_list="1" sort_order="3" />
