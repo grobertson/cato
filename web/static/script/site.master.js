@@ -77,6 +77,8 @@ function getCloudAccounts() {
         dataType: "html",
         success: function (response) {
             $("#header_cloud_accounts").empty().append(response)
+        	$.cookie("selected_cloud_account", $("#header_cloud_accounts option:selected").val());
+	    	$.cookie("selected_cloud_provider", $("#header_cloud_accounts option:selected").attr("provider"));
         },
         error: function (response) {
             showAlert(response.responseText);
