@@ -44,7 +44,8 @@ class Assets(object):
 
 class Asset(object):
     ID = ""
-    AssetName = ""
+    Name = ""
+    Status = ""
     Port = ""
     DbName = ""
     Address = ""
@@ -53,7 +54,6 @@ class Asset(object):
     CredentialID = ""
     Password = ""
     Domain = ""
-    AssetStatus = ""
     SharedCredName = ""
     SharedCredDesc = ""
     ConnString = ""
@@ -92,8 +92,8 @@ class Asset(object):
             
             if dr is not None:
                 self.ID = dr["asset_id"]
-                self.AssetName = dr["asset_name"]
-                self.AssetStatus = dr["asset_status"]
+                self.Name = dr["asset_name"]
+                self.Status = dr["asset_status"]
                 self.Port = ("" if not dr["port"] else str(dr["port"]))
                 self.DbName = ("" if not dr["db_name"] else dr["db_name"])
                 self.Address = ("" if not dr["address"] else dr["address"])

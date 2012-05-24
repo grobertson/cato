@@ -1,4 +1,3 @@
-import sys
 import traceback
 import urllib
 import json
@@ -31,10 +30,6 @@ class login:
 
     def POST(self):
         try:
-            # HERE WE WILL get the security policy and use it to test the various steps along the login process.
-#            policy = settings.security()
-#            print "@" + policy.LoginMessage
-        
             in_name = uiGlobals.web.input(username=None).username
             in_pwd = uiGlobals.web.input(password=None).password
 
@@ -57,9 +52,9 @@ class login:
             uiCommon.log(uiGlobals.session.user, 4)
     
             #update the security log
-#            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
-#                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
-#                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
+            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
+                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
+                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
     
             uiCommon.log("Creating session...", 3)
                 
@@ -834,6 +829,21 @@ class uiMethods:
             
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get details for User [" + sID + "].'}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmGetAsset(self):
+        try:
+            sID = uiCommon.getAjaxArg("sAssetID")
+            a = asset.Asset()
+            if a:
+                a.FromID(sID)
+                if a.ID:
+                    return a.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get details for Asset [" + sID + "].'}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()

@@ -304,11 +304,6 @@ function SaveAsset() {
         return false;
     }
 
-    var ddlConnectionType = "";
-    if ($("#ddlConnectionType").val() != null) {
-        ddlConnectionType = $("#ddlConnectionType").val();
-    }
-
     //put the tags in a string for submission
     var sTags = "";
     $("#objects_tags .tag").each(function(intIndex) {
@@ -324,7 +319,6 @@ function SaveAsset() {
     stuff[1] = sAssetName;
     stuff[2] = $("#txtDbName").val();
     stuff[3] = sPort;
-    stuff[4] = ddlConnectionType;
     stuff[5] = $("#txtAddress").val();
     stuff[6] = $("#hidMode").val();
     stuff[7] = sCredentialID;
@@ -497,21 +491,20 @@ function FillEditForm(sAssetID) {
         dataType: "json",
         success: function(asset) {
             // show the assets current values
-            $("#txtAssetName").val(unpackJSON(oResultData.sAssetName));
-            $("#ddlAssetStatus").val(oResultData.sAssetStatus);
-            $("#txtPort").val(oResultData.sPort)
-            $("#txtDbName").val(oResultData.sDbName);
-            var sAddress = oResultData.sAddress.replace("||", "\\\\");
+            $("#txtAssetName").val(asset.Name);
+            $("#ddlAssetStatus").val(asset.Status);
+            $("#txtPort").val(asset.Port)
+            $("#txtDbName").val(asset.DbName);
+            var sAddress = asset.Address.replace("||", "\\\\");
             sAddress = sAddress.replace(/\|/g, "\\");
             $("#txtAddress").val(sAddress);
-            $("#txtConnString").val(unpackJSON(oResultData.sConnString));
-            $("#ddlConnectionType").val(oResultData.sConnectionType);
+            $("#txtConnString").val(asset.ConnString);
             
-            $("#hidCredentialID").val(oResultData.sCredentialID);
-            var sCredentialID = oResultData.sCredentialID;
+            $("#hidCredentialID").val(asset.CredentialID);
+            var sCredentialID = asset.CredentialID;
             $("#hidCredentialID").val(sCredentialID);
             $('#CredentialSelectorTabs').hide();
-            var CredentialUser = oResultData.sUserName;
+            var CredentialUser = asset.UserName;
 
             $('#btnCredAdd').hide();
 
@@ -525,24 +518,24 @@ function FillEditForm(sAssetID) {
 
             } else {
                 // display the credentials if they exist, if not display only the add button
-                if (oResultData.sPassword != '') {
-                    var CredentialShared = oResultData.sSharedOrLocal;
+                if (asset.UserName != '') {
+                    var CredentialShared = asset.SharedOrLocal;
                     if (CredentialShared == 'Local') {
                         $("#CredentialDetails").html("");
                         $("#hidCredentialType").val("existing");
                         $("input[name=rbShared]:checked").val("1");
-                        $('#txtCredUsername').val(oResultData.sUserName);
-                        $('#txtCredDomain').val(oResultData.sDomain);
-                        $('#txtCredPassword').val(oResultData.sPassword);
-                        $('#txtCredPasswordConfirm').val(oResultData.sPassword);
-                        $('#txtPrivilegedPassword').val(oResultData.sPriviledgedPassword);
-                        $('#txtPrivilegedConfirm').val(oResultData.sPriviledgedPassword);
+                        $('#txtCredUsername').val(asset.UserName);
+                        $('#txtCredDomain').val(asset.Domain);
+                        //$('#txtCredPassword').val(asset.Password);
+                        //$('#txtCredPasswordConfirm').val(asset.Password);
+                        //$('#txtPrivilegedPassword').val(asset.PriviledgedPassword);
+                        //$('#txtPrivilegedConfirm').val(asset.PriviledgedPassword);
                         $('.SharedCredFields').hide();
                         $('#SharedLocalDiv').hide();
                         $('#EditCredential').show();
                     } else {
                         // display the existing shared credential
-                        $("#CredentialDetails").html(CredentialShared + ' - ' + oResultData.sUserName + '<br />Domain - ' + oResultData.sDomain + '<br />Name - ' + oResultData.sSharedCredName + '<br />Description - ' + unpackJSON(oResultData.sSharedCredDesc));
+                        $("#CredentialDetails").html(CredentialShared + ' - ' + asset.UserName + '<br />Domain - ' + asset.Domain + '<br />Name - ' + asset.SharedCredName + '<br />Description - ' + asset.SharedCredDesc);
                         $('#CredentialRemove').show();
                         $('#CredentialDetails').show();
                         $('#imgCredClear').show();
