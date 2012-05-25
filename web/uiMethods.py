@@ -171,32 +171,32 @@ class uiMethods:
                 " load_value as LoadValue, platform, hostname" \
                 " from application_registry " \
                 " order by component, master desc"
-            rows = self.db.select_all(sSQL)
+            rows = self.db.select_all_dict(sSQL)
             for dr in rows:
                 sProcessHTML += "<tr>" \
-                    "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
-                    "<td>" + str((dr[1] if dr[1] else "")) + "</td>" \
-                    "<td>" + str((dr[2] if dr[2] else "")) + "</td>" \
-                    "<td>" + str((dr[3] if dr[3] else "")) + "</td>" \
-                    "<td>" + str((dr[4] if dr[4] else "")) + "</td>" \
-                    "<td>" + str((dr[5] if dr[5] else "")) + "</td>" \
+                    "<td>" + str((dr["Component"] if dr["Component"] else "")) + "</td>" \
+                    "<td>" + str((dr["Instance"] if dr["Instance"] else "")) + "</td>" \
+                    "<td>" + str((dr["LoadValue"] if dr["LoadValue"] else "")) + "</td>" \
+                    "<td>" + str((dr["Heartbeat"] if dr["Heartbeat"] else "")) + "</td>" \
+                    "<td>" + str((dr["Enabled"] if dr["Enabled"] else "")) + "</td>" \
+                    "<td>" + str((dr["mslr"] if dr["mslr"] else "")) + "</td>" \
                     "</tr>"
 
             sUserHTML = ""
             sSQL = "select u.full_name, us.login_dt, us.heartbeat as last_update, us.address," \
                 " case when us.kick = 0 then 'Active' when us.kick = 1 then 'Warning' " \
-                " when us.kick = 2 then 'Kicking' when us.kick = 3 then 'Inactive' end as 'kick' " \
+                " when us.kick = 2 then 'Kicking' when us.kick = 3 then 'Inactive' end as kick " \
                 " from user_session us join users u on u.user_id = us.user_id " \
                 " where timestampdiff(MINUTE,us.heartbeat, now()) < 10" \
                 " order by us.heartbeat desc"
-            rows = self.db.select_all(sSQL)
+            rows = self.db.select_all_dict(sSQL)
             for dr in rows:
                 sUserHTML += "<tr>" \
-                    "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
-                    "<td>" + str((dr[1] if dr[1] else "")) + "</td>" \
-                    "<td>" + str((dr[2] if dr[2] else "")) + "</td>" \
-                    "<td>" + str((dr[3] if dr[3] else "")) + "</td>" \
-                    "<td>" + str((dr[4] if dr[4] else "")) + "</td>" \
+                    "<td>" + str((dr["full_name"] if dr["full_name"] else "")) + "</td>" \
+                    "<td>" + str((dr["login_dt"] if dr["login_dt"] else "")) + "</td>" \
+                    "<td>" + str((dr["last_update"] if dr["last_update"] else "")) + "</td>" \
+                    "<td>" + str((dr["address"] if dr["address"] else "")) + "</td>" \
+                    "<td>" + str((dr["kick"] if dr["kick"] else "")) + "</td>" \
                     "</tr>"
                     
             sMessageHTML = ""
@@ -206,14 +206,14 @@ class uiMethods:
                 " convert(date_time_entered, CHAR(20)) as entered_dt, convert(date_time_completed, CHAR(20)) as completed_dt" \
                 " from message" \
                 " order by msg_id desc limit 100"
-            rows = self.db.select_all(sSQL)
+            rows = self.db.select_all_dict(sSQL)
             for dr in rows:
                 sMessageHTML += "<tr>" \
-                    "<td>" + str((dr[0] if dr[0] else "")) + "</td>" \
-                    "<td>" + str((dr[1] if dr[1] else "")) + "</td>" \
-                    "<td>" + str((dr[2] if dr[2] else "")) + "</td>" \
-                    "<td>" + str((dr[3] if dr[3] else "")) + "</td>" \
-                    "<td>" + str((dr[4] if dr[4] else "")) + "<br />" + str((dr[5] if dr[5] else "")) + "</td>" \
+                    "<td>" + str((dr["msg_to"] if dr["msg_to"] else "")) + "</td>" \
+                    "<td>" + str((dr["msg_subject"] if dr["msg_subject"] else "")) + "</td>" \
+                    "<td>" + str((dr["status"] if dr["status"] else "")) + "</td>" \
+                    "<td>" + uiCommon.SafeHTML(str((dr["error_message"] if dr["error_message"] else ""))) + "</td>" \
+                    "<td>" + str((dr["entered_dt"] if dr["entered_dt"] else "")) + "<br />" + str((dr["completed_dt"] if dr["completed_dt"] else "")) + "</td>" \
                     "</tr>"
                     
             
