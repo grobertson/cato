@@ -449,7 +449,7 @@ class ecoMethods:
 
             # Description
             sHTML += "Description:<br />\n"
-            sHTML += "<textarea rows=\"4\"" \
+            sHTML += "<textarea rows=\"2\"" \
                 " column=\"action_desc\"" \
                 " class=\"code\"" \
                 ">" + sDesc + "</textarea>\n"
