@@ -86,7 +86,17 @@ function GetSettings() {
 //in fact, I still wanna put all this in one table.
 function SaveSettings(type) {
 	args = $("#div_" + type + "_detail :input").serializeArray()
-	$.ajax({
+
+	/* Because serializeArray() ignores unset checkboxes and radio buttons: */
+    args = args.concat(
+        $("#div_" + type + "_detail :input[type=checkbox]:not(:checked)").map(
+            function() {
+            	// NOT checked is 'off'
+                return {"name": this.name, "value": "off"}
+    	}).get()
+    );	
+    
+    $.ajax({
 		async : false,
 		type : "POST",
 		url : "uiMethods/wmSaveSettings",
