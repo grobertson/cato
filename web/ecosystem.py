@@ -328,7 +328,7 @@ class EcotemplateAction(object):
             self.Description = dr["action_desc"]
             self.Category = dr["category"]
             self.OriginalTaskID = dr["original_task_id"]
-            self.TaskVersion = str(dr["task_version"])
+            self.TaskVersion = (str(dr["task_version"]) if dr["task_version"] else "")
             self.Icon = dr["action_icon"]
             self.ParameterDefaultsXML = dr["parameter_defaults"]
         except Exception, ex:
