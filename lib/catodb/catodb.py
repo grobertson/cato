@@ -227,7 +227,7 @@ class Db(object):
 	def select_col_noexcep(self, sql, params=()):
 		try:
 			result = self.select_col(sql, params)
-			if result: # select_col returns a value, or False
+			if result is not None: # select_col returns a value, or False
 				return result #result is already a single column
 			else:
 				return "" #returns an empty string, not a boolean!
