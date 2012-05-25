@@ -23,7 +23,7 @@ $(document).ready(function () {
     $("#hidSelectedArray").val("");
 
     $("[tag='selectable']").live("click", function () {
-        LoadEditDialog(0, $(this).parent().attr("domain"));
+        LoadEditDialog($(this).parent().attr("domain"));
     });
 
 });
@@ -32,7 +32,7 @@ function pageLoad() {
     ManagePageLoad();
 }
 
-function LoadEditDialog(editCount, editID) {
+function LoadEditDialog(editID) {
 
 
 
@@ -55,7 +55,6 @@ function LoadEditDialog(editCount, editID) {
     $("#edit_dialog").dialog("option", "title", "Modify Domain");
     $("#edit_dialog").dialog('open');
 
-    $("#hidEditCount").val(editCount);
     $("#hidCurrentEditID").val(editID);
     FillEditForm(editID);
 
