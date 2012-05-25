@@ -1178,16 +1178,40 @@ class uiMethods:
         try:
             args = uiCommon.getAjaxArgs()
 
-            u, sErr = asset.Asset.DBCreateNew(args["Name"], args["Status"], args["DBName"], args["Port"], 
+            a, sErr = asset.Asset.DBCreateNew(args["Name"], args["Status"], args["DBName"], args["Port"], 
               args["Address"], args["ConnString"], args["Tags"], args["CredentialMode"], args["Credential"])
             if sErr:
                 return "{\"error\" : \"" + sErr + "\"}"
-            if u == None:
+            if a == None:
                 return "{\"error\" : \"Unable to create Asset.\"}"
 
-            uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.User, u.ID, u.Name, "Asset Created")
+            uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Asset, a.ID, a.Name, "Asset Created")
 
-            return u.AsJSON()
+            return a.AsJSON()
+        
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmUpdateAsset(self):
+        try:
+            args = uiCommon.getAjaxArgs()
+
+            a = asset.Asset()
+            a.FromID(args["ID"])
+            
+            if a:
+                # assuming the attribute names will match ... spin the post data and update the object
+                # only where asset attributes are pre-defined.
+                for k, v in args.items():
+                    if hasattr(a, k):
+                        setattr(a, k, v)
+
+                result, msg = a.DBUpdate(tags=args["Tags"], credential_update_mode=args["CredentialMode"], credential=args["Credential"])
+                if not result:
+                    return "{\"error\" : \"" + msg + "\"}"
+
+            return "{\"result\" : \"success\"}"
         
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
@@ -1212,8 +1236,6 @@ class uiMethods:
                         later.append(sAsset)
                     else:
                         now.append(sAsset)
-            print now
-            print later
 
             # delete some now
             if now:

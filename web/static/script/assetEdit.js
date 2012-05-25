@@ -346,8 +346,8 @@ function SaveAsset() {
 				}
 				if (response.info) {
 					showInfo(response.info);
-				}
-				if (response.ID) {
+	            }
+				if (response.result == "success") {
 	                // remove this item from the array
 	                var sEditID = $("#hidCurrentEditID").val();
 	                var myArray = new Array();
@@ -510,7 +510,7 @@ function FillEditForm(sAssetID) {
             $("#txtAssetName").val(asset.Name);
             $("#ddlAssetStatus").val(asset.Status);
             $("#txtPort").val(asset.Port)
-            $("#txtDbName").val(asset.DbName);
+            $("#txtDbName").val(asset.DBName);
             var sAddress = asset.Address.replace("||", "\\\\");
             sAddress = sAddress.replace(/\|/g, "\\");
             $("#txtAddress").val(sAddress);
