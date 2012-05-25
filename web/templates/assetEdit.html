@@ -150,7 +150,16 @@ $var cssfiles:
                             &nbsp;
                         </p><div id="CredentialDetails" class="col_header"></div>
                         <div id="CredentialSelectorTabs" style="height: 380px;">
-                            <div id="CredentialSelectorShared" class="credential_selector"></div>
+                            <div class="credential_selector">
+                                <table id="tblCredentialSelector" width="99%">
+                                    <thead>
+                                        <tr>
+                                            <th class="col_header">Username</th>
+                                            <th class="col_header">Domain</th>
+                                            <th class="col_header">Description</th>
+                                    </thead><tbody id="credentials"></tbody>
+                                </table>
+                            </div>
                         </div>
                         <div id="EditCredential">
                             <table width="100%">

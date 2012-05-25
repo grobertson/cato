@@ -1076,9 +1076,6 @@ class uiMethods:
             return traceback.format_exc()
 
     def wmCreateUser(self):
-        """
-            This method will only update the values passed to it.
-        """
         try:
             args = uiCommon.getAjaxArgs()
 
@@ -1108,12 +1105,8 @@ class uiMethods:
             later = []
 
             aUsers = sDeleteArray.split(",")
-            print aUsers
             for sUserID in aUsers:
-                print "@"
-                print sUserID
                 if len(sUserID) == 36: # a guid + quotes
-                    print WhoAmI
                     # you cannot delete yourself!!!
                     if sUserID != WhoAmI:
                         # this will flag a user for later deletion by the system
@@ -1127,14 +1120,12 @@ class uiMethods:
             #  delete some users...
             if now:
                 sSQL = "delete from users where user_id in (%s)" % "'%s'" % "','".join(now)
-                print sSQL
                 if not self.db.tran_exec_noexcep(sSQL):
                     uiCommon.log_nouser(self.db.error, 0)
 
             #  flag the others...
             if later:
                 sSQL = "update users set status = 86 where user_id in (%s)" % "'%s'" % "','".join(later)
-                print sSQL
                 if not self.db.tran_exec_noexcep(sSQL):
                     uiCommon.log_nouser(self.db.error, 0)
 
@@ -1159,10 +1150,10 @@ class uiMethods:
                     " tag=\"chk\" />"
                     sHTML += "</td>"
                     
-                    sHTML += "<td class=\"selectable\">" + row["asset_name"] +  "</td>"
-                    sHTML += "<td class=\"selectable\">" + row["asset_status"] +  "</td>"
-                    sHTML += "<td class=\"selectable\">" + row["address"] +  "</td>"
-                    sHTML += "<td class=\"selectable\">" + row["credentials"] +  "</td>"
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["asset_name"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["asset_status"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % (row["address"] if row["address"] else "")
+                    sHTML += "<td class=\"selectable\">%s</td>" % (row["credentials"] if row["credentials"] else "")
                     
                     sHTML += "</tr>"
             return sHTML    
@@ -1170,4 +1161,85 @@ class uiMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()           
         
+    def wmGetCredentialsJSON(self):
+        try:
+            sFilter = uiCommon.getAjaxArg("sFilter")
+
+            ac = asset.Credentials(sFilter)
+            if ac:
+                return ac.AsJSON()
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get Credentials using filter [" + sFilter + "].'}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmCreateAsset(self):
+        try:
+            args = uiCommon.getAjaxArgs()
+
+            u, sErr = asset.Asset.DBCreateNew(args["Name"], args["Status"], args["DBName"], args["Port"], 
+              args["Address"], args["ConnString"], args["Tags"])
+            if sErr:
+                return "{\"error\" : \"" + sErr + "\"}"
+            if u == None:
+                return "{\"error\" : \"Unable to create Asset.\"}"
+
+            uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.User, u.ID, u.Name, "Asset Created")
+
+            return u.AsJSON()
         
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmDeleteAssets(self):
+        try:
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
+
+            # for this one, 'now' will be all the assets that don't have history.
+            # and 'later' will get updated to 'inactive' status
+            now = []
+            later = []
+            aAssets = sDeleteArray.split(",")
+            for sAsset in aAssets:
+                if len(sAsset) == 36: # a guid + quotes
+                    # this will mark an asset as Disabled if it has history
+                    # it returns True if it's safe to delete now
+                    if asset.Asset.HasHistory(sAsset):
+                        later.append(sAsset)
+                    else:
+                        now.append(sAsset)
+            print now
+            print later
+
+            # delete some now
+            if now:
+                sSQL = """delete from asset_credential
+                    where shared_or_local = 1
+                    and credential_id in (select credential_id from asset where asset_id in (%s))
+                    """ % "'%s'" % "','".join(now)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
+
+                sSQL = "delete from asset where asset_id in (%s)" % "'%s'" % "','".join(now)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
+
+            #  deactivate the others...
+            if later:
+                sSQL = "update asset set asset_status = 'Inactive' where asset_id in (%s)" % "'%s'" % "','".join(later)
+                if not self.db.tran_exec_noexcep(sSQL):
+                    uiCommon.log_nouser(self.db.error, 0)
+
+            self.db.tran_commit()
+
+            if later:
+                return "{\"result\" : \"success\", \"info\" : \"One or more assets could not be deleted due to historical information.  These Assets have been marked as Inactive.\"}"
+            else:
+                return "{\"result\" : \"success\"}"
+                
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)

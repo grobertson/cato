@@ -203,7 +203,6 @@ class User(object):
             u = User()
             u.FromID(sNewID)
 
-            # yay!
             return u, None
         except Exception, ex:
             raise ex

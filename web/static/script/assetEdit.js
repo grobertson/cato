@@ -29,10 +29,6 @@ $(document).ready(function() {
     $("#txtCredDescription").keypress(function(e) { return restrictEntryToSafeHTML(e, this); });
     $("#txtCredDomain").keypress(function(e) { return restrictEntryToHostname(e, this); });
 
-    $("#item_upload_btn").live("click", function() {
-        ShowAssetUpload();
-    });
-
     //dialogs
     $("#edit_dialog").dialog({
         autoOpen: false,
@@ -207,24 +203,25 @@ function DeleteItems() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "assetEdit.aspx/DeleteAssets",
+        url: "uiMethods/wmDeleteAssets",
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function(msg) {
-            //update the list in the dialog
-            var myArray = new Array();
-            var myArray = msg.d.split(',');
-            $("#hidSelectedArray").val("");
-            $("#delete_dialog").dialog('close');
-
-            $("#ctl00_phDetail_btnSearch").click();
-
-            if (msg.d.length == 0) {
-                showInfo('Delete Successful');
-            } else {
-                showAlert(msg.d);
-            }
+        success: function(response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.result) {
+	            $("#hidSelectedArray").val("");
+	            $("#delete_dialog").dialog('close');
+	
+	            GetItems();
+	        } else {
+	            showInfo(response);
+	        }
         },
         error: function(response) {
             showAlert(response.responseText);
@@ -313,93 +310,86 @@ function SaveAsset() {
             sTags += "," + $(this).attr("id").replace(/ot_/, "");
     });
 
+    var asset = {};
+    asset.ID = sAssetID;
+    asset.Name = sAssetName;
+    asset.DBName = $("#txtDbName").val();
+    asset.Port =sPort;
+    asset.Address = $("#txtAddress").val();
+    asset.Mode = $("#hidMode").val();
+    asset.CredentialID = sCredentialID;
+    asset.CredUsername = sCredUsername;
+    asset.CredPasword = sCredPasword;
+    asset.Shared = rbShared;
+    asset.CredentialName = sCredentialName;
+    asset.CredentialDescr = sCredentialDescr;
+    asset.Domain = sDomain;
+    asset.CredentialType = $("#hidCredentialType").val();
+    asset.Status = ddlAssetStatus;
+    asset.PrivilegedPassword = sPrivilegedPassword;
+    asset.ConnString = $("#txtConnString").val();;
+    asset.Tags = sTags;
 
-    var stuff = new Array();
-    stuff[0] = sAssetID;
-    stuff[1] = sAssetName;
-    stuff[2] = $("#txtDbName").val();
-    stuff[3] = sPort;
-    stuff[5] = $("#txtAddress").val();
-    stuff[6] = $("#hidMode").val();
-    stuff[7] = sCredentialID;
-    stuff[8] = sCredUsername;
-    stuff[9] = sCredPasword;
-    stuff[10] = rbShared;
-    stuff[11] = sCredentialName;
-    stuff[12] = sCredentialDescr;
-    stuff[13] = sDomain;
-    stuff[14] = $("#hidCredentialType").val();
-    stuff[15] = ddlAssetStatus;
-    stuff[16] = sPrivilegedPassword;
-    stuff[17] = sTags;
-    stuff[18] = $("#txtConnString").val();
-
-    if (stuff.length > 0) {
-        PageMethods.SaveAsset(stuff, OnUpdateSuccess, OnUpdateFailure);
-    } else {
-        showAlert('incorrect list of update attributes:' + stuff.length.toString());
-    }
+	$.ajax({
+		async : false,
+		type : "POST",
+		url : "uiMethods/wmCreateAsset",
+		data : JSON.stringify(asset),
+		contentType : "application/json; charset=utf-8",
+		dataType : "json",
+		success : function(response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.ID) {
+				if ($("#hidMode").val() == 'edit') {
+	                // remove this item from the array
+	                var sEditID = $("#hidCurrentEditID").val();
+	                var myArray = new Array();
+	                var sArrHolder = $("#hidSelectedArray").val();
+	                myArray = sArrHolder.split(',');
+	
+	                //how many in the array before you clicked Save?
+	                var wereInArray = myArray.length;
+	
+	                if (jQuery.inArray(sEditID, myArray) > -1) {
+	                    $("#chk_" + sEditID).attr("checked", false);
+	                    myArray.remove(sEditID);
+	                }
+	
+	                $("#lblItemsSelected").html(myArray.length);
+	                $("#hidSelectedArray").val(myArray.toString());
+	
+	                if (wereInArray == 1) {
+	                    // this was the last or only user edited so close
+	                    $("#hidCurrentEditID").val("");
+	                    $("#hidEditCount").val("");
+	
+	                    CloseDialog();
+			            GetItems();
+	                } else {
+	                    // load the next item to edit
+	                    $("#hidCurrentEditID").val(myArray[0]);
+	                    FillEditForm(myArray[0]);
+	                }
+	            } else {
+	                CloseDialog();
+		            GetItems();
+	            }
+	        } else {
+	            showInfo(response);
+	        }
+		},
+		error : function(response) {
+			showAlert(response);
+		}
+	});
+    
 }
 
-// Callback function invoked on successful completion of the MS AJAX page method.
-function OnUpdateSuccess(result, userContext, methodName) {
-    if (methodName == "SaveAsset") {
-        if (result.length == 0) {
-            showInfo('Asset Saved.');
-
-            if ($("#hidMode").val() == 'edit') {
-                // remove this item from the array
-                var sEditID = $("#hidCurrentEditID").val();
-                var myArray = new Array();
-                var sArrHolder = $("#hidSelectedArray").val();
-                myArray = sArrHolder.split(',');
-
-                //how many in the array before you clicked Save?
-                var wereInArray = myArray.length;
-
-                if (jQuery.inArray(sEditID, myArray) > -1) {
-                    $("#chk_" + sEditID).attr("checked", false);
-                    myArray.remove(sEditID);
-                }
-
-                $("#lblItemsSelected").html(myArray.length);
-                $("#hidSelectedArray").val(myArray.toString());
-
-                if (wereInArray == 1) {
-                    // this was the last or only user edited so close
-                    $("#hidCurrentEditID").val("");
-                    $("#hidEditCount").val("");
-
-                    CloseDialog();
-
-                    //leave any search string the user had entered, so just click the search button
-                    $("#ctl00_phDetail_btnSearch").click();
-                } else {
-                    // load the next item to edit
-                    $("#hidCurrentEditID").val(myArray[0]);
-                    FillEditForm(myArray[0]);
-                }
-            } else {
-                CloseDialog();
-
-                //leave any search string the user had entered, so just click the search button
-                $("#ctl00_phDetail_btnSearch").click();
-            }
-        } else {
-            showAlert(result);
-        }
-
-    }
-
-}
-
-// Callback function invoked on failure of the MS AJAX page method.
-function OnUpdateFailure(error, userContext, methodName) {
-    //alert('failure');
-    if (error !== null) {
-        showAlert(error.get_message());
-    }
-}
 function ShowCredentialAdd() {
     $('#Credentials').hide();
     $('#btnCreateCredentials').hide();
@@ -460,19 +450,21 @@ function LoadCredentialSelector() {
     // set the return t the default 'local' credentials
     $.ajax({
         type: "POST",
-        url: "assetEdit.aspx/GetCredentialSelector",
+        url: "uiMethods/wmGetCredentialsJSON",
         data: '{}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function(msg) {
-            //update the list in the dialog
-            //alert(msg.d);
-            if (msg.d.length == 0) {
-                showAlert('Could not load selector.' + response.responseText);
-            } else {
-                $("#CredentialSelectorShared").html(msg.d);
-                //$('#tblCredentialSelector td').addClass('row');
-            }
+        success: function(creds) {
+        	$("#credentials").html("");
+            $.each(creds, function(index, cred){
+            	s = "<tr class=\"select_credential\" credential_id=\"" + cred.credential_id + "\">"
+            	s += "<td class=\"selectablecrd row\">" + cred.username + "</td>"
+            	s += "<td class=\"selectablecrd row\">" + cred.domain + "</td>"
+            	s += "<td class=\"selectablecrd row\">" + cred.shared_cred_desc + "</td>"
+            	s += "</tr>"
+
+            	$("#credentials").append(s);
+			});
         },
         error: function(response) {
             showAlert('error ' + response.responseText);
@@ -561,7 +553,3 @@ function FillEditForm(sAssetID) {
     });
 }
 
-function ShowAssetUpload() {
-    var url = "assetUpload.aspx";
-    openWindow(url, "assetUpload", "location=no,status=no,scrollbars=yes,resizable=yes,width=850,height=700");
-}
