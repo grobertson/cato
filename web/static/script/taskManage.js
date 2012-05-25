@@ -27,7 +27,7 @@
                 // nice, clear all checkboxes selected in a single line!
                 $(':input', (".jtable")).attr('checked', false);
 
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -39,10 +39,10 @@
             "Export": function () {
                 showPleaseWait();
                 ExportTasks();
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -56,7 +56,7 @@
                 CopyTask();
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -98,7 +98,7 @@ function ShowItemAdd() {
     // clear all of the previous values
     clearEditDialog();
 
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtTaskCode").focus();
 }
 
@@ -110,7 +110,7 @@ function ShowItemExport() {
         return false;
     }
 
-    $("#export_dialog").dialog('open');
+    $("#export_dialog").dialog("open");
 }
 
 function ShowItemCopy() {
@@ -175,7 +175,7 @@ function ShowItemCopy() {
         }
     });
 
-    $("#copy_dialog").dialog('open');
+    $("#copy_dialog").dialog("open");
 }
 
 function CopyTask() {
@@ -206,7 +206,7 @@ function CopyTask() {
         	} else if (response.info) {
         		showInfo(response.info);
         	} else if (response.id) {
-                $("#copy_dialog").dialog('close');
+                $("#copy_dialog").dialog("close");
                 $("#txtSearch").val("");
                 GetItems();
                 hidePleaseWait();
@@ -252,7 +252,7 @@ function DeleteItems() {
                 	$("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
 		        }
 		        
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 			} catch (ex) {
 				showAlert(ex.Message);
 			}
@@ -287,7 +287,7 @@ function ExportTasks() {
                 var filename = msg.d;
                 
                 $("#hidSelectedArray").val("");
-                $("#export_dialog").dialog('close');
+                $("#export_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("#txtSearch").val("");

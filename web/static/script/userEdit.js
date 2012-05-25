@@ -139,7 +139,7 @@ function ShowItemAdd() {
 
     SetPasswordControls();
 
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
 
     $("#txtUserLoginID").focus();
     $("#ddlUserStatus").val("1");
@@ -149,7 +149,7 @@ function ShowItemAdd() {
 
 function CloseDialog() {
     // this is called by the button click
-    $("#edit_dialog").dialog('close');
+    $("#edit_dialog").dialog("close");
     InitializeUserAdd();
 }
 function InitializeUserAdd() {
@@ -180,7 +180,7 @@ function DeleteItems() {
 			}
 			if (response.result) {
 	            $("#hidSelectedArray").val("");
-	            $("#delete_dialog").dialog('close');
+	            $("#delete_dialog").dialog("close");
 	
 	            GetItems();
 	        } else {
@@ -475,7 +475,7 @@ function LoadEditDialog(editCount, editUserID) {
     $("#hidCurrentEditID").val(editUserID);
     FillEditForm(editUserID);
 
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
 }
 
 function ShowItemModify() {
@@ -592,7 +592,7 @@ function ShowItemCopy() {
 
     SetPasswordControls();
 
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtUserLoginID").focus();
     $("#ddlUserStatus").val("1");
     $("#ddlUserAuthType").val("local");

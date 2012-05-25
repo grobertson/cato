@@ -117,7 +117,7 @@ $(document).ready(function () {
                 hidePleaseWait();
             },
             Cancel: function () {
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
             }
         }
     });
@@ -213,7 +213,7 @@ function ShowItemDelete() {
         PreDeleteChecklist();
     }
 
-    $("#delete_dialog").dialog('open');
+    $("#delete_dialog").dialog("open");
     $("#delete_dialog").show();
 }
 

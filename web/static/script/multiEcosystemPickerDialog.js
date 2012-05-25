@@ -65,7 +65,7 @@ $(document).ready(function() {
 });
 
 function ShowMultiEcosystemPicker() {
-    $("#multi_ecosystem_picker_dialog").dialog('open');
+    $("#multi_ecosystem_picker_dialog").dialog("open");
     $("#multi_ecosystem_search_text").focus();
 }
 
@@ -95,7 +95,7 @@ function SearchEcosystems() {
 }
 
 function CloseMultiEcosystemPicker() {
-    $("#multi_ecosystem_picker_dialog").dialog('close');
+    $("#multi_ecosystem_picker_dialog").dialog("close");
     $("#ecosystem_search_text").val('');
     $("#multi_ecosystem_picker_results").html('');
     

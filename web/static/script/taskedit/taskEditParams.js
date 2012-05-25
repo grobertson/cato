@@ -45,10 +45,10 @@ $(document).ready(function () {
         buttons: {
             'Delete': function () {
                 doDeleteParam();
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -68,7 +68,7 @@ $(document).ready(function () {
     });
     $("#parameters .parameter_remove_btn").live("click", function () {
         $("#hidParamDelete").val($(this).attr("remove_id"));
-        $("#param_delete_confirm_dialog").dialog('open');
+        $("#param_delete_confirm_dialog").dialog("open");
     });
 
     //bind the tooltips for parameter descriptions
@@ -147,7 +147,7 @@ function ShowParameterEdit(param_id) {
         }
     });
 
-    $("#param_edit_dialog").dialog('open');
+    $("#param_edit_dialog").dialog("open");
 }
 
 function doSaveParam() {
@@ -235,7 +235,7 @@ function doSaveParam() {
         success: function (retval) {
             doGetParams(type, id);
 
-            $("#param_edit_dialog").dialog('close');
+            $("#param_edit_dialog").dialog("close");
             $("#update_success_msg").text("Update Successful").fadeOut(2000);
         },
         error: function (response) {

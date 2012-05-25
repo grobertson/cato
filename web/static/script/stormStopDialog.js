@@ -71,11 +71,11 @@ $(document).ready(function () {
 function ShowStopStormDialog(ecosystem_id) {
     $.unblockUI();
     $("#storm_stop_dialog_ecosystem_id").val(ecosystem_id);
-    $("#storm_stop_dialog").dialog('open');
+    $("#storm_stop_dialog").dialog("open");
 }
 
 function CloseStopStormDialog() {
-    $("#storm_stop_dialog").dialog('close');
+    $("#storm_stop_dialog").dialog("close");
 	$('#storm_run_dialog_compatibility').attr('checked', '');
 }
 

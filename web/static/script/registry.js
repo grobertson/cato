@@ -39,14 +39,14 @@ $(document).ready(function () {
         if (updatetype == "value") {
             $("#reg_edit_dialog_value").val(value);
 
-            $("#reg_edit_dialog").dialog('open');
+            $("#reg_edit_dialog").dialog("open");
             $("#reg_edit_dialog_value").focus();
         }
         if (updatetype == "node") {
             $("#reg_add_dialog_name").val($(this).html());
             $("#reg_add_dialog_oldname").val($(this).html());
 
-            $("#reg_add_dialog").dialog('open');
+            $("#reg_add_dialog").dialog("open");
             $("#reg_add_dialog_name").focus();
         }
     });
@@ -55,7 +55,7 @@ $(document).ready(function () {
         $("#selected_node_xpath").val($(this).attr("xpath"));
         $("#reg_edit_mode").val("add");
 
-        $("#reg_add_dialog").dialog('open');
+        $("#reg_add_dialog").dialog("open");
         $("#reg_add_dialog_name").focus();
     });
 
@@ -85,7 +85,7 @@ $(document).ready(function () {
                 SaveRegistryValue();
             },
             Cancel: function () {
-                $("#reg_edit_dialog").dialog('close');
+                $("#reg_edit_dialog").dialog("close");
             }
         }
     });
@@ -104,7 +104,7 @@ $(document).ready(function () {
                     SaveRegistryNode();
             },
             Cancel: function () {
-                $("#reg_add_dialog").dialog('close');
+                $("#reg_add_dialog").dialog("close");
             }
         }
     });
@@ -170,7 +170,7 @@ function AddRegistryItem() {
             //after commit, reget the whole registry
             $("#update_success_msg").text("Add Successful...").fadeOut(2000);
             GetRegistry(objectid);
-            $("#reg_add_dialog").dialog('close');
+            $("#reg_add_dialog").dialog("close");
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -212,7 +212,7 @@ function SaveRegistryValue() {
 
             $('#' + id).html(value);
 
-            $("#reg_edit_dialog").dialog('close');
+            $("#reg_edit_dialog").dialog("close");
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -256,7 +256,7 @@ function SaveRegistryNode() {
             //after commit, update the node with the new name
             $('#' + id).html(name);
 
-            $("#reg_add_dialog").dialog('close');
+            $("#reg_add_dialog").dialog("close");
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);

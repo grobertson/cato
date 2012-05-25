@@ -26,7 +26,7 @@ $(document).ready(function () {
         var desc = $.trim($('#' + $(this).parent().attr("desc_id")).html());
 
         $("#hidMode").val("edit");
-        $("#edit_dialog").dialog('open');
+        $("#edit_dialog").dialog("open");
 
         $("#hidCurrentEditID").val(tag);
 
@@ -46,7 +46,7 @@ $(document).ready(function () {
                 SaveTag();
             },
             Cancel: function () {
-                $("#edit_dialog").dialog('close');
+                $("#edit_dialog").dialog("close");
             }
         }
     });
@@ -89,7 +89,7 @@ function SaveTag() {
                 showInfo('Tag Saved');
 
                 $("#hidCurrentEditID").val("");
-                $("#edit_dialog").dialog('close');
+                $("#edit_dialog").dialog("close");
 
                 //leave any search string the user had entered, so just click the search button
                 $("[id*='btnSearch']").click();
@@ -111,7 +111,7 @@ function SaveTag() {
                 showInfo('Tag Created');
 
                 $("#hidCurrentEditID").val("");
-                $("#edit_dialog").dialog('close');
+                $("#edit_dialog").dialog("close");
 
                 //leave any search string the user had entered, so just click the search button
                 $("[id*='btnSearch']").click();
@@ -131,7 +131,7 @@ function ShowItemAdd() {
     $('#txtDescription').val('');
 
     $('#edit_dialog').dialog('option', 'title', 'Create a New Tag');
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtTag").focus();
 }
 
@@ -146,7 +146,7 @@ function DeleteItems() {
         success: function (msg) {
             if (msg.d.length == 0) {
                 $("#hidSelectedArray").val("");
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 
                 showInfo('Delete Successful');
 

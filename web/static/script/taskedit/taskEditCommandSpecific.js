@@ -580,13 +580,13 @@ function ShowRunTaskParameterEdit() {
 	    });
 
 	
-	    $("#fn_runtask_parameter_dialog").dialog('open');
+	    $("#fn_runtask_parameter_dialog").dialog("open");
 	} else {
 		showInfo("Unable to resolve the ID of the Task referenced by this command.");
 	}
 }
 function CloseRunTaskParameterEdit() {
-    $("#fn_runtask_parameter_dialog").dialog('close');
+    $("#fn_runtask_parameter_dialog").dialog("close");
 }
 function SaveRunTaskParameters() {
     $("#update_success_msg").text("Saving Defaults...");
@@ -612,7 +612,7 @@ function SaveRunTaskParameters() {
         }
     });
 
-    $("#action_parameter_dialog").dialog('close');
+    $("#action_parameter_dialog").dialog("close");
 
 }
 

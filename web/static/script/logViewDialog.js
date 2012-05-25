@@ -45,7 +45,7 @@ $(document).ready(function () {
 function ShowLogViewDialog(type, id, prefill) {
 	g_log_object_id = id;
 	g_log_object_type = type;
-    $("#log_view_dialog").dialog('open');
+    $("#log_view_dialog").dialog("open");
     
     if (prefill) {
     	GetLog();
@@ -53,7 +53,7 @@ function ShowLogViewDialog(type, id, prefill) {
 }
 
 function CloseLogViewDialog() {
-    $("#log_view_dialog").dialog('close');
+    $("#log_view_dialog").dialog("close");
     $("#log_view_dialog_results").empty();
     $('#log_view_dialog :input').each(function () {
         var type = this.type;

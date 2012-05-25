@@ -473,7 +473,7 @@ function ShowTaskLaunchDialog(jsonargs) {
     getPlans();
 
     $.unblockUI();
-    $("#task_launch_dialog").dialog('open');
+    $("#task_launch_dialog").dialog("open");
 }
 
 function ShowPlanEditDialog(ctl) {
@@ -504,17 +504,17 @@ function ShowPlanEditDialog(ctl) {
             loadRecurringPlan(schedule_id);
         }
 
-        $("#plan_edit_dialog").dialog('open');
+        $("#plan_edit_dialog").dialog("open");
     });
 }
 function ClosePlanEditDialog() {
     dismissPlanParams();
     dismissRecurringPlan();
-    $("#plan_edit_dialog").dialog('close');
+    $("#plan_edit_dialog").dialog("close");
 }
 
 function CloseTaskLaunchDialog() {
-    $("#task_launch_dialog").dialog('close');
+    $("#task_launch_dialog").dialog("close");
     $("#task_launch_dialog_params").empty();
 
     //empty every input on the dialog

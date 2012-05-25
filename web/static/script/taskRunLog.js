@@ -50,7 +50,7 @@ $(document).ready(function () {
         },
         buttons: {
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             OK: function () {
                 doDebugStop();
@@ -112,10 +112,10 @@ $(document).ready(function () {
         },
         buttons: {
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             OK: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
 
                 var task_id = $("#hidTaskID").val();
                 var task_name = $("#lblTaskName").html();

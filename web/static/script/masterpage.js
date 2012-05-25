@@ -31,7 +31,7 @@ $(document).ready(function () {
         },
         buttons: {
             Ok: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         },
         close: function (event, ui) {
@@ -100,7 +100,7 @@ $(document).ready(function () {
 				});
             },
             "Cancel": function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -186,7 +186,7 @@ function showAlert(msg, info) {
     	$("#stack_trace").show();
     }
     
-    $("#error_dialog").dialog('open');
+    $("#error_dialog").dialog("open");
 
     //send this message via email
     info = (info === undefined ? "" : info);
@@ -218,9 +218,9 @@ function showInfo(msg, info, no_timeout) {
         setTimeout("hideInfo()", 2000);
     }
 
-    $("#info_dialog").dialog('open');
+    $("#info_dialog").dialog("open");
 }
 //This function hides the info dialog.
 function hideInfo() {
-    $("#info_dialog").dialog('close');
+    $("#info_dialog").dialog("close");
 }

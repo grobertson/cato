@@ -67,7 +67,7 @@ $(document).ready(function () {
             	text: "Cancel",
             	click: function () {
                 	if (confirm("You have unsaved changes. Are you sure?")) {
-                		$(this).dialog('close');
+                		$(this).dialog("close");
             		}
             	}
         	}
@@ -201,7 +201,7 @@ function ShowEditStormDialog() {
 			$("#url_to_text_btn").hide();
 		}
 		
-	    $("#storm_edit_dialog").dialog('open');
+	    $("#storm_edit_dialog").dialog("open");
 		
 		//CANNOT validate the json unless the textarea is visible.
 		//this mustn't happen on a closed or otherwise hidden dialog
@@ -230,7 +230,7 @@ function SaveStormFile() {
         		showInfo(response.info);
         	} else if (response.result == "success") {
 	            ShowStorm();
-	         	$("#storm_edit_dialog").dialog('close');
+	         	$("#storm_edit_dialog").dialog("close");
            	} else {
                 showInfo(response);
             }

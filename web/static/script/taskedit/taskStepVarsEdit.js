@@ -33,10 +33,10 @@ $(document).ready(function () {
         buttons: {
             "Save": function () {
                 doUpdate();
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -65,7 +65,7 @@ $(document).ready(function () {
             	if ($("#new_delimited_var_name").length > 0 && $("#new_delimited_position").length)
             		addDelimitedVar();
 
-                $(this).dialog('close');
+                $(this).dialog("close");
                 $("#delimited_msg").html("");
             }
         }
@@ -98,7 +98,7 @@ $(document).ready(function () {
             	if ($("#new_parsed_var_name").length > 0)
             		addParsedVar();
 
-                $(this).dialog('close');
+                $(this).dialog("close");
                 $("#parsed_msg").html("");
             }
         }
@@ -176,7 +176,7 @@ $(document).ready(function () {
 				//we have to hook up all the bindings for the vars that were just added to the DOM
 				wireEmUp()
 				
-		        $("#step_var_edit_dialog").dialog('open');
+		        $("#step_var_edit_dialog").dialog("open");
 	        },
 	        error: function(response) {
 	            showAlert(response.responseText);
@@ -236,7 +236,7 @@ function wireEmUp() {
             $("#step_var_edit_dialog #output_col_delimiter_label").html($(this).html());
         }
 
-        $("#delimiter_picker_dialog").dialog('close');
+        $("#delimiter_picker_dialog").dialog("close");
     });
 
     //bind the variable add button

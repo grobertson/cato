@@ -78,14 +78,14 @@ $(document).ready(function () {
                 });
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
 
     $("#approve_btn").button({ icons: { primary: "ui-icon-check"} });
     $("#approve_btn").click(function () {
-        $("#approve_dialog").dialog('open');
+        $("#approve_dialog").dialog("open");
     });
 
     //make the clipboard clear button
@@ -114,7 +114,7 @@ $(document).ready(function () {
         var html = $("#" + clip_id).html();
 
         $("#clip_dialog_clip").html(html);
-        $("#clip_dialog").dialog('open');
+        $("#clip_dialog").dialog("open");
     });
 
 
@@ -132,10 +132,10 @@ $(document).ready(function () {
                 //do something to fire the blur event so it will update
                 $("#" + ctl).change();
 
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -145,7 +145,7 @@ $(document).ready(function () {
         $("#big_box_link").val(ctl);
         $("#big_box_text").val($("#" + ctl).val());
 
-        $("#big_box_dialog").dialog('open');
+        $("#big_box_dialog").dialog("open");
     });
 
     // tab handling for the big_box_text textarea

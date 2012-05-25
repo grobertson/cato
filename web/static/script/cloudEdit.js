@@ -31,7 +31,7 @@ $(document).ready(function () {
                 SaveItem(1);
             },
             Cancel: function () {
-                $("#edit_dialog").dialog('close');
+                $("#edit_dialog").dialog("close");
             }
         }
     });
@@ -227,7 +227,7 @@ function LoadEditDialog(editID) {
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
     $("#edit_dialog").dialog("option", "title", "Modify Cloud");
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
 
 }
 
@@ -315,7 +315,7 @@ function SaveItem(close_after_save) {
 					GetItems();
 		            
 		            if (close_after_save) {
-		            	$("#edit_dialog").dialog('close');
+		            	$("#edit_dialog").dialog("close");
 	            	} else {
 		            	//we aren't closing? fine, we're now in 'edit' mode.
 		            	$("#hidMode").val("edit");
@@ -353,7 +353,7 @@ function ShowItemAdd() {
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [1] );
     $('#edit_dialog').dialog('option', 'title', 'Create a New Cloud');
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtCloudName").focus();
 }
 
@@ -370,7 +370,7 @@ function DeleteItems() {
         success: function (response) {
 	        if (response) {
                 $("#hidSelectedArray").val("");
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("#txtSearch").val("");

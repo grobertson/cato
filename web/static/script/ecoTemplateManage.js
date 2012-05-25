@@ -47,7 +47,7 @@ $(document).ready(function () {
 	                // nice, clear all checkboxes selected in a single line!
 	                $(':input', (".jtable")).attr('checked', false);
 	
-	                $(this).dialog('close');
+	                $(this).dialog("close");
             	}
             }
         ]
@@ -61,10 +61,10 @@ $(document).ready(function () {
             "Export": function () {
                 showPleaseWait();
                 ExportEcotemplates();
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -77,7 +77,7 @@ $(document).ready(function () {
                 CopyTemplate();
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -122,7 +122,7 @@ function ShowItemAdd() {
     //but we want the Format box to be checked
     $('#chk_reformat').attr('checked','checked')
 	$(".stormfields").hide();
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtTemplateName").focus();
 }
 
@@ -140,7 +140,7 @@ function ShowItemExport() {
         return false;
     }
 	
-    $("#export_dialog").dialog('open');
+    $("#export_dialog").dialog("open");
 }
 
 function DeleteItems() {
@@ -158,7 +158,7 @@ function DeleteItems() {
         		showAlert(response.error);
             } else if (response.result == "success") {
                 $("#hidSelectedArray").val("");
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("#txtSearch").val("");
@@ -169,7 +169,7 @@ function DeleteItems() {
             } else {
                 showAlert(response);
 
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
                 
                 // reload the list, some may have been deleted.
                 // clear the search field and fire a search click, should reload the grid
@@ -207,7 +207,7 @@ function ExportEcotemplates() {
                 var filename = msg.d;
                 
                 $("#hidSelectedArray").val("");
-                $("#export_dialog").dialog('close');
+                $("#export_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("#ctl00_phDetail_txtSearch").val("");
@@ -295,7 +295,7 @@ function ShowItemCopy() {
         return false;
     }
 	$("#txtCopyEcotemplateName").val("");
-	$("#copy_dialog").dialog('open');
+	$("#copy_dialog").dialog("open");
 }
 function CopyTemplate() {
 	var sSelectedTemplateID = $("#hidSelectedArray").val();
@@ -333,5 +333,5 @@ function CopyTemplate() {
     });
 
     hidePleaseWait();
-    $("#copy_dialog").dialog('close');
+    $("#copy_dialog").dialog("close");
 }

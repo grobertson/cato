@@ -27,7 +27,7 @@ $(document).ready(function() {
                 CreateNewVersion();
             },
             "Cancel": function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -35,7 +35,7 @@ $(document).ready(function() {
 
 function ShowVersionAdd() {
     $("#hidMode").val("add");
-    $("#addVersion_dialog").dialog('open');
+    $("#addVersion_dialog").dialog("open");
 }
 
 function CreateNewVersion() {
@@ -75,13 +75,13 @@ function CreateNewVersion() {
     });
 
 	$.unblockUI();
-    $("#addVersion_dialog").dialog('close');
+    $("#addVersion_dialog").dialog("close");
 
     return false;
 }
 
 function CloseVersionDialog() {
-    $("#addVersion_dialog").dialog('close');
+    $("#addVersion_dialog").dialog("close");
 
     return false;
 }

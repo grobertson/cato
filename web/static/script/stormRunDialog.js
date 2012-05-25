@@ -200,11 +200,11 @@ function ShowRunStormDialog(ecotemplate_id) {
 	}
 
     $.unblockUI();
-    $("#storm_run_dialog").dialog('open');
+    $("#storm_run_dialog").dialog("open");
 }
 
 function CloseRunStormDialog() {
-    $("#storm_run_dialog").dialog('close');
+    $("#storm_run_dialog").dialog("close");
     $("#storm_run_dialog_params").empty();
 
     //empty every input on the dialog

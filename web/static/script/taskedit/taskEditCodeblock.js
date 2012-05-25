@@ -74,7 +74,7 @@ $(document).ready(function () {
     //the onclick event of the 'delete' link of each codeblock
     $("#codeblock_selector .codeblock_delete_btn").live("click", function () {
         $("#codeblock_to_delete").val($(this).attr("remove_id"));
-        $("#codeblock_delete_confirm_dialog").dialog('open');
+        $("#codeblock_delete_confirm_dialog").dialog("open");
     });
 
     //the onclick event of the 'codeblock' elements
@@ -111,11 +111,11 @@ $(document).ready(function () {
         },
         buttons: {
             'Delete': function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
                 doCodeblockDelete();
             },
             Cancel: function () {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -192,7 +192,7 @@ function ShowCodeblockEdit(codeblock_name) {
         });
     }
 
-    $("#codeblock_edit_dialog").dialog('open');
+    $("#codeblock_edit_dialog").dialog("open");
 }
 
 function doCodeblockUpdate(old_name) {
@@ -272,7 +272,7 @@ function doCodeblockAdd() {
 				doGetSteps();
 				
 		        $.unblockUI();
-		        $("#codeblock_edit_dialog").dialog('close');
+		        $("#codeblock_edit_dialog").dialog("close");
 		        $("#update_success_msg").text("Update Successful").fadeOut(2000);
 	        },
 	        error: function (response) {

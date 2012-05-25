@@ -182,7 +182,7 @@ $(document).ready(function() {
     //the onclick event of the 'delete' link of each step
     $("#steps .step_delete_btn").live("click", function() {
         $("#hidStepDelete").val($(this).attr("remove_id"));
-        $("#step_delete_confirm_dialog").dialog('open');
+        $("#step_delete_confirm_dialog").dialog("open");
     });
 
     //the onclick event of the 'copy' link of each step
@@ -212,7 +212,7 @@ $(document).ready(function() {
     $("#steps .embedded_step_delete_btn").live("click", function() {
         $("#embedded_step_remove_xpath").val($(this).attr("remove_xpath"));
         $("#embedded_step_parent_id").val($(this).attr("parent_id"));
-        $("#embedded_step_delete_confirm_dialog").dialog('open');
+        $("#embedded_step_delete_confirm_dialog").dialog("open");
         //alert('remove step ' + $(this).attr("remove_id") + ' from ' + $(this).attr("parent_id"));
     });
 
@@ -323,7 +323,7 @@ $(document).ready(function() {
         $("#task_picker_target_field_id").val($(this).attr("target_field_id"));
         //alert($(this).attr("target_field_id") + "\n" + $(this).prev().prev().val());
         $("#task_picker_step_id").val($(this).attr("step_id"));
-        $("#task_picker_dialog").dialog('open');
+        $("#task_picker_dialog").dialog("open");
     });
 
     // when you hit enter inside 'task picker' for a subtask
@@ -359,7 +359,7 @@ $(document).ready(function() {
                 $("#task_picker_results li[tag='task_picker_row']").live("click", function() {
                     $("#task_steps").block({ message: null });
 
-                    $("#task_picker_dialog").dialog('close');
+                    $("#task_picker_dialog").dialog("close");
                     $("#task_picker_results").empty();
 
                     field.val($(this).attr("original_task_id"));
@@ -407,10 +407,10 @@ $(document).ready(function() {
         buttons: {
             'Delete': function() {
                 doStepDelete();
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function() {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -429,10 +429,10 @@ $(document).ready(function() {
         buttons: {
             'Delete': function() {
                 doEmbeddedStepDelete();
-                $(this).dialog('close');
+                $(this).dialog("close");
             },
             Cancel: function() {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });

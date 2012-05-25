@@ -49,7 +49,7 @@ $(document).ready(function() {
 		$("#new_ecosystem_name").val('');
 		$("#new_ecosystem_desc").val('');
 
-		$("#ecosystem_add_dialog").dialog('open');
+		$("#ecosystem_add_dialog").dialog("open");
 	});
 	//create ecosystem dialog
 	$("#ecosystem_add_dialog").dialog({
@@ -61,7 +61,7 @@ $(document).ready(function() {
 				NewEcosystem();
 			},
 			Cancel : function() {
-				$(this).dialog('close');
+				$(this).dialog("close");
 			}
 		}
 	});
@@ -76,7 +76,7 @@ $(document).ready(function() {
 				SaveIcon();
 			},
 			Cancel : function() {
-				$(this).dialog('close');
+				$(this).dialog("close");
 			}
 		}
 	});
@@ -202,7 +202,7 @@ $(document).ready(function() {
 				SaveParameterDefaults();
 			},
 			Cancel : function() {
-				$(this).dialog('close');
+				$(this).dialog("close");
 			}
 		}
 	});
@@ -281,7 +281,7 @@ function SaveIcon() {
 		}
 	});
 
-	$("#action_icon_dialog").dialog('close');
+	$("#action_icon_dialog").dialog("close");
 }
 
 function tabWasClicked(tab) {
@@ -366,7 +366,7 @@ function ShowParameterDialog(action_id) {
 
 	bindParameterToolTips();
 
-	$("#action_parameter_dialog").dialog('open');
+	$("#action_parameter_dialog").dialog("open");
 }
 
 function SaveParameterDefaults() {
@@ -394,7 +394,7 @@ function SaveParameterDefaults() {
 		}
 	});
 
-	$("#action_parameter_dialog").dialog('close');
+	$("#action_parameter_dialog").dialog("close");
 
 }
 
@@ -620,7 +620,7 @@ function NewEcosystem() {
         	} else if (response.id) {
 				//just add it to the list here
 				GetEcosystems();
-				$("#ecosystem_add_dialog").dialog('close');
+				$("#ecosystem_add_dialog").dialog("close");
 			} else {
 				showAlert(response);
 			}
@@ -671,7 +671,7 @@ function initActions() {
 		$(".action_picker_icon").removeClass("action_picker_icon_selected");
 		$(".action_picker_icon[src='" + src + "']").addClass("action_picker_icon_selected");
 
-		$("#action_icon_dialog").dialog('open');
+		$("#action_icon_dialog").dialog("open");
 	});
 	//the task print link
 	$("#category_actions .task_print_btn").live("click", function() {

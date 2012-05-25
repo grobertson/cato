@@ -25,7 +25,7 @@ $(document).ready(function() {
         height: 500,
         buttons: {
             Close: function() {
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -137,7 +137,7 @@ $(document).ready(function() {
         //hide the title bar on this page, it's a double stacked dialog
         $("#tag_picker_dialog").dialog().parents(".ui-dialog").find(".ui-dialog-titlebar").remove();
 
-        $("#tag_picker_dialog").dialog('open');
+        $("#tag_picker_dialog").dialog("open");
     });
 });
 

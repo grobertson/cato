@@ -53,7 +53,7 @@ function LoadEditDialog(editID) {
 
     });
     $("#edit_dialog").dialog("option", "title", "Modify Domain");
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
 
     $("#hidCurrentEditID").val(editID);
     FillEditForm(editID);
@@ -168,7 +168,7 @@ function ShowItemAdd() {
         }
     });
 
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtDomain").focus();
 
 
@@ -190,7 +190,7 @@ function DeleteItems() {
 
 
                 $("#hidSelectedArray").val("");
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("[id*='txtSearch']").val("");

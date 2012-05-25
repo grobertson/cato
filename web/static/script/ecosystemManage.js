@@ -41,7 +41,7 @@ $(document).ready(function () {
                 // nice, clear all checkboxes selected in a single line!
                 $(':input', (".jtable")).attr('checked', false);
 
-                $(this).dialog('close');
+                $(this).dialog("close");
             }
         }
     });
@@ -111,7 +111,7 @@ function ShowItemAdd() {
     // clear all of the previous values
     clearEditDialog();
 
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtTaskName").focus();
 }
 
@@ -130,7 +130,7 @@ function DeleteItems() {
         		showAlert(response.error);
             } else if (response.result == "success") {
                 $("#hidSelectedArray").val("");
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("#txtSearch").val("");
@@ -141,7 +141,7 @@ function DeleteItems() {
             } else {
                 showAlert(response);
 
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
                 
                 // reload the list, some may have been deleted.
                 // clear the search field and fire a search click, should reload the grid

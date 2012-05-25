@@ -31,7 +31,7 @@ $(document).ready(function () {
                 SaveItem(1);
             },
             Cancel: function () {
-                $("#edit_dialog").dialog('close');
+                $("#edit_dialog").dialog("close");
             }
         }
     });
@@ -49,7 +49,7 @@ $(document).ready(function () {
                 SaveKeyPair();
             },
             Cancel: function () {
-                $("#keypair_dialog").dialog('close');
+                $("#keypair_dialog").dialog("close");
             }
         }
     });
@@ -97,7 +97,7 @@ $(document).ready(function () {
         $("#keypair_private_key").val("");
         $("#keypair_passphrase").val("");
 
-        $("#keypair_dialog").dialog('open');
+        $("#keypair_dialog").dialog("open");
     });
 
     //keypair delete button
@@ -148,7 +148,7 @@ $(document).ready(function () {
             $("#keypair_passphrase").val("!2E4S6789O");
 
 
-        $("#keypair_dialog").dialog('open');
+        $("#keypair_dialog").dialog("open");
     });
 
 
@@ -370,7 +370,7 @@ function LoadEditDialog(sEditID) {
 			    $('#edit_dialog_tabs').tabs('select', 0);
 			    $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
 			    $("#edit_dialog").dialog("option", "title", "Modify Account");
-			    $("#edit_dialog").dialog('open');
+			    $("#edit_dialog").dialog("open");
 			}
         },
         error: function (response) {
@@ -457,10 +457,10 @@ function SaveItem(close_after_save) {
 					//if there are errors or info, we're closing the dialog.
 					//just makes things cleaner regarding the "mode" (add or edit)
 		        	if (account.info) {
-		            	$("#edit_dialog").dialog('close');
+		            	$("#edit_dialog").dialog("close");
 	        			showInfo(account.info);
 		        	} else if (account.error) {
-		            	$("#edit_dialog").dialog('close');
+		            	$("#edit_dialog").dialog("close");
 		        		showAlert(account.error);
 		        	} else {
 						// clear the search field and fire a search click, should reload the grid
@@ -481,7 +481,7 @@ function SaveItem(close_after_save) {
 		          		}
 			            
 			            if (close_after_save) {
-			            	$("#edit_dialog").dialog('close');
+			            	$("#edit_dialog").dialog("close");
 		            	} else {
 			            	//we aren't closing? fine, we're now in 'edit' mode.
 			            	$("#hidMode").val("edit");
@@ -518,7 +518,7 @@ function ShowItemAdd() {
     $('#edit_dialog_tabs').tabs('select', 0);
     $('#edit_dialog_tabs').tabs( "option", "disabled", [1] );
     $('#edit_dialog').dialog('option', 'title', 'Create a New Account');
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtAccountName").focus();
 }
 
@@ -554,7 +554,7 @@ function SaveKeyPair() {
                     GetKeyPairs(account_id);
                 }
                 $("#update_success_msg").text("Save Successful").show().fadeOut(2000);
-                $("#keypair_dialog").dialog('close');
+                $("#keypair_dialog").dialog("close");
             }
             else {
                 showAlert(msg.d);
@@ -598,7 +598,7 @@ function DeleteItems() {
             //update the list in the dialog
             if (response) {
                 $("#hidSelectedArray").val("");
-                $("#delete_dialog").dialog('close');
+                $("#delete_dialog").dialog("close");
 
                 // clear the search field and fire a search click, should reload the grid
                 $("#txtSearch").val("");

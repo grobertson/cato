@@ -163,7 +163,7 @@ function ShowItemAdd() {
     $("#btnCredAdd").click();
 
     $('#CredentialDetails').html('');
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
     $("#txtAssetName").focus();
 
 
@@ -173,7 +173,7 @@ function CloseDialog() {
 
     CancelCredentialAdd();
 
-    $("#edit_dialog").dialog('close');
+    $("#edit_dialog").dialog("close");
     InitializeAdd();
 
     return false;
@@ -216,7 +216,7 @@ function DeleteItems() {
 			}
 			if (response.result) {
 	            $("#hidSelectedArray").val("");
-	            $("#delete_dialog").dialog('close');
+	            $("#delete_dialog").dialog("close");
 	
 	            GetItems();
 	        } else {
@@ -444,7 +444,7 @@ function LoadEditDialog(editCount, editAssetID) {
 
     $("#hidMode").val("edit");
     $("#edit_dialog").data("title.dialog", "Modify Asset");
-    $("#edit_dialog").dialog('open');
+    $("#edit_dialog").dialog("open");
 
     $("#hidEditCount").val(editCount);
     $("#hidCurrentEditID").val(editAssetID);
