@@ -527,3 +527,50 @@ class cloudMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
+
+    def wmTestCloudConnection(self):
+        try:
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            sCloudID = uiCommon.getAjaxArg("sCloudID")
+            
+            c = cloud.Cloud()
+            c.FromID(sCloudID)
+            if c.ID is None:
+                return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud details for Cloud ID [" + sCloudID + "].\"}"
+            
+            ca = cloud.CloudAccount()
+            ca.FromID(sAccountID)
+            if ca.ID is None:
+                return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud Account details for Cloud Account ID [" + sAccountID + "].\"}"
+
+            # get the test cloud object type for this provider
+            cot = c.Provider.GetObjectTypeByName(c.Provider.TestObject)
+            if cot is not None:
+                if not cot.ID:
+                    return "{\"result\":\"fail\",\"error\":\"Cannot find definition for requested object type [" + c.Provider.TestObject + "].\"}"
+            else:
+                return "{\"result\":\"fail\",\"error\":\"GetCloudObjectType failed for [" + c.Provider.TestObject + "].\"}"
+            
+            # different providers libs have different methods for building a url
+            url = ""
+            if c.Provider.Name.lower() =="openstack":
+                """not yet implemented"""
+                #ACWebMethods.openstackMethods acOS = new ACWebMethods.openstackMethods()
+                #sXML = acOS.GetCloudObjectsAsXML(c.ID, cot, 0000BYREF_ARG0000sErr, null)
+            else: #Amazon aws, Eucalyptus, and OpenStackAws
+                import aws
+                awsi = aws.awsInterface()
+                url, err = awsi.BuildURL(ca, c, cot);            
+                if err:
+                    return "{\"result\":\"fail\",\"error\":\"" + uiCommon.packJSON(err) +"\"}"
+
+            if not url:
+                return "{\"result\":\"fail\",\"error\":\"Unable to build API URL.\"}"
+            result, err = uiCommon.HTTPGet(url, 30)
+            if err:
+                return "{\"result\":\"fail\",\"error\":\"" + uiCommon.packJSON(err) + "\"}"
+            
+            return "{\"result\":\"success\",\"response\":\"" + uiCommon.packJSON(result) + "\"}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()

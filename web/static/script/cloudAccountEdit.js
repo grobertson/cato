@@ -70,9 +70,9 @@ $(document).ready(function () {
 	    	var saved = SaveItem(0);
 	    	if (saved) {
 			    if (cld_id) {
-					location.href="cloudEdit.aspx?cloud_id=" + cld_id;
+					location.href="/cloudEdit?cloud_id=" + cld_id;
 				} else {
-					location.href="cloudEdit.aspx";
+					location.href="/cloudEdit";
 				}
 			}
 		}
@@ -83,25 +83,10 @@ $(document).ready(function () {
 	    if (prv != "Amazon AWS") {
 	    	var saved = SaveItem(0);
 	    	if (saved) {
-				location.href="cloudEdit.aspx?add=true&provider=" + prv;
+				location.href="/cloudEdit?add=true&provider=" + prv;
 			}
 		}
     });
-
-
-	//if there was an account_id querystring, we'll pop the edit dialog.
-	var acct_id = getQuerystringVariable("account_id");
-    if (acct_id) {
-        LoadEditDialog(acct_id);
-    }
-	//if there was an add querystring, we'll pop the add dialog.
-	var add = getQuerystringVariable("add");
-    if (add == "true") {
-		var prv = getQuerystringVariable("provider");
-		ShowItemAdd();
-	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
-    }
-
 
     //keypair add button
     $("#keypair_add_btn").button({ icons: { primary: "ui-icon-plus"} });
@@ -174,6 +159,20 @@ $(document).ready(function () {
     });
 
     GetProvidersList();
+
+	//if there was an account_id querystring, we'll pop the edit dialog.
+	var acct_id = getQuerystringVariable("account_id");
+    if (acct_id) {
+        LoadEditDialog(acct_id);
+    }
+	//if there was an add querystring, we'll pop the add dialog.
+	var add = getQuerystringVariable("add");
+    if (add == "true") {
+		var prv = getQuerystringVariable("provider");
+		ShowItemAdd();
+	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
+    }
+
     GetItems();
     ManagePageLoad();
 });
@@ -240,24 +239,23 @@ function TestConnection() {
 	    $.ajax({
 	        type: "POST",
 	        async: false,
-	        url: "awsMethods.asmx/wmTestCloudConnection",
+	        url: "cloudMethods/wmTestCloudConnection",
 	        data: '{"sAccountID":"' + account_id + '","sCloudID":"' + cloud_id + '"}',
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
 	        success: function (response) {
 				try
 				{
-		        	var oResultData = jQuery.parseJSON(response.d);
-					if (oResultData != null)
+					if (response != null)
 					{
-						if (oResultData.result == "success") {
+						if (response.result == "success") {
 							$("#conn_test_result").css("color","green");
 							$("#conn_test_result").text("Connection Successful.");
 						}
-						if (oResultData.result == "fail") {
+						if (response.result == "fail") {
 							$("#conn_test_result").css("color","red");
 							$("#conn_test_result").text("Connection Failed.");
-							$("#conn_test_error").text(unpackJSON(oResultData.error));
+							$("#conn_test_error").text(unpackJSON(response.error));
 						}
 					}
 				}

@@ -70,6 +70,8 @@ $(document).ready(function () {
 		GetProviderAccounts();
 	});
 
+    GetProvidersList();
+
 	//if there was an cloud_id querystring, we'll pop the edit dialog.
 	var cld_id = getQuerystringVariable("cloud_id");
     if (cld_id) {
@@ -82,11 +84,10 @@ $(document).ready(function () {
         ShowItemAdd();
 	    if (prv) { $("#ddlProvider").val(prv); $("#ddlProvider").change(); }
     }
-    
-    GetProvidersList();
-    GetItems();
 
+    GetItems();
     ManagePageLoad();
+
 });
 
 function GetProvidersList() {
@@ -149,24 +150,23 @@ function TestConnection() {
 	    $.ajax({
 	        type: "POST",
 	        async: false,
-	        url: "awsMethods.asmx/wmTestCloudConnection",
+	        url: "cloudMethods/wmTestCloudConnection",
 	        data: '{"sAccountID":"' + account_id + '","sCloudID":"' + cloud_id + '"}',
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
 	        success: function (response) {
 				try
 				{
-		        	var oResultData = jQuery.parseJSON(response.d);
-					if (oResultData != null)
+					if (response != null)
 					{
-						if (oResultData.result == "success") {
+						if (response.result == "success") {
 							$("#conn_test_result").css("color","green");
 							$("#conn_test_result").text("Connection Successful.");
 						}
-						if (oResultData.result == "fail") {
+						if (response.result == "fail") {
 							$("#conn_test_result").css("color","red");
 							$("#conn_test_result").text("Connection Failed.");
-							$("#conn_test_error").text(unpackJSON(oResultData.error));
+							$("#conn_test_error").text(unpackJSON(response.error));
 						}
 					}
 				}
