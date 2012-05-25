@@ -154,7 +154,7 @@ def TickSlash(s):
 def packJSON(sIn):
     if not sIn:
         return sIn
-    sOut = base64.b64encode(sIn)
+    sOut = base64.b64encode(str(sIn))
     return sOut.replace("/", "%2F").replace("+", "%2B")
 
 def unpackJSON(sIn):
@@ -519,8 +519,8 @@ def HTTPGet(url, timeout=30, headers={}):
                 return None, ex.reason
             elif hasattr(ex, "code"):
                 log_nouser("HTTPGet: The server couldn\'t fulfill the request.", 2)
-                log_nouser(ex.code, 2)
-                return None, ex.code
+                log_nouser(ex.__str__(), 2)
+                return None, ex.__str__()
         
         # if all was well, we won't get here.
         return None, "No results from request."
