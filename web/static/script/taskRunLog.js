@@ -117,6 +117,7 @@ $(document).ready(function () {
             OK: function () {
                 $(this).dialog('close');
 
+                var task_id = $("#hidTaskID").val();
                 var task_name = $("#lblTaskName").html();
                 var asset_id = $("#hidAssetID").val();
                 var ecosystem_id = $("#hidEcosystemID").val();
@@ -125,7 +126,7 @@ $(document).ready(function () {
                 var instance = $("#hidInstanceID").val();
                 var debug_level = $("#hidDebugLevel").val();
 
-				var args = '{"task_id":"' + g_task_id + '", "task_name":"' + task_name + '", "debug_level":"' + debug_level + '"';
+				var args = '{"task_id":"' + task_id + '", "task_name":"' + task_name + '", "debug_level":"' + debug_level + '"';
         
 				if (account_id)
 					args += ', "account_id":"' + account_id + '", "account_name":"' + account_name + '"';
