@@ -123,7 +123,7 @@ class Asset(object):
         try:
             db = catocommon.new_conn()
             #  history in user_session.
-            sql = "select count(*) from v_task_instance where asset_id = '" + asset_id + "'"
+            sql = "select count(*) from tv_task_instance where asset_id = '" + asset_id + "'"
             iResults = db.select_col_noexcep(sql)
             if db.error:
                 raise Exception(db.error)
@@ -138,7 +138,7 @@ class Asset(object):
             if db: db.close()
 
     @staticmethod
-    def DBCreateNew(sAssetName, sStatus, sDbName, sPort, sAddress, sConnString, sTagArray, credential=None):
+    def DBCreateNew(sAssetName, sStatus, sDbName, sPort, sAddress, sConnString, sTagArray, sCredentialMode, credential=None):
         """
         Creates a new Asset.  Requires a credential object to be sent along.  If not provided, the 
         Asset is created with no credentials.
@@ -148,108 +148,41 @@ class Asset(object):
 
             sAssetID = catocommon.NewGUID()
 
-            sCredentialID = "" # <-- FIX THIS 
+            if credential:
+                c = Credential()
+                c.FromDict(credential)
+            
+            
+            sCredentialID = (c.ID if c.ID else "")
 
 
-#            sCredentialID = oAsset[7]
-#            sCredUsername = oAsset[8].replace("'", "''")
-#            sCredPassword = oAsset[9].replace("'", "''")
-#            sShared = oAsset[10]
-#            sCredentialName = oAsset[11].replace("'", "''")
-#            sCredentialDescr = oAsset[12].replace("'", "''")
-#            sDomain = oAsset[13].replace("'", "''")
-#            sCredentialType = oAsset[14]
-#            sPrivilegedPassword = oAsset[16]
 
-#            #  there are three CredentialType's 
-#            #  1) 'selected' = user selected a different credential, just save the credential_id
-#            #  2) 'new' = user created a new shared or local credential
-#            #  3) 'existing' = same credential, just update the username,description ad password
-#            sPriviledgedPasswordUpdate = null
-#            if sCredentialType == "new":
-#                if sPrivilegedPassword:
-#                    sPriviledgedPasswordUpdate = "NULL"
-#                else:
-#                    sPriviledgedPasswordUpdate = "'" + catocommon.cato_encrypt(sPrivilegedPassword) + "'"
-#
-#                # if it's a local credential, the credential_name is the asset_id.
-#                # if it's shared, there will be a name.
-#                if sShared == "1":
-#                    sCredentialName = sAssetID
-#                    
-#                    # whack and add - easiest way to avoid conflicts
-#                    sSql = "delete from asset_credential where credential_name = '" + sCredentialName + "' and shared_or_local = '1'"
-#                    if !dc.sqlExecuteUpdate(sSql, 0000BYREF_ARG0000sErr:
-#                        uiCommon.log(self.db.error)
-#                
-#                # now we're clear to add
-#                sCredentialID = "'" + uiCommon.NewGUID() + "'"
-#                sSql = "insert into asset_credential " \
-#                    "(credential_id,credential_name,username,password,domain,shared_or_local,shared_cred_desc,privileged_password) " \
-#                        "values (" + sCredentialID + ",'" + sCredentialName + "','" + sCredUsername + "','" + catocommon.cato_encrypt(sCredPassword) + "','" + sDomain + "','" + sShared + "','" + sCredentialDescr + "'," + sPriviledgedPasswordUpdate + ")"
-#                if !dc.sqlExecuteUpdate(sSql, 0000BYREF_ARG0000sErr:
-#                    if sErr == "key_violation":
-#                        uiCommon.log("A Credential with that name already exists.  Please select another name.")
-#                    else: 
-#                        uiCommon.log(self.db.error)
-#                
-#                #  add security log
-#                uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Credential, sCredentialID, sCredentialName, "")
-#                
-#
-#            elif sCredentialType == "existing":
-#                sCredentialID = "'" + sCredentialID + "'"
-#                #  bugzilla 1126 if the password has not changed leave it as is.
-#                sPasswordUpdate = ""
-#                if sCredPassword == "($%#d@x!&":
-#                    #  password has not been touched
-#                    sPasswordUpdate = ""
-#                else:
-#                    #  updated password
-#                    sPasswordUpdate = ",password = '" + catocommon.cato_encrypt(sCredPassword) + "'"
-#
-#                #  bugzilla 1260
-#                #  same for privileged_password
-#
-#                if sPrivilegedPassword == "($%#d@x!&":
-#                    #  password has not been touched
-#                    sPriviledgedPasswordUpdate = ""
-#                else:
-#                    #  updated password
-#                    #  bugzilla 1352 priviledged password can be blank, so if it is, set it to null
-#                    if sPrivilegedPassword:
-#                        sPriviledgedPasswordUpdate = ",privileged_password = null"
-#                    else:
-#                        sPriviledgedPasswordUpdate = ",privileged_password = '" + catocommon.cato_encrypt(sPrivilegedPassword) + "'"
-#
-#                sSql = "update asset_credential " \
-#                        "set username = '" + sCredUsername + "'" + sPasswordUpdate + sPriviledgedPasswordUpdate + ",domain = '" + sDomain + "'," \
-#                        "shared_or_local = '" + sShared + "',shared_cred_desc = '" + sCredentialDescr + "'" \
-#                        "where credential_id = " + sCredentialID
-#                if !dc.sqlExecuteUpdate(sSql, 0000BYREF_ARG0000sErr:
-#                    uiCommon.log(self.db.error)
-#
-#                #  add security log
-#                uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Asset, sAssetID, sAssetName.strip().replace("'", "''") + "Changed credential", sOriginalUserName, sCredUsername)
-#
-#            else:
-#                #  user selected a shared credential
-#                #  remove the local credential if one exists
-#
-#                if sOriginalCredentialID:
-#                    sSql = "delete from asset_credential where credential_id = '" + sOriginalCredentialID + "' and shared_or_local = '1'"
-#                    if !dc.sqlExecuteUpdate(sSql, 0000BYREF_ARG0000sErr:
-#                        uiCommon.log(self.db.error)
-#
-#                    #  add security log
-#                    uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Asset, sAssetID, sAssetName.strip().replace("'", "''"), "Credential deleted" + sOriginalCredentialID + " " + sOriginalUserName)
-#
-#
-#                sCredentialID = "'" + sCredentialID + "'"
+            #  there are three CredentialType's 
+            #  1) 'selected' = user selected a different credential, just save the credential_id
+            #  2) 'new' = user created a new shared or local credential
+            #  3) 'existing' = same credential, just update the username,description ad password
+            if sCredentialMode == "new":
+                # if it's a local credential, the credential_name is the asset_id.
+                # if it's shared, there will be a name.
+                if c.Shared == "1":
+                    c.Name = sAssetID
 
-
-            # SO... do the above mess differently, wiht a new credential class
-            # ultimately, all we care about is the CREDENTIAL_ID to associate with the asset.
+                result, msg = c.DBCreateNew()
+                if not result:
+                    return None, msg
+# DOESN'T HAPPEN ON AN add
+#            elif sCredentialMode == "existing":
+#                result, msg = c.DBUpdate()
+#                if not result:
+#                    return None, msg
+            else:
+                #  user selected a shared credential
+                #  remove the local credential if one exists
+                sSQL = """delete from asset_credential
+                    where shared_or_local = 1
+                    and credential_id in (select credential_id from asset where asset_id = '%s')""" % sAssetID
+                if not db.exec_db_noexcep(sSQL):
+                    return False, db.error
 
 
             sSQL = "insert into asset" \
@@ -264,7 +197,6 @@ class Asset(object):
             ("NULL" if sPort == "" else "'" + sPort + "'") + "," \
             "'" + sCredentialID + "'" \
             ")"
-
             if not db.tran_exec_noexcep(sSQL):
                 if db.error == "key_violation":
                     return None, "Asset Name '" + sAssetName + "' already in use, choose another."
@@ -579,3 +511,137 @@ class Credentials(object):
             return json.dumps(self.rows)
         except Exception, ex:
             raise ex
+
+class Credential(object):
+    ID = None
+    Username = None
+    Password = None
+    Shared = None
+    Name = None
+    Description = None
+    Domain = None
+    PrivilegedPassword = None
+    
+    def __init__(self):
+        self.ID = catocommon.NewGUID()
+        
+    def FromArgs(self, sID, sName, sDesc, sUsername, sPassword, sShared, sDomain, sPrivPassword):
+        self.ID = sID
+        self.Name = sName
+        self.Description = sDesc
+        self.Username = sUsername
+        self.Password = sPassword
+        self.Shared = sShared
+        self.Domain = sDomain
+        self.PrivilegedPassword = sPrivPassword
+
+        # if created by args, it may or may not have an ID.
+        # but it needs one.
+        if not self.ID:
+            self.ID = catocommon.NewGUID()
+
+    def FromDict(self, cred):
+        try:
+            for k, v in cred.items():
+                setattr(self, k, v)
+                
+            # if created by args, it may or may not have an ID.
+            # but it needs one.
+            if not self.ID:
+                self.ID = catocommon.NewGUID()
+        except Exception, ex:
+            raise ex
+
+    def DBCreateNew(self):
+        try:
+            db = catocommon.new_conn()
+
+            sPriviledgedPasswordUpdate = ""
+            if self.PrivilegedPassword:
+                sPriviledgedPasswordUpdate = "NULL"
+            else:
+                sPriviledgedPasswordUpdate = "'" + catocommon.cato_encrypt(self.PrivilegedPassword) + "'"
+
+            # if it's a local credential, the credential_name is the asset_id.
+            # if it's shared, there will be a name.
+            if self.Shared == "1":
+                # whack and add - easiest way to avoid conflicts
+                sSQL = "delete from asset_credential where credential_name = '%s' and shared_or_local = '1'" % self.Name
+                if not db.exec_db_noexcep(sSQL):
+                    return False, db.error
+            
+            sSQL = "insert into asset_credential " \
+                "(credential_id, credential_name, username, password, domain, shared_or_local, shared_cred_desc, privileged_password) " \
+                "values ('" + self.ID + "','" + self.Name + "','" + self.Username + "','" + catocommon.cato_encrypt(self.Password) + "','" \
+                + self.Domain + "','" + self.Shared + "','" + self.Description + "'," + sPriviledgedPasswordUpdate + ")"
+            if not db.exec_db_noexcep(sSQL):
+                if db.error == "key_violation":
+                    return False, "A Credential with that name already exists.  Please select another name."
+                else: 
+                    return False, db.error
+            
+            #  add security log
+            # need to move this function to catocommon
+            # uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Credential, sCredentialID, sCredentialName, "")
+            return True, None
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+                
+
+    def DBDelete(self):
+        try:
+            db = catocommon.new_conn()
+
+            sSQL = "delete from asset_credential where credential_id = '%s'" % self.ID
+            if not db.exec_db_noexcep(sSQL):
+                return False, db.error
+
+            #  add security log
+            #uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Asset, sAssetID, sAssetName.strip().replace("'", "''"), "Credential deleted" + sOriginalCredentialID + " " + sOriginalUserName)
+
+            return True, None
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+                
+    def DBUpdate(self):
+        try:
+            db = catocommon.new_conn()
+
+            # if the password has not changed leave it as is.
+            sPasswordUpdate = ""
+            if self.Password and self.Password != "~!@@!~":
+                sPasswordUpdate = ", password = '" + catocommon.cato_encrypt(self.Password) + "'"
+
+            #  same for privileged_password
+            sPriviledgedPasswordUpdate = ""
+            if self.PrivilegedPassword != "~!@@!~":
+                #  updated password
+                #  priviledged password can be blank, so if it is, set it to null
+                if self.PrivilegedPassword:
+                    sPriviledgedPasswordUpdate = ", privileged_password = null"
+                else:
+                    sPriviledgedPasswordUpdate = ", privileged_password = '" + catocommon.cato_encrypt(self.PrivilegedPassword) + "'"
+
+            sSQL = "update asset_credential " \
+                "set username = '" + self.Username + "'," \
+                "domain = '" + self.Domain + "'," \
+                "shared_or_local = '" + self.Shared + "'," \
+                "shared_cred_desc = '" + self.Description + "'" \
+                + sPasswordUpdate + sPriviledgedPasswordUpdate + \
+                "where credential_id = '" + self.ID + "'"
+            if not db.exec_db_noexcep(sSQL):
+                return False, db.error
+
+#                #  add security log
+#                uiCommon.WriteObjectPropertyChangeLog(uiGlobals.CatoObjectTypes.Asset, sAssetID, sAssetName.strip().replace("'", "''") + "Changed credential", sOriginalUserName, sCredUsername)
+
+            return True, None
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+

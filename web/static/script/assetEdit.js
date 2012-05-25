@@ -257,7 +257,7 @@ function SaveAsset() {
 
     // new credentials
     var sCredUsername = $("#txtCredUsername").val();
-    var sCredPasword = $("#txtCredPassword").val();
+    var sCredPassword = $("#txtCredPassword").val();
     var sCredPasswordConfirm = $("#txtCredPasswordConfirm").val();
     var sPrivilegedPassword = $("#txtPrivilegedPassword").val();
     var sPrivilegedPasswordConfirm = $("#txtPrivilegedConfirm").val();
@@ -284,7 +284,7 @@ function SaveAsset() {
                     strValidationError += 'Name and Description are required on Shared Credentials.<br />';
                 }
             }
-            if (sCredPasword != sCredPasswordConfirm) {
+            if (sCredPassword != sCredPasswordConfirm) {
                 bSave = false;
                 strValidationError += 'Credential Passwords do not match.<br />';
             }
@@ -310,42 +310,44 @@ function SaveAsset() {
             sTags += "," + $(this).attr("id").replace(/ot_/, "");
     });
 
+	var cred = {}
+    cred.ID = sCredentialID;
+    cred.Name = sCredentialName;
+    cred.Description = sCredentialDescr;
+    cred.Username = sCredUsername;
+    cred.Password = sCredPassword;
+    cred.Shared = rbShared;
+    cred.Domain = sDomain;
+    cred.PrivilegedPassword = sPrivilegedPassword;
+
     var asset = {};
     asset.ID = sAssetID;
     asset.Name = sAssetName;
     asset.DBName = $("#txtDbName").val();
     asset.Port =sPort;
     asset.Address = $("#txtAddress").val();
-    asset.Mode = $("#hidMode").val();
-    asset.CredentialID = sCredentialID;
-    asset.CredUsername = sCredUsername;
-    asset.CredPasword = sCredPasword;
-    asset.Shared = rbShared;
-    asset.CredentialName = sCredentialName;
-    asset.CredentialDescr = sCredentialDescr;
-    asset.Domain = sDomain;
-    asset.CredentialType = $("#hidCredentialType").val();
     asset.Status = ddlAssetStatus;
-    asset.PrivilegedPassword = sPrivilegedPassword;
     asset.ConnString = $("#txtConnString").val();;
     asset.Tags = sTags;
+    asset.CredentialMode = $("#hidCredentialType").val();
+    asset.Credential = cred;
 
-	$.ajax({
-		async : false,
-		type : "POST",
-		url : "uiMethods/wmCreateAsset",
-		data : JSON.stringify(asset),
-		contentType : "application/json; charset=utf-8",
-		dataType : "json",
-		success : function(response) {
-			if (response.error) {
-				showAlert(response.error);
-			}
-			if (response.info) {
-				showInfo(response.info);
-			}
-			if (response.ID) {
-				if ($("#hidMode").val() == 'edit') {
+	if ($("#hidMode").val() == "edit") {
+		$.ajax({
+			async : false,
+			type : "POST",
+			url : "uiMethods/wmUpdateAsset",
+			data : JSON.stringify(asset),
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			success : function(response) {
+				if (response.error) {
+					showAlert(response.error);
+				}
+				if (response.info) {
+					showInfo(response.info);
+				}
+				if (response.ID) {
 	                // remove this item from the array
 	                var sEditID = $("#hidCurrentEditID").val();
 	                var myArray = new Array();
@@ -370,24 +372,46 @@ function SaveAsset() {
 	
 	                    CloseDialog();
 			            GetItems();
-	                } else {
-	                    // load the next item to edit
-	                    $("#hidCurrentEditID").val(myArray[0]);
-	                    FillEditForm(myArray[0]);
-	                }
-	            } else {
+		            } else {
+		                CloseDialog();
+			            GetItems();
+		            }
+		        } else {
+		            showInfo(response);
+		        }
+			},
+			error : function(response) {
+				showAlert(response.responseText);
+			}
+		});	
+	} else {
+		$.ajax({
+			async : false,
+			type : "POST",
+			url : "uiMethods/wmCreateAsset",
+			data : JSON.stringify(asset),
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			success : function(response) {
+				if (response.error) {
+					showAlert(response.error);
+				}
+				if (response.info) {
+					showInfo(response.info);
+				}
+				if (response.ID) {
 	                CloseDialog();
 		            GetItems();
-	            }
-	        } else {
-	            showInfo(response);
-	        }
-		},
-		error : function(response) {
-			showAlert(response);
-		}
-	});
-    
+		        } else {
+		            showInfo(response);
+		        }
+			},
+			error : function(response) {
+				showAlert(response.responseText);
+			}
+		});
+
+	}
 }
 
 function ShowCredentialAdd() {

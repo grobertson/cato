@@ -341,7 +341,7 @@ function SaveUserEdits() {
 	        }
 		},
 		error : function(response) {
-			showAlert(response);
+			showAlert(response.responseText);
 		}
 	});
 }
@@ -455,7 +455,7 @@ function SaveNewUser() {
 	        }
 		},
 		error : function(response) {
-			showAlert(response);
+			showAlert(response.responseText);
 		}
 	});
 }

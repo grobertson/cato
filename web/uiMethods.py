@@ -1179,7 +1179,7 @@ class uiMethods:
             args = uiCommon.getAjaxArgs()
 
             u, sErr = asset.Asset.DBCreateNew(args["Name"], args["Status"], args["DBName"], args["Port"], 
-              args["Address"], args["ConnString"], args["Tags"])
+              args["Address"], args["ConnString"], args["Tags"], args["CredentialMode"], args["Credential"])
             if sErr:
                 return "{\"error\" : \"" + sErr + "\"}"
             if u == None:
