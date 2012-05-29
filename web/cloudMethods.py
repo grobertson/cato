@@ -486,6 +486,7 @@ class cloudMethods:
 
                 # loop data columns
                 for prop in props:
+                    print "%s - %s" % (prop.Name, prop.Value)
                     sValue = (prop.Value if prop.Value else "")
                     sHTML += "<td>"
 

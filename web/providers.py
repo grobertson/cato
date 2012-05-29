@@ -319,6 +319,7 @@ class CloudObjectTypeProperty:
     #constructor
     def __init__(self, parent):
         self.ParentObjectTypeID = parent.ID
+        self.Value = None
 
     def AsJSON(self):
         return json.dumps(self.__dict__)

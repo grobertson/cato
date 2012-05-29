@@ -7,6 +7,7 @@ import base64
 import cgi
 import re
 import pickle
+import copy
 import xml.etree.ElementTree as ET
 from catocommon import catocommon
 from settings import settings
@@ -607,50 +608,59 @@ def GetCloudObjectsAsList(sAccountID, sCloudID, sObjectType):
                 record_id = ""
                 row = []
                 for prop in cot.Properties:
-                    log("looking for property %s" % prop.Name, 4)
+                    # NOW PAY ATTENTION.
+                    # the CloudObjectTypeProperty class has a 'Value' attribute.
+                    # but, we obviously can't set that property of THIS instance (prop)
+                    # because it's gonna get changed each time.
+                    
+                    # so, we create a clone of that property here, and give that copy the actual value,
+                    # then append the copy to 'row', not the one we're looping here.
+                    
+                    # cosmic?  yes... it is.
+                    newprop = copy.copy(prop)
+                    log("looking for property [%s]" % newprop.Name, 4)
     
                     # ok look, the property may be an xml attribute, or it might be an element.
                     # if there is an XPath value on the column, that means it's an element.
                     # the absence of an XPath means we'll look for an attribute.
                     # NOTE: the attribute we're looking for is the 'name' of this property
                     # which is the DataColumn.name.
-                    if not prop.XPath:
-                        xa = xRecord.attrib[prop.Name]
+                    if not newprop.XPath:
+                        xa = xRecord.attrib[newprop.Name]
                         if xa is not None:
-                            log(" -- found attribute [%s]" % xa, 4)
-                            prop.Value = xa
-                            row.append(prop)
+                            log(" -- found (attribute) - [%s]" % xa, 4)
+                            newprop.Value = xa
+                            row.append(newprop)
                     else:
                         # if it's a tagset column put the tagset xml in it
                         #  for all other columns, they get a lookup
-                        xeProp = xRecord.find(prop.XPath)
+                        xeProp = xRecord.find(newprop.XPath)
                         if xeProp is not None:
                             # does this column have the extended property "ValueIsXML"?
-                            bAsXML = (True if prop.ValueIsXML else False)
+                            bAsXML = (True if newprop.ValueIsXML else False)
                             
                             if bAsXML:
-                                prop.Value = ET.tostring(xeProp)
-                                log(" -- found node, (as xml) value is [%s]" % prop.Value, 4)
+                                newprop.Value = ET.tostring(xeProp)
+                                log(" -- found (as xml) - [%s]" % newprop.Value, 4)
                             else:
-                                prop.Value = xeProp.text
-                                log(" -- found node, value is [%s]" % prop.Value, 4)
+                                newprop.Value = xeProp.text
+                                log(" -- found - [%s]" % newprop.Value, 4)
 
                         # just because it's missing from the data doesn't mean we can omit the property
                         # it just has an empty value.    
-                        row.append(prop)
+                        row.append(newprop)
     
-                    if prop.IsID:
-                        log(prop.Name + " is part of the ID", 4)
-                        if not prop.Value:
-                            return None, "A property [%s] cannot be defined as an 'ID', and have an empty value." % prop.Name
+                    if newprop.IsID:
+                        if not newprop.Value:
+                            return None, "A property [%s] cannot be defined as an 'ID', and have an empty value." % newprop.Name
                         else:
-                            print prop.Value + " becomes a part of the id"
-                            record_id += (prop.Value if prop.Value else "")
+                            log("[%s] is part of the ID... so [%s] becomes part of the ID" % (newprop.Name, newprop.Value), 4)
+                            record_id += (newprop.Value if newprop.Value else "")
                     
                     # an id is required
                     if not record_id:
                         return None, "Unable to construct an 'id' from property values."
-                
+
                 cot.Instances[record_id] = row 
 
             return cot.Instances, None
