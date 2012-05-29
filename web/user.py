@@ -78,7 +78,9 @@ class User(object):
             # has it been used lately (if that's required)?
             # in which case we need to save the old one to history, and delete
             # any rows over this counter.
-            if s_set.PasswordHistory:
+            
+            # this test isn't necessary if no user_id was provided
+            if uid and s_set.PasswordHistory:
                 db = catocommon.new_conn()
                 sql = """select password from user_password_history 
                 where user_id = '%s'
@@ -88,7 +90,7 @@ class User(object):
                 previous_pwds = db.select_csv(sql, False)
                 if previous_pwds:
                     if catocommon.cato_encrypt(pwd) in previous_pwds:
-                        return False, "Password cannot yet be reused."
+                        return False, "That password cannot yet be reused."
                         
                 db.close()        
                 
@@ -203,11 +205,16 @@ class User(object):
 
             if sAuthType == "local":
                 if sPassword:
-                    sEncPW = "'%s'" % catocommon.cato_encrypt(sPassword)
+                    if sPassword:
+                        result, msg = User.ValidatePassword(None, sPassword)
+                        if result:
+                            sEncPW = "'%s'" % catocommon.cato_encrypt(sPassword)
+                        else:
+                            return None, msg
                 elif catocommon.is_true(sGeneratePW):
                     sEncPW = "'%s'" % catocommon.cato_encrypt(catocommon.generate_password())
                 else:
-                    return None, "Either an explicit password must be provided, or check the box to generate one."
+                    return None, "A password must be provided, or check the box to generate one."
             elif sAuthType == "ldap":
                 sEncPW = " null"
             

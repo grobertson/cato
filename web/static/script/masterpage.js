@@ -80,12 +80,13 @@ $(document).ready(function () {
             		return false;	
             	}
             	
-				args = $("#my_account_dialog :input").serializeArray()
+				args = JSON.stringify($("#my_account_dialog :input").serializeArray());
+				args = args.replace(pw1, packJSON(pw1));
 				$.ajax({
 					async : false,
 					type : "POST",
 					url : "uiMethods/wmSaveMyAccount",
-					data : '{"sValues":' + JSON.stringify(args) + '}',
+					data : '{"sValues":' + args + '}',
 					contentType : "application/json; charset=utf-8",
 					dataType : "json",
 					success : function(response) {

@@ -294,51 +294,55 @@ function SaveUserEdits() {
 		url : "uiMethods/wmUpdateUser",
 		data : JSON.stringify(user),
 		contentType : "application/json; charset=utf-8",
-		dataType : "text",
+		dataType : "json",
 		success : function(response) {
-			//THIS NEEDS WORK
-	        if (response.length == 0) {
-	            //showInfo('User updated.');
-	
-	            if ($("#hidMode").val() == 'edit') {
-	                // remove this item from the array
-	                var sEditID = $("#hidCurrentEditID").val();
-	                var myArray = new Array();
-	                var sArrHolder = $("#hidSelectedArray").val();
-	                myArray = sArrHolder.split(',');
-	
-	                //how many in the array before you clicked Save?
-	                var wereInArray = myArray.length;
-	
-	                if (jQuery.inArray(sEditID, myArray) > -1) {
-	                    $("#chk_" + sEditID).attr("checked", false);
-	                    myArray.remove(sEditID);
-	                }
-	
-	                $("#lblItemsSelected").html(myArray.length);
-	                $("#hidSelectedArray").val(myArray.toString());
-	
-	                if (wereInArray == 1) {
-	                    // this was the last or only user edited so close
-	                    $("#hidCurrentEditID").val("");
-	                    $("#hidEditCount").val("");
-	
-	                    CloseDialog();
-	                    //leave any search string the user had entered, so just click the search button
-						GetItems();
-	                } else {
-	                    // load the next item to edit
-	                    $("#hidCurrentEditID").val(myArray[0]);
-	                    FillEditForm(myArray[0]);
-	                }
-	            } else {
-	                CloseDialog();
-	                //leave any search string the user had entered, so just click the search button
-	                GetItems();
-	            }
-	        } else {
-	            showInfo(result);
-	        }
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.result) {
+			    if (response.result == "success") {
+		            if ($("#hidMode").val() == 'edit') {
+		                // remove this item from the array
+		                var sEditID = $("#hidCurrentEditID").val();
+		                var myArray = new Array();
+		                var sArrHolder = $("#hidSelectedArray").val();
+		                myArray = sArrHolder.split(',');
+		
+		                //how many in the array before you clicked Save?
+		                var wereInArray = myArray.length;
+		
+		                if (jQuery.inArray(sEditID, myArray) > -1) {
+		                    $("#chk_" + sEditID).attr("checked", false);
+		                    myArray.remove(sEditID);
+		                }
+		
+		                $("#lblItemsSelected").html(myArray.length);
+		                $("#hidSelectedArray").val(myArray.toString());
+		
+		                if (wereInArray == 1) {
+		                    // this was the last or only user edited so close
+		                    $("#hidCurrentEditID").val("");
+		                    $("#hidEditCount").val("");
+		
+		                    CloseDialog();
+		                    //leave any search string the user had entered, so just click the search button
+							GetItems();
+		                } else {
+		                    // load the next item to edit
+		                    $("#hidCurrentEditID").val(myArray[0]);
+		                    LoadEditDialog(myArray.length, myArray[0]);
+		                }
+		            } else {
+		                CloseDialog();
+		                //leave any search string the user had entered, so just click the search button
+		                GetItems();
+		            }
+			   }
+			}
+
 		},
 		error : function(response) {
 			showAlert(response.responseText);
@@ -450,8 +454,6 @@ function SaveNewUser() {
 			if (response.ID) {
 	            CloseDialog();
 	            GetItems();
-	        } else {
-	            showInfo(response);
 	        }
 		},
 		error : function(response) {
@@ -573,7 +575,7 @@ function ShowItemCopy() {
     var user_copy_id = myArray[0];
 
     //get the data for the selected user
-    FillEditForm(user_copy_id);
+    LoadEditDialog(1, user_copy_id);
 
     $("#hidMode").val("add");
     $('#edit_dialog').dialog("option", "title", 'Create New User like ' + $("#txtUserFullName").val());

@@ -770,7 +770,7 @@ class uiMethods:
 
                 # only do the password if it was provided
                 if pair["name"] == "my_password":
-                    newpw = pair["value"]
+                    newpw = uiCommon.unpackJSON(pair["value"])
                     if newpw:
                         result, msg = user.User.ValidatePassword(user_id, newpw)
                         if result:
@@ -973,8 +973,6 @@ class uiMethods:
             TODO: this should be moved to the user module.
         """
         try:
-            # TODO: must do checking for password complexity, see if it's already been used, etc.
-            
             # FIRST THINGS FIRST - it's critical we make sure the current user making this call
             # is an Administrator
             
@@ -1005,9 +1003,13 @@ class uiMethods:
 
                 # only do the password if it was provided
                 if key == "Password":
-                    val = uiCommon.unpackJSON(val)
-                    if val:
-                        sql_bits.append("user_password='%s'" % catocommon.cato_encrypt(val))
+                    newpw = uiCommon.unpackJSON(val)
+                    if newpw:
+                        result, msg = user.User.ValidatePassword(user_id, newpw)
+                        if result:
+                            sql_bits.append("user_password = '%s'" % catocommon.cato_encrypt(newpw))
+                        else:
+                            return "{\"info\":\"%s\"}" % msg
 
                 # Here's something special...
                 # If the arg "RandomPassword" was provided and is true...
@@ -1023,7 +1025,7 @@ class uiMethods:
                     if u:
                         u.FromID(args["ID"])
                         if not u.Email:
-                            return "Unable to reset password - User does not have an email address defined."
+                            return "{\"info\":\"Unable to reset password - User does not have an email address defined.\"}"
                         else:
                             sNewPassword = catocommon.generate_password()
                             sql_bits.append("user_password='%s'" % sNewPassword)
@@ -1056,7 +1058,7 @@ class uiMethods:
 
             if not self.db.exec_db_noexcep(sql):
                 uiCommon.log_nouser(self.db.error, 0)
-                return self.db.error
+                "{\"error\":\"%s\"}" % self.db.error
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "User updated.")
                
@@ -1072,7 +1074,7 @@ class uiMethods:
                         if not self.db.exec_db_noexcep(sql):
                             uiCommon.log_nouser(self.db.error, 0)
             
-            return ""
+            return "{\"result\":\"success\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -1081,10 +1083,10 @@ class uiMethods:
         try:
             args = uiCommon.getAjaxArgs()
 
-            u, sErr = user.User.DBCreateNew(args["LoginID"], args["FullName"], args["AuthenticationType"], args["Password"], 
+            u, msg = user.User.DBCreateNew(args["LoginID"], args["FullName"], args["AuthenticationType"], uiCommon.unpackJSON(args["Password"]), 
                                             args["GeneratePW"], args["ForceChange"], args["Role"], args["Email"], args["Status"], args["Groups"])
-            if sErr:
-                return "{\"error\" : \"" + sErr + "\"}"
+            if msg:
+                return "{\"error\" : \"" + msg + "\"}"
             if u == None:
                 return "{\"error\" : \"Unable to create User.\"}"
 
