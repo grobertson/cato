@@ -526,7 +526,7 @@ class uiMethods:
                 (" '" + sEcosystemID + "'" if sEcosystemID else "''") + "," + \
                 (" '" + sAccountID + "'" if sAccountID else "''") + "," \
                 " str_to_date('" + sRunOn + "', '%%m/%%d/%%Y %%H:%%i')," + \
-                (" '" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," + \
+                (" '" + catocommon.tick_slash(sParameterXML) + "'" if sParameterXML else "null") + "," + \
                 (iDebugLevel if iDebugLevel > "-1" else "null") + "," \
                 " 'manual'" \
                 ")"
@@ -580,7 +580,7 @@ class uiMethods:
                 " '" + sDaysOrWeeks + "'," \
                 + (" '" + sLabel + "'" if sLabel else "null") + "," \
                 + (" '" + sDesc + "'" if sDesc else "null") + "," \
-                + (" '" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," \
+                + (" '" + catocommon.tick_slash(sParameterXML) + "'" if sParameterXML else "null") + "," \
                 + (iDebugLevel if iDebugLevel > "-1" else "null") + \
                 ")"
 
@@ -613,7 +613,7 @@ class uiMethods:
             sParameterXML = uiCommon.PrepareAndEncryptParameterXML(sParameterXML);                
 
             sSQL = "update action_plan" \
-                " set parameter_xml = " + ("'" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," \
+                " set parameter_xml = " + ("'" + catocommon.tick_slash(sParameterXML) + "'" if sParameterXML else "null") + "," \
                 " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
                 " where plan_id = " + iPlanID
 
@@ -668,7 +668,7 @@ class uiMethods:
                 " days_or_weeks = '" + sDaysOrWeeks + "'," \
                 " label = " + ("'" + sLabel + "'" if sLabel else "null") + "," \
                 " descr = " + ("'" + sDesc + "'" if sDesc else "null") + "," \
-                " parameter_xml = " + ("'" + uiCommon.TickSlash(sParameterXML) + "'" if sParameterXML else "null") + "," \
+                " parameter_xml = " + ("'" + catocommon.tick_slash(sParameterXML) + "'" if sParameterXML else "null") + "," \
                 " debug_level = " + (iDebugLevel if iDebugLevel > -1 else "null") + \
                 " where schedule_id = '" + sScheduleID + "'"
 
@@ -765,9 +765,9 @@ class uiMethods:
             for pair in sValues:
                 # but to prevent sql injection, only build a sql from values we accept
                 if pair["name"] == "my_email":
-                    sql_bits.append("email = '%s'" %  uiCommon.TickSlash(pair["value"]))
+                    sql_bits.append("email = '%s'" %  catocommon.tick_slash(pair["value"]))
                 if pair["name"] == "my_question":
-                    sql_bits.append("security_question = '%s'" % uiCommon.TickSlash(pair["value"]))
+                    sql_bits.append("security_question = '%s'" % catocommon.tick_slash(pair["value"]))
                 if pair["name"] == "my_answer":
                     if pair["value"]:
                         sql_bits.append("security_answer = '%s'" % catocommon.cato_encrypt(pair["value"]))
@@ -1349,3 +1349,27 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             
+    def wmUpdateCredential(self):
+        try:
+            args = uiCommon.getAjaxArgs()
+
+            c = asset.Credential()
+            c.FromID(args["ID"])
+            
+            if c:
+                # assuming the attribute names will match ... spin the post data and update the object
+                # only where asset attributes are pre-defined.
+                for k, v in args.items():
+                    if hasattr(c, k):
+                        setattr(c, k, v)
+
+                result, msg = c.DBUpdate()
+                if not result:
+                    return "{\"error\" : \"" + msg + "\"}"
+
+            return "{\"result\" : \"success\"}"
+        
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+

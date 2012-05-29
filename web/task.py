@@ -276,15 +276,15 @@ class Task(object):
                         #update the task row
                         oTrans.Command.CommandText = "update task set" \
                             " version = '" + self.Version + "'," \
-                            " task_name = '" + ui.TickSlash(self.Name) + "'," \
-                            " task_code = '" + ui.TickSlash(self.Code) + "'," \
-                            " task_desc = '" + ui.TickSlash(self.Description) + "'," \
+                            " task_name = '" + ui.tick_slash(self.Name) + "'," \
+                            " task_code = '" + ui.tick_slash(self.Code) + "'," \
+                            " task_desc = '" + ui.tick_slash(self.Description) + "'," \
                             " task_status = '" + self.Status + "'," \
                             " default_version = '" + (1 if self.IsDefaultVersion else 0) + "'," \
                             " concurrent_instances = '" + self.ConcurrentInstances + "'," \
                             " queue_depth = '" + self.QueueDepth + "'," \
                             " created_dt = now()," \
-                            " parameter_xml = " + ("'" + ui.TickSlash(ET.fromstring(self.ParameterXDoc)) + "'" if self.ParameterXDoc else "null") \
+                            " parameter_xml = " + ("'" + ui.tick_slash(ET.fromstring(self.ParameterXDoc)) + "'" if self.ParameterXDoc else "null") \
                             " where task_id = '" + self.ID + "'"
                         if not oTrans.ExecUpdate():
                             return False, db.error
@@ -304,9 +304,9 @@ class Task(object):
                             " '" + self.OriginalTaskID + "'," \
                             " " + self.Version + "," + " " \
                             (1 if self.IsDefaultVersion else 0) + "," \
-                            " '" + ui.TickSlash(self.Name) + "'," \
-                            " '" + ui.TickSlash(self.Code) + "'," \
-                            " '" + ui.TickSlash(self.Description) + "'," \
+                            " '" + ui.tick_slash(self.Name) + "'," \
+                            " '" + ui.tick_slash(self.Code) + "'," \
+                            " '" + ui.tick_slash(self.Description) + "'," \
                             " '" + self.Status + "'," \
                             " now())"
                         if not oTrans.ExecUpdate():
@@ -327,9 +327,9 @@ class Task(object):
                             " '" + self.OriginalTaskID + "'," \
                             " " + self.Version + "," \
                             " " + (1 if self.IsDefaultVersion else 0) + "," \
-                            " '" + ui.TickSlash(self.Name) + "'," \
-                            " '" + ui.TickSlash(self.Code) + "'," \
-                            " '" + ui.TickSlash(self.Description) + "'," \
+                            " '" + ui.tick_slash(self.Name) + "'," \
+                            " '" + ui.tick_slash(self.Code) + "'," \
+                            " '" + ui.tick_slash(self.Description) + "'," \
                             " '" + self.Status + "'," \
                             " now())"
                         if not oTrans.ExecUpdate():
@@ -347,9 +347,9 @@ class Task(object):
                     "'" + self.OriginalTaskID + "'," \
                     " " + self.Version + "," \
                     " 1," \
-                    " '" + uiCommon.TickSlash(self.Name) + "'," \
-                    " '" + uiCommon.TickSlash(self.Code) + "'," \
-                    " '" + uiCommon.TickSlash(self.Description) + "'," \
+                    " '" + catocommon.tick_slash(self.Name) + "'," \
+                    " '" + catocommon.tick_slash(self.Code) + "'," \
+                    " '" + catocommon.tick_slash(self.Description) + "'," \
                     " '" + self.Status + "'," \
                     " now())"
                 if not db.tran_exec_noexcep(sSQL):
@@ -390,7 +390,7 @@ class Task(object):
                         iStepOrder + "," \
                         "0,0," \
                         "'" + s.FunctionName + "'," \
-                        "'" + ui.TickSlash(s.FunctionXML) + "'" \
+                        "'" + ui.tick_slash(s.FunctionXML) + "'" \
                         ")"
                     if not oTrans.ExecUpdate():
                         return False

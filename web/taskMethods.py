@@ -415,7 +415,7 @@ class taskMethods:
                 # the safest way to unencode it is to use the same javascript lib.
                 # (sometimes the javascript and .net libs don't translate exactly, google it.)
                 sValue = uiCommon.unpackJSON(sValue)
-                sValue = uiCommon.TickSlash(sValue)
+                sValue = catocommon.tick_slash(sValue)
 
                 sSQL = "select original_task_id from task where task_id = '" + sTaskID + "'"
                 sOriginalTaskID = self.db.select_col_noexcep(sSQL)
@@ -1090,7 +1090,7 @@ class taskMethods:
             # TODO - not gonna do this any more, do a web method for commenting instead
             # if the function type is "_common" that means this is a literal column on the step table.
 #            if sFunction == "_common":
-#                sValue = uiCommon.TickSlash(sValue) # escape single quotes for the SQL insert
+#                sValue = catocommon.tick_slash(sValue) # escape single quotes for the SQL insert
 #                sSQL = "update task_step set " + sXPath + " = '" + sValue + "' where step_id = '" + sStepID + "'"
 #    
 #                if not self.db.exec_db_noexcep(sSQL):
@@ -1176,7 +1176,7 @@ class taskMethods:
                     return ""
 
             sSQL = "update task_step set " \
-                " function_xml = '" + uiCommon.TickSlash(ET.tostring(xDoc)) + "'" \
+                " function_xml = '" + catocommon.tick_slash(ET.tostring(xDoc)) + "'" \
                 " where step_id = '" + sStepID + "';"
 
             if not self.db.exec_db_noexcep(sSQL):
@@ -1576,7 +1576,7 @@ class taskMethods:
             
             # add and remove using the xml wrapper functions
             ST.RemoveFromCommandXML(sStepID, "step_variables")
-            ST.AddToCommandXML(sStepID, "", uiCommon.TickSlash(ET.tostring(xVars)))
+            ST.AddToCommandXML(sStepID, "", catocommon.tick_slash(ET.tostring(xVars)))
 
             return ""
         except Exception:

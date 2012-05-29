@@ -593,7 +593,7 @@ class ecoMethods:
                 # the safest way to unencode it is to use the same javascript lib.
                 # (sometimes the javascript and .net libs don't translate exactly, google it.)
                 sValue = uiCommon.unpackJSON(sValue)
-                sValue = uiCommon.TickSlash(sValue)
+                sValue = catocommon.tick_slash(sValue)
                 
                 #  check for existing name
                 if sColumn == "action_name":

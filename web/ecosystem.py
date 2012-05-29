@@ -176,9 +176,9 @@ class Ecotemplate(object):
                         # by "plow" I mean drop and recreate the actions... the ecotemplate row will be UPDATED
                         sSQL = "update ecotemplate" \
                             " set ecotemplate_name = '" + self.Name + "'," \
-                            " ecotemplate_desc = " + (" null" if not self.Description else " '" + uiCommon.TickSlash(self.Description + "'")) + "," \
+                            " ecotemplate_desc = " + (" null" if not self.Description else " '" + catocommon.tick_slash(self.Description + "'")) + "," \
                             " storm_file_type = " + (" null" if not self.StormFileType else " '" + self.StormFileType + "'") + "," \
-                            " storm_file = " + (" null" if not self.StormFile else " '" + uiCommon.TickSlash(self.StormFile + "'")) + \
+                            " storm_file = " + (" null" if not self.StormFile else " '" + catocommon.tick_slash(self.StormFile + "'")) + \
                             " where ecotemplate_id = '" + self.ID + "'"
                         if not db.tran_exec_noexcep(sSQL):
                             return False, db.error
@@ -195,9 +195,9 @@ class Ecotemplate(object):
                 sSQL = "insert into ecotemplate (ecotemplate_id, ecotemplate_name, ecotemplate_desc, storm_file_type, storm_file)" \
                     " values ('" + self.ID + "'," \
                         " '" + self.Name + "',"  + \
-                        (" null" if not self.Description else " '" + uiCommon.TickSlash(self.Description) + "'") + "," + \
+                        (" null" if not self.Description else " '" + catocommon.tick_slash(self.Description) + "'") + "," + \
                         (" null" if not self.StormFileType else " '" + self.StormFileType + "'") + "," + \
-                        (" null" if not self.StormFile else " '" + uiCommon.TickSlash(self.StormFile) + "'") + \
+                        (" null" if not self.StormFile else " '" + catocommon.tick_slash(self.StormFile) + "'") + \
                         ")"
                 if not db.tran_exec_noexcep(sSQL):
                     return False, db.error
@@ -213,13 +213,13 @@ class Ecotemplate(object):
                     " values (" \
                     " uuid()," \
                     " '" + self.ID + "'," \
-                    " '" + uiCommon.TickSlash(ea.Name) + "'," + \
-                    ("null" if not ea.Description else " '" + uiCommon.TickSlash(ea.Description) + "'") + "," + \
-                    ("null" if not ea.Category else " '" + uiCommon.TickSlash(ea.Category) + "'") + "," + \
+                    " '" + catocommon.tick_slash(ea.Name) + "'," + \
+                    ("null" if not ea.Description else " '" + catocommon.tick_slash(ea.Description) + "'") + "," + \
+                    ("null" if not ea.Category else " '" + catocommon.tick_slash(ea.Category) + "'") + "," + \
                     ("null" if not ea.Icon else " '" + ea.Icon + "'") + "," + \
                     ("null" if not ea.OriginalTaskID else " '" + ea.OriginalTaskID + "'") + "," + \
                     ("null" if not ea.TaskVersion else " '" + ea.TaskVersion + "'") + "," + \
-                    ("null" if not ea.ParameterDefaultsXML else " '" + uiCommon.TickSlash(ea.ParameterDefaultsXML) + "'") + \
+                    ("null" if not ea.ParameterDefaultsXML else " '" + catocommon.tick_slash(ea.ParameterDefaultsXML) + "'") + \
                     ")"
                 
                 if not db.tran_exec_noexcep(sSQL):
@@ -284,9 +284,9 @@ class Ecotemplate(object):
 
             sSQL = "update ecotemplate set" \
                 " ecotemplate_name = '" + self.Name + "'," \
-                " ecotemplate_desc = " + (" null" if not self.Description else " '" + uiCommon.TickSlash(self.Description) + "'") + "," \
-                " storm_file_type = " + (" null" if not self.StormFileType else " '" + uiCommon.TickSlash(self.StormFileType) + "'") + "," \
-                " storm_file = " + (" null" if not self.StormFile else " '" + uiCommon.TickSlash(self.StormFile) + "'") + \
+                " ecotemplate_desc = " + (" null" if not self.Description else " '" + catocommon.tick_slash(self.Description) + "'") + "," \
+                " storm_file_type = " + (" null" if not self.StormFileType else " '" + catocommon.tick_slash(self.StormFileType) + "'") + "," \
+                " storm_file = " + (" null" if not self.StormFile else " '" + catocommon.tick_slash(self.StormFile) + "'") + \
                 " where ecotemplate_id = '" + self.ID + "'"
 
             db = catocommon.new_conn()
@@ -408,12 +408,12 @@ class Ecosystem(object):
                 " storm_file, storm_status, storm_parameter_xml, storm_cloud_id, created_dt, last_update_dt)" \
                 " select '" + sID + "'," \
                 " '" + sName + "'," \
-                + (" null" if not sDescription else " '" + uiCommon.TickSlash(sDescription) + "'") + "," \
+                + (" null" if not sDescription else " '" + catocommon.tick_slash(sDescription) + "'") + "," \
                 " '" + sAccountID + "'," \
                 " ecotemplate_id," \
                 " storm_file," \
-                + (" null" if not sStormStatus else " '" + uiCommon.TickSlash(sStormStatus) + "'") + "," \
-                + (" null" if not sParameterXML else " '" + uiCommon.TickSlash(sParameterXML) + "'") + "," \
+                + (" null" if not sStormStatus else " '" + catocommon.tick_slash(sStormStatus) + "'") + "," \
+                + (" null" if not sParameterXML else " '" + catocommon.tick_slash(sParameterXML) + "'") + "," \
                 + (" null" if not sCloudID else " '" + sCloudID + "'") + "," \
                 " now(), now()" \
                 " from ecotemplate where ecotemplate_id = '" + sEcotemplateID + "'"
@@ -443,9 +443,9 @@ class Ecosystem(object):
                 " ecosystem_name = '" + self.Name + "'," \
                 " ecotemplate_id = '" + self.EcotemplateID + "'," \
                 " account_id = '" + self.AccountID + "'," \
-                " ecosystem_desc = " + (" null" if not self.Description else " '" + uiCommon.TickSlash(self.Description) + "'") + "," \
+                " ecosystem_desc = " + (" null" if not self.Description else " '" + catocommon.tick_slash(self.Description) + "'") + "," \
                 " last_update_dt = now()," \
-                " storm_file = " + (" null" if not self.StormFile else " '" + uiCommon.TickSlash(self.StormFile) + "'") + \
+                " storm_file = " + (" null" if not self.StormFile else " '" + catocommon.tick_slash(self.StormFile) + "'") + \
                 " where ecosystem_id = '" + self.ID + "'"
             
             db = catocommon.new_conn()

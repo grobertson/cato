@@ -147,10 +147,6 @@ def IsTrue(var):
                 """no exception, it just wasn't parseable into an int"""
     return False
          
-def TickSlash(s):
-    """ Prepares string values for string concatenation, or insertion into MySql. """
-    return s.replace("'", "''").replace("\\", "\\\\").replace("%", "%%")
-
 def packJSON(sIn):
     if not sIn:
         return sIn
@@ -216,7 +212,7 @@ def FixBreaks(sInput):
         return sInput.replace("\r\n", "<br />").replace("\r", "<br />").replace("\n", "<br />").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
 
 def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
-    sTrimmedLog = TickSlash(LogMessage).strip()
+    sTrimmedLog = catocommon.tick_slash(LogMessage).strip()
     if sTrimmedLog:
         if len(sTrimmedLog) > 7999:
             sTrimmedLog = sTrimmedLog[:7998]
@@ -230,34 +226,34 @@ def AddSecurityLog(LogType, Action, ObjectType, ObjectID, LogMessage):
 def WriteObjectAddLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
         if not sLog:
-            sLog = "Created: [" + TickSlash(sObjectName) + "]."
+            sLog = "Created: [" + catocommon.tick_slash(sObjectName) + "]."
         else:
-            sLog = "Created: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
+            sLog = "Created: [" + catocommon.tick_slash(sObjectName) + "] - [" + sLog + "]"
 
         AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
 
 def WriteObjectDeleteLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
         if not sLog:
-            sLog = "Deleted: [" + TickSlash(sObjectName) + "]."
+            sLog = "Deleted: [" + catocommon.tick_slash(sObjectName) + "]."
         else:
-            sLog = "Deleted: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
+            sLog = "Deleted: [" + catocommon.tick_slash(sObjectName) + "] - [" + sLog + "]"
 
         AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectDelete, oType, sObjectID, sLog)
 
 def WriteObjectChangeLog(oType, sObjectID, sObjectName, sLog = ""):
     if sObjectID and sObjectName:
         if not sObjectName:
-            sObjectName = "[" + TickSlash(sObjectName) + "]."
+            sObjectName = "[" + catocommon.tick_slash(sObjectName) + "]."
         else:
-            sLog = "Changed: [" + TickSlash(sObjectName) + "] - [" + sLog + "]"
+            sLog = "Changed: [" + catocommon.tick_slash(sObjectName) + "] - [" + sLog + "]"
 
         AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
 
 def WriteObjectPropertyChangeLog(oType, sObjectID, sLabel, sFrom, sTo):
     if sFrom and sTo:
         if sFrom != sTo:
-            sLog = "Changed: " + sLabel + " from [" + TickSlash(sFrom) + "] to [" + TickSlash(sTo) + "]."
+            sLog = "Changed: " + sLabel + " from [" + catocommon.tick_slash(sFrom) + "] to [" + catocommon.tick_slash(sTo) + "]."
             AddSecurityLog(uiGlobals.SecurityLogTypes.Object, uiGlobals.SecurityLogActions.ObjectAdd, oType, sObjectID, sLog)
 
 def PrepareAndEncryptParameterXML(sParameterXML):
@@ -716,7 +712,7 @@ def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParam
             sSQL = "call addTaskInstance ('" + sTaskID + "','" + \
                 sUserID + "',NULL," + \
                 sDebugLevel + ",NULL,'" + \
-                TickSlash(sParameterXML) + "','" + \
+                catocommon.tick_slash(sParameterXML) + "','" + \
                 sEcosystemID + "','" + \
                 sAccountID + "')"
             
@@ -789,7 +785,7 @@ def AddNodeToXMLColumn(sTable, sXMLColumn, sWhereClause, sXPath, sXMLToAdd):
 
 
             # then send the whole doc back to the database
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "'" \
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + catocommon.tick_slash(ET.tostring(xd)) + "'" \
                 " where " + sWhereClause
             if not db.exec_db_noexcep(sSQL):
                 log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
@@ -825,7 +821,7 @@ def SetNodeValueinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sValue
                 xNodeToSet.text = sValue
 
                 # then send the whole doc back to the database
-                sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "' where " + sWhereClause
+                sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + catocommon.tick_slash(ET.tostring(xd)) + "' where " + sWhereClause
                 if not db.exec_db_noexcep(sSQL):
                     log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
             else:
@@ -879,7 +875,7 @@ def SetNodeAttributeinXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToSet, sA
 
 
             # then send the whole doc back to the database
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "'" \
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + catocommon.tick_slash(ET.tostring(xd)) + "'" \
                 " where " + sWhereClause
             if not db.exec_db_noexcep(sSQL):
                 log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
@@ -924,7 +920,7 @@ def RemoveNodeFromXMLColumn(sTable, sXMLColumn, sWhereClause, sNodeToRemove):
             if xParentOfNodeToWhack is not None:
                 xParentOfNodeToWhack.remove(xNodeToWhack)
 
-            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + TickSlash(ET.tostring(xd)) + "'" \
+            sSQL = "update " + sTable + " set " + sXMLColumn + " = '" + catocommon.tick_slash(ET.tostring(xd)) + "'" \
                 " where " + sWhereClause
             if not db.exec_db_noexcep(sSQL):
                 log("Unable to update XML Column [" + sXMLColumn + "] on [" + sTable + "]." + db.error)
