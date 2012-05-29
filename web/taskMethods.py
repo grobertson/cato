@@ -185,7 +185,7 @@ class taskMethods:
                     return t.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Task details for Task ID [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Task details for Task ID [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -2878,7 +2878,7 @@ class taskMethods:
                     return json.dumps(output)
 
                 else:
-                    return "{'error':'Did not find any data for Instance [%s].}" % (sTaskInstance)
+                    return "{\"error\":\"Did not find any data for Instance [%s].\"}" % (sTaskInstance)
                 
             #if we get here, there is just no data... maybe it never ran.
             return ""

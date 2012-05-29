@@ -1,6 +1,7 @@
 import traceback
 import urllib
 import json
+import re
 import uiGlobals
 import uiCommon
 from catocommon import catocommon
@@ -679,13 +680,12 @@ class uiMethods:
 
     def wmGetSettings(self):
         try:
-            dir(settings)
             s = settings.settings()
             if s:
                 return s.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Error getting settings.'}"
+            return "{\"result\":\"fail\",\"error\":\"Error getting settings.\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -715,12 +715,12 @@ class uiMethods:
                         uiGlobals.SecurityLogActions.ConfigChange, uiGlobals.CatoObjectTypes.NA, "", 
                         "%s settings changed." % sType.capitalize())
                     
-                    return "{'result':'success'}"
+                    return "{\"result\":\"success\"}"
                 else:
-                    return "{'result':'fail','error':'%s'}" % msg
+                    return "{\"result\":\"fail\",\"error\":\"%s\"}" % msg
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Error saving settings - no type provided.'}"
+            return "{\"result\":\"fail\",\"error\":\"Error saving settings - no type provided.\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -731,7 +731,7 @@ class uiMethods:
 
             sSQL = """select full_name, username, authentication_type, email, 
                 ifnull(security_question, '') as security_question, 
-                ifnull(security_answer, '') as security_question
+                ifnull(security_answer, '') as security_answer
                 from users
                 where user_id = '%s'""" % user_id
             dr = self.db.select_row_dict(sSQL)
@@ -753,10 +753,6 @@ class uiMethods:
         """
             In this method, the values come from the browser in a jQuery serialized array of name/value pairs.
         """
-
-        
-        # TODO: must do checking for password complexity, see if it's already been used, etc.
-
         try:
             user_id = uiCommon.GetSessionUserID()
             sValues = uiCommon.getAjaxArg("sValues")
@@ -774,8 +770,14 @@ class uiMethods:
 
                 # only do the password if it was provided
                 if pair["name"] == "my_password":
-                    if pair["value"]:
-                        sql_bits.append("user_password = '%s'" % catocommon.cato_encrypt(pair["value"]))
+                    newpw = pair["value"]
+                    if newpw:
+                        result, msg = user.User.ValidatePassword(user_id, newpw)
+                        if result:
+                            sql_bits.append("user_password = '%s'" % catocommon.cato_encrypt(newpw))
+                        else:
+                            return "{\"info\":\"%s\"}" % msg
+
 
             sql = "update users set %s where user_id = '%s'" % (",".join(sql_bits), user_id)
 
@@ -785,7 +787,7 @@ class uiMethods:
 
             uiCommon.WriteObjectChangeLog(uiGlobals.CatoObjectTypes.User, user_id, user_id, "My Account settings updated.")
                 
-            return ""
+            return "{\"result\":\"success\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -828,7 +830,7 @@ class uiMethods:
                     return u.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get details for User [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get details for User [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -843,7 +845,7 @@ class uiMethods:
                     return a.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get details for Asset [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get details for Asset [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -1195,7 +1197,7 @@ class uiMethods:
             if ac:
                 return ac.AsJSON()
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Credentials using filter [" + sFilter + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Credentials using filter [" + sFilter + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -1210,7 +1212,7 @@ class uiMethods:
                     return c.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get details for Asset [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get details for Asset [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()

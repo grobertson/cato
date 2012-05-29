@@ -97,7 +97,7 @@ class cloudMethods:
                     return c.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Cloud details for Cloud ID [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud details for Cloud ID [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -110,7 +110,7 @@ class cloudMethods:
                 return ca.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + provider + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud Accounts using filter [" + provider + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -220,7 +220,7 @@ class cloudMethods:
             return sHTML    
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Cloud Accounts using filter [" + sFilter + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Cloud Accounts using filter [" + sFilter + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -235,7 +235,7 @@ class cloudMethods:
                     return a.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get details for Cloud Account [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get details for Cloud Account [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -282,13 +282,13 @@ class cloudMethods:
             
             cp = providers.CloudProviders()
             if cp is None:
-                return "{'result':'fail','error':'Failed to get Providers.'}"
+                return "{\"result\":\"fail\",\"error\":\"Failed to get Providers.\"}"
             else:
                 p = cp[sProvider]
                 if p is not None:
                     return p.AsJSON()
                 else:
-                    return "{'result':'fail','error':'Failed to get Provider details for [" + sProvider + "].'}"
+                    return "{\"result\":\"fail\",\"error\":\"Failed to get Provider details for [" + sProvider + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()

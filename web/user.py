@@ -3,6 +3,8 @@
     Why?  Because it isn't only used by the UI.
 """
 import json
+import re
+from settings import settings
 from catocommon import catocommon
 
 class Users(object): 
@@ -56,6 +58,44 @@ class User(object):
     Email = ""
     SettingsXML = ""
     
+    @staticmethod
+    def ValidatePassword(uid, pwd):
+        """
+        Checks a password against the system settings for length, complexity, etc.
+        """
+        try:
+            s_set = settings.settings.security()
+    
+            # is this password long enough?  too long?
+            if len(pwd) < s_set.PassMinLength or len(pwd) > s_set.PassMaxLength:
+                return False, "Password must be between %d and %d characters in length." % (s_set.PassMinLength, s_set.PassMaxLength)
+            
+            # is it complex (if required to be)?
+            if s_set.PassComplexity:
+                if not re.search(r"[A-Z~!@#$%^&?+=]", pwd):
+                    return False, "Password must contain at least one capital letter and at least one special character. (~!@#$%^&?+=)"
+            
+            # has it been used lately (if that's required)?
+            # in which case we need to save the old one to history, and delete
+            # any rows over this counter.
+            if s_set.PasswordHistory:
+                db = catocommon.new_conn()
+                sql = """select password from user_password_history 
+                where user_id = '%s'
+                order by change_time desc
+                limit %d""" % (uid, s_set.PasswordHistory)
+                
+                previous_pwds = db.select_csv(sql, False)
+                if previous_pwds:
+                    if catocommon.cato_encrypt(pwd) in previous_pwds:
+                        return False, "Password cannot yet be reused."
+                        
+                db.close()        
+                
+            return True, None
+        except Exception, ex:
+            raise Exception(ex)
+
     def FromName(self, sUsername):
         self.PopulateUser(login_id=sUsername)
         

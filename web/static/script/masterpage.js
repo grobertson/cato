@@ -87,11 +87,20 @@ $(document).ready(function () {
 					url : "uiMethods/wmSaveMyAccount",
 					data : '{"sValues":' + JSON.stringify(args) + '}',
 					contentType : "application/json; charset=utf-8",
-					dataType : "text",
+					dataType : "json",
 					success : function(response) {
-						$("#update_success_msg").text("Save Successful").fadeOut(2000);
-						
-						$("#my_account_dialog").dialog("close");
+						if (response.error) {
+							showAlert(response.error);
+						}
+						if (response.info) {
+							showInfo(response.info);
+						}
+						if (response.result) {
+			                if (response.result == "success") {
+			                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
+								$("#my_account_dialog").dialog("close");
+			                }
+		               }
 					},
 					error : function(response) {
 						$("#update_success_msg").fadeOut(2000);
@@ -115,12 +124,15 @@ $(document).ready(function () {
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
 	        success: function (account) {
+	        	$("#my_password").val("");
+	        	$("#my_password_confirm").val("");
+	        	$("#my_question").val("");
+	        	$("#my_answer").val("");
 	            if (account) {
 	                $("#my_fullname").html(account.full_name);
 	                $("#my_username").html(account.username);
 	                $("#my_email").val(account.email);
 	                $("#my_question").val(account.security_question);
-	                $("#my_answer").val(account.security_answer);
 	            }
 	        },
 	        error: function (response) {

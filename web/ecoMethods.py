@@ -59,7 +59,7 @@ class ecoMethods:
                     return et.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Ecotemplate details for ID [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Ecotemplate details for ID [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -768,7 +768,7 @@ class ecoMethods:
                     return e.AsJSON()
             
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Ecosystem details for ID [" + sID + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Ecosystem details for ID [" + sID + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -813,7 +813,7 @@ class ecoMethods:
             if ets:
                 return ets.AsJSON()
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Ecosystems using filter [" + sFilter + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Ecosystems using filter [" + sFilter + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -825,7 +825,7 @@ class ecoMethods:
             if ets:
                 return ets.AsJSON()
             #should not get here if all is well
-            return "{'result':'fail','error':'Failed to get Ecotemplates using filter [" + sFilter + "].'}"
+            return "{\"result\":\"fail\",\"error\":\"Failed to get Ecotemplates using filter [" + sFilter + "].\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
