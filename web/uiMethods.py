@@ -1161,6 +1161,32 @@ class uiMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()           
         
+    def wmGetCredentialsTable(self):
+        try:
+            sHTML = ""
+            sFilter = uiCommon.getAjaxArg("sSearch")
+
+            c = asset.Credentials(sFilter)
+            if c.rows:
+                for row in c.rows:
+                    sHTML += "<tr credential_id=\"" + row["credential_id"] + "\">"
+                    sHTML += "<td class=\"chkboxcolumn\">"
+                    sHTML += "<input type=\"checkbox\" class=\"chkbox\"" \
+                    " id=\"chk_" + row["credential_id"] + "\"" \
+                    " tag=\"chk\" />"
+                    sHTML += "</td>"
+                    
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["credential_name"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % row["username"]
+                    sHTML += "<td class=\"selectable\">%s</td>" % (row["domain"] if row["domain"] else "")
+                    sHTML += "<td class=\"selectable\">%s</td>" % (row["shared_cred_desc"] if row["shared_cred_desc"] else "")
+                    
+                    sHTML += "</tr>"
+            return sHTML    
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()           
+        
     def wmGetCredentialsJSON(self):
         try:
             sFilter = uiCommon.getAjaxArg("sFilter")
@@ -1170,6 +1196,21 @@ class uiMethods:
                 return ac.AsJSON()
             #should not get here if all is well
             return "{'result':'fail','error':'Failed to get Credentials using filter [" + sFilter + "].'}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmGetCredential(self):
+        try:
+            sID = uiCommon.getAjaxArg("sCredentialID")
+            c = asset.Credential()
+            if c:
+                c.FromID(sID)
+                if c.ID:
+                    return c.AsJSON()
+            
+            #should not get here if all is well
+            return "{'result':'fail','error':'Failed to get details for Asset [" + sID + "].'}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
@@ -1265,3 +1306,46 @@ class uiMethods:
                 
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
+            
+    def wmCreateCredential(self):
+        try:
+            args = uiCommon.getAjaxArgs()
+
+            # a little different than the others ... crednetial objects must be instantiated
+            # before calling DBCreateNew
+            # sName, sDesc, sUsername, sPassword, sShared, sDomain, sPrivPassword
+            c = asset.Credential()
+            c.FromArgs(args["Name"], args["Description"], args["Username"], args["Password"], 
+                     args["SharedOrLocal"], args["Domain"], args["PrivilegedPassword"])
+            result, err = c.DBCreateNew()
+            if err:
+                return "{\"error\" : \"" + err + "\"}"
+            if not result:
+                return "{\"error\" : \"Unable to create Credential.\"}"
+
+            uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Credential, c.ID, c.Name, "Credential Created")
+
+            return c.AsJSON()
+        
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+    def wmDeleteCredentials(self):
+        try:
+            sDeleteArray = uiCommon.getAjaxArg("sDeleteArray")
+            if len(sDeleteArray) < 36:
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
+
+            sDeleteArray = uiCommon.QuoteUp(sDeleteArray)
+            
+            sSQL = """delete from asset_credential where credential_id in (%s)
+                and credential_id not in (select distinct credential_id from asset where credential_id is not null)
+                """ % sDeleteArray
+            if not self.db.tran_exec_noexcep(sSQL):
+                uiCommon.log_nouser(self.db.error, 0)
+
+            return "{\"result\" : \"success\"}"
+                
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            

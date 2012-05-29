@@ -66,6 +66,10 @@ class assetEdit:
     def GET(self):
         return render.assetEdit()
 
+class credentialEdit:        
+    def GET(self):
+        return render.credentialEdit()
+
 class userEdit:        
     def GET(self):
         return render.userEdit()
@@ -412,6 +416,7 @@ if __name__ == "__main__":
         '/ecosystemEdit', 'ecosystemEdit',
         '/userEdit', 'userEdit',
         '/assetEdit', 'assetEdit',
+        '/credentialEdit', 'credentialEdit',
         '/announcement', 'announcement',
         '/upload', 'upload',
         '/settings', 'settings',

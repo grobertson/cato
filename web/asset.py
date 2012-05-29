@@ -163,7 +163,7 @@ class Asset(object):
                 if credential_update_mode == "new":
                     # if it's a local credential, the credential_name is the asset_id.
                     # if it's shared, there will be a name.
-                    if c.Shared == "1":
+                    if c.SharedOrLocal == "1":
                         c.Name = sAssetID
     
                     result, msg = c.DBCreateNew()
@@ -230,7 +230,7 @@ class Asset(object):
                 if credential_update_mode == "new":
                     # if it's a local credential, the credential_name is the asset_id.
                     # if it's shared, there will be a name.
-                    if c.Shared == "1":
+                    if c.SharedOrLocal == "1":
                         c.Name = self.ID
     
                     result, msg = c.DBCreateNew()
@@ -331,7 +331,7 @@ class Credential(object):
     ID = None
     Username = None
     Password = None
-    Shared = None
+    SharedOrLocal = None
     Name = None
     Description = None
     Domain = None
@@ -340,13 +340,12 @@ class Credential(object):
     def __init__(self):
         self.ID = catocommon.NewGUID()
         
-    def FromArgs(self, sID, sName, sDesc, sUsername, sPassword, sShared, sDomain, sPrivPassword):
-        self.ID = sID
+    def FromArgs(self, sName, sDesc, sUsername, sPassword, sShared, sDomain, sPrivPassword):
         self.Name = sName
         self.Description = sDesc
         self.Username = sUsername
         self.Password = sPassword
-        self.Shared = sShared
+        self.SharedOrLocal = sShared
         self.Domain = sDomain
         self.PrivilegedPassword = sPrivPassword
 
@@ -354,6 +353,37 @@ class Credential(object):
         # but it needs one.
         if not self.ID:
             self.ID = catocommon.NewGUID()
+
+    def FromID(self, credential_id):
+        """
+            Note the absence of password or privileged_password in this method.
+            We don't store passwords, even encrypted, in the object.
+        """
+        try:
+            if not credential_id:
+                raise Exception("Error building Credential object: ID is required.");    
+            
+            sSQL = """select credential_id, credential_name, username, domain, shared_cred_desc, shared_or_local
+                from asset_credential
+                where credential_id = '%s'""" % credential_id
+
+            db = catocommon.new_conn()
+            dr = db.select_row_dict(sSQL)
+            
+            if dr is not None:
+                self.ID = dr["credential_id"]
+                self.Name = dr["credential_name"]
+                self.Username = dr["username"]
+                self.SharedOrLocal = dr["shared_or_local"]
+                self.Domain = ("" if not dr["domain"] else dr["domain"])
+                self.Description = ("" if not dr["shared_cred_desc"] else dr["shared_cred_desc"])
+            else: 
+                raise Exception("Unable to build Credential object. Either no Credentials are defined, or no Credential by ID could be found.")
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()        
+
 
     def FromDict(self, cred):
         try:
@@ -379,7 +409,7 @@ class Credential(object):
 
             # if it's a local credential, the credential_name is the asset_id.
             # if it's shared, there will be a name.
-            if self.Shared == "1":
+            if self.SharedOrLocal == "1":
                 # whack and add - easiest way to avoid conflicts
                 sSQL = "delete from asset_credential where credential_name = '%s' and shared_or_local = '1'" % self.Name
                 if not db.exec_db_noexcep(sSQL):
@@ -388,7 +418,7 @@ class Credential(object):
             sSQL = "insert into asset_credential " \
                 "(credential_id, credential_name, username, password, domain, shared_or_local, shared_cred_desc, privileged_password) " \
                 "values ('" + self.ID + "','" + self.Name + "','" + self.Username + "','" + catocommon.cato_encrypt(self.Password) + "','" \
-                + self.Domain + "','" + self.Shared + "','" + self.Description + "'," + sPriviledgedPasswordUpdate + ")"
+                + self.Domain + "','" + self.SharedOrLocal + "','" + self.Description + "'," + sPriviledgedPasswordUpdate + ")"
             print sSQL
             if not db.exec_db_noexcep(sSQL):
                 if db.error == "key_violation":
@@ -405,7 +435,6 @@ class Credential(object):
         finally:
             db.close()
                 
-
     def DBDelete(self):
         try:
             db = catocommon.new_conn()
@@ -445,7 +474,7 @@ class Credential(object):
             sSQL = "update asset_credential " \
                 "set username = '" + self.Username + "'," \
                 "domain = '" + self.Domain + "'," \
-                "shared_or_local = '" + self.Shared + "'," \
+                "shared_or_local = '" + self.SharedOrLocal + "'," \
                 "shared_cred_desc = '" + self.Description + "'" \
                 + sPasswordUpdate + sPriviledgedPasswordUpdate + \
                 "where credential_id = '" + self.ID + "'"
@@ -460,4 +489,10 @@ class Credential(object):
             raise ex
         finally:
             db.close()
+
+    def AsJSON(self):
+        try:
+            return json.dumps(self.__dict__)
+        except Exception, ex:
+            raise ex    
 

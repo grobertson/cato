@@ -316,7 +316,7 @@ function SaveAsset() {
     cred.Description = sCredentialDescr;
     cred.Username = sCredUsername;
     cred.Password = sCredPassword;
-    cred.Shared = rbShared;
+    cred.SharedOrLocal = rbShared;
     cred.Domain = sDomain;
     cred.PrivilegedPassword = sPrivilegedPassword;
 
@@ -429,9 +429,6 @@ function CancelCredentialAdd() {
 }
 
 function LoadEditDialog(editCount, editAssetID) {
-    //alert('clear everything out');
-
-
     // show the log link on an existing asset
     $('#show_log_link').show();
     $('#show_tasks_link').show();
@@ -443,66 +440,13 @@ function LoadEditDialog(editCount, editAssetID) {
     $('#txtCredPasswordConfirm').val();
 
     $("#hidMode").val("edit");
-    $("#edit_dialog").data("title.dialog", "Modify Asset");
-    $("#edit_dialog").dialog("open");
-
     $("#hidEditCount").val(editCount);
     $("#hidCurrentEditID").val(editAssetID);
 
-    FillEditForm(editAssetID);
-    GetObjectsTags(editAssetID);
-}
-
-function ShowItemModify() {
-
-    var ArrayString = $("#hidSelectedArray").val();
-    if (ArrayString.length == 0) {
-        showInfo('Select one or more Assets to modify.');
-        return false;
-    }
-    var curArray = ArrayString.split(',');
-
-    //load up the first or only asset to modify
-    var sFirstID = curArray[0];
-
-    // load the asset for editing
-    LoadEditDialog(curArray.length, sFirstID);
-
-}
-function LoadCredentialSelector() {
-    $("#CredentialSelectorShared").html("Loading...");
-    // set the return t the default 'local' credentials
-    $.ajax({
-        type: "POST",
-        url: "uiMethods/wmGetCredentialsJSON",
-        data: '{}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(creds) {
-        	$("#credentials").html("");
-            $.each(creds, function(index, cred){
-            	s = "<tr class=\"select_credential\" credential_id=\"" + cred.credential_id + "\">"
-            	s += "<td class=\"selectablecrd row\">" + cred.username + "</td>"
-            	s += "<td class=\"selectablecrd row\">" + cred.domain + "</td>"
-            	s += "<td class=\"selectablecrd row\">" + cred.shared_cred_desc + "</td>"
-            	s += "</tr>"
-
-            	$("#credentials").append(s);
-			});
-        },
-        error: function(response) {
-            showAlert('error ' + response.responseText);
-        }
-    });
-    $('#CredentialSelectorTabs').show();
-
-
-}
-function FillEditForm(sAssetID) {
     $.ajax({
         type: "POST",
         url: "uiMethods/wmGetAsset",
-        data: '{"sAssetID":"' + sAssetID + '"}',
+        data: '{"sAssetID":"' + editAssetID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(asset) {
@@ -570,6 +514,11 @@ function FillEditForm(sAssetID) {
             // at load default to the first tab
             $('#AddAssetTabs').tabs('select', 0);
 
+	        GetObjectsTags(asset.ID);
+
+		    $("#edit_dialog").data("title.dialog", "Modify Asset");
+		    $("#edit_dialog").dialog("open");
+
         },
         error: function(response) {
             showAlert(response.responseText);
@@ -577,3 +526,48 @@ function FillEditForm(sAssetID) {
     });
 }
 
+function ShowItemModify() {
+
+    var ArrayString = $("#hidSelectedArray").val();
+    if (ArrayString.length == 0) {
+        showInfo('Select one or more Assets to modify.');
+        return false;
+    }
+    var curArray = ArrayString.split(',');
+
+    //load up the first or only asset to modify
+    var sFirstID = curArray[0];
+
+    // load the asset for editing
+    LoadEditDialog(curArray.length, sFirstID);
+
+}
+function LoadCredentialSelector() {
+    $("#CredentialSelectorShared").html("Loading...");
+    // set the return t the default 'local' credentials
+    $.ajax({
+        type: "POST",
+        url: "uiMethods/wmGetCredentialsJSON",
+        data: '{}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(creds) {
+        	$("#credentials").html("");
+            $.each(creds, function(index, cred){
+            	s = "<tr class=\"select_credential\" credential_id=\"" + cred.credential_id + "\">"
+            	s += "<td class=\"selectablecrd row\">" + cred.username + "</td>"
+            	s += "<td class=\"selectablecrd row\">" + cred.domain + "</td>"
+            	s += "<td class=\"selectablecrd row\">" + cred.shared_cred_desc + "</td>"
+            	s += "</tr>"
+
+            	$("#credentials").append(s);
+			});
+        },
+        error: function(response) {
+            showAlert('error ' + response.responseText);
+        }
+    });
+    $('#CredentialSelectorTabs').show();
+
+
+}
