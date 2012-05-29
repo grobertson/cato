@@ -120,7 +120,7 @@ class Cloud(object):
     def DBCreateNew(sCloudName, sProvider, sAPIUrl, sAPIProtocol):
         try:
             sSQL = ""
-            sNewID = catocommon.NewGUID()
+            sNewID = catocommon.new_guid()
             sSQL = "insert into clouds (cloud_id, cloud_name, provider, api_url, api_protocol)" \
                 " values ('" + sNewID + "'," + "'" + sCloudName + "'," + "'" + sProvider + "'," + "'" + sAPIUrl + "'," + "'" + sAPIProtocol + "')"
             db = catocommon.new_conn()
@@ -321,7 +321,7 @@ class CloudAccount(object):
                 if iExists == 0:
                     sIsDefault = "1"
 
-            sNewID = catocommon.NewGUID()
+            sNewID = catocommon.new_guid()
             sPW = (catocommon.cato_encrypt(sLoginPassword) if sLoginPassword else "")
             
             sSQL = "insert into cloud_account" \

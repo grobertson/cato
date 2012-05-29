@@ -148,7 +148,7 @@ class Asset(object):
         try:
             db = catocommon.new_conn()
 
-            sAssetID = catocommon.NewGUID()
+            sAssetID = catocommon.new_guid()
 
             if credential:
                 c = Credential()
@@ -338,7 +338,7 @@ class Credential(object):
     PrivilegedPassword = None
     
     def __init__(self):
-        self.ID = catocommon.NewGUID()
+        self.ID = catocommon.new_guid()
         
     def FromArgs(self, sName, sDesc, sUsername, sPassword, sShared, sDomain, sPrivPassword):
         self.Name = sName
@@ -352,7 +352,7 @@ class Credential(object):
         # if created by args, it may or may not have an ID.
         # but it needs one.
         if not self.ID:
-            self.ID = catocommon.NewGUID()
+            self.ID = catocommon.new_guid()
 
     def FromID(self, credential_id):
         """
@@ -393,7 +393,7 @@ class Credential(object):
             # if created by args, it may or may not have an ID.
             # but it needs one.
             if not self.ID:
-                self.ID = catocommon.NewGUID()
+                self.ID = catocommon.new_guid()
         except Exception, ex:
             raise ex
 
@@ -475,7 +475,7 @@ class Credential(object):
                 "set username = '" + self.Username + "'," \
                 "domain = '" + self.Domain + "'," \
                 "shared_or_local = '" + self.SharedOrLocal + "'," \
-                "shared_cred_desc = '" + self.Description + "'" \
+                "shared_cred_desc = '" + catocommon.tick_slash(self.Description) + "'" \
                 + sPasswordUpdate + sPriviledgedPasswordUpdate + \
                 "where credential_id = '" + self.ID + "'"
             if not db.exec_db_noexcep(sSQL):

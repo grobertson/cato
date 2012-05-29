@@ -411,7 +411,7 @@ class Task(object):
             #so it can live with other relevant code.
             #may update it later to be more object friendly
             sSQL = ""
-            sNewTaskID = uiCommon.NewGUID()
+            sNewTaskID = catocommon.new_guid()
             iIsDefault = 0
             sTaskName = ""
             sOTID = ""

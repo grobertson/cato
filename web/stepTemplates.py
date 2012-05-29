@@ -93,7 +93,7 @@ def DrawFullStep(oStep):
     
     # TODO - stop doing this as a special field and just do a web method for comment/uncomment
     # the "commented" property is just a common field on all steps - it's hidden in the header.
-#    sCommentFieldID = uiCommon.NewGUID()
+#    sCommentFieldID = catocommon.new_guid()
 #    sMainHTML += "<input type=\"text\"" \
 #        " value=\"" + ("1" if oStep.Commented else "0") + "\"" + \
 #        CommonAttribsWithID(oStep, "_common", False, "commented", sCommentFieldID, "hidden") + \
@@ -215,7 +215,7 @@ def GetStepTemplate(oStep):
         if xd is not None:
             sPopulatesVars = xd.get("variables", "false")
             log("Populates Variables? " + sPopulatesVars, 4)
-            if uiCommon.IsTrue(sPopulatesVars):
+            if catocommon.is_true(sPopulatesVars):
                 sVariableHTML += DrawVariableSectionForDisplay(oStep, True)
     
     # This returns a Tuple with three values.
@@ -266,7 +266,7 @@ def DrawNode(xeNode, sXPath, oStep):
     
     sNodeLabel = xeNode.get("label", "")
     sIsEditable = xeNode.get("is_array", "")
-    bIsEditable = uiCommon.IsTrue(sIsEditable)
+    bIsEditable = catocommon.is_true(sIsEditable)
     
     sOptionTab = xeNode.get("option_tab", "")
     
@@ -274,7 +274,7 @@ def DrawNode(xeNode, sXPath, oStep):
     # this may require iterating the tree again.
     # or rethink how we know a node is "removable"
     sIsRemovable = "" #xeNode.PARENT.get("is_array", "")
-    bIsRemovable = uiCommon.IsTrue(sIsRemovable)
+    bIsRemovable = catocommon.is_true(sIsRemovable)
     
     log("-- Label: " + sNodeLabel, 4)
     log("-- Editable: " + sIsEditable + " - " + str(bIsEditable), 4)
@@ -398,7 +398,7 @@ def DrawField(xe, sXPath, oStep):
     sStyle = xe.get("style", "")
     sInputType = xe.get("input_type", "")
     sRequired = xe.get("required", "")
-    bRequired = uiCommon.IsTrue(sRequired)
+    bRequired = catocommon.is_true(sRequired)
 
     log("---- Input Type :" + sInputType, 4)
     log("---- Break Before/After : %s/%s" % (sBreakBefore, sBreakAfter), 4)
@@ -407,14 +407,14 @@ def DrawField(xe, sXPath, oStep):
 
 
     #some getting started layout possibilities
-    if sBreakBefore == uiCommon.IsTrue(sBreakBefore):
+    if sBreakBefore == catocommon.is_true(sBreakBefore):
         sHTML += "<br />"
-    if sHRBefore == uiCommon.IsTrue(sHRBefore):
+    if sHRBefore == catocommon.is_true(sHRBefore):
         sHTML += "<hr />"
     if sInputType == "textarea":
         #textareas have additional properties
         sRows = xe.get("rows", "2")
-        sTextareaID = uiCommon.NewGUID()
+        sTextareaID = catocommon.new_guid()
         sHTML += sNodeLabel + " <textarea rows=\"" + sRows + "\"" + \
             CommonAttribsWithID(oStep, bRequired, sXPath, sTextareaID, sCSSClasses) + \
             " style=\"" + sStyle + "\"" \
@@ -520,7 +520,7 @@ def DrawField(xe, sXPath, oStep):
 
         sHTML += "</select>"
     else: #input is the default
-        sElementID = uiCommon.NewGUID() #some special cases below may need this.
+        sElementID = catocommon.new_guid() #some special cases below may need this.
         sHTML += sNodeLabel + " <input type=\"text\" " + \
             CommonAttribsWithID(oStep, bRequired, sXPath, sElementID, sCSSClasses) + \
             " style=\"" + sStyle + "\"" \
@@ -528,13 +528,13 @@ def DrawField(xe, sXPath, oStep):
             " value=\"" + sNodeValue + "\" />"
         #might this be a conn_name field?  If so, we can show the picker.
         sConnPicker = xe.get("connection_picker", "")
-        if uiCommon.IsTrue(sConnPicker):
+        if catocommon.is_true(sConnPicker):
             sHTML += "<span class=\"ui-icon ui-icon-search forceinline conn_picker_btn pointer\" link_to=\"" + sElementID + "\"></span>"
 
     #some final layout possibilities
-    if uiCommon.IsTrue(sBreakAfter):
+    if catocommon.is_true(sBreakAfter):
         sHTML += "<br />"
-    if uiCommon.IsTrue(sHRAfter):
+    if catocommon.is_true(sHRAfter):
         sHTML += "<hr />"
 
     log("---- ... done", 4)
@@ -559,7 +559,7 @@ def CommonAttribs(oStep, bRequired, sXPath, sAdditionalClasses):
     sXPath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "") + sXPath
     
     # creates a new id
-    return " id=\"x" + uiCommon.NewGUID() + "\"" \
+    return " id=\"x" + catocommon.new_guid() + "\"" \
         " step_id=\"" + oStep.ID + "\"" \
         " function=\"" + oStep.FunctionName + "\"" \
         " xpath=\"" + sXPath + "\"" \
@@ -862,8 +862,8 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
     sFunction = oStep.FunctionName
     xd = oStep.FunctionXDoc
 
-    sElementID = uiCommon.NewGUID()
-    sValueFieldID = uiCommon.NewGUID()
+    sElementID = catocommon.new_guid()
+    sValueFieldID = catocommon.new_guid()
     sHTML = ""
 
     sHTML += "<div id=\"" + sStepID + "_pairs\">"
@@ -1120,7 +1120,7 @@ def GetVariablesForStepForEdit(oStep):
             sRIdxChecked = ""
             sLPosChecked = ""
             sRPosChecked = ""
-            sVarGUID = "v" + uiCommon.NewGUID()
+            sVarGUID = "v" + catocommon.new_guid()
             
             if sType == "range":
                 # the markers can be a range indicator or a string.
@@ -1307,8 +1307,8 @@ def SqlExec(oStep):
         sHandle = xd.findtext("handle", "")
 
         sHTML = ""
-        sElementID = uiCommon.NewGUID()
-        sFieldID = uiCommon.NewGUID()
+        sElementID = catocommon.new_guid()
+        sFieldID = catocommon.new_guid()
         bDrawVarButton = False
         bDrawSQLBox = False
         bDrawHandle = False
@@ -1478,7 +1478,7 @@ def RunTask(oStep):
     
     
         # all good, draw the widget
-        sOTIDField = uiCommon.NewGUID()
+        sOTIDField = catocommon.new_guid()
     
         sHTML += "<input type=\"text\" " + \
             CommonAttribsWithID(oStep, True, "original_task_id", sOTIDField, "hidden") + \
@@ -1646,7 +1646,7 @@ def Subtask(oStep):
                     return "Unable to find task [" + sOriginalTaskID + "] version [" + sVersion + "]."
     
         # all good, draw the widget
-        sOTIDField = uiCommon.NewGUID()
+        sOTIDField = catocommon.new_guid()
     
         sHTML += "<input type=\"text\" " + \
             CommonAttribsWithID(oStep, True, "original_task_id", sOTIDField, "hidden") + \
@@ -1827,7 +1827,7 @@ def SetVariable(oStep):
             sHTML += "<td class=\"w1pct\">&nbsp;Value:&nbsp;</td>"
     
             #  we gotta get the field id first, but don't show the textarea until after
-            sValueFieldID = uiCommon.NewGUID()
+            sValueFieldID = catocommon.new_guid()
             sCommonAttribs = CommonAttribsWithID(oStep, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
     
             sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"1\" style=\"height: 18px;\" " + sCommonAttribs + \
@@ -1951,7 +1951,7 @@ def NewConnection(oStep):
             else:
                 sAssetName = sAssetID
     
-            sElementID = uiCommon.NewGUID()
+            sElementID = catocommon.new_guid()
     
             sHTML += " to Asset \n"
             sHTML += "<input type=\"text\" " + \
@@ -1999,7 +1999,7 @@ def If(oStep):
             xAction = xTest.find("action", None)
     
             #  we gotta get the field id first, but don't show the textarea until after
-            sFieldID = uiCommon.NewGUID()
+            sFieldID = catocommon.new_guid()
             sCol = "tests/test[" + str(i) + "]/eval"
             sCommonAttribsForTA = CommonAttribsWithID(oStep, True, sCol, sFieldID, "")
     
@@ -2252,7 +2252,7 @@ def Codeblock(oStep):
 
     sCB = xd.findtext("codeblock", "")
     sHTML = ""
-    sElementID = uiCommon.NewGUID()
+    sElementID = catocommon.new_guid()
 
     sHTML += "Codeblock: \n"
     sHTML += "<input type=\"text\" " + CommonAttribsWithID(oStep, True, "codeblock", sElementID, "") + \

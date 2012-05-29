@@ -75,7 +75,7 @@ class cloudMethods:
             cp = providers.CloudProviders()
             if cp:
                 for name, p in cp.iteritems():
-                    if uiCommon.IsTrue(sUserDefinedOnly):
+                    if catocommon.is_true(sUserDefinedOnly):
                         if p.UserDefinedClouds:
                             sHTML += "<option value=\"" + name + "\">" + name + "</option>"
                     else:

@@ -183,7 +183,7 @@ with open("convert.in", 'r') as f_in:
             line = line.replace("Globals.acObjectTypes", "uiGlobals.CatoObjectTypes")
             line = line.replace("ui.", "uiCommon.")
             line = line.replace("ft.", "ST.") # "FunctionTemplates ft is now import stepTemplates as sST"
-            line = line.replace("dc.IsTrue", "uiCommon.IsTrue")
+            line = line.replace("dc.IsTrue", "catocommon.is_true")
             line = line.replace("../images", "static/images")
             line = line.replace("dc.EnCrypt", "catocommon.cato_encrypt")
     
@@ -214,7 +214,7 @@ with open("convert.in", 'r') as f_in:
             
             # this will be helpful
             if " CommonAttribs" in line:
-                line = "### CommonAttribsWithID ????\nuiCommon.NewGUID()\n" + line
+                line = "### CommonAttribsWithID ????\ncatocommon.new_guid()\n" + line
 
 
             # random stuff that may or may not work

@@ -451,7 +451,7 @@ class taskMethods:
                     
                     # some columns are checkboxes, so make sure it is a db appropriate value (1 or 0)
                     if sColumn == "concurrent_by_asset":
-                        if uiCommon.IsTrue(sValue):
+                        if catocommon.is_true(sValue):
                             sSetClause = sColumn + " = 1"
                         else:
                             sSetClause = sColumn + " = 0"
@@ -773,7 +773,7 @@ class taskMethods:
             # will serialize and update the entire sortable... 
             # immediately replacing this -1 with the correct position
 
-            sNewStepID = uiCommon.NewGUID()
+            sNewStepID = catocommon.new_guid()
 
             if uiCommon.IsGUID(sItem):
                 # copy from the clipboard
@@ -821,7 +821,7 @@ class taskMethods:
                     # so the default is "2".
                     sPopVars = xe.get("variables", "false")
 
-                    if uiCommon.IsTrue(sPopVars) and sOPM == "0":
+                    if catocommon.is_true(sPopVars) and sOPM == "0":
                         sOPM = "2"
                     
                     
@@ -1679,7 +1679,7 @@ class taskMethods:
                 sUserID = uiCommon.GetSessionUserID()
     
                 # commands get new ids when copied into the clpboard.
-                sNewStepID = uiCommon.NewGUID()
+                sNewStepID = catocommon.new_guid()
     
                 # it's a bit hokey, but if a step already exists in the clipboard, 
                 # and we are copying that step again, 
@@ -2058,7 +2058,7 @@ class taskMethods:
                             if xVal is not None:
                                 # if this is an encrypted parameter, we'll be replacing (if a default exists) the oev attribute
                                 # AND the value... don't want them to get out of sync!
-                                if uiCommon.IsTrue(sEncrypt):
+                                if catocommon.is_true(sEncrypt):
                                     if xDefValues.find("value") is not None:
                                         xVal.attrib["oev"] = xDefValues.find("value").get("oev", "")
                                         xVal.text = xDefValues.findtext("value", "")
@@ -2165,12 +2165,12 @@ class taskMethods:
                     # note we don't care about dirty unencrypted values... they'll compare down below just fine.
                     
                     # is it encrypted?
-                    bEncrypted = uiCommon.IsTrue(xTaskParam.get("encrypt", ""))
+                    bEncrypted = catocommon.is_true(xTaskParam.get("encrypt", ""))
                             
                     if bEncrypted:
                         for xVal in xADValues.findall("value"):
                             # a) is it an oev?  unpackJSON it (that's just an obfuscation wrapper)
-                            if uiCommon.IsTrue(xVal.get("oev", "")):
+                            if catocommon.is_true(xVal.get("oev", "")):
                                 xVal.text = uiCommon.unpackJSON(xVal.text)
                                 del xVal.attrib["oev"]
                             
@@ -2282,7 +2282,7 @@ class taskMethods:
                     sName = xParameter.findtext("name", "")
                     sDesc = xParameter.findtext("desc", "")
 
-                    bEncrypt = uiCommon.IsTrue(xParameter.get("encrypt", ""))
+                    bEncrypt = catocommon.is_true(xParameter.get("encrypt", ""))
 
                     sHTML += "<div class=\"parameter\">"
                     sHTML += "  <div class=\"ui-state-default parameter_header\">"
@@ -2420,12 +2420,12 @@ class taskMethods:
                         xVals = xValues.findall("value")
                         for xVal in xVals:
                             # since we can delete each item from the page it needs a unique id.
-                            sPID = "pv" + uiCommon.NewGUID()
+                            sPID = "pv" + catocommon.new_guid()
 
                             sValue = (xVal.text if xVal.text else "")
                             sObscuredValue = ""
                             
-                            if uiCommon.IsTrue(sEncrypt):
+                            if catocommon.is_true(sEncrypt):
                                 #  1) obscure the ENCRYPTED value and make it safe to be an html attribute
                                 #  2) return some stars so the user will know a value is there.
                                 sObscuredValue = "oev=\"" + uiCommon.packJSON(sValue) + "\""
@@ -2445,14 +2445,14 @@ class taskMethods:
                     else:
                         # if, when getting the parameter, there are no values... add one.  We don't want a parameter with no values
                         # AND - no remove button on this only value
-                        sValuesHTML += "<div id=\"pv" + uiCommon.NewGUID() + "\">" \
+                        sValuesHTML += "<div id=\"pv" + catocommon.new_guid() + "\">" \
                             "<textarea class=\"param_edit_value\" rows=\"1\"></textarea></div>"
                 else:
                     uiCommon.log("Unable to get parameter details. Not found.")
             else:
                 # if, when getting the parameter, there are no values... add one.  We don't want a parameter with no values
                 # AND - no remove button on this only value
-                sValuesHTML += "<div id=\"pv" + uiCommon.NewGUID() + "\">" \
+                sValuesHTML += "<div id=\"pv" + catocommon.new_guid() + "\">" \
                     "<textarea class=\"param_edit_value\" rows=\"1\"></textarea></div>"
 
             # this draws no matter what, if it's empty it's just an add dialog
@@ -2587,9 +2587,9 @@ class taskMethods:
             sConstraintMsg = uiCommon.unpackJSON(sConstraintMsg).strip()
             
             # normalize and clean the values
-            sRequired = ("true" if uiCommon.IsTrue(sRequired) else "false")
-            sPrompt = ("true" if uiCommon.IsTrue(sPrompt) else "false")
-            sEncrypt = ("true" if uiCommon.IsTrue(sEncrypt) else "false")
+            sRequired = ("true" if catocommon.is_true(sRequired) else "false")
+            sPrompt = ("true" if catocommon.is_true(sPrompt) else "false")
+            sEncrypt = ("true" if catocommon.is_true(sEncrypt) else "false")
             sName = sName.strip().replace("'", "''")
 
 
@@ -2607,7 +2607,7 @@ class taskMethods:
 
             # if sParamID is empty, we are adding
             if not sParamID:
-                sParamID = "p_" + uiCommon.NewGUID()
+                sParamID = "p_" + catocommon.new_guid()
                 sParameterXPath = "parameter[@id='" + sParamID + "']" # reset this if we had to get a new id
 
 
@@ -2685,7 +2685,7 @@ class taskMethods:
                 # if encrypt is true we MIGHT want to encrypt this value.
                 # but it might simply be a resubmit of an existing value in which case we DON'T
                 # if it has oev: as a prefix, it needs no additional work
-                if uiCommon.IsTrue(sEncrypt) and sVal:
+                if catocommon.is_true(sEncrypt) and sVal:
                     if sVal.find("oev:") > -1:
                         sReadyValue = uiCommon.unpackJSON(sVal.replace("oev:", ""))
                     else:
@@ -2693,7 +2693,7 @@ class taskMethods:
                 else:
                     sReadyValue = uiCommon.unpackJSON(sVal)
                     
-                sValueXML += "<value id=\"pv_" + uiCommon.NewGUID() + "\">" + sReadyValue + "</value>"
+                sValueXML += "<value id=\"pv_" + catocommon.new_guid() + "\">" + sReadyValue + "</value>"
 
             sValueXML = "<values present_as=\"" + sPresentAs + "\">" + sValueXML + "</values>"
 

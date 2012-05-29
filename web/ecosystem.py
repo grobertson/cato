@@ -51,7 +51,7 @@ class Ecotemplate(object):
     Actions = {}
 
     def __init__(self):
-        self.ID = uiCommon.NewGUID()
+        self.ID = catocommon.new_guid()
         self.Name = None
         self.Description = None
         self.StormFileType = None
@@ -371,7 +371,7 @@ class Ecosystems(object):
             raise ex
         
 class Ecosystem(object):
-    ID = uiCommon.NewGUID()
+    ID = catocommon.new_guid()
     Name = None
     Description = None
     StormFile = None
@@ -402,7 +402,7 @@ class Ecosystem(object):
               
             db = catocommon.new_conn()
             
-            sID = uiCommon.NewGUID()
+            sID = catocommon.new_guid()
 
             sSQL = "insert into ecosystem (ecosystem_id, ecosystem_name, ecosystem_desc, account_id, ecotemplate_id," \
                 " storm_file, storm_status, storm_parameter_xml, storm_cloud_id, created_dt, last_update_dt)" \

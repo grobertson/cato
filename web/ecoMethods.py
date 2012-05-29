@@ -1,9 +1,7 @@
-import sys
 import os
 import traceback
 import urllib
-from datetime import datetime, timedelta
-import time
+from datetime import datetime
 import hashlib
 import base64
 import hmac
@@ -311,7 +309,7 @@ class ecoMethods:
             sSQL = "insert into ecotemplate_action " \
                  " (action_id, action_name, ecotemplate_id, original_task_id)" \
                  " values (" \
-                 " '" + uiCommon.NewGUID() + "'," \
+                 " '" + catocommon.new_guid() + "'," \
                  " '" + sActionName + "'," \
                  " '" + sEcoTemplateID + "'," \
                  " '" + sOTID + "'" \
@@ -1402,7 +1400,7 @@ class ecoMethods:
                             if c.ID is not None:
                                 # giving each section a guid so we can delete it on the client side after the ajax call.
                                 # not 100% the ecosystem_object_id will always be suitable as a javascript ID.
-                                sGroupID = uiCommon.NewGUID()
+                                sGroupID = catocommon.new_guid()
         
                                 sHTML += "<div class=\"ui-widget-content ui-corner-all ecosystem_item\" id=\"" + sGroupID + "\">"
         
@@ -1656,7 +1654,7 @@ class ecoMethods:
                                     sConstraintMsg = str(a_val if a_val else "")
                                     
                                 
-                            sb.append("<parameter id=\"p_" + uiCommon.NewGUID() + \
+                            sb.append("<parameter id=\"p_" + catocommon.new_guid() + \
                                 "\" required=\"true\" prompt=\"true\" encrypt=\"" + bEncrypt + \
                                 "\" value_type=\"" + sValueType  + \
                                 "\" minvalue=\"" + sMinValue + "\" maxvalue=\"" + sMaxValue + \
@@ -1670,9 +1668,9 @@ class ecoMethods:
                             
                             if sPresentAs == "dropdown" and jaAllowedValues is not None:
                                 for oOpt in jaAllowedValues:
-                                    sb.append("<value id=\"pv_" + uiCommon.NewGUID() + "\">" + oOpt + "</value>")
+                                    sb.append("<value id=\"pv_" + catocommon.new_guid() + "\">" + oOpt + "</value>")
                             else:
-                                sb.append("<value id=\"pv_" + uiCommon.NewGUID() + "\">" + sDefaultValue + "</value>")
+                                sb.append("<value id=\"pv_" + catocommon.new_guid() + "\">" + sDefaultValue + "</value>")
                             
                             sb.append("</values>")
     

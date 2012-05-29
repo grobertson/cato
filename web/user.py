@@ -159,13 +159,13 @@ class User(object):
             # TODO: All the password testing, etc.
             db = catocommon.new_conn()
 
-            sNewID = catocommon.NewGUID()
+            sNewID = catocommon.new_guid()
 
             if sAuthType == "local":
                 if sPassword:
                     sEncPW = "'%s'" % catocommon.cato_encrypt(sPassword)
-                elif catocommon.IsTrue(sGeneratePW):
-                    sEncPW = "'%s'" % catocommon.cato_encrypt(catocommon.GeneratePassword())
+                elif catocommon.is_true(sGeneratePW):
+                    sEncPW = "'%s'" % catocommon.cato_encrypt(catocommon.generate_password())
                 else:
                     return None, "Either an explicit password must be provided, or check the box to generate one."
             elif sAuthType == "ldap":

@@ -96,17 +96,17 @@ def read_config():
     
     return key_vals
 
-def NewGUID():
+def new_guid():
     return str(uuid.uuid1())
 
-def GeneratePassword():
+def generate_password():
     import string
     from random import choice
     chars = string.letters + string.digits
     length = 12
     return "".join(choice(chars) for _ in range(length))
 
-def IsTrue(var):
+def is_true(var):
     # not just regular python truth testing - certain string values are also "true"
     # but false if the string has length but isn't a "true" statement
     # since any object could be passed here (we only want bools, ints or strs)

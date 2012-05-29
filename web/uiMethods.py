@@ -568,7 +568,7 @@ class uiMethods:
             sSQL = "insert into action_schedule (schedule_id, task_id, action_id, ecosystem_id, account_id," \
                 " months, days, hours, minutes, days_or_weeks, label, descr, parameter_xml, debug_level)" \
                    " values (" \
-                " '" + uiCommon.NewGUID() + "'," \
+                " '" + catocommon.new_guid() + "'," \
                 " '" + sTaskID + "'," \
                 + (" '" + sActionID + "'" if sActionID else "''") + "," \
                 + (" '" + sEcosystemID + "'" if sEcosystemID else "''") + "," \
@@ -1023,7 +1023,7 @@ class uiMethods:
                         if not u.Email:
                             return "Unable to reset password - User does not have an email address defined."
                         else:
-                            sNewPassword = catocommon.GeneratePassword()
+                            sNewPassword = catocommon.generate_password()
                             sql_bits.append("user_password='%s'" % sNewPassword)
                               
                             # an additional log entry
