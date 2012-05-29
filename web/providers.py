@@ -49,15 +49,17 @@ class CloudProviders(dict):
                     if pv.UserDefinedClouds:
                         sSQL = "select cloud_id, cloud_name, api_url, api_protocol from clouds where provider = '" + pv.Name + "' order by cloud_name"
                         db = catocommon.new_conn()
-                        dt = db.select_all(sSQL)
+                        dt = db.select_all_dict(sSQL)
                         if dt:
                             for dr in dt:
                                 c = cloud.Cloud()
-                                c.FromArgs(pv, True, dr[0], dr[1], dr[2], dr[3], "")
+                                c.FromArgs(pv, True, dr["cloud_id"], dr["cloud_name"], dr["api_url"], dr["api_protocol"], "")
                                 if c:
                                     pv.Clouds.append(c)
                         else:
-                            raise Exception("Error building Cloud object: ")
+                            # DO NOT raise an exception here - user defined clouds are not required.
+                            # but print a warning
+                            print "Cloud Providers XML: Warning - Provider [%s] allows user defined Clouds, but none exist in the database."
                     
                     #get the cloudobjecttypes for this provider.                    
                     xProducts = xProvider.findall("products/product")

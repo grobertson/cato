@@ -89,7 +89,7 @@ class Cloud(object):
             
             #well, if we got here we have a problem... the ID provided wasn't found anywhere.
             #this should never happen, so bark about it.
-            #raise Exception("Unable to build Cloud object. Either no Clouds are defined, or no Cloud with ID [" + sCloudID + "] could be found.")   
+            raise Exception("Warning - Unable to find a Cloud with id [%s] on any Providers." % sCloudID)   
         except Exception, ex:
             raise ex
 
