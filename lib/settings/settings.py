@@ -50,17 +50,17 @@ class settings(object):
                     self.PassMaxAttempts = row["pass_max_attempts"]
                     self.PassMaxLength = row["pass_max_length"]
                     self.PassMinLength = row["pass_min_length"]
-                    self.PassComplexity = catocommon.IsTrue(row["pass_complexity"])
+                    self.PassComplexity = catocommon.is_true(row["pass_complexity"])
                     self.PassAgeWarn = row["pass_age_warn_days"]
                     self.PasswordHistory = row["pass_history"]
-                    self.PassRequireInitialChange = catocommon.IsTrue(row["pass_require_initial_change"])
+                    self.PassRequireInitialChange = catocommon.is_true(row["pass_require_initial_change"])
                     self.AutoLockReset = row["auto_lock_reset"]
                     self.LoginMessage = row["login_message"]
                     self.AuthErrorMessage = row["auth_error_message"]
                     self.NewUserMessage = row["new_user_email_message"]
-                    self.PageViewLogging = catocommon.IsTrue(row["page_view_logging"])
-                    self.ReportViewLogging = catocommon.IsTrue(row["report_view_logging"])
-                    self.AllowLogin = catocommon.IsTrue(row["allow_login"])
+                    self.PageViewLogging = catocommon.is_true(row["page_view_logging"])
+                    self.ReportViewLogging = catocommon.is_true(row["report_view_logging"])
+                    self.AllowLogin = catocommon.is_true(row["allow_login"])
             except Exception, ex:
                 raise Exception(ex)
             finally:
@@ -73,16 +73,16 @@ class settings(object):
                     " pass_max_attempts='" + self.PassMaxAttempts + "'," \
                     " pass_max_length='" + self.PassMaxLength + "'," \
                     " pass_min_length='" + self.PassMinLength + "'," \
-                    " pass_complexity='" + ("1" if catocommon.IsTrue(self.PassComplexity) else "0") + "'," \
+                    " pass_complexity='" + ("1" if catocommon.is_true(self.PassComplexity) else "0") + "'," \
                     " pass_age_warn_days='" + self.PassAgeWarn + "'," \
                     " pass_history = '" + self.PasswordHistory + "'," \
-                    " pass_require_initial_change='" + ("1" if catocommon.IsTrue(self.PassRequireInitialChange) else "0") + "'," \
-                    " auto_lock_reset='" + ("1" if catocommon.IsTrue(self.AutoLockReset) else "0") + "'," \
+                    " pass_require_initial_change='" + ("1" if catocommon.is_true(self.PassRequireInitialChange) else "0") + "'," \
+                    " auto_lock_reset='" + ("1" if catocommon.is_true(self.AutoLockReset) else "0") + "'," \
                     " login_message='" + self.LoginMessage.replace("'", "''") + "'," \
                     " auth_error_message='" + self.AuthErrorMessage.replace("'", "''").replace(";", "") + "'," \
                     " new_user_email_message='" + self.NewUserMessage.replace("'", "''").replace(";", "") + "'," \
-                    " page_view_logging='" + ("1" if catocommon.IsTrue(self.PageViewLogging) else "0") + "'," \
-                    " report_view_logging='" + ("1" if catocommon.IsTrue(self.ReportViewLogging) else "0") + "'," \
+                    " page_view_logging='" + ("1" if catocommon.is_true(self.PageViewLogging) else "0") + "'," \
+                    " report_view_logging='" + ("1" if catocommon.is_true(self.ReportViewLogging) else "0") + "'," \
                     " allow_login='" + ("1" if self.AllowLogin else "0") + "'" \
                     " where id = 1"
 
@@ -117,7 +117,7 @@ class settings(object):
                 db = catocommon.new_conn()
                 row = db.select_row_dict(sSQL)
                 if row:
-                    self.Enabled = catocommon.IsTrue(row["mode_off_on"])
+                    self.Enabled = catocommon.is_true(row["mode_off_on"])
                     self.LoopDelay = row["loop_delay_sec"]
                     self.MaxProcesses = row["max_processes"]
             except Exception, ex:
@@ -128,7 +128,7 @@ class settings(object):
         def DBSave(self):
             try:
                 sSQL = "update poller_settings set" \
-                    " mode_off_on='" + ("1" if catocommon.IsTrue(self.Enabled) else "0") + "'," \
+                    " mode_off_on='" + ("1" if catocommon.is_true(self.Enabled) else "0") + "'," \
                     " loop_delay_sec='" + str(self.LoopDelay) + "'," \
                     " max_processes='" + str(self.MaxProcesses) + "'"
 
@@ -171,7 +171,7 @@ class settings(object):
                 db = catocommon.new_conn()
                 row = db.select_row_dict(sSQL)
                 if row:
-                    self.Enabled = catocommon.IsTrue(row["mode_off_on"])
+                    self.Enabled = catocommon.is_true(row["mode_off_on"])
                     self.PollLoop = row["loop_delay_sec"]
                     self.RetryDelay = row["retry_delay_min"]
                     self.RetryMaxAttempts = row["retry_max_attempts"]
@@ -205,7 +205,7 @@ class settings(object):
                 if self.SMTPUserPassword != sPasswordFiller:
                     sSQL += ",smtp_server_password='{10}'";
 
-                sSQL = sSQL.format(("1" if catocommon.IsTrue(self.Enabled) else "0"), 
+                sSQL = sSQL.format(("1" if catocommon.is_true(self.Enabled) else "0"), 
                        str(self.PollLoop), str(self.RetryDelay),
                         str(self.RetryMaxAttempts), self.SMTPServerAddress, self.SMTPUserAccount, 
                         str(self.SMTPServerPort), self.FromEmail, self.FromName, self.AdminEmail, 
@@ -244,7 +244,7 @@ class settings(object):
                 db = catocommon.new_conn()
                 row = db.select_row_dict(sSQL)
                 if row:
-                    self.Enabled = catocommon.IsTrue(row["mode_off_on"])
+                    self.Enabled = catocommon.is_true(row["mode_off_on"])
                     self.LoopDelay = row["loop_delay_sec"]
                     self.ScheduleMinDepth = row["schedule_min_depth"]
                     self.ScheduleMaxDays = row["schedule_max_days"]
@@ -257,7 +257,7 @@ class settings(object):
         def DBSave(self):
             try:
                 sSQL = "update scheduler_settings set" \
-                " mode_off_on='" + ("1" if catocommon.IsTrue(self.Enabled) else "0") + "'," \
+                " mode_off_on='" + ("1" if catocommon.is_true(self.Enabled) else "0") + "'," \
                 " loop_delay_sec='" + str(self.LoopDelay) + "'," \
                 " schedule_min_depth='" + str(self.ScheduleMinDepth) +"'," \
                 " schedule_max_days='" + str(self.ScheduleMaxDays) +"'," \

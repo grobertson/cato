@@ -257,7 +257,6 @@ class Asset(object):
                 " port = " + ("'" + self.Port + "'" if self.Port else "null") + "," \
                 " credential_id = '" + self.CredentialID + "'" \
                 " where asset_id = '" + self.ID + "'"
-            print sSQL
             if not db.tran_exec_noexcep(sSQL):
                 return False, db.error
 
@@ -419,7 +418,6 @@ class Credential(object):
                 "(credential_id, credential_name, username, password, domain, shared_or_local, shared_cred_desc, privileged_password) " \
                 "values ('" + self.ID + "','" + self.Name + "','" + self.Username + "','" + catocommon.cato_encrypt(self.Password) + "','" \
                 + self.Domain + "','" + self.SharedOrLocal + "','" + self.Description + "'," + sPriviledgedPasswordUpdate + ")"
-            print sSQL
             if not db.exec_db_noexcep(sSQL):
                 if db.error == "key_violation":
                     return False, "A Credential with that name already exists.  Please select another name."
