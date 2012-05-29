@@ -21,22 +21,7 @@ $(document).ready(function () {
 
     // clear the edit array
     $("#hidSelectedArray").val("");
-
-    $("[tag='selectable']").live("click", function () {
-        LoadEditDialog($(this).parent().attr("domain"));
-    });
-
-});
-
-function pageLoad() {
-    ManagePageLoad();
-}
-
-function LoadEditDialog(editID) {
-
-
-
-    $("#hidMode").val("edit");
+    
     $("#edit_dialog").dialog({
         autoOpen: false,
         modal: true,
@@ -52,20 +37,26 @@ function LoadEditDialog(editID) {
         }
 
     });
-    $("#edit_dialog").dialog("option", "title", "Modify Domain");
-    $("#edit_dialog").dialog("open");
 
-    $("#hidCurrentEditID").val(editID);
-    FillEditForm(editID);
 
+    $("[tag='selectable']").live("click", function () {
+        LoadEditDialog($(this).parent().attr("domain"));
+    });
+
+});
+
+function pageLoad() {
+    ManagePageLoad();
 }
 
-function FillEditForm(sEditID) {
+function LoadEditDialog(editID) {
+    $("#hidMode").val("edit");
 
+    $("#hidCurrentEditID").val(editID);
     $.ajax({
         type: "POST",
         url: "ldapEdit.aspx/LoadDomain",
-        data: '{"sDomain":"' + sEditID + '"}',
+        data: '{"sDomain":"' + editID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
@@ -78,6 +69,9 @@ function FillEditForm(sEditID) {
                 // show the assets current values
                 $("#txtDomain").val(oResultData.sDomain);
                 $("#txtAddress").val(oResultData.sAddress)
+
+			    $("#edit_dialog").dialog("option", "title", "Modify Domain");
+			    $("#edit_dialog").dialog("open");
             }
         },
         error: function (response) {

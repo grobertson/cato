@@ -219,30 +219,11 @@ function LoadEditDialog(editID) {
 
     $("#hidCurrentEditID").val(editID);
 
-    FillEditForm(editID);
-
-	//clear out any test results
-	ClearTestResult();
-	
-    $('#edit_dialog_tabs').tabs('select', 0);
-    $('#edit_dialog_tabs').tabs( "option", "disabled", [] );
-    $("#edit_dialog").dialog("option", "title", "Modify Cloud");
-    $("#edit_dialog").dialog("open");
-
-}
-
-function ClearTestResult() {
-	$("#conn_test_result").css("color","green");
-	$("#conn_test_result").empty();
-	$("#conn_test_error").empty();
-}
-
-function FillEditForm(sEditID) {
     $.ajax({
         type: "POST",
         async: false,
         url: "cloudMethods/wmGetCloud",
-        data: '{"sID":"' + sEditID + '"}',
+        data: '{"sID":"' + editID + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (cloud) {
@@ -257,12 +238,22 @@ function FillEditForm(sEditID) {
                 $("#ddlAPIProtocol").val(cloud.APIProtocol);
     
 			    GetProviderAccounts();
+				ClearTestResult();
+				
+			    $("#edit_dialog").dialog("option", "title", "Modify Cloud");
+			    $("#edit_dialog").dialog("open");
             }
         },
         error: function (response) {
             showAlert(response.responseText);
         }
     });
+}
+
+function ClearTestResult() {
+	$("#conn_test_result").css("color","green");
+	$("#conn_test_result").empty();
+	$("#conn_test_error").empty();
 }
 
 function SaveItem(close_after_save) {

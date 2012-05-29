@@ -473,9 +473,40 @@ function LoadEditDialog(editCount, editUserID) {
 
     $("#hidEditCount").val(editCount);
     $("#hidCurrentEditID").val(editUserID);
-    FillEditForm(editUserID);
 
-    $("#edit_dialog").dialog("open");
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "uiMethods/wmGetUser",
+        data: '{"sUserID":"' + editUserID + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (user) {
+            //update the list in the dialog
+            if (user.length == 0) {
+                showAlert('error no response');
+                // do we close the dialog, leave it open to allow adding more? what?
+            } else {
+                $("#txtUserLoginID").val(user.LoginID);
+                $("#txtUserFullName").val(user.FullName)
+                $("#txtUserEmail").val(user.Email);
+                //$("#txtUserPassword").val(user.sPasswordMasked);
+                //$("#txtUserPasswordConfirm").val(user.sPasswordMasked)
+                $("#ddlUserAuthType").val(user.AuthenticationType);
+                $("#ddlUserStatus").val(user.Status);
+                $("#ddlUserRole").val(user.Role);
+                $("#lblFailedLoginAttempts").html(user.FailedLoginAttempts);
+
+                SetPasswordControls();
+                GetObjectsTags(user.ID);
+
+			    $("#edit_dialog").dialog("open");
+            }
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
 }
 
 function ShowItemModify() {
@@ -500,44 +531,6 @@ function ShowItemModify() {
 
 }
 
-
-function FillEditForm(sUserID) {
-
-    // get all the data for the user and populate the fields
-    // return from server example
-    //    sUserFullName & "::" & sEmail & "::" & sEditUserID & "::" & sLoginID & "::" & sAuthenticationType & "::" & sStatus & "::" & sRole & "::" & sPasswordMasked
-    $.ajax({
-        type: "POST",
-        async: false,
-        url: "uiMethods/wmGetUser",
-        data: '{"sUserID":"' + sUserID + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (user) {
-            //update the list in the dialog
-            if (user.length == 0) {
-                showAlert('error no response');
-                // do we close the dialog, leave it open to allow adding more? what?
-            } else {
-                $("#txtUserLoginID").val(user.LoginID);
-                $("#txtUserFullName").val(user.FullName)
-                $("#txtUserEmail").val(user.Email);
-                //$("#txtUserPassword").val(user.sPasswordMasked);
-                //$("#txtUserPasswordConfirm").val(user.sPasswordMasked)
-                $("#ddlUserAuthType").val(user.AuthenticationType);
-                $("#ddlUserStatus").val(user.Status);
-                $("#ddlUserRole").val(user.Role);
-                $("#lblFailedLoginAttempts").html(user.FailedLoginAttempts);
-
-                SetPasswordControls();
-                GetObjectsTags(sUserID);
-            }
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
-}
 function ClearFailedLoginAttempts() {
     //reset the counter and change the text
     var user = {};
