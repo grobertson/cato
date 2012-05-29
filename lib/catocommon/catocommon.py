@@ -128,7 +128,7 @@ def IsTrue(var):
                 """no exception, it just wasn't parseable into an int"""
     return False
 
-def TickSlash(s):
+def tick_slash(s):
     """ Prepares string values for string concatenation, or insertion into MySql. """
     return s.replace("'", "''").replace("\\", "\\\\").replace("%", "%%")
 
