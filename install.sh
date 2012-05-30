@@ -40,17 +40,38 @@ then
 	echo "Installing to $DEPLOY_DIR ..."
 fi
 
+# common for all
+if [ $SILENT = 0 ]
+then 
+	echo "Copying common files..."
+fi
+
 mkdir -p $DEPLOY_DIR
 mkdir -p $DEPLOY_DIR/web
 mkdir -p $DEPLOY_DIR/services
+mkdir -p $DEPLOY_DIR/lib
+mkdir -p $DEPLOY_DIR/logfiles
 mkdir -p $DEPLOY_DIR/conf
+
 rsync -aq conf/default.cato.conf $DEPLOY_DIR/conf
 rsync -aq conf/setup_conf $DEPLOY_DIR/conf
 rsync -aq conf/cloud_providers.xml $DEPLOY_DIR/conf
-rsync -aq services/lib/catocryptpy/* $DEPLOY_DIR/conf/catocryptpy
-rsync -aq services/lib/catocrypttcl/* $DEPLOY_DIR/conf/catocrypttcl
+# rsync -aq lib/catocryptpy/* $DEPLOY_DIR/conf/catocryptpy
+# rsync -aq lib/catocrypttcl/* $DEPLOY_DIR/conf/catocrypttcl
 rsync -aq database/* $DEPLOY_DIR/conf/data
 
+rsync -q NOTICE $DEPLOY_DIR/
+rsync -q LICENSE $DEPLOY_DIR/
+
+rsync -aq lib/* $DEPLOY_DIR/lib
+
+if [ $SILENT = 0 ]
+then 
+	echo "Creating services link to conf dir..."
+fi
+
+
+# web
 if [ "$COMPONENT" = "1" -o "$COMPONENT" = "3" ]
 then
 
@@ -58,34 +79,31 @@ then
 	then 
 		echo "Copying web files..."
 	fi
-	#copy pages WITHOUT the .cs files
-	rsync -aq --exclude=*.cs web/pages/* $DEPLOY_DIR/web/pages
 
-	#copy all images, script and style
-	rsync -aq web/images/* $DEPLOY_DIR/web/images
-	rsync -aq web/script/* $DEPLOY_DIR/web/script
-	rsync -aq web/style/* $DEPLOY_DIR/web/style
+	# code
+	rsync -aq web/static/* $DEPLOY_DIR/web/static
 	rsync -aq web/extensions/* $DEPLOY_DIR/web/extensions
+	rsync -aq web/templates/* $DEPLOY_DIR/web/templates
 
-	#just the dll's not the extras
-	rsync -q web/bin/*.dll $DEPLOY_DIR/web/bin/
-
+	# empty stuff
 	#the temp directory
 	mkdir -p $DEPLOY_DIR/web/temp
+	#the cache directory
+	mkdir -p $DEPLOY_DIR/web/datacache
 
 	#explicit local files
-	rsync -q web/*.aspx $DEPLOY_DIR/web/
-	rsync -q web/*.htm $DEPLOY_DIR/web/
-	rsync -q web/Web.config $DEPLOY_DIR/web/
-	rsync -q web/NOTICE $DEPLOY_DIR/web/
-	rsync -q web/LICENSE $DEPLOY_DIR/web/
+	rsync -q web/*.py $DEPLOY_DIR/web/
+	rsync -q web/*.xml $DEPLOY_DIR/web/
 
 	if [ $SILENT = 0 ]
 	then 
 		echo "Creating web link to conf dir..."
 	fi
-	ln -s $DEPLOY_DIR/conf $DEPLOY_DIR/web/conf
+
+	# ln -s $DEPLOY_DIR/conf $DEPLOY_DIR/web/conf
 fi
+
+#services
 if [ "$COMPONENT" = "2" -o "$COMPONENT" = "3" ]
 then
 
@@ -96,13 +114,13 @@ then
 
 	rsync -aq services/*.sh $DEPLOY_DIR/services
 	rsync -aq services/bin/* $DEPLOY_DIR/services/bin
-	rsync -aq services/lib/* $DEPLOY_DIR/services/lib
 
 	if [ $SILENT = 0 ]
 	then 
 		echo "Creating services link to conf dir..."
 	fi
-	ln -s $DEPLOY_DIR/conf $DEPLOY_DIR/services/conf
+
+	# ln -s $DEPLOY_DIR/conf $DEPLOY_DIR/services/conf
 fi
 
 if [ $SILENT = 0 ]

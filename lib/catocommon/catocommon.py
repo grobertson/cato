@@ -17,7 +17,6 @@
 import os.path
 import sys
 from catocryptpy import catocryptpy
-import pymysql
 import time
 import threading
 import uuid
@@ -57,9 +56,8 @@ def get_base_path():
     
 def read_config():
     base_path = get_base_path()
-    conf_path = os.path.join(base_path, "conf")
 
-    filename = os.path.join(conf_path, "cato.conf")        
+    filename = os.path.join(base_path, "conf/cato.conf")        
     if not os.path.isfile(filename):
         msg = "The configuration file "+ filename +" does not exist."
         raise Exception(msg)
