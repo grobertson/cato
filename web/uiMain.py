@@ -389,7 +389,18 @@ if __name__ == "__main__":
         if "web_port" in config:
             port=config["web_port"]
             sys.argv.append(port)
-
+        
+        dbglvl = 2
+        if "web_debug" in config:
+            try:
+                dbglvl = int(config["web_debug"])
+            except:
+                print "Warning: web_debug setting in cato.conf must be an integer between 0-4."
+            print "Setting debug level to %d..." % dbglvl
+        else:
+            print "Setting debug level to default (%d)..." % dbglvl
+        uiGlobals.debuglevel = dbglvl
+            
     urls = (
         '/', 'home',
         '/uiMethods/(.*)', 'uiMethods',
@@ -437,9 +448,6 @@ if __name__ == "__main__":
     uiGlobals.session = session
     uiGlobals.server = server
     uiGlobals.config = config
-    
-    # the debug level (0-4 with 0 being 'none' and 4 being 'verbose')    
-    uiGlobals.debuglevel = 4 # change as needed for debugging
     
     # setting this to True seems to show a lot more detail in UI exceptions
     web.config.debug = False
