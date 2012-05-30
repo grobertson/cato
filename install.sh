@@ -50,7 +50,6 @@ mkdir -p $DEPLOY_DIR
 mkdir -p $DEPLOY_DIR/web
 mkdir -p $DEPLOY_DIR/services
 mkdir -p $DEPLOY_DIR/lib
-mkdir -p $DEPLOY_DIR/logfiles
 mkdir -p $DEPLOY_DIR/conf
 
 rsync -aq conf/default.cato.conf $DEPLOY_DIR/conf
