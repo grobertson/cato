@@ -358,7 +358,7 @@ def ForceLogout(sMsg):
     uiGlobals.session.kill()
     
     log_nouser("Forcing logout with message: " + sMsg, 0)
-    raise uiGlobals.web.seeother('/login?msg=' + urllib.quote_plus(sMsg))
+    raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote_plus(sMsg))
 
 def GetSessionUserID():
     try:

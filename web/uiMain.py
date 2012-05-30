@@ -110,8 +110,6 @@ class taskStatus:
     def GET(self):
         return render.taskStatus()
 
-#Authentication preprocessor
-
 class ecoTemplateManage:        
     def GET(self):
         return render.ecoTemplateManage()
@@ -160,6 +158,7 @@ class temp:
         except Exception, ex:
             return ex.__str__()
     
+#Authentication preprocessor
 def auth_app_processor(handle):
     path = web.ctx.path
     
@@ -167,12 +166,12 @@ def auth_app_processor(handle):
     uiCommon.log_nouser("Serving %s" % path, 4)
     
     # requests that are allowed, no matter what
-    if path in ["/login", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
+    if path in ["/uiMethods/wmAttemptLogin", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
         return handle()
 
     # any other request requires an active session ... kick it out if there's not one.
     if not session.get('user', False):
-        raise web.seeother('/login?msg=' + urllib.quote_plus("Session expired."))
+        raise web.seeother('/static/login.html?msg=' + urllib.quote_plus("Session expired."))
     
     # check the role/method mappings to see if the requested page is allowed
     # HERE's the rub! ... some of our requests are for "pages" and others (most) are ajax calls.

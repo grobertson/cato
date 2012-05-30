@@ -3,61 +3,78 @@
     <head>
         <title>Cato - Cloud Sidekick</title>
         <link type="text/css" href="style/login.css" rel="stylesheet" />
+        <link type="text/css" href="style/jquery-ui-1.8.13.custom.css" rel="stylesheet" />
         <link rel="icon" href="images/favicon.ico" />
         <script type="text/javascript" src="script/jquery/jquery-1.6.1.js"></script>
+        <script type="text/javascript" src="script/jquery/jquery-ui-1.8.12.js"></script>
+        <script type="text/javascript" src="script/jquery/jquery.base64.js"></script>
         <script type="text/javascript" src="script/MainScript.js"></script>
         <script type="text/javascript" src="script/login.js"></script>
     </head>
     <body>
-        <form action="/login" method="POST">
-            <div id="wrapper">
-                <div>
-                    <img alt="" src="images/login-logo.png" />
-                </div>
-                <div id="container">
-                    <div id="loginpanel">
-                        <div id="loginbox">
-                            <span id="lblMessage"></span>
-                            <div id="pnlLogin">
-                                <table style="width: 100%;">
-                                    <tr>
-                                        <td> Username: </td>
-                                        <td>
-                                        <input type="text" id="username" name="username" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td> Password: </td>
-                                        <td>
-                                        <input type="password" id="password" name="password" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: center;" colspan="2">
-                                        <input type="submit" id="btnLogin" name="btnLogin" value="Login" />
-                                        </td>
-                                    </tr>
-                                </table>
-                                <div>
-                                    <a class="pointer">Forgot password? <img src="images/icons/password.png" alt="" style="vertical-align: top;" /> </a>
-                                </div>
+        <div id="wrapper">
+            <div>
+                <img alt="" src="images/login-logo.png" />
+            </div>
+            <div id="container">
+                <div id="loginpanel">
+                    <div id="loginbox">
+                        <span id="lblMessage"></span>
+                        <div id="pnlLogin">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td> Username: </td>
+                                    <td>
+                                    <input type="text" id="username" name="username" class="loginfield" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> Password: </td>
+                                    <td>
+                                    <input type="password" id="password" name="password" class="loginfield" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: center;" colspan="2"><span id="attempt_login_btn">Login</span></td>
+                                </tr>
+                            </table>
+                            <div>
+                                <a id="forgot_password_btn" class="pointer">Forgot password? <img src="images/icons/password.png" alt="" style="vertical-align: middle;" /> </a>
                             </div>
                         </div>
                     </div>
-                    <div class="loginerror">
-                        <span id="error_msg"></span>
+                </div>
+                <div class="loginerror">
+                    <span id="error_msg"></span>
+                </div>
+                <div class="loginannouncement">
+                    <div id="pnlLicense" style="display: none;">
+                        <div id="ltLicenseText"></div>
+                        <center>
+                            <input type="button" id="btnLicenseAgree" value="I Agree" OnClick="btnLicenseAgree_Click" />
+                        </center>
                     </div>
-                    <div class="loginannouncement">
-                        <div id="pnlLicense" style="display: none;">
-                            <div id="ltLicenseText"></div>
-                            <center>
-                                <input type="button" id="btnLicenseAgree" value="I Agree" OnClick="btnLicenseAgree_Click" />
-                            </center>
-                        </div>
-                        <span id="ltAnnouncement"></span>
-                    </div>
+                    <span id="ltAnnouncement"></span>
                 </div>
             </div>
-        </form>
+        </div>
+        <div id="password_change_dialog" title="Change Password" class="hidden ui-state-highlight">
+            <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 10px 0;"></span>
+            <span>Please select a new password.</span>
+            <table style="width: 100%;">
+                <tr>
+                    <td> Password: </td>
+                    <td>
+                    <input type="password" id="new_password" name="new_password" class="changefield" />
+                    </td>
+                </tr>
+                <tr>
+                    <td> Confirm: </td>
+                    <td>
+                    <input type="password" id="new_password_confirm" name="new_password_confirm" class="changefield" />
+                    </td>
+                </tr>
+            </table>
+        </div>
     </body>
 </html>

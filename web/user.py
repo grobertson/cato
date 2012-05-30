@@ -144,7 +144,7 @@ class User(object):
                 self.SettingsXML = ("" if not dr["settings_xml"] else dr["settings_xml"])
 
             else: 
-                raise Exception("Unable to build User object. Either no Users are defined, or no User with ID [" + user_id + "] could be found.")
+                print "Unable to build User object. Either no Users are defined, or no User with ID [" + user_id + "] could be found."
         except Exception, ex:
             raise Exception(ex)
         finally:
@@ -156,11 +156,38 @@ class User(object):
         except Exception, ex:
             raise ex
 
-    def Authenticate(self, login_id, password):
+    def Authenticate(self, login_id, password, change_password):
         try:
+            # Some of the failure to authenticate return values pass back a token.
+            # this is so we can know how to prompt the user.
+            # but, to make hacking a little more difficult, we don't return too much detail about 
+            # usernames or passwords.
+            
             # alrighty, lets check the password
             # we do this by encrypting the form submission and comparing, 
             # NOT by decrypting it here.
+            db = catocommon.new_conn()
+            sset = settings.settings.security()
+
+            self.PopulateUser(login_id=login_id)
+            if not self.ID:
+                return False, ""
+            
+            # These checks happen BEFORE we verify the password
+            
+            # Check for "locked" or "disabled" status
+            if self.Status < 1:
+                return False, "disabled"
+
+            # Check failed login attempts against the security policy
+            if self.FailedLoginAttempts and sset.PassMaxAttempts:
+                if self.FailedLoginAttempts >= sset.PassMaxAttempts:
+                    print "Invalid login attempt - excessive failures."
+                    return False, "failures"
+            
+            # TODO - check if the account is expired 
+            
+            
             sql = "select user_password from users where username='%s'" % login_id
             db = catocommon.new_conn()
             db_pwd = db.select_col_noexcep(sql)
@@ -168,27 +195,44 @@ class User(object):
             encpwd = catocommon.cato_encrypt(password)
             
             if db_pwd != encpwd:
+                sql = "update users set failed_login_attempts=failed_login_attempts+1 where user_id='%s'" % self.ID
+                if not db.exec_db_noexcep(sql):
+                    print db.error
                 print "Invalid login attempt - [%s] bad password." % (login_id)
-                return False
+                return False, ""
 
-            self.PopulateUser(login_id=login_id)
             # TODO:
-            # Check Expiration
-            # Check failed login attempts against the security policy
-            # Check for "locked" or "disabled" status
-            # throw back pretty codes for each case, so the login page dialogs can react accordingly
+            # Check Expiration coming up - for a warning
+            
+            # force change
+            # the user authenticated, but they are required to change their password
+            change_clause = ""
+            if self.ForceChange:
+                if change_password:
+                    # a new password was provided
+                    result, msg = User.ValidatePassword(self.ID, change_password)
+                    if not result:
+                        return False, msg
+                    # put the old one in history
+                    
+                    # and update with the new one
+                    change_clause = ",force_change=0, user_password='%s'" % catocommon.cato_encrypt(change_password)
+                else:
+                    return False, "change"
+            
+            
+            
+            # ALL GOOD!
 
-
-
+            print "woo"
             # reset the user counters and last_login
-#            sql = "update users set failed_login_attempts=0, last_login_dt=now() where user_id='%s'" % self.ID
-#            if not db.exec_db_noexcep(sql):
-#                print db.error
+            sql = "update users set failed_login_attempts=0, last_login_dt=now() %s where user_id='%s'" % (change_clause, self.ID)
+            if not db.exec_db_noexcep(sql):
+                print db.error
         
-            return True
+            return True, ""
         except Exception, ex:
-            raise Exception(ex)
-            return False
+            return False, ex.__str__()
         finally:
             db.close()        
 

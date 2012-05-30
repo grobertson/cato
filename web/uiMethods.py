@@ -1,7 +1,7 @@
 import traceback
 import urllib
 import json
-import re
+from datetime import datetime
 import uiGlobals
 import uiCommon
 from catocommon import catocommon
@@ -29,44 +29,10 @@ class login:
             qs = "?msg=" + urllib.quote_plus(i.msg)
         raise uiGlobals.web.seeother('/static/login.html' + qs)
 
-    def POST(self):
-        try:
-            in_name = uiGlobals.web.input(username=None).username
-            in_pwd = uiGlobals.web.input(password=None).password
-
-            u = user.User()
-            if not u.Authenticate(in_name, in_pwd):
-                msg = "Invalid Username or Password."
-                raise uiGlobals.web.seeother('/static/login.html?msg=' + urllib.quote_plus(msg))
-    
-            #all good, put a few key things in the session, not the whole object
-            # yes, I said SESSION not a cookie, otherwise it could be hacked client side
-            current_user = {}
-            current_user["user_id"] = u.ID
-            current_user["full_name"] = u.FullName
-            current_user["role"] = u.Role
-            current_user["email"] = u.Email
-            current_user["ip_address"] = uiGlobals.web.ctx.ip
-            uiCommon.SetSessionObject("user", current_user)
-
-            uiCommon.log("Login granted for: ", 4)
-            uiCommon.log(uiGlobals.session.user, 4)
-    
-            #update the security log
-            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
-                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
-                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
-    
-            uiCommon.log("Creating session...", 3)
-                
-            raise uiGlobals.web.seeother('/home')
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
 class logout:        
     def GET(self):
         i = uiGlobals.web.input(msg=None)
-        msg = "User Logged out."
+        msg = "User Logged out at %s" % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         if i.msg:
             msg = i.msg
         uiCommon.ForceLogout(msg)
@@ -102,6 +68,60 @@ class uiMethods:
             if self.db.conn.socket:
                 self.db.close()
 
+    def wmAttemptLogin(self):
+        try:
+            in_name = uiCommon.getAjaxArg("username")
+            in_pwd = uiCommon.getAjaxArg("password")
+            in_pwd = uiCommon.unpackJSON(in_pwd)
+            new_pwd = uiCommon.getAjaxArg("change_password")
+            new_pwd = uiCommon.unpackJSON(new_pwd)
+
+            u = user.User()
+            
+            # Authenticate will return the codes so we will know
+            # how to respond to the login page
+            # (must change password, password expired, etc)
+            result, code = u.Authenticate(in_name, in_pwd, new_pwd)
+            if not result:
+                if code == "disabled":
+                    return "{\"info\" : \"Your account has been suspended.  Please contact an Adminstrator.\"}"
+                if code == "failures":
+                    return "{\"info\" : \"Your account has been temporarily locked due to excessive password failures.\"}"
+                if code == "change":
+                    return "{\"result\" : \"change\"}"
+                
+                # no codes matched, but there is a message in there...
+                if code:
+                    return "{\"info\" : \"%s\"}" % code
+
+                # failed with no code returned
+                return "{\"info\" : \"Invalid Username or Password.\"}"
+
+            
+            #all good, put a few key things in the session, not the whole object
+            # yes, I said SESSION not a cookie, otherwise it could be hacked client side
+            current_user = {}
+            current_user["user_id"] = u.ID
+            current_user["full_name"] = u.FullName
+            current_user["role"] = u.Role
+            current_user["email"] = u.Email
+            current_user["ip_address"] = uiGlobals.web.ctx.ip
+            uiCommon.SetSessionObject("user", current_user)
+
+            uiCommon.log("Login granted for: ", 4)
+            uiCommon.log(uiGlobals.session.user, 4)
+    
+            #update the security log
+            uiCommon.AddSecurityLog(uiGlobals.SecurityLogTypes.Security, 
+                uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
+                "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
+    
+            uiCommon.log("Creating session...", 3)
+                
+            return "{\"result\" : \"success\"}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
     def wmGetCloudAccountsForHeader(self):
         try:
             sSelected = uiCommon.GetCookie("selected_cloud_account")
