@@ -156,7 +156,7 @@ class User(object):
         except Exception, ex:
             raise ex
 
-    def Authenticate(self, login_id, password, change_password):
+    def Authenticate(self, login_id, password, change_password=None, answer=None):
         try:
             # Some of the failure to authenticate return values pass back a token.
             # this is so we can know how to prompt the user.
@@ -187,19 +187,47 @@ class User(object):
             
             # TODO - check if the account is expired 
             
+            # once you've gotten your account locked due to failed attempts, you can no longer
+            # use the forgot password feature. 
+            # that's why this happens after that.
             
-            sql = "select user_password from users where username='%s'" % login_id
             db = catocommon.new_conn()
-            db_pwd = db.select_col_noexcep(sql)
+
+            # forgot password
+            # if an 'answer' was provided, it can serve as an alternate authentication
+            # but it will force a password change.
+            if answer:
+                sql = "select security_answer from users where username='%s'" % login_id
+                db_ans = db.select_col_noexcep(sql)
+                
+                encans = catocommon.cato_encrypt(answer)
+                
+                if db_ans == encans:
+                    self.ForceChange = True
+                    sql = "update users set force_change=1 where user_id='%s'" % self.ID
+                    if not db.exec_db_noexcep(sql):
+                        print db.error
+                else:
+                    sql = "update users set failed_login_attempts=failed_login_attempts+1 where user_id='%s'" % self.ID
+                    if not db.exec_db_noexcep(sql):
+                        print db.error
+                    print "Invalid login attempt - [%s] wrong security question answer." % (login_id)
+                    return False, "Incorrect security answer."
             
-            encpwd = catocommon.cato_encrypt(password)
             
-            if db_pwd != encpwd:
-                sql = "update users set failed_login_attempts=failed_login_attempts+1 where user_id='%s'" % self.ID
-                if not db.exec_db_noexcep(sql):
-                    print db.error
-                print "Invalid login attempt - [%s] bad password." % (login_id)
-                return False, ""
+            # try the password if it was provided
+            if password:
+                sql = "select user_password from users where username='%s'" % login_id
+                db_pwd = db.select_col_noexcep(sql)
+                
+                encpwd = catocommon.cato_encrypt(password)
+                
+                if db_pwd != encpwd:
+                    sql = "update users set failed_login_attempts=failed_login_attempts+1 where user_id='%s'" % self.ID
+                    if not db.exec_db_noexcep(sql):
+                        print db.error
+                    print "Invalid login attempt - [%s] bad password." % (login_id)
+                    return False, ""
 
             # TODO:
             # Check Expiration coming up - for a warning
@@ -213,7 +241,9 @@ class User(object):
                     result, msg = User.ValidatePassword(self.ID, change_password)
                     if not result:
                         return False, msg
-                    # put the old one in history
+
+                    # put it in the history
+                    self.AddPWToHistory(change_password)
                     
                     # and update with the new one
                     change_clause = ",force_change=0, user_password='%s'" % catocommon.cato_encrypt(change_password)
@@ -224,7 +254,6 @@ class User(object):
             
             # ALL GOOD!
 
-            print "woo"
             # reset the user counters and last_login
             sql = "update users set failed_login_attempts=0, last_login_dt=now() %s where user_id='%s'" % (change_clause, self.ID)
             if not db.exec_db_noexcep(sql):
@@ -293,7 +322,8 @@ class User(object):
             # now it's inserted... lets get it back from the db as a complete object for confirmation.
             u = User()
             u.FromID(sNewID)
-
+            u.AddPWToHistory(sEncPW)
+            
             return u, None
         except Exception, ex:
             raise ex
@@ -329,4 +359,15 @@ class User(object):
         finally:
             if db: db.close()
 
-            
+    def AddPWToHistory(self, pw):
+        try:
+            db = catocommon.new_conn()
+            sql = "insert user_password_history (user_id, change_time, password) values ('%s', now(), '%s')" % (self.ID, pw)
+            if not db.exec_db_noexcep(sql):
+                print db.error
+        except Exception, ex:
+            return False, ex.__str__()
+        finally:
+            db.close()        
+
+         

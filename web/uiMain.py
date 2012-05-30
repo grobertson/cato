@@ -166,7 +166,7 @@ def auth_app_processor(handle):
     uiCommon.log_nouser("Serving %s" % path, 4)
     
     # requests that are allowed, no matter what
-    if path in ["/uiMethods/wmAttemptLogin", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
+    if path in ["/uiMethods/wmAttemptLogin", "/uiMethods/wmGetQuestion", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
         return handle()
 
     # any other request requires an active session ... kick it out if there's not one.

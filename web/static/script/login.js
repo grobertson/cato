@@ -49,6 +49,21 @@ $(document).ready(function () {
         }
     });
 
+    $("#forgot_password_dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        bgiframe: false,
+        buttons: {
+            "OK": function () {
+				Forgot();
+            },
+            Cancel: function () {
+            	reset();
+                $("#forgot_password_dialog").dialog("close");
+            }
+        }
+    });
+
      
 	$("#attempt_login_btn").button({ icons: { primary: "ui-icon-locked"} });
 	$("#attempt_login_btn").click(function() { Login();	});
@@ -60,24 +75,64 @@ $(document).ready(function () {
 		if(e.which == 13) { Change(); }
 	});
 
+	$("#security_answer").keypress(function(e) {
+		if(e.which == 13) { Forgot(); }
+	});
 
  	$("#forgot_password_btn").click(function() {
- 		alert("Not yet implemented.");
+		if ($("#username").val() == "") {
+			alert("Please enter a username.");
+			return false;
+		}
+		
+	    $.ajax({
+	        type: "POST",
+	        url: "/uiMethods/wmGetQuestion",
+	        data: '{"username":"' + $("#username").val() + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function (response) {
+				if (response.error) {
+					$("#error_msg").html(response.error);
+					reset();
+				}
+				if (response.info) {
+					$("#error_msg").html(response.info);
+					reset();
+				}
+				if (response.result) {
+					$("#security_question").html(unpackJSON(response.result));
+			    	$("#forgot_password_dialog").dialog("open");
+				}
+	        },
+	        error: function (response) {
+	            $("#error_msg").html(response.responseText);
+	        }
+	    });
  	});
 
 	// get the welcome message
-	$('#ltAnnouncement').load('/announcement');
+	$("#ltAnnouncement").load("/announcement");
 
 });
 
 function Login() {
-	if ($("#username").val() == "" || $("#password").val() == "")
+	if ($("#username").val() == "")
 		return false;
+
+    var args = {};
+    args.username = $("#username").val();
+    if ($("#password").val() != "")
+    	args.password = packJSON($("#password").val());
+    if ($("#new_password").val() != "")
+    	args.change_password = packJSON($("#new_password").val());
+    if ($("#security_answer").val() != "")
+    	args.answer = packJSON($("#security_answer").val());
 
     $.ajax({
         type: "POST",
         url: "/uiMethods/wmAttemptLogin",
-        data: '{"username":"' + $("#username").val() + '", "password":"' + packJSON($("#password").val()) + '", "change_password":"' + g_newpw + '"}',
+        data: JSON.stringify(args),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
@@ -91,6 +146,7 @@ function Login() {
 			}
 			if (response.result) {
 			    if (response.result == "change") {
+			    	$("#security_answer").val("")
 			    	$("#password_change_dialog").dialog("open");
 				}
 			    if (response.result == "success") {
@@ -106,19 +162,26 @@ function Login() {
 }
 function Change() {
 	// do not submit if the passwords don't match
-	pw1 = $("#password_change_dialog #new_password").val();
-	pw2 = $("#password_change_dialog #new_password_confirm").val();
+	pw1 = $("#new_password").val();
+	pw2 = $("#new_password_confirm").val();
 	
 	if (pw1 != pw2) {
 		alert("Passwords must match.");
+		reset();
 		return false;	
 	}
-	
-	g_newpw = packJSON(pw1);
 	Login();
 }
-
+function Forgot() {
+	if ($("#security_answer").val() == "") {
+		return false;	
+	}
+	$("#forgot_password_dialog").dialog("close");
+	Login();
+}
 function reset() {
 	$(":input").val("");
 	$("#username").focus();
+	$("#password_change_dialog").dialog("close");
+	$("#forgot_password_dialog").dialog("close");
 }

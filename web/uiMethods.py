@@ -75,13 +75,15 @@ class uiMethods:
             in_pwd = uiCommon.unpackJSON(in_pwd)
             new_pwd = uiCommon.getAjaxArg("change_password")
             new_pwd = uiCommon.unpackJSON(new_pwd)
+            answer = uiCommon.getAjaxArg("answer")
+            answer = uiCommon.unpackJSON(answer)
 
             u = user.User()
             
             # Authenticate will return the codes so we will know
             # how to respond to the login page
             # (must change password, password expired, etc)
-            result, code = u.Authenticate(in_name, in_pwd, new_pwd)
+            result, code = u.Authenticate(in_name, in_pwd, new_pwd, answer)
             if not result:
                 if code == "disabled":
                     return "{\"info\" : \"Your account has been suspended.  Please contact an Adminstrator.\"}"
@@ -119,6 +121,24 @@ class uiMethods:
             uiCommon.log("Creating session...", 3)
                 
             return "{\"result\" : \"success\"}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+                
+    def wmGetQuestion(self):
+        try:
+            in_name = uiCommon.getAjaxArg("username")
+
+            u = user.User()
+            u.FromName(in_name)
+
+            # again with the generic messages.
+            if not u.ID:
+                return "{\"info\" : \"Unable to reset password for user.\"}"
+            if not u.SecurityQuestion:
+                return "{\"info\" : \"Unable to reset password.  Contact an Administrator.\"}"
+
+
+            return "{\"result\" : \"%s\"}" % uiCommon.packJSON(u.SecurityQuestion)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
@@ -773,6 +793,9 @@ class uiMethods:
         """
             In this method, the values come from the browser in a jQuery serialized array of name/value pairs.
         """
+        
+        # TODO 
+        # this should move to the user class
         try:
             user_id = uiCommon.GetSessionUserID()
             sValues = uiCommon.getAjaxArg("sValues")
@@ -794,7 +817,13 @@ class uiMethods:
                     if newpw:
                         result, msg = user.User.ValidatePassword(user_id, newpw)
                         if result:
-                            sql_bits.append("user_password = '%s'" % catocommon.cato_encrypt(newpw))
+                            encpw = catocommon.cato_encrypt(newpw)
+                            sql = "insert user_password_history (user_id, change_time, password) values ('%s', now(), '%s')" % (user_id, encpw)
+                            if not self.db.exec_db_noexcep(sql):
+                                uiCommon.log_nouser(self.db.error, 0)
+                                return self.db.error
+
+                            sql_bits.append("user_password = '%s'" % encpw)
                         else:
                             return "{\"info\":\"%s\"}" % msg
 
