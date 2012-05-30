@@ -1400,67 +1400,51 @@ class taskMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmTaskSearch(self):
-        sSearchText = uiCommon.getAjaxArg("sSearchText")
         try:
-            sWhereString = ""
-
-            if sSearchText:
-                sWhereString = " and (a.task_name like '%%" + sSearchText + \
-                   "%%' or a.task_desc like '%%" + sSearchText + \
-                   "%%' or a.task_code like '%%" + sSearchText + "%%' ) "
-
-            sSQL = "select a.original_task_id, a.task_id, a.task_name, a.task_code," \
-                " left(a.task_desc, 255) as task_desc, a.version" \
-                   " from task a  " \
-                   " where default_version = 1" + \
-                   sWhereString + \
-                   " order by task_name, default_version desc, version"
-
-            dt = self.db.select_all_dict(sSQL)
-            if self.db.error:
-                uiCommon.log_nouser(self.db.error, 0)
-
-            sHTML = "<hr />"
-
-            iRowsToGet = len(dt)
-
-            if iRowsToGet == 0:
-                sHTML += "No results found"
-            else:
-                if iRowsToGet >= 100:
-                    sHTML += "<div>Search found " + iRowsToGet + " results.  Displaying the first 100.</div>"
-                    iRowsToGet = 99
-                sHTML += "<ul id=\"search_task_ul\" class=\"search_dialog_ul\">"
-
-                i = 0
-                for row in dt:
-                    if i > iRowsToGet:
-                        break
-                    
-                    sTaskName = row["task_name"].replace("\"", "\\\"")
-                    sLabel = row["task_code"] + " : " + sTaskName
-                    sDesc = (row["task_desc"] if row["task_desc"] else "")
-                    sDesc = sDesc.replace("\"", "").replace("'", "")
-
-                    sHTML += "<li class=\"ui-widget-content ui-corner-all search_dialog_value\" tag=\"task_picker_row\"" \
-                        " original_task_id=\"" + row["original_task_id"] + "\"" \
-                        " task_label=\"" + sLabel + "\"" \
-                        "\">"
-                    sHTML += "<div class=\"step_header_title search_dialog_value_name\">" + sLabel + "</div>"
-
-                    sHTML += "<div class=\"step_header_icons\">"
-
-                    # if there's a description, show a tooltip
-                    if sDesc:
-                        sHTML += "<img src=\"static/images/icons/info.png\" class=\"search_dialog_tooltip trans50\" title=\"" + sDesc + "\" />"
-
-                    sHTML += "</div>"
-                    sHTML += "<div class=\"clearfloat\"></div>"
-                    sHTML += "</li>"
-                    
-                    i += 1
-                    
-            sHTML += "</ul>"
+            sFilter = uiCommon.getAjaxArg("sSearch")
+            tasks = task.Tasks(sFilter)
+            if tasks.rows:
+                sHTML = "<hr />"
+    
+                iRowsToGet = len(tasks.rows)
+    
+                if iRowsToGet == 0:
+                    sHTML += "No results found"
+                else:
+                    if iRowsToGet >= 100:
+                        sHTML += "<div>Search found " + iRowsToGet + " results.  Displaying the first 100.</div>"
+                        iRowsToGet = 99
+                    sHTML += "<ul id=\"search_task_ul\" class=\"search_dialog_ul\">"
+    
+                    i = 0
+                    for row in tasks.rows:
+                        if i > iRowsToGet:
+                            break
+                        
+                        sTaskName = row["task_name"].replace("\"", "\\\"")
+                        sLabel = row["task_code"] + " : " + sTaskName
+                        sDesc = (row["task_desc"] if row["task_desc"] else "")
+                        sDesc = sDesc.replace("\"", "").replace("'", "")
+    
+                        sHTML += "<li class=\"ui-widget-content ui-corner-all search_dialog_value\" tag=\"task_picker_row\"" \
+                            " original_task_id=\"" + row["original_task_id"] + "\"" \
+                            " task_label=\"" + sLabel + "\"" \
+                            "\">"
+                        sHTML += "<div class=\"step_header_title search_dialog_value_name\">" + sLabel + "</div>"
+    
+                        sHTML += "<div class=\"step_header_icons\">"
+    
+                        # if there's a description, show a tooltip
+                        if sDesc:
+                            sHTML += "<img src=\"static/images/icons/info.png\" class=\"search_dialog_tooltip trans50\" title=\"" + sDesc + "\" />"
+    
+                        sHTML += "</div>"
+                        sHTML += "<div class=\"clearfloat\"></div>"
+                        sHTML += "</li>"
+                        
+                        i += 1
+                        
+                sHTML += "</ul>"
 
             return sHTML
         except Exception:

@@ -112,12 +112,12 @@ $(document).ready(function () {
         $.ajax({
             async: false,
             type: "POST",
-            url: "uiMethods.asmx/wmAssetSearch",
-            data: '{"sSearchText":"' + search_text + '","bAllowMultiSelect":"false"}',
+            url: "uiMethods/wmAssetSearch",
+            data: '{"sSearch":"' + search_text + '","bAllowMultiSelect":"false"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
-                $("#asset_picker_results").html(retval.d);
+            dataType: "html",
+            success: function (response) {
+                $("#asset_picker_results").html(response);
                 //bind the onclick event for the new results
                 $("#asset_picker_results .asset_picker_value").disableSelection();
                 $("#asset_picker_dialog").unblock();

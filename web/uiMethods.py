@@ -1185,6 +1185,54 @@ class uiMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()           
         
+    def wmAssetSearch(self):
+        try:
+            sFilter = uiCommon.getAjaxArg("sSearch")
+            sAllowMultiSelect = uiCommon.getAjaxArg("bAllowMultiSelect")
+            bAllowMultiSelect = catocommon.is_true(sAllowMultiSelect)
+            
+            a = asset.Assets(sFilter)
+            if a.rows:
+                sHTML = "<hr />"
+    
+                iRowsToGet = len(a.rows)
+    
+                if iRowsToGet == 0:
+                    sHTML += "No results found"
+                else:
+                    if iRowsToGet >= 100:
+                        sHTML += "<div>Search found " + iRowsToGet + " results.  Displaying the first 100.</div>"
+                        iRowsToGet = 99
+
+                    sHTML += "<ul id=\"search_asset_ul\" class=\"search_dialog_ul\">"
+    
+                    i = 0
+                    for row in a.rows:
+                        if i > iRowsToGet:
+                            break
+                        
+                        sHTML += "<li class=\"ui-widget-content ui-corner-all search_dialog_value\" tag=\"asset_picker_row\"" \
+                            " asset_id=\"" + row["asset_id"] + "\"" \
+                            " asset_name=\"" + row["asset_name"] + "\"" \
+                            "\">"
+                        sHTML += "<div class=\"search_dialog_value_name\">"
+                        if bAllowMultiSelect:
+                            sHTML += "<input type='checkbox' name='assetcheckboxes' id='assetchk_" + row["asset_id"] + "' value='assetchk_" + row["asset_id"] + "'>";
+                        sHTML += "<span>" + row["asset_name"] + "</span>";
+                        sHTML += "</div>";
+
+                        sHTML += "<span class=\"search_dialog_value_inline_item\">Address: " + row["address"] + "</span>"
+    
+                        sHTML += "</li>"
+                        
+                        i += 1
+                        
+                sHTML += "</ul>"
+
+            return sHTML
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            
     def wmGetCredentialsTable(self):
         try:
             sHTML = ""

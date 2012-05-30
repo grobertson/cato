@@ -345,7 +345,7 @@ $(document).ready(function() {
             async: false,
             type: "POST",
             url: "taskMethods/wmTaskSearch",
-            data: '{"sSearchText":"' + search_text + '"}',
+            data: '{"sSearch":"' + search_text + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "html",
             success: function(response) {
