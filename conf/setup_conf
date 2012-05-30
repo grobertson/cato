@@ -16,7 +16,7 @@
 # limitations under the License.
 #########################################################################
 set ::CATO_HOME [file dirname [file dirname [file normalize $argv0]]]
-lappend auto_path $CATO_HOME/services/lib
+lappend auto_path $CATO_HOME/lib
 package require catocrypttcl
 
 proc tty_gets_no_echo {{prompt {}}} {

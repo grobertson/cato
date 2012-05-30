@@ -83,9 +83,14 @@ def read_config():
                 value = row[1]
             else:
                 value = ""
+
             if key == "key":
+                if not value:
+                    raise Exception("ERROR: cato.conf 'key' setting is required.")
                 enc_key = value
             elif key == "password":
+                if not value:
+                    raise Exception("ERROR: cato.conf 'password' setting is required.")
                 enc_pass = value
             else:
                 key_vals[key] = value
