@@ -34,7 +34,7 @@ libcatocrypt: PHASE="Cato Crypt Library"
 libcatocrypt: sep $(LIBSRC_O)
 	@echo $(GCC) $(LDFLAGS) -shared -o $(LIB_SO) $(LIBSRC_O)
 	@$(GCC) $(LDFLAGS) -shared -o $(LIB_SO) $(LIBSRC_O)
-	cp $(LIB_SO) ../../lib/catocrypttcl/.
+	cp $(LIB_SO) ../../../lib/catocrypttcl/.
 	
 ########################################
 #  SEPARATOR                                                                
