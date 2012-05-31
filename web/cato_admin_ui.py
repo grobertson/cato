@@ -138,8 +138,8 @@ class upload:
             # raise web.seeother('/upload')
             
             ref_id = (x.ref_id if x.ref_id else "")
-            filename = "%s/temp/%s-%s.tmp" % (uiGlobals.web_root, uiCommon.GetSessionUserID(), ref_id)
-            fout = open(filename,'w') # creates the file where the uploaded file should be stored
+            filename = "%s/temp/%s-%s.tmp" % (web_root, uiCommon.GetSessionUserID(), ref_id)
+            fout = open(filename, 'w') # creates the file where the uploaded file should be stored
             fout.write(x["fupFile"].file.read()) # writes the uploaded file to the newly created file.
             fout.close() # closes the file, upload complete.
             
@@ -151,7 +151,7 @@ class temp:
     """all we do for temp is deliver the file."""
     def GET(self, filename):
         try:
-            f = open("%s/temp/%s" % (uiGlobals.web_root, filename))
+            f = open("%s/temp/%s" % (web_root, filename))
             if f:
                 return f.read()
         except Exception, ex:
@@ -197,14 +197,14 @@ def SetTaskCommands():
         #we load two classes here...
         #first, the category/function hierarchy
         cats = FunctionCategories()
-        bCoreSuccess = cats.Load("%s/task_commands.xml" % uiGlobals.web_root)
+        bCoreSuccess = cats.Load("%s/task_commands.xml" % web_root)
         if not bCoreSuccess:
             raise Exception("Critical: Unable to read/parse task_commands.xml.")
 
         #try to append any extension files
         #this will read all the xml files in /extensions
         #and append to sErr if it failed, but not crash or die.
-        for root, subdirs, files in os.walk("%s/extensions" % uiGlobals.web_root):
+        for root, subdirs, files in os.walk("%s/extensions" % web_root):
             for f in files:
                 ext = os.path.splitext(f)[-1]
                 if ext == ".xml":
@@ -220,7 +220,7 @@ def SetTaskCommands():
         # was told not to put big objects in the session, so since this can actually be shared by all users,
         # lets try saving a pickle
         # it will get created every time a user logs in, but can be read by all.
-        f = open("%s/datacache/_categories.pickle" % uiGlobals.web_root, 'wb')
+        f = open("%s/datacache/_categories.pickle" % web_root, 'wb')
         pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
         f.close()
         
@@ -271,12 +271,12 @@ def CacheTaskCommands():
 
                 sFunHTML += "</div>"
 
-        with open("%s/static/_categories.html" % uiGlobals.web_root, 'w') as f_out:
+        with open("%s/static/_categories.html" % web_root, 'w') as f_out:
             if not f_out:
                 print "ERROR: unable to create static/_categories.html."
             f_out.write(sCatHTML)
 
-        with open("%s/static/_functions.html" % uiGlobals.web_root, 'w') as f_out:
+        with open("%s/static/_functions.html" % web_root, 'w') as f_out:
             if not f_out:
                 print "ERROR: unable to create static/_functions.html."
             f_out.write(sFunHTML)
@@ -287,7 +287,7 @@ def CacheTaskCommands():
 def CacheMenu():
     #put the site.master.xml in the session here
     # this is a significant boost to performance
-    xRoot = ET.parse("%s/site.master.xml" % uiGlobals.web_root)
+    xRoot = ET.parse("%s/site.master.xml" % web_root)
     if not xRoot:
         raise Exception("Critical: Unable to read/parse site.master.xml.")
         
@@ -355,17 +355,17 @@ def CacheMenu():
             
             
     
-    with open("%s/static/_amenu.html" % uiGlobals.web_root, 'w') as f_out:
+    with open("%s/static/_amenu.html" % web_root, 'w') as f_out:
         if not f_out:
             print "ERROR: unable to create static/_amenu.html."
         f_out.write(sAdminMenu)
 
-    with open("%s/static/_dmenu.html" % uiGlobals.web_root, 'w') as f_out:
+    with open("%s/static/_dmenu.html" % web_root, 'w') as f_out:
         if not f_out:
             print "ERROR: unable to create static/_dmenu.html."
         f_out.write(sDevMenu)
 
-    with open("%s/static/_umenu.html" % uiGlobals.web_root, 'w') as f_out:
+    with open("%s/static/_umenu.html" % web_root, 'w') as f_out:
         if not f_out:
             print "ERROR: unable to create static/_umenu.html."
         f_out.write(sUserMenu)
@@ -390,7 +390,7 @@ if __name__ == "__main__":
             print "Cato UI - Version %s" % config["version"]
 
         if "web_port" in config:
-            port=config["web_port"]
+            port = config["web_port"]
             sys.argv.append(port)
         
         dbglvl = 2
@@ -443,7 +443,7 @@ if __name__ == "__main__":
     render_plain = web.template.render('templates')
     
     app = web.application(urls, globals(), autoreload=True)
-    session = web.session.Session(app, web.session.DiskStore('sessions'))
+    session = web.session.Session(app, web.session.DiskStore('%s/sessions' % web_root))
     app.add_processor(auth_app_processor)
     app.notfound = notfound
     
@@ -466,21 +466,7 @@ if __name__ == "__main__":
     uiCommon.log_nouser("Generating static html...", 3)
     SetTaskCommands()
     CacheMenu()
-    
-    ### TESTING
-    # some testing of the cloud api access
-#    import aws
-#    import providers
-#    
-#    provider = providers.Provider.FromName("Amazon AWS")
-#    cot = provider.GetObjectTypeByName("aws_s3_bucket")
-#    awsi = aws.awsInterface()
-#    awsi.GetCloudObjectsAsXML("856fa6f4-e36e-4029-b436-65dfeb06a36d", "4d6f35fc-faa7-11e0-b2ec-12313d0024c3", cot)
 
-#    d, err = uiCommon.GetCloudObjectsAsList("856fa6f4-e36e-4029-b436-65dfeb06a36d", "4d6f35fc-faa7-11e0-b2ec-12313d0024c3", "aws_ec2_instance")
-#    print d
-#    print err
-    ### END TESTING
     
     
     # Uncomment the following - it will print out all the core methods in the app
