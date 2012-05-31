@@ -161,7 +161,7 @@
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="instancesSet/item" request_record_filter="InstanceId">
+						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="reservationSet/item/instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Architecture" label="" xpath="architecture" short_list="1" sort_order="9" />
 							<property name="DNS Name" label="" xpath="dnsName" short_list="1" sort_order="1" />
@@ -234,7 +234,7 @@
 							<property name="Platform" label="" xpath="platform" has_icon="1" short_list="1" sort_order="4" />
 							<property name="Status" label="" xpath="imageState" has_icon="1" short_list="1" sort_order="2" />
 						</type>
-						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="instancesSet/item" request_record_filter="InstanceId">
+						<type id="aws_ec2_instance" label="EC2 Instances" api_call="DescribeInstances" xml_record_xpath="reservationSet/item/instancesSet/item" request_record_filter="InstanceId">
 							<property name="InstanceId" label="" xpath="instanceId" id_field="1" short_list="1" sort_order="1" />
 							<property name="Architecture" label="" xpath="architecture" short_list="1" sort_order="9" />
 							<property name="DNS Name" label="" xpath="dnsName" short_list="1" sort_order="1" />
