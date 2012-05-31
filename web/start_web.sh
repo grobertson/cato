@@ -16,9 +16,9 @@ fi
 export CATO_LOGS
 
 # All other processes go here.  No process should be in both sections though.
-FULL_PROCS[0]="$CATO_HOME/web/uiMain.py"
+FULL_PROCS[0]="$CATO_HOME/web/cato_admin_ui.py"
 
-FULL_LOGFILES[0]="$CATO_LOGS/admin_ui.log"
+FULL_LOGFILES[0]="$CATO_LOGS/cato_admin_ui.log"
 
 start_other_procs() {
     count=0
@@ -26,6 +26,8 @@ start_other_procs() {
     while [[ $count -lt ${#FULL_PROCS[*]} ]]; do
         PID=`ps -eafl | grep "${FULL_PROCS[$count]}$" | grep -v "grep"`
         if [ ! "$PID" ]; then
+            echo "Removing sessions..."
+        	rm -r sessions/*
             echo "Starting ${FULL_PROCS[$count]}"
             nohup ${FULL_PROCS[$count]} >> ${FULL_LOGFILES[$count]} 2>&1 &
         else
