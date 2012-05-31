@@ -172,7 +172,8 @@ class CatoProcess():
 
     def initialize_logfile(self):
         base_path = get_base_path()
-        self.logfiles_path = os.path.join(base_path, "logfiles")
+        # logfiles go where defined in cato.conf, but in the base_path if not defined
+        self.logfiles_path = (config["logfiles"] if config["logfiles"] else os.path.join(base_path, "logfiles"))
         self.logfile_name = os.path.join(self.logfiles_path,  self.process_name.lower()+".log")
         #sys.stderr = open(self.logfile_name, 'a')
         #sys.stdout = open(self.logfile_name, 'a')
