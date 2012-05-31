@@ -169,7 +169,7 @@ class uiMethods:
                 return sHTML
             
             #should not get here if all is well
-            return "<option>ERROR</option>"
+            return ""
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
