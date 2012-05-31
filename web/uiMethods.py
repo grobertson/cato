@@ -150,20 +150,32 @@ class uiMethods:
             
     def wmGetGettingStarted(self):
         try:
+            sset = settings.settings()
             sHTML = ""
             
-            items = []
-            sSQL = "select login_id, login_password from cloud_account"
-            dt = self.db.select_all_dict(sSQL)
-            if dt:
-                for dr in dt:
-                    if not dr["login_id"] or not dr["login_password"]:
-                        items.append("Provide an Account Login ID and Password.")
-            else: 
-                items.append("There are no Cloud Accounts defined.")
-            
-            if items:
-                sHTML += self.DrawGettingStartedItem("cloudaccounts", "Cloud Accounts", items, "<a href=\"/cloudAccountEdit\">Click here</a> to manage Cloud Accounts.")
+            user_role = uiCommon.GetSessionUserRole()
+            if user_role == "Administrator":
+    
+                items = []
+                if not sset.Messenger["SMTPServerAddress"]:
+                    items.append("Define an SMTP server.")
+                
+                if items:
+                    sHTML += self.DrawGettingStartedItem("messengersettings", "Messenger Settings", items, "<a href=\"/settings\">Click here</a> to update Messenger settings.")
+    
+                
+                items = []
+                sSQL = "select login_id, login_password from cloud_account"
+                dt = self.db.select_all_dict(sSQL)
+                if dt:
+                    for dr in dt:
+                        if not dr["login_id"] or not dr["login_password"]:
+                            items.append("Provide an Account Login ID and Password.")
+                else: 
+                    items.append("There are no Cloud Accounts defined.")
+                
+                if items:
+                    sHTML += self.DrawGettingStartedItem("cloudaccounts", "Cloud Accounts", items, "<a href=\"/cloudAccountEdit\">Click here</a> to manage Cloud Accounts.")
             
             return sHTML
         except Exception:
