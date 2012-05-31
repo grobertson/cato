@@ -410,7 +410,7 @@ def SetSessionObject(key, obj, category=""):
 #this one returns a list of Categories from the FunctionCategories class
 def GetTaskFunctionCategories():
     try:
-        f = open("datacache/_categories.pickle", 'rb')
+        f = open("%s/datacache/_categories.pickle" % uiGlobals.web_root, 'rb')
         if not f:
             log_nouser("ERROR: Categories pickle missing.", 0)
         obj = pickle.load(f)
@@ -429,7 +429,7 @@ def GetTaskFunctionCategories():
 #this one returns the Functions dict containing all functions
 def GetTaskFunctions():
     try:
-        f = open("datacache/_categories.pickle", 'rb')
+        f = open("%s/datacache/_categories.pickle" % uiGlobals.web_root, 'rb')
         if not f:
             log_nouser("ERROR: Categories pickle missing.", 0)
         obj = pickle.load(f)

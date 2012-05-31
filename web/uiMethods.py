@@ -264,7 +264,7 @@ class uiMethods:
             if role == "User":
                 filename = "_umenu.html"
 
-            f = open("static/%s" % filename)
+            f = open("%s/static/%s" % (uiGlobals.web_root, filename))
             if f:
                 return f.read()
         except Exception:

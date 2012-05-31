@@ -476,7 +476,7 @@ def DrawField(xe, sXPath, oStep):
                     
                 else:
                     log("---- opening [" + sDataSet + "].", 4)
-                    f = open("extensions/" + sDataSet, 'rb')
+                    f = open("%s/extensions/%s" % (uiGlobals.web_root, sDataSet), 'rb')
                     if not f:
                         log("ERROR: extensions/" + sDataSet + " not found", 0)
 

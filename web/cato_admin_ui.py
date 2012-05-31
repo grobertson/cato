@@ -7,11 +7,10 @@ import urllib
 import pickle
 import xml.etree.ElementTree as ET
 
+web_root = os.path.dirname(os.path.abspath(sys.argv[0]))
 base_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 lib_path = os.path.join(base_path, "lib")
 sys.path.append(lib_path)
-conf_path = os.path.join(base_path, "conf")
-sys.path.append(conf_path)
 
 # DON'T REMOVE these that Aptana shows as "unused".
 # they are used, just in the URL mapping for web.py down below.
@@ -139,7 +138,7 @@ class upload:
             # raise web.seeother('/upload')
             
             ref_id = (x.ref_id if x.ref_id else "")
-            filename = "temp/%s-%s.tmp" % (uiCommon.GetSessionUserID(), ref_id)
+            filename = "%s/temp/%s-%s.tmp" % (uiGlobals.web_root, uiCommon.GetSessionUserID(), ref_id)
             fout = open(filename,'w') # creates the file where the uploaded file should be stored
             fout.write(x["fupFile"].file.read()) # writes the uploaded file to the newly created file.
             fout.close() # closes the file, upload complete.
@@ -152,7 +151,7 @@ class temp:
     """all we do for temp is deliver the file."""
     def GET(self, filename):
         try:
-            f = open("temp/%s" % filename)
+            f = open("%s/temp/%s" % (uiGlobals.web_root, filename))
             if f:
                 return f.read()
         except Exception, ex:
@@ -198,14 +197,14 @@ def SetTaskCommands():
         #we load two classes here...
         #first, the category/function hierarchy
         cats = FunctionCategories()
-        bCoreSuccess = cats.Load("task_commands.xml")
+        bCoreSuccess = cats.Load("%s/task_commands.xml" % uiGlobals.web_root)
         if not bCoreSuccess:
             raise Exception("Critical: Unable to read/parse task_commands.xml.")
 
         #try to append any extension files
         #this will read all the xml files in /extensions
         #and append to sErr if it failed, but not crash or die.
-        for root, subdirs, files in os.walk("extensions"):
+        for root, subdirs, files in os.walk("%s/extensions" % uiGlobals.web_root):
             for f in files:
                 ext = os.path.splitext(f)[-1]
                 if ext == ".xml":
@@ -221,7 +220,7 @@ def SetTaskCommands():
         # was told not to put big objects in the session, so since this can actually be shared by all users,
         # lets try saving a pickle
         # it will get created every time a user logs in, but can be read by all.
-        f = open("datacache/_categories.pickle", 'wb')
+        f = open("%s/datacache/_categories.pickle" % uiGlobals.web_root, 'wb')
         pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
         f.close()
         
@@ -272,12 +271,12 @@ def CacheTaskCommands():
 
                 sFunHTML += "</div>"
 
-        with open("static/_categories.html", 'w') as f_out:
+        with open("%s/static/_categories.html" % uiGlobals.web_root, 'w') as f_out:
             if not f_out:
                 print "ERROR: unable to create static/_categories.html."
             f_out.write(sCatHTML)
 
-        with open("static/_functions.html", 'w') as f_out:
+        with open("%s/static/_functions.html" % uiGlobals.web_root, 'w') as f_out:
             if not f_out:
                 print "ERROR: unable to create static/_functions.html."
             f_out.write(sFunHTML)
@@ -288,7 +287,7 @@ def CacheTaskCommands():
 def CacheMenu():
     #put the site.master.xml in the session here
     # this is a significant boost to performance
-    xRoot = ET.parse("site.master.xml")
+    xRoot = ET.parse("%s/site.master.xml" % uiGlobals.web_root)
     if not xRoot:
         raise Exception("Critical: Unable to read/parse site.master.xml.")
         
@@ -356,17 +355,17 @@ def CacheMenu():
             
             
     
-    with open("static/_amenu.html", 'w') as f_out:
+    with open("%s/static/_amenu.html" % uiGlobals.web_root, 'w') as f_out:
         if not f_out:
             print "ERROR: unable to create static/_amenu.html."
         f_out.write(sAdminMenu)
 
-    with open("static/_dmenu.html", 'w') as f_out:
+    with open("%s/static/_dmenu.html" % uiGlobals.web_root, 'w') as f_out:
         if not f_out:
             print "ERROR: unable to create static/_dmenu.html."
         f_out.write(sDevMenu)
 
-    with open("static/_umenu.html", 'w') as f_out:
+    with open("%s/static/_umenu.html" % uiGlobals.web_root, 'w') as f_out:
         if not f_out:
             print "ERROR: unable to create static/_umenu.html."
         f_out.write(sUserMenu)
@@ -452,6 +451,7 @@ if __name__ == "__main__":
     uiGlobals.session = session
     uiGlobals.server = server
     uiGlobals.config = config
+    uiGlobals.web_root = web_root
     
     # setting this to True seems to show a lot more detail in UI exceptions
     web.config.debug = False
