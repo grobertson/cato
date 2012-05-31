@@ -93,6 +93,7 @@ then
 	#explicit local files
 	rsync -q web/*.py $DEPLOY_DIR/web/
 	rsync -q web/*.xml $DEPLOY_DIR/web/
+	rsync -q web/*.sh $DEPLOY_DIR/web/
 
 	if [ $SILENT = 0 ]
 	then 
