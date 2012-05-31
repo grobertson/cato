@@ -99,7 +99,7 @@ $(document).ready(function () {
     });
     //the edit link
     $("#steps .task_open_btn").live("click", function () {
-        location.href = "taskEdit.aspx?task_id=" + $(this).attr("task_id");
+        location.href = "taskEdit?task_id=" + $(this).attr("task_id");
     });
 });
 // end SUBTASK and RUN TASK commands
