@@ -160,7 +160,10 @@ class uiMethods:
             
     def wmGetVersion(self):
         try:
-            return uiGlobals.config["version"]
+            if uiGlobals.config.has_key("version"):
+                return uiGlobals.config["version"]
+            else:
+                return "Unknown"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
@@ -297,15 +300,16 @@ class uiMethods:
                 " from application_registry " \
                 " order by component, master desc"
             rows = self.db.select_all_dict(sSQL)
-            for dr in rows:
-                sProcessHTML += "<tr>" \
-                    "<td>" + str((dr["Component"] if dr["Component"] else "")) + "</td>" \
-                    "<td>" + str((dr["Instance"] if dr["Instance"] else "")) + "</td>" \
-                    "<td>" + str((dr["LoadValue"] if dr["LoadValue"] else "")) + "</td>" \
-                    "<td>" + str((dr["Heartbeat"] if dr["Heartbeat"] else "")) + "</td>" \
-                    "<td>" + str((dr["Enabled"] if dr["Enabled"] else "")) + "</td>" \
-                    "<td>" + str((dr["mslr"] if dr["mslr"] else "")) + "</td>" \
-                    "</tr>"
+            if rows:
+                for dr in rows:
+                    sProcessHTML += "<tr>" \
+                        "<td>" + str((dr["Component"] if dr["Component"] else "")) + "</td>" \
+                        "<td>" + str((dr["Instance"] if dr["Instance"] else "")) + "</td>" \
+                        "<td>" + str((dr["LoadValue"] if dr["LoadValue"] else "")) + "</td>" \
+                        "<td>" + str((dr["Heartbeat"] if dr["Heartbeat"] else "")) + "</td>" \
+                        "<td>" + str((dr["Enabled"] if dr["Enabled"] else "")) + "</td>" \
+                        "<td>" + str((dr["mslr"] if dr["mslr"] else "")) + "</td>" \
+                        "</tr>"
 
             sUserHTML = ""
             sSQL = "select u.full_name, us.login_dt, us.heartbeat as last_update, us.address," \
@@ -315,14 +319,15 @@ class uiMethods:
                 " where timestampdiff(MINUTE,us.heartbeat, now()) < 10" \
                 " order by us.heartbeat desc"
             rows = self.db.select_all_dict(sSQL)
-            for dr in rows:
-                sUserHTML += "<tr>" \
-                    "<td>" + str((dr["full_name"] if dr["full_name"] else "")) + "</td>" \
-                    "<td>" + str((dr["login_dt"] if dr["login_dt"] else "")) + "</td>" \
-                    "<td>" + str((dr["last_update"] if dr["last_update"] else "")) + "</td>" \
-                    "<td>" + str((dr["address"] if dr["address"] else "")) + "</td>" \
-                    "<td>" + str((dr["kick"] if dr["kick"] else "")) + "</td>" \
-                    "</tr>"
+            if rows:
+                for dr in rows:
+                    sUserHTML += "<tr>" \
+                        "<td>" + str((dr["full_name"] if dr["full_name"] else "")) + "</td>" \
+                        "<td>" + str((dr["login_dt"] if dr["login_dt"] else "")) + "</td>" \
+                        "<td>" + str((dr["last_update"] if dr["last_update"] else "")) + "</td>" \
+                        "<td>" + str((dr["address"] if dr["address"] else "")) + "</td>" \
+                        "<td>" + str((dr["kick"] if dr["kick"] else "")) + "</td>" \
+                        "</tr>"
                     
             sMessageHTML = ""
             sSQL = "select msg_to, msg_subject," \
@@ -332,14 +337,15 @@ class uiMethods:
                 " from message" \
                 " order by msg_id desc limit 100"
             rows = self.db.select_all_dict(sSQL)
-            for dr in rows:
-                sMessageHTML += "<tr>" \
-                    "<td>" + str((dr["msg_to"] if dr["msg_to"] else "")) + "</td>" \
-                    "<td>" + str((dr["msg_subject"] if dr["msg_subject"] else "")) + "</td>" \
-                    "<td>" + str((dr["status"] if dr["status"] else "")) + "</td>" \
-                    "<td>" + uiCommon.SafeHTML(str((dr["error_message"] if dr["error_message"] else ""))) + "</td>" \
-                    "<td>" + str((dr["entered_dt"] if dr["entered_dt"] else "")) + "<br />" + str((dr["completed_dt"] if dr["completed_dt"] else "")) + "</td>" \
-                    "</tr>"
+            if rows:
+                for dr in rows:
+                    sMessageHTML += "<tr>" \
+                        "<td>" + str((dr["msg_to"] if dr["msg_to"] else "")) + "</td>" \
+                        "<td>" + str((dr["msg_subject"] if dr["msg_subject"] else "")) + "</td>" \
+                        "<td>" + str((dr["status"] if dr["status"] else "")) + "</td>" \
+                        "<td>" + uiCommon.SafeHTML(str((dr["error_message"] if dr["error_message"] else ""))) + "</td>" \
+                        "<td>" + str((dr["entered_dt"] if dr["entered_dt"] else "")) + "<br />" + str((dr["completed_dt"] if dr["completed_dt"] else "")) + "</td>" \
+                        "</tr>"
                     
             
             return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)

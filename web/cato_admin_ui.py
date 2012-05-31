@@ -7,10 +7,13 @@ import urllib
 import pickle
 import xml.etree.ElementTree as ET
 
-web_root = os.path.dirname(os.path.abspath(sys.argv[0]))
-base_path = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+web_root = os.path.abspath(os.path.dirname(__file__))
+base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 lib_path = os.path.join(base_path, "lib")
 sys.path.append(lib_path)
+
+# to avoid any path issues, "cd" to the web root.
+os.chdir(web_root)
 
 # DON'T REMOVE these that Aptana shows as "unused".
 # they are used, just in the URL mapping for web.py down below.
