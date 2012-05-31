@@ -284,9 +284,7 @@ class settings(object):
     @staticmethod
     def get_application_setting(xpath):
         try:
-            sSQL = "select setting_xml" \
-                " from application_settings" \
-                " where id = 1"
+            sSQL = "select setting_xml from application_settings where id = 1"
             
             db = catocommon.new_conn()
             sxml = db.select_col_noexcep(sSQL)
@@ -302,16 +300,50 @@ class settings(object):
         finally:
             db.close()
         
-    def DBSave(self):
+    @staticmethod
+    def set_application_setting(category, setting, value):
         try:
-            sSQL = "update poller_settings set" \
-                " mode_off_on='" + ("1" if catocommon.is_true(self.Enabled) else "0") + "'," \
-                " loop_delay_sec='" + str(self.LoopDelay) + "'," \
-                " max_processes='" + str(self.MaxProcesses) + "'"
-
+            # key is required, category is not
+            if not setting:
+                print "Info: attempt to set application setting - missing setting name [%s/%s]." % (category, setting)
+                return False, "Setting is a required value."
+            
+            sSQL = "select setting_xml from application_settings where id = 1"
+            
             db = catocommon.new_conn()
-            if not db.exec_db_noexcep(sSQL):
-                return False, db.error
+            sxml = db.select_col_noexcep(sSQL)
+            if sxml:
+                xdoc = ET.fromstring(sxml)
+                if xdoc is not None:
+                    
+                    # category is optional - if omitted, the new one goes in the root
+                    if category:
+                        xcat = xdoc.find(category)
+                        if xcat is None:
+                            xcat = ET.Element(category)
+                            xdoc.append(xcat)
+
+                        xnew = xcat.find(setting)
+                        if xnew is None:
+                            xnew = ET.Element(setting)
+                            xcat.append(xnew)
+
+                        xnew.text = ("" if value is None else value)
+
+                    else:
+                        xnew = xdoc.find(setting)
+                        if xnew is None:
+                            xnew = ET.Element(setting)
+                            xdoc.append(xnew)
+                        
+                        xnew.text = ("" if value is None else value)
+
+
+                    sSQL = "update application_settings set setting_xml='%s' where id=1" % ET.tostring(xdoc)
+                    db = catocommon.new_conn()
+                    if not db.exec_db_noexcep(sSQL):
+                        print "Info: attempt to set application setting [%s/%s] failed." % (category, setting)
+                        return False, db.error
         
             return True, ""
         except Exception, ex:

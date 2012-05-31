@@ -14,7 +14,7 @@
 //
 
 $(document).ready(function () {
-    $("#skip_registration_btn").click(function () {
+    $("#skip_registration_btn").live("click", function () {
 		var success = updateSetting("general","register_cato","skipped");
 		if (success)
 		{

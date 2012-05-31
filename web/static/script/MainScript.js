@@ -173,13 +173,13 @@ function updateSetting(category, setting, value)
     $.ajax({
         type: "POST",
         async: false,
-        url: "uiMethods.asmx/wmSetApplicationSetting",
+        url: "uiMethods/wmSetApplicationSetting",
         data: '{"sCategory":"' + category + '","sSetting":"' + setting + '","sValue":"' + value + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            if (msg.d.length > 0) {
-                showAlert(msg.d);
+        dataType: "text",
+        success: function (response) {
+            if (response.length > 0) {
+                showAlert(response);
             }
 			success = true;
         },

@@ -142,6 +142,22 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
+    def wmSetApplicationSetting(self):
+        try:
+            category = uiCommon.getAjaxArg("sCategory")
+            setting = uiCommon.getAjaxArg("sSetting")
+            value = uiCommon.getAjaxArg("sValue")
+
+            sset = settings.settings()
+            result, err = sset.set_application_setting(category, setting, value)
+            if not result:
+                return err
+            
+            return ""
+            
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
     def wmGetVersion(self):
         try:
             return uiGlobals.config["version"]
@@ -157,7 +173,6 @@ class uiMethods:
             if user_role == "Administrator":
                 items = []
                 regstatus = sset.get_application_setting("general/register_cato")
-                print regstatus
                 if regstatus:
                     if regstatus not in "skipped,registered":
                         items.append("Register Cato to receive updates about the latest versions, plus the latest news and Community support.")
