@@ -22,4 +22,5 @@ $(document).ready(function () {
 		}
     });
 
+	$("#getting_started_items").load("uiMethods/wmGetGettingStarted");
 });

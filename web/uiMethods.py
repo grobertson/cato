@@ -148,6 +148,50 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
+    def wmGetGettingStarted(self):
+        try:
+            sHTML = ""
+            
+            items = []
+            sSQL = "select login_id, login_password from cloud_account"
+            dt = self.db.select_all_dict(sSQL)
+            if dt:
+                for dr in dt:
+                    if not dr["login_id"] or not dr["login_password"]:
+                        items.append("Provide an Account Login ID and Password.")
+            else: 
+                items.append("There are no Cloud Accounts defined.")
+            
+            if items:
+                sHTML += self.DrawGettingStartedItem("cloudaccounts", "Cloud Accounts", items, "<a href=\"/cloudAccountEdit\">Click here</a> to manage Cloud Accounts.")
+            
+            return sHTML
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+
+
+    def DrawGettingStartedItem(self, sID, sTitle, aItems, sActionLine):
+        try:
+            sHTML = ""
+
+            sHTML += "<div id=\"" + sID + "\" class=\"ui-widget\" style=\"margin-top: 10px;\">"
+            sHTML += "<div style=\"padding: 10px;\" class=\"ui-state-highlight ui-corner-all\">"
+            sHTML += "<span style=\"float: left; margin-right: .3em;\" class=\"ui-icon ui-icon-info\"></span>"
+            sHTML += "<strong>" + sTitle + "</strong>"
+            
+            # each item
+            for sItem in aItems:
+                sHTML += "<p style=\"margin-left: 10px;\">" + sItem + "</p>";                
+            
+            sHTML += "<br />"
+            sHTML += "<p>" + sActionLine + "</p>"
+            sHTML += "</div>"
+            sHTML += "</div>"
+            
+            return sHTML
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
     def wmGetCloudAccountsForHeader(self):
         try:
             sSelected = uiCommon.GetCookie("selected_cloud_account")
