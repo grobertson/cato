@@ -77,3 +77,11 @@ logfiles/cato_poller.log
 web/static/storm.js
 
 web/static/script/storm.js
+
+lib/tclcloud/LICENSE.txt
+
+lib/tclcloud/README
+
+lib/tclcloud/pkgIndex.tcl
+
+lib/tclcloud/tclcloud.tcl

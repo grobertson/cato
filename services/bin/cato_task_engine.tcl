@@ -70,10 +70,7 @@ proc get_ecosystem_objects {command} {
 
 proc aws_get_result_var {result path} {
 	set proc_name aws_get_result_var
-	if [catch {set xmldoc [dom parse -simple $result]} result] {
-        output "Variable is not XML, $result, continuing"
-        return ""
-    }
+	set xmldoc [dom parse -simple $result]
 	set root [$xmldoc documentElement]
 	set value [$root selectNodes string($path)]
 	return $value	
@@ -165,19 +162,7 @@ proc register_security_group {apply_to_group port region} {
 
 proc gather_account_info {account_id} {
 	set proc_name gather_account_info
-
-    if {![is_guid $account_id]} {
-        set sql "select account_id from cloud_account where account_name = '$account_id'"
-        output $sql 
-        $::db_query $::CONN $sql
-        set row [$::db_fetch $::CONN]
-        set ::CLOUD_ACCOUNT [lindex $row 0]
-        if {"$::CLOUD_ACCOUNT" eq ""} {
-            error_out "Cloud account name '$account_id' is invalid. Check that the cloud account is defined in this environment." 9999
-        }
-        set account_id $::CLOUD_ACCOUNT
-    }
-    set sql "select ca.account_name, ca.provider, ca.login_id, ca.login_password from cloud_account ca where ca.account_id= '$account_id'"
+	set sql "select ca.account_name, ca.provider, ca.login_id, ca.login_password from cloud_account ca where ca.account_id = '$account_id'"
 	$::db_query $::CONN $sql
 	set row [$::db_fetch $::CONN]
 	set ::CLOUD_NAME [lindex $row 0]
@@ -219,9 +204,11 @@ proc get_eco_tags {var_name params} {
 	set sql "select ecosystem_object_id from ecosystem_object_tag where ecosystem_id = '$::ECOSYSTEM_ID'"
 	set msg "DescribeTags $params"
 	foreach {a b c d} $params {
-        if {"key" eq $b && $d eq "instance"} {
-            continue
-        }
+		#if {[string match "Filter.*.Name" $a]} {
+		#	set sql "$sql and key_name = '$d'"
+		#} elseif {[string match "Filter.*.Value" $a]} {
+		#	set sql "$sql and value = '$d'"
+		#}
 		if {"key" == "$b"} {
 			set sql "$sql and key_name = '$d'"
 		} elseif {"value" == "$b"} {
@@ -482,14 +469,13 @@ proc gather_aws_system_info {instance_id user_id region} {
         lappend cmd $params
         lappend cmd {}
         catch {set result [eval $cmd]} err_msg
-        output $err_msg
 	if {[string match "*does not exist*" $err_msg]} {
 		# maybe the instance has been submitted to start
 		# we'll take a nap and try again once
 		sleep 5
 		set result [eval $cmd]
-        output $result
 	}
+	output $result
         set xmldoc [dom parse -simple $result]
         set root [$xmldoc documentElement]
         set xml_no_ns [[$root removeAttribute xmlns] asXML]
@@ -703,7 +689,7 @@ proc pre_initialize {} {
 	set proc_name pre_initialize
 #!/usr/bin/env tclsh
 	#lappend ::auto_path [file join $::CATO_HOME lib]
-	set ::BIN_DIR [file join $::CATO_HOME services bin]
+	set BIN_DIR [file join $::CATO_HOME services bin]
 	#package require cato_common
 	
 	read_config
@@ -750,8 +736,6 @@ proc initialize {} {
 	set ::CLOUD_IDS() ""
 	set ::runtime_arr(_AWS_REGION,1) ""
 	set ::_CLOUD_ENDPOINT ""
-	set ::HTTP_RESPONSE -1
-    set ::CE_NAME [info hostname]
 
 	#set ::FILTER_BUFFER 0
 	#set ::TIMEOUT_CODEBLOCK "" 
@@ -782,10 +766,13 @@ proc get_steps {task_id} {
 
 	#output "into get_steps" 4
 
-
+	# NSC 5-2-2012
+	# parse type and delimiters were moved off the table and into the function_xml in the python version.
 	set sql "select step_id, upper(codeblock_name), step_order, function_name
 			, [sql_cast function_xml]
-			, output_parse_type, output_row_delimiter, output_column_delimiter
+			, ExtractValue(function_xml, 'function/@parse_method') as parse_method
+			, ExtractValue(function_xml, 'function/@row_delimiter') as row_delimiter
+			, ExtractValue(function_xml, 'function/@col_delimiter') as col_delimiter
 			, [sql_cast variable_xml]
 		from task_step 
 		where task_id = '$task_id'
@@ -2596,7 +2583,7 @@ proc replace_variables {the_string} {
 						if {"$::ECOSYSTEM_NAME" == "" && "$::ECOSYSTEM_ID" > ""} {
 							set subst_var [get_ecosystem_name]
 						} else {
-							set subst_var $::ECOSYSTEM_NAME
+							set subst_var ""
 						}
 					}
 					"_UUID2" -
@@ -2653,9 +2640,6 @@ proc replace_variables {the_string} {
 							set subst_var [lindex $row 0]
 							set ::SUBMITTED_BY_NAME $subst_var
 						}
-					}
-					_HTTP_RESPONSE {
-						set subst_var $::HTTP_RESPONSE
 					}
 					_ASSET {
 						set subst_var $::SYSTEM_ID
@@ -2770,7 +2754,7 @@ proc if_function {command} {
 		}
 		if {$result == 1} {
 			output "{$if_test} is positive." 3
-			set return_command [$test selectNodes string(action)]
+			set return_command [[$test selectNodes action/function] asXML]
 			if {"$return_command" == ""} {
 				error_out "Error: 'IF' action is empty... action is required." 2019
 			}
@@ -2779,7 +2763,7 @@ proc if_function {command} {
 	}
 	if {$result == 0} {
 		output "Processing 'Else' condition..." 3
-		set return_command [$root selectNodes string(else)]
+		set return_command [[$root selectNodes else/function] asXML]
 	}
 	$xmldoc delete
 	return $return_command
@@ -2845,20 +2829,20 @@ proc process_buffer {output_buffer} {
 	### populated for this step. We'll find out the number of variables
 	###
 
-	output [lindex $::step_arr($::STEP_ID) 8] 1
-	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
-		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
+	output [lindex $::step_arr($::STEP_ID) 4] 1
+	if {"[lindex $::step_arr($::STEP_ID) 4]" > ""} {
+		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 4]]
 		set root [$xmldoc documentElement]
-		set variable_nodes [$root selectNodes  {/variables/variable}]
+		set variable_nodes [$root selectNodes  {/function/step_variables/variable}]
 	}
 
 	if {[info exists variable_nodes]} {
 		if {$::DEBUG_LEVEL >= 3} {
 			set msg_text ""
 		}
-		set parse_type [lindex $::step_arr($::STEP_ID) 5]
-		set row_delimiter [lindex $::step_arr($::STEP_ID) 6]
-		set col_delimiter [lindex $::step_arr($::STEP_ID) 7]
+		set parse_type [$root getAttribute parse_method "0"]
+		set row_delimiter [$root getAttribute row_delimiter "0"]
+		set col_delimiter [$root getAttribute col_delimiter "0"]
 		if {$row_delimiter > 0} {
 
 			set row_count [llength [split $output_buffer [tochar $row_delimiter]]]
@@ -3224,7 +3208,7 @@ proc winrm_cmd {command} {
 	output "$output_buffer"
 	insert_audit $::STEP_ID  "" "$command\012$output_buffer" ""
 
-	if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
+	if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
 		process_buffer $output_buffer
 	}
 }
@@ -3465,16 +3449,11 @@ proc http_command {command} {
 	set url [replace_variables_all [$::ROOT selectNodes string(url)]]
 	set type [$::ROOT selectNodes string(type)]
 	output "http command of type $type, url $url" 1
-    set ::HTTP_RESPONSE -1
 
 	set query ""
 	switch -- $type {
 		"GET" {
-                set before_http [clock milliseconds] 
-                catch {
-                    set token [::http::geturl $url -timeout [expr 10 * 1000]]
-                } error_code
-                set after_http [clock milliseconds] 
+			catch {set token [::http::geturl $url -timeout [expr 10 * 1000]]} error_code
 		}
 		"POST" {
 			set pairs [$::ROOT selectNodes  {//pair}]
@@ -3489,18 +3468,13 @@ proc http_command {command} {
 			if {"$query" > ""} {
 				set query [string range $query 1 end]
 			}
-            set before_http [clock milliseconds] 
-			catch {
-                set token [::http::geturl $url -timeout [expr 60 * 1000] -query $query]
-            } error_code
-            set after_http [clock milliseconds] 
+			catch {set token [::http::geturl $url -timeout [expr 60 * 1000] -query $query]} error_code
 		}
 		#"HEAD" {
 		#}
 	}
 	del_xml_root
 
-    set ::HTTP_RESPONSE [expr $after_http - $before_http]
 	if {[string match "::http::*" $error_code] == 0} {
 		set output_buffer $error_code
 		output "http $type error: $url\012$error_code" 1
@@ -3519,10 +3493,10 @@ proc http_command {command} {
 		::http::cleanup $token 
 		#unset token
 	}
-	if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
+	if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
 		process_buffer $output_buffer
 	}
-	insert_audit $::STEP_ID  "" "http $type $url\012$query\012$output_buffer\012Response time = $::HTTP_RESPONSE ms" ""
+	insert_audit $::STEP_ID  "" "http $type $url\012$query\012$output_buffer" ""
 }
 proc new_connection_command {command} {
 	set proc_name new_connection_command
@@ -3614,6 +3588,7 @@ proc run_commands {task_name codeblock} {
 
 	#output "Exiting $proc_name" 2
 }
+
 proc process_step {step_id task_name} {
 	set proc_name process_step
 	set ::STEP_ID [string tolower $step_id]
@@ -3622,8 +3597,10 @@ proc process_step {step_id task_name} {
 	output "**** PROCESSING STEP $::STEP_ID" 
 	output "**************************************************************"
 
-
-
+	# NSC 5-3-12
+	# OK, had to change this slightly.  We were assuming that every "step" was a discrete "function", which isn't true
+	# since functions can have embedded functions.
+	# So, executing a step just calls process_function, which can also be called from inside another function!
 	
 	set function_name [lindex $::step_arr($::STEP_ID) 3]
 	set command [lindex $::step_arr($::STEP_ID) 4]
@@ -3631,20 +3608,101 @@ proc process_step {step_id task_name} {
 	output "Full Commmand: {$command}" 6
 	#set_logger "Command is $function_name" 2
 
+	process_function $task_name $function_name $command
+}
+
+proc process_function {task_name function_name command} {
+	set proc_name process_function
+
+	if {"$function_name" == ""} {
+		error_out "ERROR - unable to determine function type." 1655
+	}
+	if {"$command" == ""} {
+		error_out "ERROR - unable to determine command content." 1655
+	}
+	
 	switch -glob -- $function_name {
-		"while" {
-		}
-		"loop" {
+		"exists" {
+			set all_true 1
+
+			set command [replace_variables_all $command]
+			regsub -all "&" $command "&amp;" command
+			get_xml_root $command
+
+			
+			set variable_nodes [$::ROOT selectNodes  {//variable}]
+			foreach the_node $variable_nodes {
+				set variable_name [replace_variables_all [$the_node selectNodes string(name)]]
+				set is_true [$the_node selectNodes string(is_true)]
+				
+				output "checking if >$variable_name< exists..." 4
+				if {[info exists ::runtime_arr($variable_name,1)]} {
+					# it exists, should we test 'true'?
+					if {"$is_true" == "1"} {
+						output "testing truth on >$variable_name<" 4
+						set testme [string tolower $::runtime_arr($variable_name,1)]
+						# output $testme
+						# 'true' is yes,true or any number > 0
+						if {"$testme" != "true" && "$testme" != "yes" && "$testme" < "1"} {
+							set all_true 0
+							break
+						}
+					}
+				} else {
+					set all_true 0
+					break
+				}
+			}
+			
+			# depending on the test, which one do we want?
+			if {"$all_true"=="1"} {
+				output "EXISTS - all variables test out - positive response." 3
+				set action [[$::ROOT selectNodes actions/positive_action/function] asXML]
+			} else {
+				output "EXISTS - one or more variables don't exist or aren't true - negative response." 3
+				set action [[$::ROOT selectNodes actions/negative_action/function] asXML]
+			}
+
+			del_xml_root
+
+			if {"$action" > ""} {
+				set xmldoc [dom parse $action]
+				set root [$xmldoc documentElement]
+				set function_name [$root getAttribute name ""]
+				
+				if {"$function_name" == ""} {
+					error_out "'EXISTS' Action - unable to determine function type." 1653
+				}
+
+				regsub -all "&" $action "&amp;" command
+				set command [replace_variables_all $command]
+				
+				output "'EXISTS' Action Command is {$function_name}" 1
+				output "'EXISTS' Action Full Commmand: {$command}" 6
+			}
 		}
 		"if" {
 			set command [replace_variables_all $command]
 			regsub -all "&" $command "&amp;" command
-			set returned_step_id [if_function $command]
+			
+			# NSC 5-4-12 - the if_function proc now returns a complete <function> xml string just like a real step.
+			set returned_func [if_function $command]
 
-			if {"$returned_step_id" > ""} {
-				set ::STEP_ID [string tolower $returned_step_id]
-				set function_name [lindex $::step_arr($::STEP_ID) 3]
-				set command [replace_variables_all [lindex $::step_arr($::STEP_ID) 4]]
+			if {"$returned_func" > ""} {
+				# NOTE: the step id no longer changes for an "embedded" function
+				# it's the same step, it just has a sort of identity change
+				
+				set xmldoc [dom parse $returned_func]
+				set root [$xmldoc documentElement]
+				set function_name [$root getAttribute name ""]
+				
+				if {"$function_name" == ""} {
+					error_out "'IF' Action - unable to determine function type." 1657
+				}
+
+				regsub -all "&" $returned_func "&amp;" command
+				set command [replace_variables_all $command]
+				
 				output "'IF' Action Command is {$function_name}" 1
 				output "'IF' Action Full Commmand: {$command}" 6
 			}
@@ -3673,9 +3731,6 @@ proc process_step {step_id task_name} {
 		      set aws_split [split $function_name "_"]
 		      aws_Generic [lindex $aws_split 1] [lindex $aws_split 2] {} $command
 	       }
-		"r53_dns_change" {
-			r53_dns_change $command
-		}
 		"store_private_key" {
 			store_private_key $command
 		}
@@ -3730,12 +3785,9 @@ proc process_step {step_id task_name} {
 					default {
 					}
 				}
+				
 				output "$variable_name, $value"
-                if {$variable_name eq "_CLOUD_ACCOUNT"} {
-                    gather_account_info $value
-                } else {
-                    set_variable $variable_name $value
-                }
+				set_variable $variable_name $value
 			}
 			$root delete
 			$xmldoc delete
@@ -3773,7 +3825,7 @@ proc process_step {step_id task_name} {
 			}
 			close $fp
 			insert_audit $::STEP_ID  "" "read file $output_buffer" ""
-			if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
+			if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
 				process_buffer $output_buffer
 			}
 		}
@@ -3881,7 +3933,7 @@ proc process_step {step_id task_name} {
 			set root [$xmldoc documentElement]
 			set output_buffer [$root selectNodes string(text)]
 			insert_audit $::STEP_ID  "" "Parsing text: {$output_buffer}" ""
-			if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
+			if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
 				process_buffer $output_buffer
 			}
 			$root delete
@@ -4011,7 +4063,7 @@ proc process_step {step_id task_name} {
 			
 			output "The result is ->$result<-" 1
 	
-			if {[lindex $::step_arr($::STEP_ID) 8] > 0} {
+			if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
 				process_buffer $result
 			}
 		}
@@ -4633,10 +4685,10 @@ proc sql_oracle {conn type sql conn_name command} {
 		set buffer ""
 		set buffer $buffer\012[oracols $conn name]
 	}
-	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
-		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
+	if {"[lindex $::step_arr($::STEP_ID) 4]" > ""} {
+		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 4]]
 		set root [$xmldoc documentElement]
-		set variable_nodes [$root selectNodes  {/variables/variable}]
+		set variable_nodes [$root selectNodes {/function/step_variables/variable}]
 	}
 	if {[info exists variable_nodes]} {
 		foreach the_node $variable_nodes {
@@ -4715,11 +4767,11 @@ proc sql_exec_odbc {conn conn_name sql} {
 	set all_rows [$result allrows -as lists]
 	output "all_rows = $all_rows" 2
 	output "row count = [llength $all_rows]" 2
-	output [lindex $::step_arr($::STEP_ID) 8] 2
-	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
-		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
+	output [lindex $::step_arr($::STEP_ID) 4] 2
+	if {"[lindex $::step_arr($::STEP_ID) 4]" > ""} {
+		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 4]]
 		set root [$xmldoc documentElement]
-		set variable_nodes [$root selectNodes  {/variables/variable}]
+		set variable_nodes [$root selectNodes  {/function/step_variables/variable}]
 		foreach the_node $variable_nodes {
 			set name [string toupper [$the_node selectNodes string(name)]]
 			array unset ::runtime_arr $name,*
@@ -4768,11 +4820,11 @@ proc sql_mysql {conn conn_name sql} {
 	set output_buffer ""
 	output "all_rows = $all_rows" 3
 	output "row count = [llength $all_rows]" 3
-	output [lindex $::step_arr($::STEP_ID) 8] 3
-	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
-		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
+	output [lindex $::step_arr($::STEP_ID) 4] 3
+	if {"[lindex $::step_arr($::STEP_ID) 4]" > ""} {
+		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 4]]
 		set root [$xmldoc documentElement]
-		set variable_nodes [$root selectNodes  {/variables/variable}]
+		set variable_nodes [$root selectNodes {/function/step_variables/variable}]
 		foreach the_node $variable_nodes {
 			set name [string toupper [$the_node selectNodes string(name)]]
 			array unset ::runtime_arr $name,*
@@ -4825,11 +4877,11 @@ proc sql_exec_mssql {conn conn_name sql} {
 	set all_rows [tdbc_fetchset $conn]
 	output "all_rows = $all_rows" 2
 	output "row count = [llength $all_rows]" 2
-	output [lindex $::step_arr($::STEP_ID) 8] 2
-	if {"[lindex $::step_arr($::STEP_ID) 8]" > ""} {
-		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 8]]
+	output [lindex $::step_arr($::STEP_ID) 4] 2
+	if {"[lindex $::step_arr($::STEP_ID) 4]" > ""} {
+		set xmldoc [dom parse [lindex $::step_arr($::STEP_ID) 4]]
 		set root [$xmldoc documentElement]
-		set variable_nodes [$root selectNodes  {/variables/variable}]
+		set variable_nodes [$root selectNodes  {/function/step_variables/variable}]
 		foreach the_node $variable_nodes {
 			set name [string toupper [$the_node selectNodes string(name)]]
 			array unset ::runtime_arr $name,*
@@ -5280,11 +5332,24 @@ proc for_loop {command task_name} {
 	set compare_to [replace_variables_all [$::ROOT selectNodes string(compare_to)]]
 	set increment [replace_variables_all [$::ROOT selectNodes string(increment)]]
 	set max_iterations [replace_variables_all [$::ROOT selectNodes string(max)]]
-	set action [$::ROOT selectNodes string(action)]
-	del_xml_root
+
+	set action [$::ROOT selectNodes action/function]
+	
 	if {"$action" == ""} {
 		error_out "Loop action is empty, action is required." 2020
 	}
+
+	# what's the function?
+	set function_name [$action getAttribute name ""]
+				
+	if {"$function_name" == ""} {
+		error_out "FOR LOOP - unable to determine function type." 1657
+	}
+
+	set loop_cmd [replace_variables_all [$action asXML]]
+
+	del_xml_root
+
 
 	set loop_var ::runtime_arr($counter,1)
 	set loop_var2 "\$$loop_var"
@@ -5308,7 +5373,7 @@ proc for_loop {command task_name} {
 			break
 		}
 		set ::INLOOP 1
-		process_step $action $task_name
+		process_function $task_name $function_name $loop_cmd
 		if {$::BREAK == 1} {
 			set ::BREAK 0
 			break
@@ -5319,20 +5384,36 @@ proc for_loop {command task_name} {
 	return
 }
 proc while_loop {command task_name} {
+	set proc_name while_loop
+	
 	get_xml_root $command
 	set test [$::ROOT selectNodes string(test)]
-	set action [$::ROOT selectNodes string(action)]
-	del_xml_root
+	set action [$::ROOT selectNodes action/function]
+	
 	if {"$action" == ""} {
 		error_out "While action is empty, action is required." 2020
 	}
+
+	# what's the function?
+	set function_name [$action getAttribute name ""]
+				
+	if {"$function_name" == ""} {
+		error_out "WHILE LOOP - unable to determine function type." 1657
+	}
+
+	set loop_cmd [replace_variables_all [$action asXML]]
+
+	del_xml_root
+
+	# perform the test ...
 	set test_cond [replace_variables_all $test]
 	regsub -all "&amp;" $test_cond {\&} test_cond
 	regsub -all "&gt;" $test_cond ">" test_cond
 	regsub -all "&lt;" $test_cond "<" test_cond
+	output $test_cond
 	while {[expr $test_cond]} {
 		set ::INLOOP 1
-		process_step $action $task_name
+		process_function $task_name $function_name $loop_cmd
 		if {$::BREAK == 1} {
 			set ::BREAK 0
 			break
@@ -5362,19 +5443,6 @@ proc get_instance_handle {command} {
 	set ::HANDLE_ARR(#${handle}.INSTANCE) $task_instance
 	refresh_handles
 }
-proc r53_dns_change {command} {
-    set proc_name r53_dns_change
-
-	get_xml_root $command
-	set dns_name [replace_variables_all [$::ROOT selectNodes string(dns_name)]]
-	set ip_address [replace_variables_all [$::ROOT selectNodes string(ip_address)]]
-	set ttl [replace_variables_all [$::ROOT selectNodes string(ttl)]]
-	del_xml_root
-    set result [exec $::BIN_DIR/r53_change_dns $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $dns_name $ip_address $ttl]
-    insert_audit $::STEP_ID "" "r53_change_dns $dns_name $ip_address $ttl\012$result" ""
-}
-
-    
 proc cancel_tasks {command} {
 	set proc_name cancel_tasks
 
