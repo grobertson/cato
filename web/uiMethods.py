@@ -155,12 +155,19 @@ class uiMethods:
             
             user_role = uiCommon.GetSessionUserRole()
             if user_role == "Administrator":
-    
+                items = []
+                regstatus = sset.get_application_setting("general/register_cato")
+                print regstatus
+                if regstatus:
+                    if regstatus not in "skipped,registered":
+                        items.append("Register Cato to receive updates about the latest versions, plus the latest news and Community support.")
+                        sHTML += self.DrawGettingStartedItem("registercato", "Register Cato", items, 
+                             "<a href=\"#\" onclick=\"registerCato();\">Click here</a> to register Cato.<br /><a href=\"#\" id=\"skip_registration_btn\">Click here</a> to skip registering and hide this message.")
+
+
                 items = []
                 if not sset.Messenger["SMTPServerAddress"]:
                     items.append("Define an SMTP server.")
-                
-                if items:
                     sHTML += self.DrawGettingStartedItem("messengersettings", "Messenger Settings", items, "<a href=\"/settings\">Click here</a> to update Messenger settings.")
     
                 

@@ -2,6 +2,7 @@
     All of the settings for the Cato modules.
 """
 import json
+import xml.etree.ElementTree as ET
 from catocommon import catocommon
 
 class settings(object):
@@ -275,3 +276,45 @@ class settings(object):
 
         def AsJSON(self):
             return json.dumps(self.__dict__)
+
+    """
+        Application Settings are stored as XML in a separate table.
+        They aren't hardcoded settings and aren't required - can be added/deleted as needed.
+    """
+    @staticmethod
+    def get_application_setting(xpath):
+        try:
+            sSQL = "select setting_xml" \
+                " from application_settings" \
+                " where id = 1"
+            
+            db = catocommon.new_conn()
+            sxml = db.select_col_noexcep(sSQL)
+            if sxml:
+                xdoc = ET.fromstring(sxml)
+                if xdoc is not None:
+                    return xdoc.findtext(xpath, "")
+                
+            print "Info: attempt to find application settings [%s] failed." % xpath
+            return ""
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
+        
+    def DBSave(self):
+        try:
+            sSQL = "update poller_settings set" \
+                " mode_off_on='" + ("1" if catocommon.is_true(self.Enabled) else "0") + "'," \
+                " loop_delay_sec='" + str(self.LoopDelay) + "'," \
+                " max_processes='" + str(self.MaxProcesses) + "'"
+
+            db = catocommon.new_conn()
+            if not db.exec_db_noexcep(sSQL):
+                return False, db.error
+        
+            return True, ""
+        except Exception, ex:
+            raise Exception(ex)
+        finally:
+            db.close()
