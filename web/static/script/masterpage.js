@@ -162,6 +162,10 @@ $(document).ready(function () {
 
 });
 
+function showAbout() {
+	$("#app_version").load("uiMethods/wmGetVersion");
+	$('#about_dialog').dialog('open');
+}
 //This function shows the error dialog.
 function showAlert(msg, info) {
 	//reset the trace panel

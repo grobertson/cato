@@ -97,6 +97,19 @@ def read_config():
     un_pass = catocryptpy.decrypt_string(enc_pass,un_key)
     key_vals["password"] = un_pass
     
+    # something else here... 
+    # the root cato directory should have a VERSION file.
+    # read it's value into a config setting
+    verfilename = os.path.join(base_path, "VERSION")
+    if os.path.isfile(verfilename):
+        with open(verfilename, "r") as version_file:
+            ver = version_file.read()
+            key_vals["version"] = ver
+    else:
+        print "Info: VERSION file does not exist."
+    
+    
+    
     return key_vals
 
 def new_guid():

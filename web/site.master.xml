@@ -30,7 +30,7 @@
 			</item>
 			<item roles="developer user" label="View Task Status" icon="static/images/icons/task_stat_24.png" onclick="showPleaseWait();" href="/taskStatus">
 			</item>
-			<item roles="developer user" label="About Cato" icon="static/images/icons/about_24.png" onclick="$('#about_dialog').dialog('open');" href="#">
+			<item roles="developer user" label="About Cato" icon="static/images/icons/about_24.png" onclick="showAbout();" href="#">
 			</item>
 		</menu>
 		<menu label="Security" icon="static/images/icons/password.png">

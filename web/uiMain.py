@@ -386,6 +386,10 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         config = catocommon.read_config()
+    
+        if "version" in config:
+            print "Cato UI - Version %s" % config["version"]
+
         if "web_port" in config:
             port=config["web_port"]
             sys.argv.append(port)
@@ -451,7 +455,7 @@ if __name__ == "__main__":
     
     # setting this to True seems to show a lot more detail in UI exceptions
     web.config.debug = False
-    
+
     # we need to build some static html here...
     # caching in the session is a bad idea, and this stuff very very rarely changes.
     # so, when the service is started it will update the files, and the ui 

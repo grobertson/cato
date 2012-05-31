@@ -142,6 +142,12 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
+    def wmGetVersion(self):
+        try:
+            return uiGlobals.config["version"]
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
     def wmGetCloudAccountsForHeader(self):
         try:
             sSelected = uiCommon.GetCookie("selected_cloud_account")
