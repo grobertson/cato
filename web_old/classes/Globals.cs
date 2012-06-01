@@ -2679,10 +2679,10 @@ namespace Globals
 							{
 								//well for now this method is for the API and xml based task creation, not the gui.
 								//so, the full function object is not required.
-								if (this.FunctionXDoc.Element("function").Attribute("command_type") != null)
-									this.FunctionName = this.FunctionXDoc.Element("function").Attribute("command_type").Value;
+								if (this.FunctionXDoc.Element("function").Attribute("name") != null)
+									this.FunctionName = this.FunctionXDoc.Element("function").Attribute("name").Value;
 								else
-									throw new Exception("Step from XElement: Function attribute 'command_type' is required and missing.");
+									throw new Exception("Step from XElement: Function attribute 'name' is required and missing.");
 								
 								this.FunctionXML = this.FunctionXDoc.ToString(SaveOptions.DisableFormatting);
 							}
