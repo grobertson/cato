@@ -70,7 +70,10 @@ proc get_ecosystem_objects {command} {
 
 proc aws_get_result_var {result path} {
 	set proc_name aws_get_result_var
-	set xmldoc [dom parse -simple $result]
+	if [catch {set xmldoc [dom parse -simple $result]} result] {
+        output "Variable is not XML, $result, continuing"
+        return ""
+    }
 	set root [$xmldoc documentElement]
 	set value [$root selectNodes string($path)]
 	return $value	
@@ -162,7 +165,19 @@ proc register_security_group {apply_to_group port region} {
 
 proc gather_account_info {account_id} {
 	set proc_name gather_account_info
-	set sql "select ca.account_name, ca.provider, ca.login_id, ca.login_password from cloud_account ca where ca.account_id = '$account_id'"
+
+    if {![is_guid $account_id]} {
+        set sql "select account_id from cloud_account where account_name = '$account_id'"
+        output $sql 
+        $::db_query $::CONN $sql
+        set row [$::db_fetch $::CONN]
+        set ::CLOUD_ACCOUNT [lindex $row 0]
+        if {"$::CLOUD_ACCOUNT" eq ""} {
+            error_out "Cloud account name '$account_id' is invalid. Check that the cloud account is defined in this environment." 9999
+        }
+        set account_id $::CLOUD_ACCOUNT
+    }
+    set sql "select ca.account_name, ca.provider, ca.login_id, ca.login_password from cloud_account ca where ca.account_id= '$account_id'"
 	$::db_query $::CONN $sql
 	set row [$::db_fetch $::CONN]
 	set ::CLOUD_NAME [lindex $row 0]
@@ -204,11 +219,9 @@ proc get_eco_tags {var_name params} {
 	set sql "select ecosystem_object_id from ecosystem_object_tag where ecosystem_id = '$::ECOSYSTEM_ID'"
 	set msg "DescribeTags $params"
 	foreach {a b c d} $params {
-		#if {[string match "Filter.*.Name" $a]} {
-		#	set sql "$sql and key_name = '$d'"
-		#} elseif {[string match "Filter.*.Value" $a]} {
-		#	set sql "$sql and value = '$d'"
-		#}
+        if {"key" eq $b && $d eq "instance"} {
+            continue
+        }
 		if {"key" == "$b"} {
 			set sql "$sql and key_name = '$d'"
 		} elseif {"value" == "$b"} {
@@ -469,13 +482,14 @@ proc gather_aws_system_info {instance_id user_id region} {
         lappend cmd $params
         lappend cmd {}
         catch {set result [eval $cmd]} err_msg
+        output $err_msg
 	if {[string match "*does not exist*" $err_msg]} {
 		# maybe the instance has been submitted to start
 		# we'll take a nap and try again once
 		sleep 5
 		set result [eval $cmd]
+        output $result
 	}
-	output $result
         set xmldoc [dom parse -simple $result]
         set root [$xmldoc documentElement]
         set xml_no_ns [[$root removeAttribute xmlns] asXML]
@@ -689,7 +703,7 @@ proc pre_initialize {} {
 	set proc_name pre_initialize
 #!/usr/bin/env tclsh
 	#lappend ::auto_path [file join $::CATO_HOME lib]
-	set BIN_DIR [file join $::CATO_HOME services bin]
+	set ::BIN_DIR [file join $::CATO_HOME services bin]
 	#package require cato_common
 	
 	read_config
@@ -736,6 +750,8 @@ proc initialize {} {
 	set ::CLOUD_IDS() ""
 	set ::runtime_arr(_AWS_REGION,1) ""
 	set ::_CLOUD_ENDPOINT ""
+	set ::HTTP_RESPONSE -1
+    set ::CE_NAME [info hostname]
 
 	#set ::FILTER_BUFFER 0
 	#set ::TIMEOUT_CODEBLOCK "" 
@@ -1350,9 +1366,9 @@ proc telnet_logon {address userid password top telnet_ssh attempt_num private_ke
 				puts $fp $private_key
 				close $fp
 				file attributes $::TMP/$key_file -permissions 0600
-				spawn /usr/bin/ssh -i $::TMP/$key_file $userid@$address
+				spawn /usr/bin/ssh -i $::TMP/$key_file  -o StrictHostKeyChecking=no $userid@$address
 			} else {
-				spawn /usr/bin/ssh $userid@$address
+				spawn /usr/bin/ssh  -o StrictHostKeyChecking=no $userid@$address
 			}
 		}
 	} else {		;# We're already on some other machine
@@ -2583,7 +2599,7 @@ proc replace_variables {the_string} {
 						if {"$::ECOSYSTEM_NAME" == "" && "$::ECOSYSTEM_ID" > ""} {
 							set subst_var [get_ecosystem_name]
 						} else {
-							set subst_var ""
+							set subst_var $::ECOSYSTEM_NAME
 						}
 					}
 					"_UUID2" -
@@ -2640,6 +2656,9 @@ proc replace_variables {the_string} {
 							set subst_var [lindex $row 0]
 							set ::SUBMITTED_BY_NAME $subst_var
 						}
+					}
+					_HTTP_RESPONSE {
+						set subst_var $::HTTP_RESPONSE
 					}
 					_ASSET {
 						set subst_var $::SYSTEM_ID
@@ -3449,11 +3468,16 @@ proc http_command {command} {
 	set url [replace_variables_all [$::ROOT selectNodes string(url)]]
 	set type [$::ROOT selectNodes string(type)]
 	output "http command of type $type, url $url" 1
+    set ::HTTP_RESPONSE -1
 
 	set query ""
 	switch -- $type {
 		"GET" {
-			catch {set token [::http::geturl $url -timeout [expr 10 * 1000]]} error_code
+                set before_http [clock milliseconds] 
+                catch {
+                    set token [::http::geturl $url -timeout [expr 10 * 1000]]
+                } error_code
+                set after_http [clock milliseconds] 
 		}
 		"POST" {
 			set pairs [$::ROOT selectNodes  {//pair}]
@@ -3468,13 +3492,18 @@ proc http_command {command} {
 			if {"$query" > ""} {
 				set query [string range $query 1 end]
 			}
-			catch {set token [::http::geturl $url -timeout [expr 60 * 1000] -query $query]} error_code
+            set before_http [clock milliseconds] 
+			catch {
+                set token [::http::geturl $url -timeout [expr 60 * 1000] -query $query]
+            } error_code
+            set after_http [clock milliseconds] 
 		}
 		#"HEAD" {
 		#}
 	}
 	del_xml_root
 
+    set ::HTTP_RESPONSE [expr $after_http - $before_http]
 	if {[string match "::http::*" $error_code] == 0} {
 		set output_buffer $error_code
 		output "http $type error: $url\012$error_code" 1
@@ -3496,7 +3525,7 @@ proc http_command {command} {
 	if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
 		process_buffer $output_buffer
 	}
-	insert_audit $::STEP_ID  "" "http $type $url\012$query\012$output_buffer" ""
+	insert_audit $::STEP_ID  "" "http $type $url\012$query\012$output_buffer\012Response time = $::HTTP_RESPONSE ms" ""
 }
 proc new_connection_command {command} {
 	set proc_name new_connection_command
@@ -3731,6 +3760,9 @@ proc process_function {task_name function_name command} {
 		      set aws_split [split $function_name "_"]
 		      aws_Generic [lindex $aws_split 1] [lindex $aws_split 2] {} $command
 	       }
+		"r53_dns_change" {
+			r53_dns_change $command
+		}
 		"store_private_key" {
 			store_private_key $command
 		}
@@ -3787,7 +3819,11 @@ proc process_function {task_name function_name command} {
 				}
 				
 				output "$variable_name, $value"
-				set_variable $variable_name $value
+                if {$variable_name eq "_CLOUD_ACCOUNT"} {
+                    gather_account_info $value
+                } else {
+                    set_variable $variable_name $value
+                }
 			}
 			$root delete
 			$xmldoc delete
@@ -5443,6 +5479,19 @@ proc get_instance_handle {command} {
 	set ::HANDLE_ARR(#${handle}.INSTANCE) $task_instance
 	refresh_handles
 }
+proc r53_dns_change {command} {
+    set proc_name r53_dns_change
+
+	get_xml_root $command
+	set dns_name [replace_variables_all [$::ROOT selectNodes string(dns_name)]]
+	set ip_address [replace_variables_all [$::ROOT selectNodes string(ip_address)]]
+	set ttl [replace_variables_all [$::ROOT selectNodes string(ttl)]]
+	del_xml_root
+    set result [exec $::BIN_DIR/r53_change_dns $::CLOUD_LOGIN_ID $::CLOUD_LOGIN_PASS $dns_name $ip_address $ttl]
+    insert_audit $::STEP_ID "" "r53_change_dns $dns_name $ip_address $ttl\012$result" ""
+}
+
+    
 proc cancel_tasks {command} {
 	set proc_name cancel_tasks
 
