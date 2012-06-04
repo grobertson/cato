@@ -3750,9 +3750,9 @@
 			</command>
 		</commands>
 	</category>
-	<category name="aws_r53" label="AWS R53" description="" icon="icons/aws_32.png">
+	<category name="aws_r53" label="AWS R53" description="" icon="static/images/icons/aws_32.png">
 		<commands>
-			<command name="r53_dns_change" label="DNS Change" description="" help="" icon="icons/aws_16.png">
+			<command name="r53_dns_change" label="DNS Change" description="" help="" icon="static/images/icons/aws_16.png">
 				<function name="r53_dns_change">
 					<dns_name input_type="text" />
 					<ip_address input_type="text" />
