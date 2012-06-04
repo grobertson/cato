@@ -326,7 +326,7 @@ class taskMethods:
                 # add security log
                 uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, t.ID, t.Name, "");
 
-                return "{\"id\" : \"%s\"}" % (t.ID)
+            return "{\"id\" : \"%s\"}" % (t.ID)
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 

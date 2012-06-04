@@ -352,12 +352,12 @@ function SaveNewTask() {
 	        	} else if (response.info) {
 	        		showInfo(response.info);
 	        	} else if (response.id) {
-	                location.href = "/taskEdit?" + task.id;
+	                location.href = "/taskEdit?task_id=" + response.id;
 		        } else {
-		            showAlert(response.d);
+		            showAlert(response);
 		        }
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {
