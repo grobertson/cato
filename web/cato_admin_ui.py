@@ -143,9 +143,10 @@ class upload:
             
             ref_id = (x.ref_id if x.ref_id else "")
             filename = "%s/temp/%s-%s.tmp" % (web_root, uiCommon.GetSessionUserID(), ref_id)
-            fout = open(filename, 'w') # creates the file where the uploaded file should be stored
-            fout.write(x["fupFile"].file.read()) # writes the uploaded file to the newly created file.
-            fout.close() # closes the file, upload complete.
+            with open(filename, 'w') as f_out:
+                if not f_out:
+                    print "ERROR: unable to open %s for writing." % filename
+                f_out.write(x["fupFile"].file.read()) # writes the uploaded file to the newly created file.
             
             # all done, we loop back to the file_upload.html page, but this time include
             # a qq arg - the file name
@@ -224,9 +225,10 @@ def SetTaskCommands():
         # was told not to put big objects in the session, so since this can actually be shared by all users,
         # lets try saving a pickle
         # it will get created every time a user logs in, but can be read by all.
-        f = open("%s/datacache/_categories.pickle" % web_root, 'wb')
-        pickle.dump(cats, f, pickle.HIGHEST_PROTOCOL)
-        f.close()
+        with open("%s/datacache/_categories.pickle" % web_root, 'w') as f_out:
+            if not f_out:
+                print "ERROR: unable to create datacache/_categories.pickle."
+            pickle.dump(cats, f_out, pickle.HIGHEST_PROTOCOL)
         
         #rebuild the cache html files
         CacheTaskCommands()
