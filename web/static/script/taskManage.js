@@ -292,7 +292,7 @@ function ExportTasks() {
 
                 //ok, we're gonna do an iframe in the dialog to force the
                 //file download
-                var html = "Click <a href='temp/" + filename + "'>here</a> to download your file.";
+                var html = "Click <a href='temp/" + filename + "' target='_blank'>here</a> to download your file.";
                 html += "<iframe id='file_iframe' width='0px' height=0px' src='temp/" + filename + "'>";
                 
                 hidePleaseWait();

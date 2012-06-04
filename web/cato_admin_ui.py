@@ -129,6 +129,10 @@ class ecosystemEdit:
     def GET(self):
         return render.ecosystemEdit()
 
+class importObject:        
+    def GET(self):
+        return render.importObject()
+
 class upload:
     def GET(self):
         return """This endpoint only accepts POSTS from file_upload.html"""
@@ -142,15 +146,16 @@ class upload:
             # raise web.seeother('/upload')
             
             ref_id = (x.ref_id if x.ref_id else "")
-            filename = "%s/temp/%s-%s.tmp" % (web_root, uiCommon.GetSessionUserID(), ref_id)
-            with open(filename, 'w') as f_out:
+            filepath = "temp/%s-%s.tmp" % (uiCommon.GetSessionUserID(), ref_id)
+            fullpath = "%s/%s" % (web_root, filepath)
+            with open(fullpath, 'w') as f_out:
                 if not f_out:
-                    print "ERROR: unable to open %s for writing." % filename
+                    print "ERROR: unable to open %s for writing." % fullpath
                 f_out.write(x["fupFile"].file.read()) # writes the uploaded file to the newly created file.
             
             # all done, we loop back to the file_upload.html page, but this time include
             # a qq arg - the file name
-            raise web.seeother("static/pages/file_upload.html?ref_id=%s&filename=%s" % (ref_id, filename))
+            raise web.seeother("static/pages/file_upload.html?ref_id=%s&filename=%s" % (ref_id, filepath))
 
 class temp:
     """all we do for temp is deliver the file."""
@@ -418,6 +423,7 @@ if __name__ != "cato_admin_ui":
         '/login', 'login',
         '/logout', 'logout',
         '/home', 'home',
+        '/importObject', 'importObject',
         '/notAllowed', 'notAllowed',
         '/cloudEdit', 'cloudEdit',
         '/cloudAccountEdit', 'cloudAccountEdit',

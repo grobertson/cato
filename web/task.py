@@ -96,6 +96,7 @@ class Task(object):
         self.Name = sName
         self.Code = sCode
         self.Description = sDesc
+        self.CheckDBExists()
 
     #constructor - from the database by ID
     def FromID(self, sTaskID, bIncludeUserSettings = False):
@@ -162,11 +163,19 @@ class Task(object):
             
             #attributes of the <task> node
             self.ID = xTask.get("id", str(uuid.uuid4()))
+            
+            # original task id is specific to the system where this was originally created.
+            # for xml imports, this is a NEW task by default.
+            # if the user changes 'on_conflict' to either replace or version up
+            # the proper original task id will be resolved by that branch of DBSave
             self.OriginalTaskID = self.ID
             self.Name = xTask.get("name", xmlerr)
             self.Code = xTask.get("code", xmlerr)
-            self.OnConflict = xTask.get("code", "cancel") #cancel is the default action if on_conflict isn't specified
+            self.OnConflict = xTask.get("on_conflict", "cancel") #cancel is the default action if on_conflict isn't specified
             
+            # do we have a conflict?
+            self.CheckDBExists()
+ 
             # these, if not provided, have initial defaults
             self.Version = xTask.get("version", "1.000")
             self.Status = xTask.get("status", "Development")
@@ -189,6 +198,10 @@ class Task(object):
                 newcb = Codeblock(cbname)
                 newcb.FromXML(ET.tostring(xCB))
                 self.Codeblocks[newcb.Name] = newcb
+                
+                # TODO: STEPS
+                
+            # TODO: PARAMETERS
 
         except Exception, ex:
             raise ex
@@ -199,9 +212,20 @@ class Task(object):
         root=ET.fromstring('<task />')
         
         root.set("id", self.ID)
-        root.set("name", self.Name)
-        root.set("code", self.Code)
+        root.set("original_task_id", self.OriginalTaskID)
+        root.set("name", str(self.Name))
+        root.set("code", str(self.Code))
+        root.set("version", str(self.Version))
+        root.set("on_conflict", "cancel")
+        root.set("status", str(self.Status))
+        root.set("concurrent_instances", str(self.ConcurrentInstances))
+        root.set("queue_depth", str(self.QueueDepth))
+
         ET.SubElement(root, "description").text = self.Description
+        
+        # PARAMETERS
+        if self.ParameterXDoc is not None:
+            root.append(self.ParameterXDoc)
         
         #CODEBLOCKS
         xCodeblocks = ET.SubElement(root, "codeblocks") #add the codeblocks section
@@ -221,7 +245,15 @@ class Task(object):
                 stp = cb.Steps[s]
                 xStep = ET.SubElement(xSteps, "step") #add the step
                 xStep.set("id", stp.ID)
-                xStep.set("codeblock", stp.Codeblock)
+                xStep.set("codeblock", str(stp.Codeblock))
+                xStep.set("output_parse_type", str(stp.OutputParseType))
+                xStep.set("output_column_delimiter", str(stp.OutputColumnDelimiter))
+                xStep.set("output_row_delimiter", str(stp.OutputRowDelimiter))
+                xStep.set("commented", str(stp.Commented).lower())
+
+                ET.SubElement(xStep, "description").text = stp.Description
+                
+                xStep.append(stp.FunctionXDoc)
         
         return ET.tostring(root)
 
@@ -264,9 +296,30 @@ class Task(object):
         except Exception, ex:
             raise ex
 
-    def DBSave(self, db = None, bLocalTransaction = True):
+    def CheckDBExists(self):
+        try:
+            db = catocommon.new_conn()
+            sSQL = """select task_id, original_task_id from task
+                where (task_name = '%s' and version = '%s')
+                or task_id = '%s'""" % (self.Name, self.Version, self.ID)
+                
+            dr = db.select_row_dict(sSQL)
+            if dr:
+                # PAY ATTENTION! 
+                # if the task exists... it might have been by name/version, so...
+                # we're setting the ids to the same as the database so it's more accurate.
+                self.ID = dr["task_id"]
+                self.OriginalTaskID = dr["original_task_id"]
+                self.DBExists = True
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+        
+    def DBSave(self, db = None):
         try:
             #if a db connection is passed, use it, else create one
+            bLocalTransaction = True
             if db:
                 bLocalTransaction = False
             else:
@@ -280,15 +333,17 @@ class Task(object):
             if self.DBExists:
                 #uh oh... this task exists.  unless told to do so, we stop here.
                 if self.OnConflict == "cancel":
-                    sErr = "Another Task with that ID or Name/Version exists." \
-                        "[" + self.ID + "/" + self.Name + "/" + self.Version + "]" \
-                        "  Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)"
+                    sErr = """Another Task with that ID or Name/Version exists.
+                        [%s / %s / %s]
+                        Conflict directive set to 'cancel'. (Default is 'cancel' if omitted.)""" % (self.ID, self.Name, self.Version)
                     if bLocalTransaction:
                         db.tran_rollback()
+
                     return False, sErr
                 else:
                     #ok, what are we supposed to do then?
                     if self.OnConflict == "replace":
+                        print "would replace"
                         """                    
                         #whack it all so we can re-insert
                         #but by name or ID?  which was the conflict?
@@ -324,7 +379,8 @@ class Task(object):
                         if not oTrans.ExecUpdate():
                             return False, db.error
                         """
-                    elif self.OnConflict == "minor":                    
+                    elif self.OnConflict == "minor":   
+                        print "would minor version up"                 
                         """                        
                         self.IncrementMinorVersion()
                         self.DBExists = False
@@ -348,6 +404,7 @@ class Task(object):
                             return False
                         """
                     elif self.OnConflict == "major":
+                        print "would major version up"
                         """
                         self.IncrementMajorVersion()
                         self.DBExists = False
@@ -434,10 +491,11 @@ class Task(object):
             if bLocalTransaction:
                 db.tran_commit()
                 db.close()
+
+            return True, ""
+
         except Exception, ex:
             return False, "Error updating the DB. " + ex.str__()
-        finally:
-            return True, ""
 
     def Copy(self, iMode, sNewTaskName, sNewTaskCode):
         #iMode 0=new task, 1=new major version, 2=new minor version

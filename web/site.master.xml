@@ -62,7 +62,7 @@
 			</item>
 			<item roles="developer" label="Manage Settings" icon="static/images/icons/login_24.png" onclick="showPleaseWait();" href="settings">
 			</item>
-			<item roles="developer" label="Import a Backup File" icon="static/images/icons/import_24.png" onclick="showPleaseWait();" href="../pages/importLoadFile.aspx">
+			<item roles="developer" label="Import a Backup File" icon="static/images/icons/import_24.png" onclick="showPleaseWait();" href="importObject">
 			</item>
 			<item roles="developer" label="View Security Log" icon="static/images/icons/password.png" onclick="ShowLogViewDialog(0, '', true);">
 			</item>
@@ -82,49 +82,4 @@
 		<menu roles="all" label="Logout" icon="static/images/icons/logout.png" href="logout">
 		</menu>
 	</mainmenu>
-	<roles>
-		<!--
-		The "allowedpages" section here is to prevent explicit page access.  If a user tries to directly access
-		a page via it's URL (circumventing the menu), the UI won't allow access to the page unless it's in this list.
-		-->
-		<Developer>
-			<allowedpages>
-				<page>about.aspx</page>
-				<page>cloudDiscovery.aspx</page>
-				<page>ecosystemEdit.aspx</page>
-				<page>ecosystemManage.aspx</page>
-				<page>ecoTemplateEdit.aspx</page>
-				<page>ecoTemplateManage.aspx</page>
-				<page>globalRegistry.aspx</page>
-				<page>home.aspx</page>
-				<page>tagEdit.aspx</page>
-				<page>taskActivityLog.aspx</page>
-				<page>taskCommandHelp.aspx</page>
-				<page>taskEdit.aspx</page>
-				<page>taskManage.aspx</page>
-				<page>taskPrint.aspx</page>
-				<page>taskRunLog.aspx</page>
-				<page>taskStatusView.aspx</page>
-				<page>taskStepVarsEdit.aspx</page>
-				<page>taskView.aspx</page>
-				<page>userPreferenceEdit.aspx</page>
-				<page>systemStatusView.aspx</page>
-				<page>importLoadFile.aspx</page>
-				<page>cloudAPITester.aspx</page>
-			</allowedpages>
-		</Developer>
-		<User>
-			<allowedpages>
-				<page>about.aspx</page>
-				<page>ecosystemEdit.aspx</page>
-				<page>ecosystemManage.aspx</page>
-				<page>cloudDiscovery.aspx</page>
-				<page>home.aspx</page>
-				<page>taskActivityLog.aspx</page>
-				<page>taskRunLog.aspx</page>
-				<page>taskStatusView.aspx</page>
-				<page>userPreferenceEdit.aspx</page>
-			</allowedpages>
-		</User>
-	</roles>
 </root>

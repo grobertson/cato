@@ -3073,10 +3073,10 @@ class taskMethods:
 
             # what are we gonna call this file?
             seconds = str(int(time.time()))
-            filename = urllib2.quote("%s_%s.xml" % (t.Name.replace(" ","").replace("/",""), seconds))
+            filename = "%s_%s.csk" % (t.Name.replace(" ","").replace("/",""), seconds)
             with open("%s/temp/%s" % (uiGlobals.web_root, filename), 'w') as f_out:
                 if not f_out:
-                    print "ERROR: unable to write task export xml file."
+                    print "ERROR: unable to write task export file."
                 f_out.write(xml)
                 
             return "{\"export_file\" : \"%s\"}" % filename

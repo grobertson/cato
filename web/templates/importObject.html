@@ -1,0 +1,29 @@
+$def with ()
+$var jsfiles: importObject.js
+$var cssfiles:
+
+<div id="content">
+    <div class="ui-widget-content ui-corner-all">
+        <div class="ui-widget-header">
+            <span>Edit and load an object definition.</span>
+        </div>
+        <div style="padding: 5px;">
+            <iframe src="static/pages/file_upload.html?ref_id=import" style="width: 100%; height: 28px;"></iframe>
+            <textarea id="xml_to_import" class="w100pct code" rows="24"></textarea>
+            <span id="import_xml_btn">Import</span>
+        </div>
+    </div>
+</div>
+<div id="left_panel">
+    <div class="left_tooltip">
+        <img src="../images/terminal-192x192.png" alt="" />
+        <div id="left_tooltip_box_outer">
+            <div id="left_tooltip_box_inner">
+                <h2>Import</h2>
+                <p>
+                    Select an object backup file, edit, and import. (This will be a .csk file format.)
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -2,12 +2,14 @@ import traceback
 import urllib
 import json
 from datetime import datetime
+import xml.etree.ElementTree as ET
 import uiGlobals
 import uiCommon
 from catocommon import catocommon
 import cloud
 import catouser
 import asset
+import task
 import tag
 from settings import settings
 
@@ -1562,3 +1564,53 @@ class uiMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
 
+    def wmCreateObjectFromXML(self):
+        """Takes a properly formatted XML backup file, and imports each object."""
+        try:
+            sXML = uiCommon.getAjaxArg("sXML")
+            sXML = uiCommon.unpackJSON(sXML)
+
+            # the trick here is to return enough information back to the client
+            # to best interact with the user.
+            
+            # what types of things were in this backup?  what are their new ids?
+            items = []
+
+            # parse it as a validation, and to find out what's in it.
+            xd = ET.fromstring(sXML)
+            if xd is not None:
+                # so, what's in here?  Tasks?  Ecotemplates?
+                
+                # TASKS
+                for xtask in xd.iterfind("task"):
+                    uiCommon.log("Importing Task [%s]" % xtask.get("name", "Unknown"), 3)
+                    t = task.Task()
+                    t.FromXML(ET.tostring(xtask))
+
+                    # NOTE: possible TODO
+                    # passing a db connection to task.DBSave will allow rollback of a whole 
+                    # batch of task additions.
+                    # if it's determined that's necessary here, just create a db connection here 
+                    # and pass it in
+                    result, err = t.DBSave()
+                    if result:
+                        # add security log
+                        uiCommon.WriteObjectAddLog(uiGlobals.CatoObjectTypes.Task, t.ID, t.Name, "Created by import.");
+
+                        items.append({"type" : "task", "id" : t.ID, "name" : t.Name}) 
+                    else:
+                        if err:
+                            items.append({"type" : "task", "id" : t.ID, "name" : t.Name, "info" : err}) 
+                        else:
+                            items.append({"type" : "task", "id" : t.ID, "name" : t.Name, "error" : "Unable to create Task. No error available."}) 
+                    
+
+
+                #TODO: for loop for Ecotemplates and Assets will go here, same logic as above
+                # ECOTEMPLATES
+                # ASSETS
+                
+            return "{\"items\" : %s}" % json.dumps(items)
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
