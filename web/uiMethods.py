@@ -6,7 +6,7 @@ import uiGlobals
 import uiCommon
 from catocommon import catocommon
 import cloud
-import user
+import catouser
 import asset
 import tag
 from settings import settings
@@ -78,7 +78,7 @@ class uiMethods:
             answer = uiCommon.getAjaxArg("answer")
             answer = uiCommon.unpackJSON(answer)
 
-            u = user.User()
+            u = catouser.User()
             
             # Authenticate will return the codes so we will know
             # how to respond to the login page
@@ -118,8 +118,6 @@ class uiMethods:
                 uiGlobals.SecurityLogActions.UserLogin, uiGlobals.CatoObjectTypes.User, "", 
                 "Login from [" + uiGlobals.web.ctx.ip + "] granted.")
     
-            uiCommon.log("Creating session...", 3)
-                
             return "{\"result\" : \"success\"}"
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
@@ -128,7 +126,7 @@ class uiMethods:
         try:
             in_name = uiCommon.getAjaxArg("username")
 
-            u = user.User()
+            u = catouser.User()
             u.FromName(in_name)
 
             # again with the generic messages.
@@ -905,7 +903,7 @@ class uiMethods:
                 if pair["name"] == "my_password":
                     newpw = uiCommon.unpackJSON(pair["value"])
                     if newpw:
-                        result, msg = user.User.ValidatePassword(user_id, newpw)
+                        result, msg = catouser.User.ValidatePassword(user_id, newpw)
                         if result:
                             encpw = catocommon.cato_encrypt(newpw)
                             sql = "insert user_password_history (user_id, change_time, password) values ('%s', now(), '%s')" % (user_id, encpw)
@@ -936,7 +934,7 @@ class uiMethods:
             sHTML = ""
             sFilter = uiCommon.getAjaxArg("sSearch")
 
-            u = user.Users(sFilter)
+            u = catouser.Users(sFilter)
             if u.rows:
                 for row in u.rows:
                     sHTML += "<tr user_id=\"" + row["user_id"] + "\">"
@@ -962,7 +960,7 @@ class uiMethods:
     def wmGetUser(self):
         try:
             sID = uiCommon.getAjaxArg("sUserID")
-            u = user.User()
+            u = catouser.User()
             if u:
                 u.FromID(sID)
                 if u.ID:
@@ -1144,7 +1142,7 @@ class uiMethods:
                 if key == "Password":
                     newpw = uiCommon.unpackJSON(val)
                     if newpw:
-                        result, msg = user.User.ValidatePassword(user_id, newpw)
+                        result, msg = catouser.User.ValidatePassword(user_id, newpw)
                         if result:
                             sql_bits.append("user_password = '%s'" % catocommon.cato_encrypt(newpw))
                         else:
@@ -1160,7 +1158,7 @@ class uiMethods:
                 # (We don't do both of them at the same time.)
                 # so the provided one takes precedence.
                 if key == "NewRandomPassword" and not args.has_key("Password"):
-                    u = user.User()
+                    u = catouser.User()
                     if u:
                         u.FromID(args["ID"])
                         if not u.Email:
@@ -1222,7 +1220,7 @@ class uiMethods:
         try:
             args = uiCommon.getAjaxArgs()
 
-            u, msg = user.User.DBCreateNew(args["LoginID"], args["FullName"], args["AuthenticationType"], uiCommon.unpackJSON(args["Password"]), 
+            u, msg = catouser.User.DBCreateNew(args["LoginID"], args["FullName"], args["AuthenticationType"], uiCommon.unpackJSON(args["Password"]), 
                                             args["GeneratePW"], args["ForceChange"], args["Role"], args["Email"], args["Status"], args["Groups"])
             if msg:
                 return "{\"error\" : \"" + msg + "\"}"
@@ -1254,7 +1252,7 @@ class uiMethods:
                     if sUserID != WhoAmI:
                         # this will flag a user for later deletion by the system
                         # it returns True if it's safe to delete now
-                        if user.User.HasHistory(sUserID):
+                        if catouser.User.HasHistory(sUserID):
                             later.append(sUserID)
                         else:
                             now.append(sUserID)

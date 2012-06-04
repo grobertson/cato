@@ -87,7 +87,7 @@ $(document).ready(function () {
 		
 	    $.ajax({
 	        type: "POST",
-	        url: "/uiMethods/wmGetQuestion",
+	        url: "../uiMethods/wmGetQuestion",
 	        data: '{"username":"' + $("#username").val() + '"}',
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
@@ -112,7 +112,7 @@ $(document).ready(function () {
  	});
 
 	// get the welcome message
-	$("#ltAnnouncement").load("/announcement");
+	$("#ltAnnouncement").load("../announcement");
 
 });
 
@@ -131,7 +131,7 @@ function Login() {
 
     $.ajax({
         type: "POST",
-        url: "/uiMethods/wmAttemptLogin",
+        url: "../uiMethods/wmAttemptLogin",
         data: JSON.stringify(args),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -151,7 +151,7 @@ function Login() {
 				}
 			    if (response.result == "success") {
 			    	// TODO check for expiration warnings and let the user know.
-			    	location.href="/home";
+			    	location.href="../home";
 				}
 			}
         },

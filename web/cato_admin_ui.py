@@ -11,6 +11,7 @@ web_root = os.path.abspath(os.path.dirname(__file__))
 base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 lib_path = os.path.join(base_path, "lib")
 sys.path.append(lib_path)
+sys.path.append(web_root)
 
 # to avoid any path issues, "cd" to the web root.
 os.chdir(web_root)
@@ -379,34 +380,33 @@ def CacheMenu():
 """
 
 
-
-if __name__ == "__main__":
+if __name__ != "cato_admin_ui":
     #this is a service, which has a db connection.
     # but we're not gonna use that for gui calls - we'll make our own when needed.
     server = catocommon.CatoService("admin_ui")
     server.startup()
 
-    if len(sys.argv) < 2:
-        config = catocommon.read_config()
-    
-        if "version" in config:
-            print "Cato UI - Version %s" % config["version"]
+    config = catocommon.read_config()
 
-        if "web_port" in config:
-            port = config["web_port"]
-            sys.argv.append(port)
-        
-        dbglvl = 2
-        if "web_debug" in config:
-            try:
-                dbglvl = int(config["web_debug"])
-            except:
-                print "Warning: web_debug setting in cato.conf must be an integer between 0-4."
-            print "Setting debug level to %d..." % dbglvl
-        else:
-            print "Setting debug level to default (%d)..." % dbglvl
-        uiGlobals.debuglevel = dbglvl
+    if "version" in config:
+        print "Cato UI - Version %s" % config["version"]
+
+    if "web_port" in config:
+        port = config["web_port"]
+        sys.argv.append(port)
+    
+    dbglvl = 2
+    if "web_debug" in config:
+        try:
+            dbglvl = int(config["web_debug"])
+        except:
+            print "Warning: web_debug setting in cato.conf must be an integer between 0-4."
+        print "Setting debug level to %d..." % dbglvl
+    else:
+        print "Setting debug level to default (%d)..." % dbglvl
+    uiGlobals.debuglevel = dbglvl
             
+
     urls = (
         '/', 'home',
         '/uiMethods/(.*)', 'uiMethods',
@@ -486,4 +486,10 @@ if __name__ == "__main__":
 #        print "\"%s\" : [\"Administrator\", \"Developer\"]," % s
 
 
+    # NOTE: this "application" attribute will only be used if we're attached to as a 
+    # wsgi module
+    application = app.wsgifunc()
+
+# and this will only run if we're executed directly.
+if __name__ == "__main__":
     app.run()

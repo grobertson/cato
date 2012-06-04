@@ -85,3 +85,7 @@ lib/tclcloud/README
 lib/tclcloud/pkgIndex.tcl
 
 lib/tclcloud/tclcloud.tcl
+
+web_old/Web.pidb
+
+web_old/CloudSidekick.userprefs
