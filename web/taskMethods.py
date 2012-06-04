@@ -1,6 +1,8 @@
 import os
+import urllib2
 import traceback
 import json
+import time
 import xml.etree.ElementTree as ET
 import uiGlobals
 import uiCommon
@@ -3043,7 +3045,7 @@ class taskMethods:
                 if os.path.exists(logfile):
                     if os.path.getsize(logfile) > 20971520: # 20 meg is a pretty big logfile for the browser.
                         return uiCommon.packJSON("Logfile is too big to view in a web browser.")
-                    f = open(logfile)
+                    f = open(logfile, 'r')
                     if f:
                         return uiCommon.packJSON(f.read())
             
@@ -3051,7 +3053,36 @@ class taskMethods:
         except Exception, ex:
             return ex.__str__()
             
+    def wmExportTasks(self):
+        try:
+            sTaskArray = uiCommon.getAjaxArg("sTaskArray")
+            if len(sTaskArray) < 36:
+                return "{\"info\" : \"Unable to delete - no selection.\"}"
+    
+            otids = sTaskArray.split(",")
+            
+            xml = ""
+            for otid in otids:
+                # get the task
+                t = task.Task()
+                t.FromOriginalIDVersion(otid)
+                if t:
+                    xml += t.AsXML()
+            
+            xml = "<tasks>%s</tasks>" % xml
 
+            # what are we gonna call this file?
+            seconds = str(int(time.time()))
+            filename = urllib2.quote("%s_%s.xml" % (t.Name.replace(" ","").replace("/",""), seconds))
+            with open("%s/temp/%s" % (uiGlobals.web_root, filename), 'w') as f_out:
+                if not f_out:
+                    print "ERROR: unable to write task export xml file."
+                f_out.write(xml)
+                
+            return "{\"export_file\" : \"%s\"}" % filename
+        except Exception, ex:
+            return ex.__str__()
+            
     def wmGetTaskStatusCounts(self):
         try:
             # we're building a json object to be returned, so we'll start with a dictionary

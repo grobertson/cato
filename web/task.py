@@ -122,23 +122,34 @@ class Task(object):
         finally:
             db.close()
 
-    """
-    def FromOTIDVersion(self, sOriginalTaskID, sVersion):
+    def FromOriginalIDVersion(self, otid, version=None):
+        sErr = ""
         try:
-            dc = dataAccess()
-            sVersionClause = ""
-            if str.IsNullOrEmpty(sVersion):
-                sVersionClause = " and default_version = 1"
+            db = catocommon.new_conn()
+            version_clause = ""
+            if version:
+                version_clause = " and version = %s" % version
             else:
-                sVersionClause = " and version = '" + sVersion + "'"
-            sSQL = "select task_id, original_task_id, task_name, task_code, task_status, version, default_version," + " task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml" + " from task" + " where original_task_id = '" + sOriginalTaskID + "'" + sVersionClause
-            dr = None
-            if not dc.sqlGetDataRow(, sSQL, ):
-                return 
-            if dr != None:
-                self.PopulateTask(dr, False, )
+                version_clause = " and default_version = 1"
+                
+            sSQL = """select task_id, original_task_id, task_name, task_code, task_status, version, default_version,
+                    task_desc, use_connector_system, concurrent_instances, queue_depth, parameter_xml
+                    from task
+                    where original_task_id = '%s' %s""" % (otid, version_clause)
+            dr = db.select_row_dict(sSQL)
+
+            if dr:
+                sErr = self.PopulateTask(db, dr, False)
+
+            if self.ID:
+                return ""
+            else:
+                return sErr
+            
         except Exception, ex:
-            raise ex"""
+            raise ex
+        finally:
+            db.close()
 
     def FromXML(self, sTaskXML=""):
         try:
@@ -697,7 +708,7 @@ class Task(object):
                         if self.Codeblocks.has_key(oStep.Codeblock):
                             self.Codeblocks[oStep.Codeblock].Steps[oStep.Order] = oStep
                         else:
-                            print "WARNING: Step think it belongs in codeblock [%s] but this task doesn't have that codeblock." % oStep.Codeblock
+                            print "WARNING: Step thinks it belongs in codeblock [%s] but this task doesn't have that codeblock." % (oStep.Codeblock if oStep.Codeblock else "NONE")
         except Exception, ex:
             raise ex
 
@@ -852,12 +863,12 @@ class Step(object):
                     self.OutputColumnDelimiter = int(self.FunctionXDoc.get("col_delimiter", 0))
                 except ET.ParseError:
                     self.IsValid = False
-                    print "CRITICAL: Unable to parse function xml in step [%s]." % self.ID
                     print traceback.format_exc()    
+                    print "CRITICAL: Unable to parse function xml in step [%s]." % self.ID
                 except Exception:
                     self.IsValid = False
-                    print "CRITICAL: Exception in processing step [%s]." % self.ID
                     print traceback.format_exc()    
+                    print "CRITICAL: Exception in processing step [%s]." % self.ID
 
             #this.Function = Function.GetFunctionByName(dr["function_name"]);
             self.FunctionName = dr["function_name"]

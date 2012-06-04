@@ -271,39 +271,35 @@ function ExportTasks() {
     var ArrayString = $("#hidSelectedArray").val();
     $.ajax({
         type: "POST",
-        url: "taskMethods.asmx/wmExportTasks",
+        url: "taskMethods/wmExportTasks",
         data: '{"sTaskArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            //the return code might be a filename or an error.
-            //if it's valid, it will have a ".csk" in it.
-            //otherwise we assume it's an error
-            if (msg.d.indexOf(".csk") > -1 || msg.d.indexOf(".xml") > -1) {
+        success: function (response) {
+	        if (response.error) {
+        		showAlert(response.error);
+        	} else if (response.info) {
+        		showInfo(response.info);
+        	} else if (response.export_file) {
                 //developer utility for renaming the file
                 //note: only works with one task at a time.
                 //var filename = RenameBackupFile(msg.d, ArrayString);
                 //the NORMAL way
-                var filename = msg.d;
+                var filename = response.export_file;
                 
                 $("#hidSelectedArray").val("");
                 $("#export_dialog").dialog("close");
 
-                // clear the search field and fire a search click, should reload the grid
-                $("#txtSearch").val("");
-                $("#ctl00_phDetail_btnSearch").click();
-
-                hidePleaseWait();
-
                 //ok, we're gonna do an iframe in the dialog to force the
                 //file download
-                var html = "Click <a href='fileDownload.ashx?filename=" + filename + "'>here</a> to download your file.";
-                html += "<iframe id='file_iframe' width='0px' height=0px' src='fileDownload.ashx?filename=" + filename + "'>";
+                var html = "Click <a href='temp/" + filename + "'>here</a> to download your file.";
+                html += "<iframe id='file_iframe' width='0px' height=0px' src='temp/" + filename + "'>";
+                
+                hidePleaseWait();
                 showInfo('Export Successful', html, true);
-
-            } else {
-                showAlert(msg.d);
-            }
+	        } else {
+	            showAlert(response);
+	        }
         },
         error: function (response) {
             showAlert(response.responseText);
