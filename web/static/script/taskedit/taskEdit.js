@@ -223,7 +223,7 @@ function doGetDetails() {
                 $("#lblVersionHeader").text(task.Version + (task.IsDefaultVersion ? " (default)" : ""));
 	       		
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(ex);
 			}
         },
         error: function (response) {

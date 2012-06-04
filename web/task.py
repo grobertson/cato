@@ -214,7 +214,7 @@ class Task(object):
         
         return ET.tostring(root)
 
-    def AsJSON(self):
+    def AsJSON(self, include_code=False):
         try:
             sb = []
             sb.append("{")
@@ -232,20 +232,21 @@ class Task(object):
             sb.append("\"%s\" : \"%s\"," % ("MaxVersion", self.MaxVersion))
             sb.append("\"%s\" : \"%s\"," % ("NextMinorVersion", self.NextMinorVersion))
             sb.append("\"%s\" : \"%s\"," % ("NextMajorVersion", self.NextMajorVersion))
-            sb.append("\"%s\" : \"%s\"," % ("UseConnectorSystem", self.UseConnectorSystem))
+            sb.append("\"%s\" : \"%s\"" % ("UseConnectorSystem", self.UseConnectorSystem))
             
-            #codeblocks
-            sb.append("\"Codeblocks\" : {")
-            for name, cb in self.Codeblocks.iteritems():
-                sb.append(" \"%s\" : {\"Steps\" : {" % name)
-
-                steps = []
-                for order, st in cb.Steps.iteritems():
-                    steps.append(" \"%s\" : %s" % (order, st.AsJSON()))
-                sb.append(",".join(steps))
+            if include_code:
+                #codeblocks
+                sb.append("\", Codeblocks\" : {")
+                for name, cb in self.Codeblocks.iteritems():
+                    sb.append(" \"%s\" : {\"Steps\" : {" % name)
+    
+                    steps = []
+                    for order, st in cb.Steps.iteritems():
+                        steps.append(" \"%s\" : %s" % (order, st.AsJSON()))
+                    sb.append(",".join(steps))
+                    sb.append("}")
                 sb.append("}")
-            sb.append("}")
-            sb.append("}")
+                sb.append("}")
 
             sb.append("}")
             return "".join(sb)
