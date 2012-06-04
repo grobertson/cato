@@ -43,7 +43,9 @@ def log_nouser(msg, debuglevel = 2):
         if debuglevel <= uiGlobals.debuglevel:
             try:
                 uiGlobals.server.output(str(msg))
-                print str(msg)
+                if uiGlobals.config.has_key("web_stdout"):
+                    if uiGlobals.config["web_stdout"] == "true":
+                        print str(msg)
             except:
                 uiGlobals.server.output(msg)
                 print msg
