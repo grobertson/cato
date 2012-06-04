@@ -89,3 +89,9 @@ lib/tclcloud/tclcloud.tcl
 web_old/Web.pidb
 
 web_old/CloudSidekick.userprefs
+
+web/static/_functions.html
+
+web/datacache/_categories.pickle
+
+web/static/_categories.html
