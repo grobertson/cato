@@ -141,38 +141,47 @@ class Task(object):
             raise ex"""
 
     def FromXML(self, sTaskXML=""):
-        if sTaskXML == "": return None
-        
-        xmlerr = "XML Error: Attribute not found."
-        
-        uiCommon.log("Creating Task object from XML", 3)
-        xTask = ET.fromstring(sTaskXML)
-        
-        #attributes of the <task> node
-        self.ID = xTask.get("id", str(uuid.uuid4()))
-        self.OriginalTaskID = self.ID
-        self.Name = xTask.get("name", xmlerr)
-        self.Code = xTask.get("code", xmlerr)
-        self.OnConflict = xTask.get("code", "cancel") #cancel is the default action if on_conflict isn't specified
-        
-        # these, if not provided, have initial defaults
-        self.Version = xTask.get("version", "1.000")
-        self.Status = xTask.get("status", "Development")
-        self.IsDefaultVersion = True
-        self.ConcurrentInstances = xTask.get("concurrent_instances", "")
-        self.QueueDepth = xTask.get("queue_depth", "")
-        
-        #text nodes in the <task> node
-        _desc = xTask.find("description", xmlerr).text
-        self.Description = _desc if _desc is not None else ""
-        
-        #CODEBLOCKS
-        xCodeblocks = xTask.findall("codeblocks/codeblock")
-        uiCommon.log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
-        for xCB in xCodeblocks:
-            newcb = Codeblock()
-            newcb.FromXML(ET.tostring(xCB))
-            self.Codeblocks[newcb.Name] = newcb
+        try:
+            if sTaskXML == "": return None
+            
+            xmlerr = "XML Error: Attribute not found."
+            
+            uiCommon.log("Creating Task object from XML", 3)
+            xTask = ET.fromstring(sTaskXML)
+            
+            #attributes of the <task> node
+            self.ID = xTask.get("id", str(uuid.uuid4()))
+            self.OriginalTaskID = self.ID
+            self.Name = xTask.get("name", xmlerr)
+            self.Code = xTask.get("code", xmlerr)
+            self.OnConflict = xTask.get("code", "cancel") #cancel is the default action if on_conflict isn't specified
+            
+            # these, if not provided, have initial defaults
+            self.Version = xTask.get("version", "1.000")
+            self.Status = xTask.get("status", "Development")
+            self.IsDefaultVersion = True
+            self.ConcurrentInstances = xTask.get("concurrent_instances", "")
+            self.QueueDepth = xTask.get("queue_depth", "")
+            
+            #text nodes in the <task> node
+            _desc = xTask.find("description", xmlerr).text
+            self.Description = _desc if _desc is not None else ""
+            
+            #CODEBLOCKS
+            xCodeblocks = xTask.findall("codeblocks/codeblock")
+            uiCommon.log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
+            for xCB in xCodeblocks:
+                cbname = xTask.get("name", "")
+                if not cbname:
+                    uiCommon.log("Error: Codeblock 'name' attribute is required.", 1)
+
+                newcb = Codeblock(cbname)
+                newcb.FromXML(ET.tostring(xCB))
+                self.Codeblocks[newcb.Name] = newcb
+
+        except Exception, ex:
+            raise ex
+
 
     def AsXML(self):
         # NOTE!!! this was just a hand coded test... it needs to be pulled in from the C# version
@@ -223,7 +232,21 @@ class Task(object):
             sb.append("\"%s\" : \"%s\"," % ("MaxVersion", self.MaxVersion))
             sb.append("\"%s\" : \"%s\"," % ("NextMinorVersion", self.NextMinorVersion))
             sb.append("\"%s\" : \"%s\"," % ("NextMajorVersion", self.NextMajorVersion))
-            sb.append("\"%s\" : \"%s\"" % ("UseConnectorSystem", self.UseConnectorSystem))
+            sb.append("\"%s\" : \"%s\"," % ("UseConnectorSystem", self.UseConnectorSystem))
+            
+            #codeblocks
+            sb.append("\"Codeblocks\" : {")
+            for name, cb in self.Codeblocks.iteritems():
+                sb.append(" \"%s\" : {\"Steps\" : {" % name)
+
+                steps = []
+                for order, st in cb.Steps.iteritems():
+                    steps.append(" \"%s\" : %s" % (order, st.AsJSON()))
+                sb.append(",".join(steps))
+                sb.append("}")
+            sb.append("}")
+            sb.append("}")
+
             sb.append("}")
             return "".join(sb)
         except Exception, ex:
@@ -702,10 +725,12 @@ class Codeblock(object):
         #STEPS
         xSteps = xCB.findall("steps/step")
         uiCommon.log("Number of Steps in [" +self.Name + "]: " + str(len(xSteps)), 4)
+        order = 1
         for xStep in xSteps:
             newstep = Step()
             newstep.FromXML(ET.tostring(xStep), self.Name)
-            self.Steps[newstep.ID] = newstep
+            self.Steps[order] = newstep
+            order += 1
 
 class Step(object):
     def __init__(self):
@@ -737,6 +762,26 @@ class Step(object):
         # this property notes that
         self.IsValid = True
         
+    def AsJSON(self):
+        try:
+            sb = []
+            sb.append("{")
+            sb.append("\"%s\" : \"%s\"," % ("ID", self.ID))
+            sb.append("\"%s\" : \"%s\"," % ("Codeblock", self.Codeblock))
+            sb.append("\"%s\" : \"%s\"," % ("Order", self.Order))
+            sb.append("\"%s\" : \"%s\"," % ("Description", self.Description))
+            sb.append("\"%s\" : \"%s\"," % ("Commented", self.Commented))
+            sb.append("\"%s\" : \"%s\"," % ("Locked", self.Locked))
+            sb.append("\"%s\" : \"%s\"," % ("OutputParseType", self.OutputParseType))
+            sb.append("\"%s\" : \"%s\"," % ("OutputRowDelimiter", self.OutputRowDelimiter))
+            sb.append("\"%s\" : \"%s\"," % ("OutputColumnDelimiter", self.OutputColumnDelimiter))
+            sb.append("\"%s\" : \"%s\"," % ("FunctionXML", self.FunctionXML))
+            sb.append("\"%s\" : \"%s\"" % ("FunctionName", self.FunctionName))
+            sb.append("}")
+            return "".join(sb)        
+        except Exception, ex:
+            raise ex
+
     def FromXML(self, sStepXML="", sCodeblockName=""):
         if sStepXML == "": return None
         if sCodeblockName == "": return None
@@ -745,6 +790,7 @@ class Step(object):
         
         #attributes of the <step> node
         self.ID = xStep.get("id", str(uuid.uuid4()))
+        self.Order = xStep.get("order", 0)
         self.Codeblock = sCodeblockName
 
     @staticmethod
