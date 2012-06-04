@@ -88,7 +88,7 @@ $var cssfiles: taskRunLog.css
 </div>
 <div class="ui-widget-content ui-corner-all result_summary">
     <div class="ui-widget-header ui-corner-top result_summary_header">
-        Log
+        Log <a id="view_logfile_btn" href="#">(view logfile)</a>
     </div>
     <div class="result_summary_detail">
         <div id="ltLog"></div>
@@ -103,4 +103,7 @@ $var cssfiles: taskRunLog.css
 </div>
 <div id="task_launch_dialog" title="Run Task">
     <div id="plan_edit_dialog" title="Edit Plan"></div>
+</div>
+<div id="logfile_dialog" title="Logfile">
+    <pre class="log_results" id="logfile_text"></pre>
 </div>

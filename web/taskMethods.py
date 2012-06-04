@@ -1,3 +1,4 @@
+import os
 import traceback
 import json
 import xml.etree.ElementTree as ET
@@ -2858,6 +2859,12 @@ class taskMethods:
 
                         output["other_instances"] = aOtherInstances
                     
+                    # one last thing... does the logfile for this run exist on this server?
+                    if uiGlobals.config.has_key("logfiles"):
+                        logdir = uiGlobals.config["logfiles"]
+                        if os.path.exists( r"%s/ce/%s.log" % (logdir, sTaskInstance) ):
+                            output["logfile_name"] = "%s/ce/%s.log" % (logdir, sTaskInstance)
+                    
                     # all done, serialize our output dictionary
                     return json.dumps(output)
 
@@ -3026,6 +3033,24 @@ class taskMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return ""
 
+    def wmGetTaskLogfile(self):
+        try:
+            instance = uiCommon.getAjaxArg("sTaskInstance")
+            logfile = ""
+            if instance and uiGlobals.config.has_key("logfiles"):
+                logdir = uiGlobals.config["logfiles"]
+                logfile = "%s/ce/%s.log" % (logdir, instance)
+                if os.path.exists(logfile):
+                    if os.path.getsize(logfile) > 20971520: # 20 meg is a pretty big logfile for the browser.
+                        return uiCommon.packJSON("Logfile is too big to view in a web browser.")
+                    f = open(logfile)
+                    if f:
+                        return uiCommon.packJSON(f.read())
+            
+            return uiCommon.packJSON("Unable to read logfile. [%s]" % logfile)
+        except Exception, ex:
+            return ex.__str__()
+            
 
     def wmGetTaskStatusCounts(self):
         try:

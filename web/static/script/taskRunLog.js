@@ -26,6 +26,23 @@ $(document).ready(function () {
 		doGetDetails();
     });
 
+	//view logfile link
+    $("#view_logfile_btn").click(function () {
+		doGetLogfile();
+    });
+
+    $("#logfile_dialog").dialog({
+        autoOpen: false,
+        height: 600,
+        width: 700,
+        bgiframe: true,
+        buttons: {
+            OK: function () {
+                $(this).dialog("close");
+            }
+        }
+    });
+
     //parent instance link
     $("#lblSubmittedByInstance").click(function () {
         showPleaseWait();
@@ -200,6 +217,12 @@ function doGetDetails() {
 			else
     			$("#phCancel").show();
                         
+			//if the log file is local to this server, show a link
+            if (instance.logfile_name)                                            
+    			$("#view_logfile_btn").show();
+			else
+    			$("#view_logfile_btn").hide();
+                        
 
             //if the other instances array has stuff in it, then
             if (instance.other_instances) {
@@ -259,6 +282,28 @@ function doGetLog() {
     });
 }
 
+function doGetLogfile() {
+    instance = $("#hidInstanceID").val();
+
+	if (instance == '')
+		return;
+
+    $.ajax({
+        async: true,
+        type: "POST",
+        url: "taskMethods/wmGetTaskLogfile",
+        data: '{"sTaskInstance":"' + instance + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "text",
+        success: function (response) {
+			$("#logfile_text").html(unpackJSON(response));
+			$("#logfile_dialog").dialog("open");
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 function doDebugStop() {
     instance = $("#hidInstanceID").val();
 
