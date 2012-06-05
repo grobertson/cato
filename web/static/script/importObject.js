@@ -14,6 +14,21 @@
 //
 
 $(document).ready(function () {
+	$("#format_xml_btn").button({
+		icons : {
+			primary : "ui-icon-shuffle"
+		}
+	});
+	$("#format_xml_btn").click(function() {
+		bad = $("#xml_to_import").val();
+		good = vkbeautify.xml(bad);
+		$("#xml_to_import").val(good);
+	});
+
+	$("#import_from_url").keypress(function(e) {
+		if(e.which == 13) { GetURL(); }
+	});
+	
 	$("#import_xml_btn").button({ icons: { primary: "ui-icon-check"} });
     $("#import_xml_btn").click(function() {
 		var xml = packJSON($("#xml_to_import").val());
@@ -68,9 +83,28 @@ $(document).ready(function () {
     });
 });
 
+function GetURL() {
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "uiMethods/wmHTTPGet",
+        data: '{"url":"' + $("#import_from_url").val() + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "text",
+        success: function (response) {
+			$("#xml_to_import").val(response);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
+
 function fileWasSaved(filename) {
 	//get the file text from the server and populate the text field.
 	$.get(filename, function(data) {
 		$("#xml_to_import").val(data);
 	}, "text");
+	
+	$("#import_from_url").val("")
 }

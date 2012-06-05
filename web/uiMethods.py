@@ -1614,3 +1614,20 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
+    def wmHTTPGet(self):
+        """Simply proxies an HTTP GET to another domain, and returns the results."""
+        try:
+            url = uiCommon.getAjaxArg("url")
+            try:
+                result, err = uiCommon.HTTPGet(url, 15)
+                if err:
+                    return "External HTTP request failed.  %s" % err
+
+            except:
+                uiCommon.log("Error during HTTP GET." + traceback.format_exc())
+                return traceback.format_exc()
+            
+            return result
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            

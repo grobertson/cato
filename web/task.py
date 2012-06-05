@@ -1,21 +1,4 @@
 """
-SOME XML EXAMPLES
-stuff = ET.fromstring(input)
-lst = stuff.findall("users/user")
-print len(lst)
-for item in lst:
-print item.attrib["x"]
-item = lst[0]
-ET.dump(item)
-item.get("x")   # get works on attributes
-item.find("id").text
-item.find("id").tag
-for user in stuff.getiterator('user') :
-print "User" , user.attrib["x"]
-ET.dump(user)
-"""
-
-"""
     THIS CLASS has it's own database connections.
     Why?  Because it isn't only used by the UI.
 """
@@ -162,7 +145,10 @@ class Task(object):
             xTask = ET.fromstring(sTaskXML)
             
             #attributes of the <task> node
-            self.ID = xTask.get("id", str(uuid.uuid4()))
+            
+            # NOTE: id is ALWAYS NEW from xml.  If it matches an existing task by name, that'll be figured out
+            # in CheckDBExists below.
+            self.ID = str(uuid.uuid4())
             
             # original task id is specific to the system where this was originally created.
             # for xml imports, this is a NEW task by default.
@@ -173,9 +159,6 @@ class Task(object):
             self.Code = xTask.get("code", xmlerr)
             self.OnConflict = xTask.get("on_conflict", "cancel") #cancel is the default action if on_conflict isn't specified
             
-            # do we have a conflict?
-            self.CheckDBExists()
- 
             # these, if not provided, have initial defaults
             self.Version = xTask.get("version", "1.000")
             self.Status = xTask.get("status", "Development")
@@ -187,7 +170,10 @@ class Task(object):
             _desc = xTask.find("description", xmlerr).text
             self.Description = _desc if _desc is not None else ""
             
-            #CODEBLOCKS
+            # do we have a conflict?
+            self.CheckDBExists()
+ 
+            # CODEBLOCKS
             xCodeblocks = xTask.findall("codeblocks/codeblock")
             uiCommon.log("Number of Codeblocks: " + str(len(xCodeblocks)), 4)
             for xCB in xCodeblocks:
@@ -199,9 +185,8 @@ class Task(object):
                 newcb.FromXML(ET.tostring(xCB))
                 self.Codeblocks[newcb.Name] = newcb
                 
-                # TODO: STEPS
-                
-            # TODO: PARAMETERS
+            # PARAMETERS
+            self.ParameterXDoc = xTask.find("parameters")
 
         except Exception, ex:
             raise ex
@@ -211,7 +196,6 @@ class Task(object):
         # NOTE!!! this was just a hand coded test... it needs to be pulled in from the C# version
         root=ET.fromstring('<task />')
         
-        root.set("id", self.ID)
         root.set("original_task_id", self.OriginalTaskID)
         root.set("name", str(self.Name))
         root.set("code", str(self.Code))
@@ -244,7 +228,6 @@ class Task(object):
             for s in cb.Steps:
                 stp = cb.Steps[s]
                 xStep = ET.SubElement(xSteps, "step") #add the step
-                xStep.set("id", stp.ID)
                 xStep.set("codeblock", str(stp.Codeblock))
                 xStep.set("output_parse_type", str(stp.OutputParseType))
                 xStep.set("output_column_delimiter", str(stp.OutputColumnDelimiter))
@@ -302,7 +285,6 @@ class Task(object):
             sSQL = """select task_id, original_task_id from task
                 where (task_name = '%s' and version = '%s')
                 or task_id = '%s'""" % (self.Name, self.Version, self.ID)
-                
             dr = db.select_row_dict(sSQL)
             if dr:
                 # PAY ATTENTION! 
@@ -343,90 +325,81 @@ class Task(object):
                 else:
                     #ok, what are we supposed to do then?
                     if self.OnConflict == "replace":
-                        print "would replace"
-                        """                    
                         #whack it all so we can re-insert
                         #but by name or ID?  which was the conflict?
                         #no worries! the _DBExists function called when we created the object
                         #will have resolved any name/id issues.
                         #if the ID existed it doesn't matter, we'll be plowing it anyway.
                         #by "plow" I mean drop and recreate the codeblocks and steps... the task row will be UPDATED
-                        oTrans.Command.CommandText = "delete from task_step_user_settings" \
+                        sSQL = "delete from task_step_user_settings" \
                             " where step_id in" \
                             " (select step_id from task_step where task_id = '" + self.ID + "')"
-                        if not oTrans.ExecUpdate():
+                        if not db.tran_exec_noexcep(sSQL):
                             return False, db.error
-                        oTrans.Command.CommandText = "delete from task_step where task_id = '" + self.ID + "'"
-                        if not oTrans.ExecUpdate():
+                        sSQL = "delete from task_step where task_id = '" + self.ID + "'"
+                        if not db.tran_exec_noexcep(sSQL):
                             return False, db.error
-                        oTrans.Command.CommandText = "delete from task_codeblock where task_id = '" + self.ID + "'"
-                        if not oTrans.ExecUpdate():
+                        sSQL = "delete from task_codeblock where task_id = '" + self.ID + "'"
+                        if not db.tran_exec_noexcep(sSQL):
                             return False, db.error
                         
                         #update the task row
-                        oTrans.Command.CommandText = "update task set" \
-                            " version = '" + self.Version + "'," \
-                            " task_name = '" + ui.tick_slash(self.Name) + "'," \
-                            " task_code = '" + ui.tick_slash(self.Code) + "'," \
-                            " task_desc = '" + ui.tick_slash(self.Description) + "'," \
+                        sSQL = "update task set" \
+                            " task_name = '" + catocommon.tick_slash(self.Name) + "'," \
+                            " task_code = '" + catocommon.tick_slash(self.Code) + "'," \
+                            " task_desc = '" + catocommon.tick_slash(self.Description) + "'," \
                             " task_status = '" + self.Status + "'," \
-                            " default_version = '" + (1 if self.IsDefaultVersion else 0) + "'," \
-                            " concurrent_instances = '" + self.ConcurrentInstances + "'," \
-                            " queue_depth = '" + self.QueueDepth + "'," \
+                            " concurrent_instances = '" + str(self.ConcurrentInstances) + "'," \
+                            " queue_depth = '" + str(self.QueueDepth) + "'," \
                             " created_dt = now()," \
-                            " parameter_xml = " + ("'" + ui.tick_slash(ET.fromstring(self.ParameterXDoc)) + "'" if self.ParameterXDoc else "null") \
+                            " parameter_xml = " + ("'" + catocommon.tick_slash(ET.tostring(self.ParameterXDoc)) + "'" if self.ParameterXDoc is None else "null") + \
                             " where task_id = '" + self.ID + "'"
-                        if not oTrans.ExecUpdate():
+                        if not db.tran_exec_noexcep(sSQL):
                             return False, db.error
-                        """
                     elif self.OnConflict == "minor":   
-                        print "would minor version up"                 
-                        """                        
                         self.IncrementMinorVersion()
                         self.DBExists = False
-                        self.ID = ui.NewGUID()
+                        self.ID = catocommon.new_guid()
                         self.IsDefaultVersion = False
                         #insert the new version
-                        oTrans.Command.CommandText = "insert task" \
+                        sSQL = "insert task" \
                             " (task_id, original_task_id, version, default_version," \
-                            " task_name, task_code, task_desc, task_status, created_dt)" \
+                            " task_name, task_code, task_desc, task_status, parameter_xml, created_dt)" \
                             " values " \
                             " ('" + self.ID + "'," \
                             " '" + self.OriginalTaskID + "'," \
                             " " + self.Version + "," + " " \
-                            (1 if self.IsDefaultVersion else 0) + "," \
-                            " '" + ui.tick_slash(self.Name) + "'," \
-                            " '" + ui.tick_slash(self.Code) + "'," \
-                            " '" + ui.tick_slash(self.Description) + "'," \
+                            " " + ("1" if self.IsDefaultVersion else "0") + "," \
+                            " '" + catocommon.tick_slash(self.Name) + "'," \
+                            " '" + catocommon.tick_slash(self.Code) + "'," \
+                            " '" + catocommon.tick_slash(self.Description) + "'," \
                             " '" + self.Status + "'," \
+                            " '" + catocommon.tick_slash(ET.tostring(self.ParameterXDoc)) + "'," \
                             " now())"
-                        if not oTrans.ExecUpdate():
-                            return False
-                        """
+                        if not db.tran_exec_noexcep(sSQL):
+                            return False, db.error
                     elif self.OnConflict == "major":
-                        print "would major version up"
-                        """
                         self.IncrementMajorVersion()
                         self.DBExists = False
-                        self.ID = ui.NewGUID()
+                        self.ID = catocommon.new_guid()
                         self.IsDefaultVersion = False
                         #insert the new version
-                        oTrans.Command.CommandText = "insert task" \
+                        sSQL = "insert task" \
                             " (task_id, original_task_id, version, default_version," \
-                            " task_name, task_code, task_desc, task_status, created_dt)" \
+                            " task_name, task_code, task_desc, task_status, parameter_xml, created_dt)" \
                             " values " \
                             " ('" + self.ID + "'," \
                             " '" + self.OriginalTaskID + "'," \
                             " " + self.Version + "," \
-                            " " + (1 if self.IsDefaultVersion else 0) + "," \
-                            " '" + ui.tick_slash(self.Name) + "'," \
-                            " '" + ui.tick_slash(self.Code) + "'," \
-                            " '" + ui.tick_slash(self.Description) + "'," \
+                            " " + ("1" if self.IsDefaultVersion else "0") + "," \
+                            " '" + catocommon.tick_slash(self.Name) + "'," \
+                            " '" + catocommon.tick_slash(self.Code) + "'," \
+                            " '" + catocommon.tick_slash(self.Description) + "'," \
                             " '" + self.Status + "'," \
+                            " '" + catocommon.tick_slash(ET.tostring(self.ParameterXDoc)) + "'," \
                             " now())"
-                        if not oTrans.ExecUpdate():
-                            return False
-                        """
+                        if not db.tran_exec_noexcep(sSQL):
+                            return False, db.error
                     else:
                         #there is no default action... if the on_conflict didn't match we have a problem... bail.
                         return False, "There is an ID or Name/Version conflict, and the on_conflict directive isn't a valid option. (replace/major/minor/cancel)"
@@ -434,7 +407,7 @@ class Task(object):
                 #the default action is to ADD the new task row... nothing
                 sSQL = "insert task" \
                     " (task_id, original_task_id, version, default_version," \
-                    " task_name, task_code, task_desc, task_status, created_dt)" \
+                    " task_name, task_code, task_desc, task_status, parameter_xml, created_dt)" \
                     " values " + " ('" + self.ID + "'," \
                     "'" + self.OriginalTaskID + "'," \
                     " " + self.Version + "," \
@@ -443,51 +416,38 @@ class Task(object):
                     " '" + catocommon.tick_slash(self.Code) + "'," \
                     " '" + catocommon.tick_slash(self.Description) + "'," \
                     " '" + self.Status + "'," \
+                    " '" + catocommon.tick_slash(ET.tostring(self.ParameterXDoc)) + "'," \
                     " now())"
                 if not db.tran_exec_noexcep(sSQL):
                     return False, db.error
 
-            """
             #by the time we get here, there should for sure be a task row, either new or updated.                
             #now, codeblocks
-            enumerator = self.Codeblocks.Values.GetEnumerator()
-            while enumerator.MoveNext():
-                c = enumerator.Current
-                #PAY ATTENTION to crazy stuff here.
-                #for exportability, embedded steps are held in codeblocks that don't really exist in the database
-                # they are created on the task object when it's created from the db or xml.
-                #BUT, when actually saving it, we don't wanna save these dummy codeblocks.
-                #(having real dummy codeblocks in the db would freak out the command engine)
-                #so ... if the codeblock name is a guid, we:
-                #a) DO NOT insert it
-                #b) any steps inside it are set to step_order=-1
-                bIsBogusCodeblock = (ui.IsGUID(c.Name))
-                if not bIsBogusCodeblock:
-                    oTrans.Command.CommandText = "insert task_codeblock (task_id, codeblock_name)" \
-                        " values ('" + self.ID + "', '" + c.Name + "')"
-                    if not oTrans.ExecUpdate():
-                        return False
+            for c in self.Codeblocks.itervalues():
+                sSQL = "insert task_codeblock (task_id, codeblock_name)" \
+                    " values ('" + self.ID + "', '" + c.Name + "')"
+                if not db.tran_exec_noexcep(sSQL):
+                    return False, db.error
+
                 #and steps
-                iStepOrder = 1
-                enumerator = c.Steps.Values.GetEnumerator()
-                while enumerator.MoveNext():
-                    s = enumerator.Current
-                    iStepOrder = (-1 if bIsBogusCodeblock else iStepOrder)
-                    oTrans.Command.CommandText = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
+                order = 1
+                for s in c.Steps.itervalues():
+                    sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
                         " commented, locked," \
                         " function_name, function_xml)" \
-                        " values (" + "'" + s.ID + "'," \
-                        "'" + s.Task.ID + "'," \
-                        ("NULL" if str.IsNullOrEmpty(s.Codeblock) else "'" + s.Codeblock + "'") + "," \
-                        iStepOrder + "," \
-                        "0,0," \
+                        " values ('" + s.ID + "'," \
+                        "'" + self.ID + "'," \
+                        "'" + s.Codeblock + "'," \
+                        + str(order) + "," \
+                        " " + ("1" if s.Commented else "0") + "," \
+                        "0," \
                         "'" + s.FunctionName + "'," \
-                        "'" + ui.tick_slash(s.FunctionXML) + "'" \
+                        "'" + catocommon.tick_slash(ET.tostring(s.FunctionXDoc)) + "'" \
                         ")"
-                    if not oTrans.ExecUpdate():
-                        return False
-                    iStepOrder += 1
-            """
+                    if not db.tran_exec_noexcep(sSQL):
+                        return False, db.error
+                    order += 1
+
             if bLocalTransaction:
                 db.tran_commit()
                 db.close()
@@ -495,7 +455,7 @@ class Task(object):
             return True, ""
 
         except Exception, ex:
-            return False, "Error updating the DB. " + ex.str__()
+            return False, "Error updating the DB. " + ex.__str__()
 
     def Copy(self, iMode, sNewTaskName, sNewTaskCode):
         #iMode 0=new task, 1=new major version, 2=new minor version
@@ -813,7 +773,6 @@ class Step(object):
         self.OutputParseType = 0
         self.OutputRowDelimiter = 0
         self.OutputColumnDelimiter = 0
-        self.FunctionXML = None
         self.FunctionXDoc = None
         self.FunctionName = ""
         self.UserSettings = StepUserSettings()
@@ -845,7 +804,6 @@ class Step(object):
             sb.append("\"%s\" : \"%s\"," % ("OutputParseType", self.OutputParseType))
             sb.append("\"%s\" : \"%s\"," % ("OutputRowDelimiter", self.OutputRowDelimiter))
             sb.append("\"%s\" : \"%s\"," % ("OutputColumnDelimiter", self.OutputColumnDelimiter))
-            sb.append("\"%s\" : \"%s\"," % ("FunctionXML", self.FunctionXML))
             sb.append("\"%s\" : \"%s\"" % ("FunctionName", self.FunctionName))
             sb.append("}")
             return "".join(sb)        
@@ -859,10 +817,25 @@ class Step(object):
         xStep = ET.fromstring(sStepXML)
         
         #attributes of the <step> node
-        self.ID = xStep.get("id", str(uuid.uuid4()))
+        self.ID = str(uuid.uuid4())
         self.Order = xStep.get("order", 0)
         self.Codeblock = sCodeblockName
+        self.Commented = catocommon.is_true(xStep.get("commented", ""))
+        self.OutputParseType = int(xStep.get("output_parse_method", 0))
+        self.OutputRowDelimiter = int(xStep.get("output_row_delimiter", 0))
+        self.OutputColumnDelimiter = int(xStep.get("output_column_delimiter", 0))
 
+        _desc = xStep.findtext("description", "")
+        self.Description = _desc if _desc is not None else ""
+
+        # FUNCTION
+        xFunc = xStep.find("function")
+        if xFunc is None:
+            raise Exception("ERROR: Step [%s] - function xml is empty or cannot be parsed.")
+        
+        self.FunctionXDoc = xFunc
+        self.FunctionName = xFunc.get("name", "")
+    
     @staticmethod
     def FromRow(dr, task):
         s = Step()
@@ -905,11 +878,11 @@ class Step(object):
             self.Description = ("" if not dr["step_desc"] else dr["step_desc"])
             self.Commented = (True if dr["commented"] == 1 else False)
             self.Locked = (True if dr["locked"] == 1 else False)
-            self.FunctionXML = ("" if not dr["function_xml"] else dr["function_xml"])
+            func_xml = ("" if not dr["function_xml"] else dr["function_xml"])
             #once parsed, it's cleaner.  update the object with the cleaner xml
-            if self.FunctionXML:
+            if func_xml:
                 try:
-                    self.FunctionXDoc = ET.fromstring(self.FunctionXML)
+                    self.FunctionXDoc = ET.fromstring(func_xml)
                     
                     # what's the output parse type?
                     self.OutputParseType = int(self.FunctionXDoc.get("parse_method", 0))
