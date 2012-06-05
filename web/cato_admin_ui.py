@@ -47,6 +47,33 @@ class announcement:
         else:
             return ""
 
+class getlicense:        
+    def GET(self):
+        license_text = """<p>
+                    Copyright 2012 Cloud Sidekick
+                </p>
+                <p>
+                    Use of this software indicates agreement with the included software LICENSE.
+                </p>
+                <p>
+                    The LICENSE can be found in the application directory where this Cloud Sidekick product is installed.
+                </p>"""
+        # the value will either be 'agreed' or ''
+        from settings import settings
+        license_status = settings.settings.get_application_setting("general/license_status")
+        if license_status == "agreed":
+            return ""
+        else:
+            # not agreed, return the LICENSE file.
+            filename = "%s/LICENSE" % base_path
+            with open(filename, 'r') as f_in:
+                if f_in:
+                    what_came_in = f_in.read()
+                    if what_came_in:
+                        return uiCommon.FixBreaks(uiCommon.SafeHTML(what_came_in))
+
+            return license_text
+            
 
 # the default page if no URI is given, just an information message
 class index:        
@@ -175,7 +202,17 @@ def auth_app_processor(handle):
     uiCommon.log_nouser("Serving %s" % path, 4)
     
     # requests that are allowed, no matter what
-    if path in ["/uiMethods/wmAttemptLogin", "/uiMethods/wmGetQuestion", "/logout", "/notAllowed", "/notfound", "/announcement", "/uiMethods/wmUpdateHeartbeat"]:
+    if path in [
+        "/uiMethods/wmAttemptLogin", 
+        "/uiMethods/wmGetQuestion", 
+        "/logout", 
+        "/notAllowed", 
+        "/notfound", 
+        "/announcement", 
+        "/getlicense", 
+        "/uiMethods/wmLicenseAgree", 
+        "/uiMethods/wmUpdateHeartbeat"
+        ]:
         return handle()
 
     # any other request requires an active session ... kick it out if there's not one.
@@ -390,7 +427,7 @@ def CacheMenu():
 if __name__ != "cato_admin_ui":
     #this is a service, which has a db connection.
     # but we're not gonna use that for gui calls - we'll make our own when needed.
-    server = catocommon.CatoService("admin_ui")
+    server = catocommon.CatoService("cato_admin_ui")
     server.startup()
 
     config = catocommon.read_config()
@@ -442,6 +479,7 @@ if __name__ != "cato_admin_ui":
         '/assetEdit', 'assetEdit',
         '/credentialEdit', 'credentialEdit',
         '/announcement', 'announcement',
+        '/getlicense', 'getlicense',
         '/upload', 'upload',
         '/settings', 'settings',
         '/temp/(.*)', 'temp',
