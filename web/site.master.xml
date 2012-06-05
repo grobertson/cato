@@ -58,8 +58,8 @@
 			</item>
 			<item label="Manage Clouds" icon="static/images/icons/clouds_24.png" onclick="showPleaseWait();" href="cloudEdit">
 			</item>
-			<item roles="developer" label="Cloud API Tester" icon="static/images/icons/api_tester_24.png" onclick="showPleaseWait();" href="cloudAPITester">
-			</item>
+			<!--<item roles="developer" label="Cloud API Tester" icon="static/images/icons/api_tester_24.png" onclick="showPleaseWait();" href="cloudAPITester">
+		</item>-->
 			<item roles="developer" label="Manage Settings" icon="static/images/icons/login_24.png" onclick="showPleaseWait();" href="settings">
 			</item>
 			<item roles="developer" label="Import a Backup File" icon="static/images/icons/import_24.png" onclick="showPleaseWait();" href="importObject">

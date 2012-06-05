@@ -13,6 +13,15 @@
 //limitations under the License.
 //
 $(document).ready(function () {
+    //was there a directive to show a specific module?  click it!
+    var module = getQuerystringVariable("module");
+    if (module != "") {
+        if ($("#" + module).length != 0) {
+            $("#" + module).addClass("group_tab_selected");
+		    $("#div_" + module + "_detail").removeClass("hidden");
+        }
+    }
+
     $(".group_tab").click(function () {
         //style tabs
         $(".group_tab").removeClass("group_tab_selected");
