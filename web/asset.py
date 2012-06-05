@@ -202,7 +202,7 @@ class Asset(object):
             # now it's inserted... lets get it back from the db as a complete object for confirmation.
             a = Asset()
             a.FromID(sAssetID)
-            a.RefreshTags()
+            a.RefreshTags(tags)
             return a, None
 
         except Exception, ex:
