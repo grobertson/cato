@@ -26,8 +26,10 @@ start_other_procs() {
     while [[ $count -lt ${#FULL_PROCS[*]} ]]; do
         PID=`ps -eafl | grep "${FULL_PROCS[$count]}$" | grep -v "grep"`
         if [ ! "$PID" ]; then
-            echo "Removing sessions..."
-        	rm -r sessions/*
+            if [ "$(ls -A ${CATO_HOME}/web/sessions)" ]; then
+                echo "Removing sessions..."
+                rm -r ${CATO_HOME}/web/sessions/*
+            fi
             echo "Starting ${FULL_PROCS[$count]}"
             nohup ${FULL_PROCS[$count]} >> ${FULL_LOGFILES[$count]} 2>&1 &
         else
