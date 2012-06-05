@@ -191,7 +191,7 @@ class CatoProcess():
         #if we're not redirecting stdout, all messages that come through here get sent there too
         if config.has_key("redirect_stdout"):
             if config["redirect_stdout"] == "false":
-                print output_string[:-2]
+                print output_string[:-1]
 
         # the file is always written
         fp = open(self.logfile_name, 'a')
