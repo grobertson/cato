@@ -153,44 +153,44 @@ function checkSyntax(syntax, strtocheck) {
 
     return "";
 }
-function validateAssetNameOrVar(name) {
-    //first, is it a variable?
-    if (name.indexOf('[') > -1 || name.indexOf(']') > -1) {
-        //someone typed a bracket, they must have meant for this to be a variable.  
-        //so, do the end braces match?
-        if (/\[\[.*]\]/.test(name)) {
-            return "";
-        }
-    }
-
-    //nope...
-
-    //will do some ajax here to test the name in the db since it isn't a [[var]]
-    var asset_id = "";
-
-    $.ajax({
-        async: false,
-        type: "POST",
-        url: "taskMethods.asmx/wmGetAssetIDFromName",
-        data: '{"sName":"' + name + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(retval) {
-            //the web method returned the ID if it exists.
-            if (retval.d != null)
-                asset_id = retval.d;
-        },
-        error: function(response) {
-            showAlert(response.responseText);
-            return "";
-        }
-    });
-
-    if (asset_id.length == 36)  //guids are 36 chars long
-        return "";
-
-    return "Entry must be a valid Asset Name, or a [[variable]].";
-}
+// function validateAssetNameOrVar(name) {
+    // //first, is it a variable?
+    // if (name.indexOf('[') > -1 || name.indexOf(']') > -1) {
+        // //someone typed a bracket, they must have meant for this to be a variable.  
+        // //so, do the end braces match?
+        // if (/\[\[.*]\]/.test(name)) {
+            // return "";
+        // }
+    // }
+// 
+    // //nope...
+// 
+    // //will do some ajax here to test the name in the db since it isn't a [[var]]
+    // var asset_id = "";
+// 
+    // $.ajax({
+        // async: false,
+        // type: "POST",
+        // url: "taskMethods.asmx/wmGetAssetIDFromName",
+        // data: '{"sName":"' + name + '"}',
+        // contentType: "application/json; charset=utf-8",
+        // dataType: "json",
+        // success: function(retval) {
+            // //the web method returned the ID if it exists.
+            // if (retval.d != null)
+                // asset_id = retval.d;
+        // },
+        // error: function(response) {
+            // showAlert(response.responseText);
+            // return "";
+        // }
+    // });
+// 
+    // if (asset_id.length == 36)  //guids are 36 chars long
+        // return "";
+// 
+    // return "Entry must be a valid Asset Name, or a [[variable]].";
+// }
 function validateVariable(name) {
     if (name.indexOf('[') > -1 || name.indexOf(']') > -1) {
         //someone typed a bracket, they must have meant for this to be a variable.  

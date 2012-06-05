@@ -209,9 +209,8 @@ function ExportEcotemplates() {
                 $("#hidSelectedArray").val("");
                 $("#export_dialog").dialog("close");
 
-                // clear the search field and fire a search click, should reload the grid
-                $("#ctl00_phDetail_txtSearch").val("");
-                $("#ctl00_phDetail_btnSearch").click();
+			    $("#txtSearch").val("");
+			   	GetItems();
 
                 hidePleaseWait();
 

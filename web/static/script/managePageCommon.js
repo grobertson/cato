@@ -39,42 +39,12 @@ $(document).ready(function () {
         //but don't crash if the page doesn't have it...
         if (window.ClearSelectedRows)
             ClearSelectedRows();
-
-        //put the page # in the hidden field
-        $("#ctl00_phDetail_hidPage").val($(this).attr("page"));
-        //and post the update panel
-        $("#ctl00_phDetail_btnGetPage").click();
     });
 
 
     // sorting the list
     $(".col_header").live("click", function () {
-    	//IMPORTANT!
-    	//usually, the first column is the "select all" checkbox.
-    	//we don't want it firing a post here, so exit if this contains a chkAll control.
-    	if ($(this).find("#chkAll").length > 0)
-    		return;
-    	
-        // ok how to determine the sort direction
-        // if the column clicked is the same as the last time
-        // then reverse the order
-        // if its a new column then its asc
-        var lastOrderColumn = $("#ctl00_phDetail_hidLastSortColumn").val();
-        //alert(lastOrderColumn + ":" + $(this).attr("sortcolumn"));
-        if (lastOrderColumn == $(this).attr("sortcolumn")) {
-            var lastOrderDirection = $("#ctl00_phDetail_hidSortDirection").val();
-            //alert(lastOrderDirection);
-            if (lastOrderDirection == "asc") {
-                $("#ctl00_phDetail_hidSortDirection").val("desc");
-            } else {
-                $("#ctl00_phDetail_hidSortDirection").val("asc");
-            }
-        } else {
-            $("#ctl00_phDetail_hidSortDirection").val("asc");
-        }
-        $("#ctl00_phDetail_hidLastSortColumn").val($(this).attr("sortcolumn"));
-        $("#ctl00_phDetail_hidSortColumn").val($(this).attr("sortcolumn"));
-        $("#ctl00_phDetail_btnSearch").click();
+		//may not be needed when we implement a sortable pagable grid.
     });
 
 
@@ -185,11 +155,6 @@ $(document).ready(function () {
 function ManagePageLoad() {
     initJtable(true, true);
 
-    // show the icon for any sorting
-    //this occurs on page load for any saved settings
-    //not part of initJtable because not all jTables are set up as sortable.
-	ShowSortIcon();
-
     //all the buttons are jQuery "button" widgets - enable them
     $("#clear_selected_btn").button({ icons: { primary: "ui-icon-refresh" }, text: false });
     $("#item_create_btn").button({ icons: { primary: "ui-icon-plus"} });
@@ -257,20 +222,5 @@ function IsInArray(myArray, searchString) {
         }
     } else {
         return myArray.indexOf(searchString);
-    }
-}
-
-function ShowSortIcon() {
-    var sortColumn = $("#ctl00_phDetail_hidSortColumn").val();
-    if (sortColumn != "") {
-		var $th = $(".jtable [sortcolumn='" + sortColumn + "']");
-		if ($th.length > 0)
-		{
-         	if ($("#ctl00_phDetail_hidSortDirection").val() == "asc") {
-            	$th.remove("img").prepend("<img src='static/images/UpArrow.gif' />");
-        	} else {
-            	$th.remove("img").prepend("<img src='static/images/DnArrow.gif' />");
-        	}
-    	}
     }
 }
