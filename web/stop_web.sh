@@ -16,7 +16,7 @@ if [ -z "$CATO_HOME" ]; then
 fi
 
 # All other processes go here.  No process should be in both sections though.
-FULL_PROCS[0]="$CATO_HOME/web/uiMain.py"
+FULL_PROCS[0]="$CATO_HOME/web/cato_admin_ui.py"
 
 count=0
 while [[ $count -lt ${#FULL_PROCS[*]} ]]; do

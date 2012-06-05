@@ -175,8 +175,8 @@ class CatoProcess():
         # logfiles go where defined in cato.conf, but in the base_path if not defined
         self.logfiles_path = (config["logfiles"] if config["logfiles"] else os.path.join(base_path, "logfiles"))
         self.logfile_name = os.path.join(self.logfiles_path,  self.process_name.lower()+".log")
-        #sys.stderr = open(self.logfile_name, 'a')
-        #sys.stdout = open(self.logfile_name, 'a')
+        sys.stderr = open(self.logfile_name, 'a', 1)
+        sys.stdout = open(self.logfile_name, 'a', 1)
 
     def output(self,*args):
         output_string = time.strftime("%Y-%m-%d %H:%M:%S ") + "".join(str(s) for s in args) + "\n"
