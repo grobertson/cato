@@ -34,10 +34,11 @@ var d = '<!-- This is the popup error message dialog template.  -->' +
     '<!-- This is the popup "about" dialog. -->' +
     '<div id="about_dialog" title="About Cato" class="ui-state-highlight">' +
     '<p>' +
-    '    <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 50px 0;"></span>' +
+    '    <span class="ui-icon ui-icon-info" style="float: left; margin: 0 7px 0px 0;"></span>' +
     '    <span id="app_name">Cloud Sidekick Cato</span><br /><br />' +
     '    <b>On the Web: </b><span id="app_web">http://www.cloudsidekick.com</span><br /><br />' +
     '    <b>Version: </b><span id="app_version"></span><br />' +
+    '    <b>Database: </b><span id="db_info"></span><br />' +
     '<br /><br />Copyright © Cloud Sidekick 2012. All Rights Reserved.' +
     '</p>' +
     '<br />' +

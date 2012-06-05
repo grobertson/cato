@@ -158,6 +158,15 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)    
             
+    def wmGetDBInfo(self):
+        try:
+            if uiGlobals.config.has_key("server"):
+                return uiGlobals.config["server"]
+            else:
+                return "Unknown"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
     def wmGetVersion(self):
         try:
             if uiGlobals.config.has_key("version"):

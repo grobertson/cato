@@ -164,6 +164,7 @@ $(document).ready(function () {
 
 function showAbout() {
 	$("#app_version").load("uiMethods/wmGetVersion");
+	$("#db_info").load("uiMethods/wmGetDBInfo");
 	$('#about_dialog').dialog('open');
 }
 //This function shows the error dialog.
