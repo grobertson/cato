@@ -109,11 +109,11 @@ $(document).ready(function () {
 
             $.ajax({
                 type: "POST",
-                url: "cloudAccountEdit.aspx/DeleteKeyPair",
+                url: "cloudMethods/wmDeleteKeyPair",
                 data: '{"sKeypairID":"' + kpid + '"}',
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
+                dataType: "text",
+                success: function (response) {
                     $("#kp_" + kpid).remove();
                     $("#update_success_msg").text("Delete Successful").fadeOut(2000);
                 },
@@ -540,12 +540,12 @@ function SaveKeyPair() {
 
     $.ajax({
         type: "POST",
-        url: "cloudAccountEdit.aspx/SaveKeyPair",
-        data: "{'sKeypairID' : '" + kpid + "','sAccountID' : '" + account_id + "','sName' : '" + name + "','sPK' : '" + pk + "','sPP' : '" + pp + "'}",
+        url: "cloudMethods/wmSaveKeyPair",
+        data: '{"sKeypairID" : "' + kpid + '","sAccountID" : "' + account_id + '","sName" : "' + name + '","sPK" : "' + pk + '","sPP" : "' + pp + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            if (msg.d == "") {
+        dataType: "text",
+        success: function (response) {
+            if (response == "") {
                 if (kpid) {
                     //find the label and update it
                     $("#kp_" + kpid + " .keypair_label").html(name);
@@ -557,7 +557,7 @@ function SaveKeyPair() {
                 $("#keypair_dialog").dialog("close");
             }
             else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {
