@@ -405,6 +405,10 @@ class Task(object):
                         return False, "There is an ID or Name/Version conflict, and the on_conflict directive isn't a valid option. (replace/major/minor/cancel)"
             else:
                 #the default action is to ADD the new task row... nothing
+                parameter_clause = " '',"
+                if self.ParameterXDoc is not None:
+                    parameter_clause = " '" + catocommon.tick_slash(ET.tostring(self.ParameterXDoc)) + "',"
+                    
                 sSQL = "insert task" \
                     " (task_id, original_task_id, version, default_version," \
                     " task_name, task_code, task_desc, task_status, parameter_xml, created_dt)" \
@@ -416,7 +420,7 @@ class Task(object):
                     " '" + catocommon.tick_slash(self.Code) + "'," \
                     " '" + catocommon.tick_slash(self.Description) + "'," \
                     " '" + self.Status + "'," \
-                    " '" + catocommon.tick_slash(ET.tostring(self.ParameterXDoc)) + "'," \
+                    + parameter_clause +  \
                     " now())"
                 if not db.tran_exec_noexcep(sSQL):
                     return False, db.error
@@ -430,23 +434,24 @@ class Task(object):
                     return False, db.error
 
                 #and steps
-                order = 1
-                for s in c.Steps.itervalues():
-                    sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
-                        " commented, locked," \
-                        " function_name, function_xml)" \
-                        " values ('" + s.ID + "'," \
-                        "'" + self.ID + "'," \
-                        "'" + s.Codeblock + "'," \
-                        + str(order) + "," \
-                        " " + ("1" if s.Commented else "0") + "," \
-                        "0," \
-                        "'" + s.FunctionName + "'," \
-                        "'" + catocommon.tick_slash(ET.tostring(s.FunctionXDoc)) + "'" \
-                        ")"
-                    if not db.tran_exec_noexcep(sSQL):
-                        return False, db.error
-                    order += 1
+                if c.Steps:
+                    order = 1
+                    for s in c.Steps.itervalues():
+                        sSQL = "insert into task_step (step_id, task_id, codeblock_name, step_order," \
+                            " commented, locked," \
+                            " function_name, function_xml)" \
+                            " values ('" + s.ID + "'," \
+                            "'" + self.ID + "'," \
+                            "'" + s.Codeblock + "'," \
+                            + str(order) + "," \
+                            " " + ("1" if s.Commented else "0") + "," \
+                            "0," \
+                            "'" + s.FunctionName + "'," \
+                            "'" + catocommon.tick_slash(ET.tostring(s.FunctionXDoc)) + "'" \
+                            ")"
+                        if not db.tran_exec_noexcep(sSQL):
+                            return False, db.error
+                        order += 1
 
             if bLocalTransaction:
                 db.tran_commit()
