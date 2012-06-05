@@ -192,6 +192,7 @@ class Asset(object):
             "'" + sCredentialID + "'" \
             ")"
             if not db.tran_exec_noexcep(sSQL):
+                print db.error
                 if db.error == "key_violation":
                     return None, "Asset Name '" + sAssetName + "' already in use, choose another."
                 else: 
@@ -258,7 +259,10 @@ class Asset(object):
                 " credential_id = '" + self.CredentialID + "'" \
                 " where asset_id = '" + self.ID + "'"
             if not db.tran_exec_noexcep(sSQL):
-                return False, db.error
+                if db.error == "key_violation":
+                    return None, "Asset Name '" + self.Name + "' already in use, choose another."
+                else: 
+                    return None, db.error
 
             db.tran_commit()
 

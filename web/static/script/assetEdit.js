@@ -376,8 +376,6 @@ function SaveAsset() {
 		                CloseDialog();
 			            GetItems();
 		            }
-		        } else {
-		            showInfo(response);
 		        }
 			},
 			error : function(response) {
@@ -402,8 +400,6 @@ function SaveAsset() {
 				if (response.ID) {
 	                CloseDialog();
 		            GetItems();
-		        } else {
-		            showInfo(response);
 		        }
 			},
 			error : function(response) {
