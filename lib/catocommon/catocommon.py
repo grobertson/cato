@@ -175,12 +175,25 @@ class CatoProcess():
         # logfiles go where defined in cato.conf, but in the base_path if not defined
         self.logfiles_path = (config["logfiles"] if config["logfiles"] else os.path.join(base_path, "logfiles"))
         self.logfile_name = os.path.join(self.logfiles_path,  self.process_name.lower()+".log")
+
+        #stdout/stderr brute force interception can be optionally overridden.
+        if config.has_key("redirect_stdout"):
+            if config["redirect_stdout"] == "false":
+                # we'll just return before it can get redirected
+                return
+
         sys.stderr = open(self.logfile_name, 'a', 1)
         sys.stdout = open(self.logfile_name, 'a', 1)
 
     def output(self,*args):
         output_string = time.strftime("%Y-%m-%d %H:%M:%S ") + "".join(str(s) for s in args) + "\n"
-        #print output_string 
+
+        #if we're not redirecting stdout, all messages that come through here get sent there too
+        if config.has_key("redirect_stdout"):
+            if config["redirect_stdout"] == "false":
+                print output_string[:-2]
+
+        # the file is always written
         fp = open(self.logfile_name, 'a')
         fp.write(output_string)
         fp.close
