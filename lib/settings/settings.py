@@ -312,6 +312,14 @@ class settings(object):
             
             db = catocommon.new_conn()
             sxml = db.select_col_noexcep(sSQL)
+            # if there's no settings xml row, insert it
+            if not sxml:
+                sSQL = "delete from application_settings"
+                db.exec_db_noexcep(sSQL)
+                sSQL = "insert into application_settings (id, setting_xml) values (1, '<settings />')"
+                db.exec_db_noexcep(sSQL)
+                sxml = "<settings />"
+                
             if sxml:
                 xdoc = ET.fromstring(sxml)
                 if xdoc is not None:
