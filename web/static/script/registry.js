@@ -25,7 +25,7 @@ $(document).ready(function () {
         $("#reg_edit_dialog_encrypt").removeAttr("checked")
 
         //if the value is our (empty) or (********) encrypt placeholders, show an empty dialog
-        var value = ($(this).html() == "(empty)" ? "" : ($(this).html() == "(********)" ? "" : $(this).html()));
+        var value = ($(this).text() == "(empty)" ? "" : ($(this).text() == "(********)" ? "" : $(this).text()));
 
         //is this node masked?  if so, check the box
         if ($(this).attr("encrypt") == "true")
@@ -43,8 +43,8 @@ $(document).ready(function () {
             $("#reg_edit_dialog_value").focus();
         }
         if (updatetype == "node") {
-            $("#reg_add_dialog_name").val($(this).html());
-            $("#reg_add_dialog_oldname").val($(this).html());
+            $("#reg_add_dialog_name").val($(this).text());
+            $("#reg_add_dialog_oldname").val($(this).text());
 
             $("#reg_add_dialog").dialog("open");
             $("#reg_add_dialog_name").focus();
@@ -69,8 +69,8 @@ $(document).ready(function () {
         var type = $("#reg_type").val();
         if (type == "global") var objectid = "global";
         if (type == "asset") var objectid = $("#hidCurrentEditID").val();
-        if (type == "task") var objectid = $("#ctl00_phDetail_hidOriginalTaskID").val();
-        if (type == "ecosystem") var objectid = $("#ctl00_phDetail_hidEcosystemID").val();
+        if (type == "task") var objectid = $("#hidOriginalTaskID").val();
+        if (type == "ecosystem") var objectid = g_eco_id;
         GetRegistry(objectid);
     });
 
@@ -115,23 +115,31 @@ function DeleteRegistryItem(id, xpath) {
     var type = $("#reg_type").val();
     if (type == "global") var objectid = "global";
     if (type == "asset") var objectid = $("#hidCurrentEditID").val();
-    if (type == "task") var objectid = $("#ctl00_phDetail_hidOriginalTaskID").val();
-    if (type == "ecosystem") var objectid = $("#ctl00_phDetail_hidEcosystemID").val();
+    if (type == "task") var objectid = $("#hidOriginalTaskID").val();
+    if (type == "ecosystem") var objectid = g_eco_id;
 
     $("#update_success_msg").text("Deleting...").show();
 
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmDeleteRegistryNode",
+        url: "uiMethods/wmDeleteRegistryNode",
         data: '{"sObjectID":"' + objectid + '", "sXPath":"' + xpath + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            $("#update_success_msg").text("Delete Successful").fadeOut(2000);
-
-            //after commit, whack that section
-            $("#" + id).remove();
+        success: function (response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.result) {
+	            $("#update_success_msg").text("Delete Successful").fadeOut(2000);
+	
+	            //after commit, reget everything (xpath indexes may have changed)
+	            GetRegistry(objectid);
+	        }
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -148,8 +156,8 @@ function AddRegistryItem() {
     var type = $("#reg_type").val();
     if (type == "global") var objectid = "global";
     if (type == "asset") var objectid = $("#hidCurrentEditID").val();
-    if (type == "task") var objectid = $("#ctl00_phDetail_hidOriginalTaskID").val();
-    if (type == "ecosystem") var objectid = $("#ctl00_phDetail_hidEcosystemID").val();
+    if (type == "task") var objectid = $("#hidOriginalTaskID").val();
+    if (type == "ecosystem") var objectid = g_eco_id;
 
     if (name == "") {
         alert("Name is required.");
@@ -162,15 +170,23 @@ function AddRegistryItem() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmAddRegistryNode",
+        url: "uiMethods/wmAddRegistryNode",
         data: '{"sObjectID":"' + objectid + '","sXPath":"' + xpath + '","sName":"' + name + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            //after commit, reget the whole registry
-            $("#update_success_msg").text("Add Successful...").fadeOut(2000);
-            GetRegistry(objectid);
-            $("#reg_add_dialog").dialog("close");
+        success: function (response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.result) {
+	            //after commit, reget the whole registry
+	            $("#update_success_msg").text("Add Successful...").fadeOut(2000);
+	            GetRegistry(objectid);
+	            $("#reg_add_dialog").dialog("close");
+	        }
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -187,8 +203,8 @@ function SaveRegistryValue() {
     var type = $("#reg_type").val();
     if (type == "global") var objectid = "global";
     if (type == "asset") var objectid = $("#hidCurrentEditID").val();
-    if (type == "task") var objectid = $("#ctl00_phDetail_hidOriginalTaskID").val();
-    if (type == "ecosystem") var objectid = $("#ctl00_phDetail_hidEcosystemID").val();
+    if (type == "task") var objectid = $("#hidOriginalTaskID").val();
+    if (type == "ecosystem") var objectid = g_eco_id;
 
     var value = $("#reg_edit_dialog_value").val();
     var encrypt = ($("#reg_edit_dialog_encrypt").attr("checked") == "checked" ? 1 : 0);
@@ -199,20 +215,28 @@ function SaveRegistryValue() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmUpdateRegistryValue",
-        data: '{"sObjectID":"' + objectid + '","sXPath":"' + xpath + '","sValue":"' + value + '","sEncrypt":"' + encrypt + '"}',
+        url: "uiMethods/wmUpdateRegistryValue",
+        data: '{"sObjectID":"' + objectid + '","sXPath":"' + xpath + '","sValue":"' + packJSON(value) + '","sEncrypt":"' + encrypt + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            //after commit, update the node with the new value
-            if (encrypt == 1)
-                value = "(********)";
-
-            $('#' + id).html(value);
-
-            $("#reg_edit_dialog").dialog("close");
+        success: function (response) {
+			if (response.error) {
+				showAlert(response.error);
+			}
+			if (response.info) {
+				showInfo(response.info);
+			}
+			if (response.result) {
+	            $("#update_success_msg").text("Update Successful").fadeOut(2000);
+	
+	            //after commit, update the node with the new value
+	            if (encrypt == 1)
+	                value = "(********)";
+	
+	            $('#' + id).html(value);
+	
+	            $("#reg_edit_dialog").dialog("close");
+			}
         },
         error: function (response) {
             $("#update_success_msg").fadeOut(2000);
@@ -229,8 +253,8 @@ function SaveRegistryNode() {
     var type = $("#reg_type").val();
     if (type == "global") var objectid = "global";
     if (type == "asset") var objectid = $("#hidCurrentEditID").val();
-    if (type == "task") var objectid = $("#ctl00_phDetail_hidOriginalTaskID").val();
-    if (type == "ecosystem") var objectid = $("#ctl00_phDetail_hidEcosystemID").val();
+    if (type == "task") var objectid = $("#hidOriginalTaskID").val();
+    if (type == "ecosystem") var objectid = g_eco_id;
 
     var oldname = $("#reg_add_dialog_oldname").val();
     var name = $("#reg_add_dialog_name").val();
@@ -246,11 +270,11 @@ function SaveRegistryNode() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "uiMethods.asmx/wmRenameRegistryNode",
+        url: "uiMethods/wmRenameRegistryNode",
         data: '{"sObjectID":"' + objectid + '","sXPath":"' + xpath + '","sOldName":"' + oldname + '","sNewName":"' + name + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
+        success: function (response) {
             $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
             //after commit, update the node with the new name
@@ -282,12 +306,12 @@ function ClearRegistrySelection() {
 function GetRegistry(sObjectID) {
     $.ajax({
         type: "POST",
-        url: "uiMethods.asmx/wmGetRegistry",
+        url: "uiMethods/wmGetRegistry",
         data: '{"sObjectID":"' + sObjectID + '"}',
         contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#registry_content").html(retval.d);
+        dataType: "html",
+        success: function (response) {
+            $("#registry_content").html(response);
         },
         error: function (response) {
             showAlert(response.responseText);
