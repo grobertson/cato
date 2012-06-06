@@ -238,7 +238,7 @@ function doGetDebug() {
 					$("#debug_last_run").show();
 				}
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {
