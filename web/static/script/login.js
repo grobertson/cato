@@ -25,6 +25,7 @@ $(document).ready(function () {
         $("#loginerror").show();
     } else {
         $("#error_msg").text("");
+        $("#loginerror").hide();
     }
     
 	$("#username").keypress(function(e) {
@@ -92,11 +93,11 @@ $(document).ready(function () {
 	        dataType: "json",
 	        success: function (response) {
 				if (response.error) {
-					$("#error_msg").html(response.error);
+					$("#error_msg").html(response.error).parent().show();
 					reset();
 				}
 				if (response.info) {
-					$("#error_msg").html(response.info);
+					$("#error_msg").html(response.info).parent().show();
 					reset();
 				}
 				if (response.result) {
@@ -105,7 +106,7 @@ $(document).ready(function () {
 				}
 	        },
 	        error: function (response) {
-	            $("#error_msg").html(response.responseText);
+	            $("#error_msg").html(response.responseText).parent().show();
 	        }
 	    });
  	});
@@ -136,10 +137,13 @@ function Agree() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {
-			location.href = "login.html"
+        	// agreement!  Hide the license.  Show the login panel.
+			$("#loginerror").hide();
+			$("#loginpanel").show();
+			$("#licensepanel").hide();
         },
         error: function (response) {
-            $("#error_msg").html(response.responseText);
+            $("#error_msg").html(response.responseText).parent().show();
         }
     });
 }
@@ -165,11 +169,11 @@ function Login() {
         dataType: "json",
         success: function (response) {
 			if (response.error) {
-				$("#error_msg").html(response.error);
+				$("#error_msg").html(response.error).parent().show();
 				reset();
 			}
 			if (response.info) {
-				$("#error_msg").html(response.info);
+				$("#error_msg").html(response.info).parent().show();
 				reset();
 			}
 			if (response.result) {
@@ -184,7 +188,7 @@ function Login() {
 			}
         },
         error: function (response) {
-            $("#error_msg").html(response.responseText);
+            $("#error_msg").html(response.responseText).parent().show();
         }
     });
 }

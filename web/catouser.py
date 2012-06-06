@@ -144,7 +144,7 @@ class User(object):
                 self.SettingsXML = ("" if not dr["settings_xml"] else dr["settings_xml"])
 
             else: 
-                print "Unable to build User object. Either no Users are defined, or no User with ID [" + user_id + "] could be found."
+                print "Unable to build User object. Either no Users are defined, or no User with ID/Login [%s%s] could be found." % (user_id, login_id)
         except Exception, ex:
             raise Exception(ex)
         finally:
@@ -171,7 +171,7 @@ class User(object):
 
             self.PopulateUser(login_id=login_id)
             if not self.ID:
-                print "User.Authenticate : Unable to find user record for id [%s]" % login_id
+                print "User.Authenticate : Unable to find user record for [%s]." % login_id
                 return False, ""
             
             # These checks happen BEFORE we verify the password
