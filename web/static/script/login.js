@@ -24,7 +24,6 @@ $(document).ready(function () {
         $("#error_msg").text(msg);
         $("#loginerror").show();
     } else {
-        $("#loginerror").hide();
         $("#error_msg").text("");
     }
     

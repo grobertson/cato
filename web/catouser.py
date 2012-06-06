@@ -171,6 +171,7 @@ class User(object):
 
             self.PopulateUser(login_id=login_id)
             if not self.ID:
+                print "User.Authenticate : Unable to find user record for id [%s]" % login_id
                 return False, ""
             
             # These checks happen BEFORE we verify the password
@@ -182,7 +183,7 @@ class User(object):
             # Check failed login attempts against the security policy
             if self.FailedLoginAttempts and sset.PassMaxAttempts:
                 if self.FailedLoginAttempts >= sset.PassMaxAttempts:
-                    print "Invalid login attempt - excessive failures."
+                    print "User.Authenticate : Invalid login attempt - excessive failures."
                     return False, "failures"
             
             # TODO - check if the account is expired 
@@ -211,7 +212,7 @@ class User(object):
                     sql = "update users set failed_login_attempts=failed_login_attempts+1 where user_id='%s'" % self.ID
                     if not db.exec_db_noexcep(sql):
                         print db.error
-                    print "Invalid login attempt - [%s] wrong security question answer." % (login_id)
+                    print "User.Authenticate : Invalid login attempt - [%s] wrong security question answer." % (login_id)
                     return False, "Incorrect security answer."
             
             
@@ -226,7 +227,7 @@ class User(object):
                     sql = "update users set failed_login_attempts=failed_login_attempts+1 where user_id='%s'" % self.ID
                     if not db.exec_db_noexcep(sql):
                         print db.error
-                    print "Invalid login attempt - [%s] bad password." % (login_id)
+                    print "User.Authenticate : Invalid login attempt - [%s] bad password." % (login_id)
                     return False, ""
 
             # TODO:
@@ -261,6 +262,7 @@ class User(object):
         
             return True, ""
         except Exception, ex:
+            print ex.__str__()
             return False, ex.__str__()
         finally:
             db.close()        
