@@ -162,6 +162,9 @@ class uiMethods:
             result, err = settings.settings.set_application_setting("general", "license_status", "agreed")
             if not result:
                 return err
+            result, err = settings.settings.set_application_setting("general", "license_datetime", datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
+            if not result:
+                return err
             
             return ""
             
@@ -195,11 +198,10 @@ class uiMethods:
             if user_role == "Administrator":
                 items = []
                 regstatus = sset.get_application_setting("general/register_cato")
-                if regstatus:
-                    if regstatus not in "skipped,registered":
-                        items.append("Register Cato to receive updates about the latest versions, plus the latest news and Community support.")
-                        sHTML += self.DrawGettingStartedItem("registercato", "Register Cato", items, 
-                             "<a href=\"#\" onclick=\"registerCato();\">Click here</a> to register Cato.<br /><a href=\"#\" id=\"skip_registration_btn\">Click here</a> to skip registering and hide this message.")
+                if regstatus not in ["skipped","registered"]:
+                    items.append("Register Cato to receive updates about the latest versions, plus the latest news and Community support.")
+                    sHTML += self.DrawGettingStartedItem("registercato", "Register Cato", items, 
+                         "<a href=\"#\" onclick=\"registerCato();\">Click here</a> to register Cato.<br /><a href=\"#\" id=\"skip_registration_btn\">Click here</a> to skip registering and hide this message.")
 
 
                 items = []
@@ -1649,4 +1651,4 @@ class uiMethods:
             return result
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
-            
+
