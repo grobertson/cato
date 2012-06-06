@@ -241,14 +241,18 @@ def PrepareAndEncryptParameterXML(sParameterXML):
             #  b) moving any oev values from an attribute to a value
             
             #  a) encrypt new values
-            for xToEncrypt in xDoc.findall("parameter/values/value[@do_encrypt='true']"):
-                xToEncrypt.text = CatoEncrypt(xToEncrypt.text)
-                del xToEncrypt.attrib["do_encrypt"]
+            for xToEncrypt in xDoc.findall("parameter/values/value"):
+                encrypt = xToEncrypt.get("do_encrypt", "")
+                if encrypt == "true":
+                    xToEncrypt.text = CatoEncrypt(xToEncrypt.text)
+                    del xToEncrypt.attrib["do_encrypt"]
     
             # b) unbase64 any oev's and move them to values
-            for xToEncrypt in xDoc.findall("parameter/values/value[@oev='true']"):
-                xToEncrypt.text = unpackJSON(xToEncrypt.text)
-                del xToEncrypt.attrib["oev"]
+            for xToEncrypt in xDoc.findall("parameter/values/value"):
+                oev = xToEncrypt.get("oev", "")
+                if oev == "true":
+                    xToEncrypt.text = unpackJSON(xToEncrypt.text)
+                    del xToEncrypt.attrib["oev"]
             
             return ET.tostring(xDoc)
         else:
