@@ -460,20 +460,6 @@ $(document).ready(function() {
 
 });
 
-/*
-NOTE: There is a common issue with async postbacks and jQuery.
-It's commonly called the "ASP.NET jQuery postback problem"
-see:
-http://blog.dreamlabsolutions.com/post/2009/03/25/jQuery-live-and-ASPNET-Ajax-asynchronous-postback.aspx
-http://blog.dreamlabsolutions.com/post/2009/02/24/jQuery-document-ready-and-ASP-NET-Ajax-asynchronous-postback.aspx
-
-For 'bindings' in jquery, use the 'live' event.  (clicks, hovers, etc.)
-
-BUT, for initializing UI components that are dynamic, you can't.  (Because this is init code, not bindings.)
-
-So, we do those inits in the pageLoad function.
-*/
-
 function pageLoad() {
     //do this here until (if) the codeblock click gets the full step list via ajax
     initSortable();

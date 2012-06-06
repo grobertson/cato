@@ -22,9 +22,9 @@ $(document).ready(function () {
     msg = urldecode(msg);
     if (msg) {
         $("#error_msg").text(msg);
-        $(".loginerror").show();
+        $("#loginerror").show();
     } else {
-        $(".loginerror").hide();
+        $("#loginerror").hide();
         $("#error_msg").text("");
     }
     
@@ -112,9 +112,38 @@ $(document).ready(function () {
  	});
 
 	// get the welcome message
-	$("#ltAnnouncement").load("../announcement");
+	$("#announcement").load("../announcement");
+
+	// check the license.  If it's been agreed to, business as usual.
+	// if not, we must present the license file.
+	$.get("../getlicense", function(data) {
+		if (data !="") {
+			$("#licensetext").html(data);
+			$("#loginerror").hide();
+			$("#loginpanel").hide();
+			$("#licensepanel").show();
+		}
+	}, "text");
+
+	$("#license_agree_btn").click(function() { Agree();	});
 
 });
+
+function Agree() {
+    $.ajax({
+        type: "POST",
+        url: "../uiMethods/wmLicenseAgree",
+        data: '',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+			location.href = "login.html"
+        },
+        error: function (response) {
+            $("#error_msg").html(response.responseText);
+        }
+    });
+}
 
 function Login() {
 	if ($("#username").val() == "")

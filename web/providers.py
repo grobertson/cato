@@ -59,7 +59,7 @@ class CloudProviders(dict):
                         else:
                             # DO NOT raise an exception here - user defined clouds are not required.
                             # but print a warning
-                            print "Cloud Providers XML: Warning - Provider [%s] allows user defined Clouds, but none exist in the database."
+                            print "Cloud Providers XML: Warning - Provider [%s] allows user defined Clouds, but none exist in the database." % pv.Name
                     
                     #get the cloudobjecttypes for this provider.                    
                     xProducts = xProvider.findall("products/product")

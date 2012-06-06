@@ -148,8 +148,18 @@ class uiMethods:
             setting = uiCommon.getAjaxArg("sSetting")
             value = uiCommon.getAjaxArg("sValue")
 
-            sset = settings.settings()
-            result, err = sset.set_application_setting(category, setting, value)
+            result, err = settings.settings.set_application_setting(category, setting, value)
+            if not result:
+                return err
+            
+            return ""
+            
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)    
+            
+    def wmLicenseAgree(self):
+        try:
+            result, err = settings.settings.set_application_setting("general", "license_status", "agreed")
             if not result:
                 return err
             

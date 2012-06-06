@@ -3045,9 +3045,9 @@ class taskMethods:
                 if os.path.exists(logfile):
                     if os.path.getsize(logfile) > 20971520: # 20 meg is a pretty big logfile for the browser.
                         return uiCommon.packJSON("Logfile is too big to view in a web browser.")
-                    f = open(logfile, 'r')
-                    if f:
-                        return uiCommon.packJSON(f.read())
+                    with open(logfile, 'r') as f:
+                        if f:
+                            return uiCommon.packJSON(f.read())
             
             return uiCommon.packJSON("Unable to read logfile. [%s]" % logfile)
         except Exception, ex:

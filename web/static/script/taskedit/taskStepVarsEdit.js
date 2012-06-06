@@ -681,21 +681,3 @@ function doUpdate() {
     });
 
 }
-
-function getVars() {
-    step_id = $("#step_var_edit_dialog #hidStepID").val();
-    $.ajax({
-        async: true,
-        type: "POST",
-        url: "taskStepVarsEdit.aspx/wmGetVars",
-        data: '{"sStepID":"' + step_id + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            $("#edit_variables").replaceWith(retval.d);
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
-}

@@ -575,3 +575,80 @@ class cloudMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
             return traceback.format_exc()
+
+    def wmSaveKeyPair(self):
+        try:
+            sKeypairID = uiCommon.getAjaxArg("sKeypairID")
+            sAccountID = uiCommon.getAjaxArg("sAccountID")
+            sName = uiCommon.getAjaxArg("sName")
+            sPK = uiCommon.getAjaxArg("sPK")
+            sPP = uiCommon.getAjaxArg("sPP")
+
+            if not sName:
+                return "KeyPair Name is Required."
+    
+            sPK = uiCommon.unpackJSON(sPK)
+    
+            bUpdatePK = False
+            if sPK:
+                bUpdatePK = True
+    
+            bUpdatePP = False
+            if sPP and sPP != "!2E4S6789O":
+                bUpdatePP = True
+    
+    
+            if not sKeypairID:
+                # empty id, it's a new one.
+                sPKClause = ""
+                if bUpdatePK:
+                    sPKClause = "'" + catocommon.cato_encrypt(sPK) + "'"
+
+                sPPClause = "null"
+                if bUpdatePP:
+                    sPPClause = "'" + catocommon.cato_encrypt(sPP) + "'"
+
+                sSQL = "insert into cloud_account_keypair (keypair_id, account_id, keypair_name, private_key, passphrase)" \
+                    " values ('" + catocommon.new_guid() + "'," \
+                    "'" + sAccountID + "'," \
+                    "'" + sName.replace("'", "''") + "'," \
+                    + sPKClause + "," \
+                    + sPPClause + \
+                    ")"
+            else:
+                sPKClause = ""
+                if bUpdatePK:
+                    sPKClause = ", private_key = '" + catocommon.cato_encrypt(sPK) + "'"
+
+                sPPClause = ""
+                if bUpdatePP:
+                    sPPClause = ", passphrase = '" + catocommon.cato_encrypt(sPP) + "'"
+
+                sSQL = "update cloud_account_keypair set" \
+                    " keypair_name = '" + sName.replace("'", "''") + "'" \
+                    + sPKClause + sPPClause + \
+                    " where keypair_id = '" + sKeypairID + "'"
+
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log(self.db.error)
+                return self.db.error
+
+            return ""
+        
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+            return traceback.format_exc()
+
+    def wmDeleteKeyPair(self):
+        try:
+            sKeypairID = uiCommon.getAjaxArg("sKeypairID")
+            
+            sSQL = "delete from cloud_account_keypair where keypair_id = '" + sKeypairID + "'"
+            if not self.db.exec_db_noexcep(sSQL):
+                uiCommon.log(self.db.error)
+                return self.db.error
+
+            return ""
+
+        except Exception:
+            uiCommon.log(traceback.format_exc())
