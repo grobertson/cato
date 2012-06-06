@@ -2281,13 +2281,10 @@ class taskMethods:
                     sHTML += "</span></div>"
 
                     sHTML += "<div class=\"step_header_icons\">"
-                    sHTML += "<img class=\"parameter_help_btn pointer trans50\"" \
-                        " src=\"static/images/icons/info.png\" alt=\"\" style=\"width: 12px; height: 12px;\"" \
-                        " title=\"" + sDesc.replace("\"", "") + "\" />"
+                    sHTML += "<span class=\"ui-icon ui-icon-info forceinline parameter_help_btn\" title=\"" + sDesc.replace("\"", "") + "\"></span>"
 
                     if bEditable:
-                        sHTML += "<img class=\"parameter_remove_btn pointer\" remove_id=\"" + sPID + "\"" \
-                            " src=\"static/images/icons/fileclose.png\" alt=\"\" style=\"width: 12px; height: 12px;\" />"
+                        sHTML += "<span class=\"ui-icon ui-icon-close forceinline parameter_remove_btn pointer\" remove_id=\"" + sPID + "\"></span>"
 
                     sHTML += "</div>"
                     sHTML += "</div>"
