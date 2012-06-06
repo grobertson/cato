@@ -51,11 +51,13 @@ mkdir -p $DEPLOY_DIR/web
 mkdir -p $DEPLOY_DIR/services
 mkdir -p $DEPLOY_DIR/lib
 mkdir -p $DEPLOY_DIR/conf
+mkdir -p $DEPLOY_DIR/util
 
 rsync -aq conf/default.cato.conf $DEPLOY_DIR/conf
-rsync -aq conf/setup_conf $DEPLOY_DIR/conf
+rsync -aq conf/catoencrypt $DEPLOY_DIR/conf
 rsync -aq conf/cloud_providers.xml $DEPLOY_DIR/conf
 rsync -aq database/* $DEPLOY_DIR/conf/data
+rsync -aq util/* $DEPLOY_DIR/util
 
 # not needed in here any more, now in cato/lib
 # rsync -aq lib/catocryptpy/* $DEPLOY_DIR/conf/catocryptpy
@@ -64,6 +66,8 @@ rsync -aq database/* $DEPLOY_DIR/conf/data
 rsync -q NOTICE $DEPLOY_DIR/
 rsync -q LICENSE $DEPLOY_DIR/
 rsync -q VERSION $DEPLOY_DIR/
+rsync -q TODO $DEPLOY_DIR/
+rsync -q README $DEPLOY_DIR/
 
 rsync -aq lib/* $DEPLOY_DIR/lib
 
