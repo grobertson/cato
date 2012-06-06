@@ -32,5 +32,5 @@ def encrypt_vals(value, key=""):
     return enc_value
 
 value = sys.argv[1]
-key = sys.argv[1]
+key = sys.argv[2]
 print encrypt_vals(value, key)
