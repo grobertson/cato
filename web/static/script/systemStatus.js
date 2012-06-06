@@ -21,6 +21,41 @@ $(document).ready(function () {
 		ShowLogViewDialog('', '', true);
     });
     
+    $("#logfile_dialog").dialog({
+        autoOpen: false,
+        height: 600,
+        width: 850,
+        bgiframe: true,
+        buttons: {
+            OK: function () {
+                $(this).dialog("close");
+            }
+        }
+    });
+
+    // the component log links
+    $(".view_component_log").live("click", function () {
+	    component = $(this).attr("component");
+	
+		if (component == '')
+			return;
+	
+	    $.ajax({
+	        async: true,
+	        type: "POST",
+	        url: "uiMethods/wmGetProcessLogfile",
+	        data: '{"component":"' + component + '"}',
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "text",
+	        success: function (response) {
+				$("#logfile_text").html(unpackJSON(response));
+				$("#logfile_dialog").dialog("open");
+	        },
+	        error: function (response) {
+	            showAlert(response.responseText);
+	        }
+	    });
+    });
     //this page updates every 30 seconds
     setInterval("GetData()", 30000);
 });
@@ -43,3 +78,4 @@ function GetData() {
         }
     });
 }
+

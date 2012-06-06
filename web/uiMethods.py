@@ -1,3 +1,4 @@
+import os
 import traceback
 import urllib
 import json
@@ -330,6 +331,7 @@ class uiMethods:
                         "<td>" + str((dr["Heartbeat"] if dr["Heartbeat"] else "")) + "</td>" \
                         "<td>" + str((dr["Enabled"] if dr["Enabled"] else "")) + "</td>" \
                         "<td>" + str((dr["mslr"] if dr["mslr"] else "")) + "</td>" \
+                        "<td><span class='ui-icon ui-icon-document forceinline view_component_log' component='" + str((dr["Component"] if dr["Component"] else "")) + "'></span></td>" \
                         "</tr>"
 
             sUserHTML = ""
@@ -374,6 +376,26 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
+    def wmGetProcessLogfile(self):
+        try:
+            component = uiCommon.getAjaxArg("component")
+            logfile = ""
+            if component and uiGlobals.config.has_key("logfiles"):
+                logdir = uiGlobals.config["logfiles"]
+                logfile = "%s/%s.log" % (logdir, component)
+                if os.path.exists(logfile):
+                    with open(logfile, 'r') as f:
+                        f.seek (0, 2)           # Seek @ EOF
+                        fsize = f.tell()        # Get Size
+                        f.seek (max (fsize-102400, 0), 0) # Set pos @ last n chars
+                        tail = f.readlines()       # Read to end
+
+                        return uiCommon.packJSON("".join(tail))
+            
+            return uiCommon.packJSON("Unable to read logfile. [%s]" % logfile)
+        except Exception, ex:
+            return ex.__str__()
+            
     def wmGetLog(self):
         try:
             sObjectID = uiCommon.getAjaxArg("sObjectID")
