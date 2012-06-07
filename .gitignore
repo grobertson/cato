@@ -1,4 +1,3 @@
-web/sessions/*
 
 web_old/Web.pidb
 
@@ -26,7 +25,6 @@ web_old/bin/mysql.data.dll
 
 web_old/bin/ICSharpCode.SharpZipLib.dll
 
-web/temp/*
 
 web_old/obj/*
 
@@ -53,8 +51,6 @@ services/web/convert.out
 services/web/test.py
 
 logfiles/admin_ui.log
-
-web/sessions/2dd74a02a2a3c6b9dce890b02f7515766a3a520c
 
 web_old/bin/Newtonsoft.Json.dll
 
