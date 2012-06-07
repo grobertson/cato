@@ -167,7 +167,7 @@
 					<num_chars input_type="text" />
 				</function>
 			</command>
-			<command name="transfer" label="Transfer" description="File transfer between hosts." help="&lt;b&gt;Transfer&lt;/b&gt; is used to copy a file between two Assets. Required values are: From: Asset, File and To: Asset, File." icon="static/images/icons/transfer_32.png">
+			<!--<command name="transfer" label="Transfer" description="File transfer between hosts." help="&lt;b&gt;Transfer&lt;/b&gt; is used to copy a file between two Assets. Required values are: From: Asset, File and To: Asset, File." icon="static/images/icons/transfer_32.png">
 				<function name="transfer">
 					<from_asset input_type="text" />
 					<from_file input_type="text" />
@@ -177,7 +177,7 @@
 					<command input_type="select" />
 					<returnvar input_type="text" />
 				</function>
-			</command>
+			</command>-->
 			<command name="http" label="HTTP" description="Http get to retrieve html data." help="&lt;b&gt;HTTP&lt;/b&gt;&lt;br&gt;The HTTP command can either issue an http get remote url. It will retrieve the resulting html or xml and place that data in the output buffer to be processed into variables.&lt;br&gt;&lt;br&gt;Select either http get or post from the Request Type drop down. Next type in the url text box that is to be issued. Make sure to include the http:// or https:// prefix to the url. &lt;br&gt;&lt;br&gt;Parameters can be added to the Post request type. Click the + icon below the Parameters section to add Key Value pairs that will be sent to the target url. &lt;br&gt;&lt;br&gt;Variables can be populated from the resulting html or xml that is returned from the target webserver. Click the Variables icon to popup the variables management page." icon="static/images/icons/internet_32.png">
 				<function name="http" variables="true" parse_method="2">
 					<type input_type="select">GET</type>

@@ -173,7 +173,7 @@ $(document).ready(function () {
 
 function doGetDetails() {
     $.ajax({
-        async: true,
+        async: false,
         type: "POST",
         url: "taskMethods/wmGetTaskRunLogDetails",
         data: '{"sTaskInstance":"' + g_instance + '", "sTaskID":"' + g_task_id + '", "sAssetID":"' + g_asset_id + '"}',
@@ -262,7 +262,7 @@ function doGetLog() {
 		return;
 
     $.ajax({
-        async: true,
+        async: false,
         type: "POST",
         url: "taskMethods/wmGetTaskRunLog",
         data: '{"sTaskInstance":"' + instance + '"}',
