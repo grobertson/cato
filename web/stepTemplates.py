@@ -918,8 +918,11 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
 
             sHTML += "</td>\n"
 
-        sHTML += "<td class=\"w1pct\" align=\"right\"><span class=\"ui-icon ui-icon-close forceinline fn_pair_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-        sHTML += "</span></td>"
+        sHTML += "<td class=\"w1pct\" align=\"right\">"
+        # can't delete the first one
+        if i > 1:
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_pair_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
+        sHTML += "</td>"
 
         sHTML += "</tr></table>\n"
 
@@ -928,7 +931,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
     sHTML += "<div class=\"fn_pair_add_btn pointer\"" \
         " add_to_id=\"" + sStepID + "_pairs\"" \
         " step_id=\"" + sStepID + "\">" \
-        "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
+        "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
     sHTML += "</div>"
 
     return sHTML
@@ -1735,7 +1738,9 @@ def WaitForTasks(oStep):
                 " help=\"Enter a Handle name.\"" \
                 " />\n"
     
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
+            # can't delete the first one
+            if i > 1:
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1746,8 +1751,7 @@ def WaitForTasks(oStep):
         sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
             " add_to_id=\"v" + sStepID + "_handles\"" \
             " step_id=\"" + sStepID + "\">" \
-            "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-            " alt=\"\" title=\"Add another.\" />( click to add another )</div>"
+            "<span class=\"ui-icon ui-icon-plus forceinline\"></span> ( click to add another )</div>"
         sHTML += "</div>"
     
         return sHTML
@@ -1784,7 +1788,9 @@ def ClearVariable(oStep):
                 " help=\"Enter a Variable name.\"" \
                 " />\n"
     
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
+            # can't delete the first one
+            if i > 1:
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1795,7 +1801,7 @@ def ClearVariable(oStep):
         sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
             " add_to_id=\"v" + sStepID + "_vars\"" \
             " step_id=\"" + sStepID + "\">" \
-            "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
+            "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"
     
         return sHTML
@@ -1859,8 +1865,11 @@ def SetVariable(oStep):
             sHTML += "  <option " + SetOption("FROM_JSON", sMod) + " value=\"FROM_JSON\">Read JSON</option>\n"
             sHTML += "</select></td>\n"
     
-            sHTML += "<td class=\"w1pct\"><span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\">"
-            sHTML += "</span></td>"
+            sHTML += "<td class=\"w1pct\">"
+            # can't delete the first one
+            if i > 1:
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
+            sHTML += "</td>"
     
             sHTML += "</tr>\n"
     
@@ -2206,7 +2215,9 @@ def Exists(oStep):
             sHTML += "&nbsp; Is True:<input type=\"checkbox\" " + \
                 CommonAttribs(oStep, True, "variable[" + str(i) + "]/is_true", "") + " " + SetCheckRadio("1", sIsTrue) + " />\n"
     
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
+            # can't delete the first one
+            if i > 1:
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             # if i % 3 == 0 and i >= 3:
