@@ -265,9 +265,6 @@ $(document).ready(function () {
         //first, populate the picker
         //(in a minute build this based on the 'function' attr of the picker icon
         switch (func) {
-            case "dataset":
-                item_html = "<div class=\"ui-widget-content ui-corner-all value_picker_value\">pass_fail</div>";
-                break;
             case "http":
                 break;
             case "run_task":

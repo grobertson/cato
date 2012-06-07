@@ -186,8 +186,8 @@ def GetStepTemplate(oStep):
         sHTML = ClearVariable(oStep)
     elif sFunction.lower() == "wait_for_tasks":
         sHTML = WaitForTasks(oStep)
-    elif sFunction.lower() == "dataset":
-        sHTML = Dataset(oStep)
+    elif sFunction.lower() == "set_ecosystem_registry":
+        sHTML = SetEcosystemRegistry(oStep)
     elif sFunction.lower() == "subtask":
         sHTML = Subtask(oStep)
     elif sFunction.lower() == "run_task":
@@ -1753,8 +1753,8 @@ def WaitForTasks(oStep):
         uiCommon.log_nouser(traceback.format_exc(), 0)
         return "Unable to draw Step - see log for details."
 
-def Dataset(oStep):
-    return DrawKeyValueSection(oStep, True, True, "Key", "Value")
+def SetEcosystemRegistry(oStep):
+    return DrawKeyValueSection(oStep, False, True, "Key", "Value")
 
 def ClearVariable(oStep):
     try:

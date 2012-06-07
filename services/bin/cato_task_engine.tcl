@@ -3948,7 +3948,7 @@ proc process_function {task_name function_name command} {
 			send_email_2 $command
 
 		}
-		"dataset" {
+		"set_ecosystem_registry" {
 			set_ecosystem_registry $command
 		}
 		"get_instance_handle" {

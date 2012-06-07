@@ -217,8 +217,8 @@
 					<source input_type="text" />
 				</function>
 			</command>
-			<command name="dataset" label="Set Ecosystem Registry" description="Updates a value in an Ecosystem Registry" help="Set Ecosystem Registry is used to update a value in an Ecosystem Registry.&lt;br /&gt;&lt;br /&gt;Useful for saving Task specific state or configuration information between Task runs.&lt;br /&gt;&lt;br /&gt;[[variables]] are permitted." icon="static/images/icons/kexi_32.png">
-				<function name="dataset">
+			<command name="set_ecosystem_registry" label="Set Ecosystem Registry" description="Updates a value in an Ecosystem Registry" help="Set Ecosystem Registry is used to update a value in an Ecosystem Registry.&lt;br /&gt;&lt;br /&gt;Useful for saving Task specific state or configuration information between Task runs.&lt;br /&gt;&lt;br /&gt;[[variables]] are permitted." icon="static/images/icons/kexi_32.png">
+				<function name="set_ecosystem_registry">
 					<pair>
 						<key input_type="text" />
 						<value input_type="text" />

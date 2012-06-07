@@ -191,6 +191,16 @@ function_xml = replace(function_xml,
 where function_name = 'log_msg';
 
 
+# DATASET -> SET ECOSYSTEM REGISTRY
+update task_step set function_xml = 
+replace(function_xml,
+'<function command_type="dataset"',
+'<function name="set_ecosystem_registry"'),
+function_name = 'set_ecosystem_registry'
+where function_name = 'dataset';
+
+
+
 # THIS FIXES ANY COMMANDS THAT HAD VARIABLE_XML
 update task_step set function_xml = 
 replace(function_xml, '</function>', concat(ifnull(replace(replace(variable_xml, '</variables>', '</step_variables>'), '<variables>', '<step_variables>'), ''), '</function>') )
