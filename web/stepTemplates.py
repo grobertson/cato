@@ -30,7 +30,7 @@ def DrawFullStep(oStep):
         sNoFunc += "    <div class=\"ui-state-default ui-state-highlight step_header\" id=\"step_header_" + sStepID + "\">"
         sNoFunc += "        <div class=\"step_header_title\"><img src=\"static/images/icons/status_unknown_16.png\" /></div>"
         sNoFunc += "        <div class=\"step_header_icons\">"
-        sNoFunc += "            <span class=\"step_delete_btn\" remove_id=\"" + sStepID + "\"><img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Delete Step\" /></span>"
+        sNoFunc += "            <span class=\"ui-icon ui-icon-close forceinline step_delete_btn\" remove_id=\"" + sStepID + "\"></span>"
         sNoFunc += "        </div>"
         sNoFunc += "    </div>"
         sNoFunc += "    <div id=\"step_detail_" + sStepID + "\" class=\"ui-widget-content ui-state-highlight ui-corner-bottom step_detail\" >"
@@ -581,7 +581,7 @@ def DrawEmbeddedStep(oStep):
         sNoFunc += "    <div class=\"ui-state-default ui-state-highlight step_header\">"
         sNoFunc += "        <div class=\"step_header_title\"><img src=\"static/images/icons/status_unknown_16.png\" /></div>"
         sNoFunc += "        <div class=\"step_header_icons\">"
-        sNoFunc += "            <span class=\"embedded_step_delete_btn\" remove_xpath=\"" + oStep.XPathPrefix + "\" parent_id=\"" + sStepID + "\"><img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove Command\" /></span>"
+        sNoFunc += "            <span class=\"ui-icon ui-icon-close forceinline embedded_step_delete_btn\" remove_xpath=\"" + oStep.XPathPrefix + "\" parent_id=\"" + sStepID + "\"></span>"
         sNoFunc += "        </div>"
         sNoFunc += "    </div>"
         sNoFunc += "    <div class=\"ui-widget-content ui-state-highlight ui-corner-bottom step_detail\" >"
@@ -630,9 +630,8 @@ def DrawEmbeddedStep(oStep):
 #        " src=\"static/images/icons/editcopy_16.png\" alt=\"\" title=\"Copy this Step to your Clipboard\"/></span>"
 
     # for deleting, the codeblock_name is the step_id of the parent step.
-    sMainHTML += "            <span class=\"embedded_step_delete_btn\"" \
-        " remove_xpath=\"" + oStep.XPathPrefix + "\" parent_id=\"" + sStepID + "\">" \
-        " <img src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove Command\" /></span>"
+    sMainHTML += "            <span class=\"ui-icon ui-icon-close forceinline embedded_step_delete_btn\"" \
+        " remove_xpath=\"" + oStep.XPathPrefix + "\" parent_id=\"" + sStepID + "\"></span>"
     sMainHTML += "        </div>"
     sMainHTML += "     </div>"
     sMainHTML += "     <div class=\"ui-widget-content ui-corner-bottom step_detail\" >"
@@ -1061,15 +1060,16 @@ def DrawVariableSectionForEdit(oStep):
     sHTML += "Row Break Indicator: " \
         " <span id=\"output_row_delimiter_label\"" \
         " class=\"delimiter_label code\">" + sRowDelimiterLabel + "</span>"
-    sHTML += "<img class=\"pointer\" src=\"static/images/icons/search.png\" alt=\"\" title=\"Select a Delimiter\" name=\"delimiter_picker_btn\" target=\"row\" />"
-    sHTML += "<img class=\"pointer\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Clear this Delimiter\" name=\"delimiter_clear_btn\" target=\"row\" style=\"width:12px;height:12px;\" />"; sHTML += "</span>"
+    sHTML += "<span class=\"ui-icon ui-icon-search forceinline pointer\" title=\"Select a Delimiter\" name=\"delimiter_picker_btn\" target=\"row\"></span>"
+    sHTML += "<span class=\"ui-icon ui-icon-close forceinline pointer\" title=\"Clear this Delimiter\" name=\"delimiter_clear_btn\" target=\"row\"></span>"
+    sHTML += "</span>"
 
     sHTML += "<span id=\"col_delimiter\" class=\"" + sColDelimiterVisibility + "\">"
     sHTML += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Field Break Indicator: " \
         " <span id=\"output_col_delimiter_label\"" \
         " class=\"delimiter_label code\">" + sColumnDelimiterLabel + "</span>"
-    sHTML += "<img class=\"pointer\" src=\"static/images/icons/search.png\" alt=\"\" title=\"Select a Delimiter\" name=\"delimiter_picker_btn\" target=\"col\" />"
-    sHTML += "<img class=\"pointer\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Clear this Delimiter\" name=\"delimiter_clear_btn\" target=\"col\" style=\"width:12px;height:12px;\" />"; sHTML += "</span>"
+    sHTML += "<span class=\"ui-icon ui-icon-search forceinline pointer\" title=\"Select a Delimiter\" name=\"delimiter_picker_btn\" target=\"col\"></span>"
+    sHTML += "<span class=\"ui-icon ui-icon-close forceinline pointer\" title=\"Clear this Delimiter\" name=\"delimiter_clear_btn\" target=\"col\"></span>"
     sHTML += "</span>"
     sHTML += "</div>"
 
@@ -1197,9 +1197,7 @@ def GetVariablesForStepForEdit(oStep):
             
             sHTML += "<li id=\"" + sVarGUID + "\" class=\"variable\" var_type=\"" + sType + "\">"
             sHTML += "<span class=\"variable_name\">" + sVarStrip + "</span>"
-            sHTML += "<span class=\"variable_delete_btn\" remove_id=\"" + sVarGUID + "\">" \
-                " <img src=\"static/images/icons/fileclose.png\"" \
-                    "  alt=\"Delete Variable\" title=\"Delete Variable\" /></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline variable_delete_btn\" remove_id=\"" + sVarGUID + "\" title=\"Delete Variable\"></span>"
             sHTML += "<span class=\"variable_detail\">" + sDetailStrip + "</span>"
             # an error message placeholder
             sHTML += "<br /><span id=\"" + sVarGUID + "_msg\" class=\"var_error_msg\"></span>"
@@ -1758,6 +1756,10 @@ def SetEcosystemRegistry(oStep):
 
 def ClearVariable(oStep):
     try:
+        # the base xpath of this command (will be '' unless this is embedded)
+        # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+        base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+    
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -1774,7 +1776,7 @@ def ClearVariable(oStep):
             # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
             # hokey, but doing it here because the field update function is global.
             if sKey.strip() != sKey:
-                SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
+                SetNodeValueinCommandXML(sStepID, base_xpath + "variable[" + str(i) + "]/name", sKey.strip())
     
             sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
@@ -1784,7 +1786,7 @@ def ClearVariable(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1793,7 +1795,7 @@ def ClearVariable(oStep):
             i += 1
     
         sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
-            " add_to_id=\"v" + sStepID + "_vars\"" \
+            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"
@@ -1805,6 +1807,10 @@ def ClearVariable(oStep):
 
 def SetVariable(oStep):
     try:
+        # the base xpath of this command (will be '' unless this is embedded)
+        # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+        base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+    
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -1824,7 +1830,7 @@ def SetVariable(oStep):
             # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
             # hokey, but doing it here because the field update function is global.
             if sKey.strip() != sKey:
-                SetNodeValueinCommandXML(sStepID, "variable[" + str(i) + "]/name", sKey.strip())
+                SetNodeValueinCommandXML(sStepID, base_xpath + "variable[" + str(i) + "]/name", sKey.strip())
     
             sHTML += "<tr>\n"
             sHTML += "<td class=\"w1pct\">&nbsp;Variable:&nbsp;</td>\n"
@@ -1862,7 +1868,7 @@ def SetVariable(oStep):
             sHTML += "<td class=\"w1pct\">"
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
             sHTML += "</td>"
     
             sHTML += "</tr>\n"
@@ -1872,7 +1878,7 @@ def SetVariable(oStep):
         sHTML += "</table>\n"
     
         sHTML += "<div class=\"fn_setvar_add_btn pointer\"" \
-            " add_to_id=\"v" + sStepID + "_vars\"" \
+            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\" />( click to add another )</div>"
         sHTML += "</div>"
@@ -2182,6 +2188,10 @@ def While(oStep):
 
 def Exists(oStep):
     try:
+        # the base xpath of this command (will be '' unless this is embedded)
+        # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+        base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+    
         xd = oStep.FunctionXDoc
     
         sHTML = ""
@@ -2197,7 +2207,7 @@ def Exists(oStep):
             # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
             # hokey, but doing it here because the field update function is global.
             if sKey.strip() != sKey:
-                SetNodeValueinCommandXML(oStep.ID, "variable[" + str(i) + "]/name", sKey.strip())
+                SetNodeValueinCommandXML(oStep.ID, base_xpath + "variable[" + str(i) + "]/name", sKey.strip())
     
             sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + \
                 CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
@@ -2211,7 +2221,7 @@ def Exists(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             # if i % 3 == 0 and i >= 3:
@@ -2220,7 +2230,7 @@ def Exists(oStep):
             i += 1
     
         sHTML += "<div class=\"fn_exists_add_btn pointer\"" \
-            " add_to_id=\"v" + oStep.ID + "_vars\"" \
+            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
             " step_id=\"" + oStep.ID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"

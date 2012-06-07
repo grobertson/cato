@@ -1280,7 +1280,9 @@ class taskMethods:
     def wmFnSetvarAddVar(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            ST.AddToCommandXML(sStepID, "", "<variable>" \
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
+
+            ST.AddToCommandXML(sStepID, sAddTo, "<variable>" \
                 "<name input_type=\"text\"></name>" \
                 "<value input_type=\"text\"></value>" \
                 "<modifier input_type=\"select\">DEFAULT</modifier>" \
@@ -1293,7 +1295,9 @@ class taskMethods:
     def wmFnClearvarAddVar(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            ST.AddToCommandXML(sStepID, "", "<variable><name input_type=\"text\"></name></variable>")
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
+
+            ST.AddToCommandXML(sStepID, sAddTo, "<variable><name input_type=\"text\"></name></variable>")
 
             return ""
         except Exception:
@@ -1302,9 +1306,9 @@ class taskMethods:
     def wmFnExistsAddVar(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            ST.AddToCommandXML(sStepID, "", "<variable>" \
-                "<name input_type=\"text\"></name><is_true>0</is_true>" \
-                "</variable>")
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
+
+            ST.AddToCommandXML(sStepID, sAddTo, "<variable><name input_type=\"text\"></name><is_true>0</is_true></variable>")
 
             return ""
         except Exception:
@@ -1314,12 +1318,12 @@ class taskMethods:
         # NOTE: this function supports both the set_varible AND clear_variable commands
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            iIndex = uiCommon.getAjaxArg("iIndex")
-            if iIndex > 0:
-                ST.RemoveFromCommandXML(sStepID, "variable[" + iIndex + "]")
+            sRemovePath = uiCommon.getAjaxArg("sRemovePath")
+            if sRemovePath:
+                ST.RemoveFromCommandXML(sStepID, sRemovePath)
                 return ""
             else:
-                uiCommon.log("Unable to modify step. Invalid index.")
+                uiCommon.log("Unable to modify step. Invalid remove path.")
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -1629,9 +1633,7 @@ class taskMethods:
                     sHTML += "<tr><td>&nbsp;</td><td><span class=\"code\">" + sClipDT + "</span></td>"
                     sHTML += "<td>"
                     # delete icon
-                    sHTML += "<span id=\"btn_clear_clip\" remove_id=\"" + sStepID + "\">" \
-                        "<img src=\"static/images/icons/fileclose.png\" style=\"width: 16px; height: 16px;\" alt=\"\" />" \
-                            "</span>"
+                    sHTML += "<span id=\"ui-icon ui-icon-close forceinline btn_clear_clip\" remove_id=\"" + sStepID + "\"></span>"
                     sHTML += "</td></tr></table>"
                     
                     
@@ -2421,8 +2423,7 @@ class taskMethods:
 
                             if i > 0:
                                 sHideDel = ("dropdown" if sPresentAs == "list" or sPresentAs == "dropdown" else " hidden")
-                                sValuesHTML += " <img class=\"param_edit_value_remove_btn pointer " + sHideDel + "\" remove_id=\"" + sPID + "\"" \
-                                    " src=\"static/images/icons/fileclose.png\" alt=\"\" />"
+                                sValuesHTML += " <span class=\"ui-icon ui-icon-close forceinline param_edit_value_remove_btn pointer " + sHideDel + "\" remove_id=\"" + sPID + "\"></span>"
 
                             sValuesHTML += "</div>"
 

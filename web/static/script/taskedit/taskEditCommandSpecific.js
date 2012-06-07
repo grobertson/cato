@@ -308,7 +308,7 @@ $(document).ready(function () {
     $("#steps .fn_var_remove_btn").live("click", function () {
         if (confirm("Are you sure?")) {
             var step_id = $(this).attr("step_id");
-            var idx = $(this).attr("index");
+            var remove_path = $(this).attr("remove_path");
 
             $("#task_steps").block({ message: null });
             $("#update_success_msg").text("Updating...").show();
@@ -317,10 +317,10 @@ $(document).ready(function () {
                 async: false,
                 type: "POST",
                 url: "taskMethods/wmFnVarRemoveVar",
-                data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
+                data: '{"sStepID":"' + step_id + '","sRemovePath":"' + remove_path + '"}',
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (retval) {
+                dataType: "text",
+                success: function (response) {
                     getStep(step_id, step_id, true);
                     $("#task_steps").unblock();
                     $("#update_success_msg").text("Update Successful").fadeOut(2000);
@@ -334,6 +334,7 @@ $(document).ready(function () {
 
     $("#steps .fn_setvar_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
 
         $("#task_steps").block({ message: null });
         $("#update_success_msg").text("Updating...").show();
@@ -342,10 +343,10 @@ $(document).ready(function () {
             async: false,
             type: "POST",
             url: "taskMethods/wmFnSetvarAddVar",
-            data: '{"sStepID":"' + step_id + '"}',
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
+            dataType: "text",
+            success: function (response) {
                 //go get the step
                 getStep(step_id, step_id, true);
                 $("#task_steps").unblock();
@@ -360,6 +361,7 @@ $(document).ready(function () {
 
     $("#steps .fn_clearvar_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
 
         $("#task_steps").block({ message: null });
         $("#update_success_msg").text("Updating...").show();
@@ -368,10 +370,10 @@ $(document).ready(function () {
             async: false,
             type: "POST",
             url: "taskMethods/wmFnClearvarAddVar",
-            data: '{"sStepID":"' + step_id + '"}',
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
+            dataType: "text",
+            success: function (response) {
                 //go get the step
                 getStep(step_id, step_id, true);
                 $("#task_steps").unblock();
@@ -392,6 +394,7 @@ $(document).ready(function () {
 $(document).ready(function () {
     $("#steps .fn_exists_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
 
         $("#task_steps").block({ message: null });
         $("#update_success_msg").text("Updating...").show();
@@ -400,10 +403,10 @@ $(document).ready(function () {
             async: false,
             type: "POST",
             url: "taskMethods/wmFnExistsAddVar",
-            data: '{"sStepID":"' + step_id + '"}',
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
+            dataType: "text",
+            success: function (response) {
                 //go get the step
                 getStep(step_id, step_id, true);
                 $("#task_steps").unblock();
