@@ -294,7 +294,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
         if len(xeNode) == 1 and not bIsEditable:
             log("-- no more children ... drawing ... ", 4)
             #get the first (and only) node
-            xeOnlyChild = xeNode.find("*[1]")
+            xeOnlyChild = xeNode[0] #.find("*[1]")
             
             #call DrawNode just on the off chance it actually has children
             sChildXPath = sXPath + "/" + xeOnlyChild.tag
