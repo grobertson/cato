@@ -1695,8 +1695,10 @@ def Subtask(oStep):
             sHTML += "</select></span>\n"
     
         # let's display a div for the parameters
-        sHTML += "<div class=\"subtask_view_parameters pointer\" id=\"stvp_" + sActualTaskID + "\">"
-        sHTML += "<img src=\"static/images/icons/kedit_16.png\" alt=\"Parameters\"> ( click to view parameters )"
+        sHTML += "<div>"
+        sHTML += "<span class=\"subtask_view_parameters_btn pointer\" id=\"stvp_" + sActualTaskID + "\">"
+        sHTML += "<span class=\"ui-icon ui-icon-document forceinline\"></span> ( click to view parameters )</span>"
+        sHTML += "<div class=\"subtask_view_parameters\"></div>"
         sHTML += "</div>"
     
         return sHTML
