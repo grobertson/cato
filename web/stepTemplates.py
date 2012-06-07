@@ -269,7 +269,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
     sHTML = ""
     sNodeName = xeNode.tag
     
-    sNodeLabel = xeNode.get("label", "")
+    sNodeLabel = xeNode.get("label", sNodeName)
     sIsEditable = xeNode.get("is_array", "")
     bIsEditable = catocommon.is_true(sIsEditable)
     
@@ -478,8 +478,6 @@ def DrawField(xe, sXPath, oStep):
 
                     for line in f:
                         val = line.strip()
-                        # if the actual node value is empty, the first one in the set is the selected default
-                        if not sNodeValue: sNodeValue = val
                         sHTML += "<option " + SetOption(val, sNodeValue) + " value=\"" + val + "\">" + val + "</option>\n"
                         if val == sNodeValue: bValueWasInData = True
                         
@@ -497,8 +495,6 @@ def DrawField(xe, sXPath, oStep):
                     data = globals()[sDataSet]()
                     if data:
                         for key, val in data.iteritems():
-                            # if the actual node value is empty, the first one in the set is the selected default
-                            if not sNodeValue: sNodeValue = val
                             sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
                             if key == sNodeValue: bValueWasInData = True
             except Exception:
@@ -508,8 +504,6 @@ def DrawField(xe, sXPath, oStep):
             # data is pipe delimited
             aValues = sDataSet.split('|')
             for sVal in aValues:
-                # if the actual node value is empty, the first one in the set is the selected default
-                if not sNodeValue: sNodeValue = sVal
                 sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>\n"
 
                 if sVal == sNodeValue: bValueWasInData = True
