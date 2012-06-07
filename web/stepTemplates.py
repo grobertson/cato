@@ -1252,13 +1252,18 @@ def GetEcosystemObjects(oStep):
         sHTML += "<select " + CommonAttribs(oStep, True, "object_type", "") + ">\n"
         sHTML += "  <option " + SetOption("", sObjectType) + " value=\"\"></option>\n"
 
-        
+        # this builds a unique list of all object types, provider agnostic
+        otypes = {}
         cp = providers.CloudProviders()
         if cp is not None:
             for p in cp.itervalues():
                 cots = p.GetAllObjectTypes()
                 for cot in cots.itervalues():
-                    sHTML += "<option " + SetOption(cot.ID, sObjectType) + " value=\"" + cot.ID + "\">" + p.Name + " - " + cot.Label + "</option>\n";            
+                    if cot.ID not in otypes.iterkeys():
+                        otypes[cot.ID] = cot
+
+        for otype in sorted(otypes.itervalues()):
+            sHTML += "<option " + SetOption(otype.ID, sObjectType) + " value=\"" + otype.ID + "\">" + otype.Label + "</option>\n";            
         
         sHTML += "</select>\n"
 
