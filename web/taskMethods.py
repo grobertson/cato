@@ -845,7 +845,7 @@ class taskMethods:
                         "-1," \
                         "0,0," \
                         "'" + func.Name + "'," \
-                        "'" + ET.tostring(xe) + "'" \
+                        "'" + catocommon.tick_slash(ET.tostring(xe)) + "'" \
                         ")"
                     if not self.db.exec_db_noexcep(sSQL):
                         uiCommon.log("Unable to add step." + self.db.error)
