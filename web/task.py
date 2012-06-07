@@ -848,18 +848,44 @@ class Step(object):
         return s
         
     @staticmethod
-    def ByIDWithSettings(sStepID, sUserID):
+    def FromID(sStepID):
+        """
+        Gets a single step object, *without* user settings.  Does NOT have an associated parent Task object.
+        This is called by functions *on* the task page where we don't need
+        the associated task object.
+        """
+        try:
+            sSQL = """select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name
+                from task_step s
+                where s.step_id = '%s' limit 1""" %sStepID
+            db = catocommon.new_conn()
+            row = db.select_row_dict(sSQL)
+            if row:
+                oStep = Step.FromRow(row, None)
+                return oStep
+
+            if db.error:
+                uiCommon.log("Error getting Step by ID: " + db.error, 2)
+            
+            return None
+        except Exception, ex:
+            raise ex
+        finally:
+            db.close()
+        
+    @staticmethod
+    def FromIDWithSettings(sStepID, sUserID):
         """
         Gets a single step object, including user settings.  Does NOT have an associated parent Task object.
         This is called by the AddStep methods, and other functions *on* the task page where we don't need
         the associated task object
         """
         try:
-            sSQL = "select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name," \
-                " us.visible, us.breakpoint, us.skip, us.button" \
-                " from task_step s" \
-                " left outer join task_step_user_settings us on us.user_id = '" + sUserID + "' and s.step_id = us.step_id" \
-                " where s.step_id = '" + sStepID + "' limit 1"
+            sSQL = """select s.step_id, s.step_order, s.step_desc, s.function_name, s.function_xml, s.commented, s.locked, s.codeblock_name,
+                us.visible, us.breakpoint, us.skip, us.button
+                from task_step s
+                left outer join task_step_user_settings us on us.user_id = '%s' and s.step_id = us.step_id
+                where s.step_id = '%s' limit 1""" % (sUserID, sStepID)
             db = catocommon.new_conn()
             row = db.select_row_dict(sSQL)
             if row:
@@ -910,12 +936,12 @@ class Step(object):
             self.FunctionName = dr["function_name"]
 
             # user settings, if available
-            if dr["button"] is not None:
-                self.UserSettings.Button = dr["button"]
-            if dr["skip"] is not None:
-                self.UserSettings.Skip = (True if dr["skip"] == 1 else False)
-            if dr["visible"] is not None:
-                self.UserSettings.Visible = (True if dr["visible"] == 1 else False)
+            if dr.has_key("button"):
+                self.UserSettings.Button = (dr["button"] if dr["button"] else "")
+            if dr.has_key("skip"):
+                self.UserSettings.Skip = (dr["skip"] if dr["skip"] else "0")
+            if dr.has_key("visible"):
+                self.UserSettings.Visible = (dr["visible"] if dr["visible"] else "1")
             
             #NOTE!! :oTask can possibly be null, in lots of cases where we are just getting a step and don't know the task.
             #if it's null, it will not populate the parent object.

@@ -3,7 +3,7 @@
 		<commands>
 			<command name="new_connection" label="New Connection" description="Creates a new connection to an Asset." help="&lt;b&gt;New Connection&lt;/b&gt;&lt;br&gt;New Connection will create a named connection to an Asset.&lt;br /&gt; Select the connection type, pick the Asset and Name the connection to be used in the task." icon="static/images/icons/connect_creating_32.png">
 				<function name="new_connection">
-					<conn_type input_type="select" />
+					<conn_type input_type="select">ssh</conn_type>
 					<cloud_name input_type="dropdown" style="combo" />
 					<asset input_type="text" />
 					<conn_name input_type="text" label="as" required="true" class="w200px" help="Name this connection for reference in the Task.">CONN1</conn_name>
@@ -20,7 +20,7 @@
 		<commands>
 			<command name="end" label="End" description="End Task execution." help="&lt;b&gt;End&lt;/b&gt;&lt;br&gt;The End command halts the execution of the task. Use the 'End with Status' drop down selector to choose the status that the task should be set to when it exits. The Log Message box can be used to specify a reason for the ending of the task." icon="static/images/icons/player_stop_32.png">
 				<function name="end">
-					<status input_type="select" label="Status">Completed</status>
+					<status input_type="dropdown" label="Status" datasource="local" dataset="Completed|Error|Cancelled">Completed</status>
 					<message input_type="textarea" rows="3" label="Message" class="w95pct" label_style="display: block;" />
 				</function>
 			</command>

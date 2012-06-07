@@ -14,7 +14,7 @@ all the functions used to draw the Task Steps.
 """
 
 def GetSingleStep(sStepID, sUserID):
-    return task.Step.ByIDWithSettings(sStepID, sUserID)
+    return task.Step.FromIDWithSettings(sStepID, sUserID)
     
 def DrawFullStep(oStep):
     sStepID = oStep.ID
@@ -260,7 +260,12 @@ def DrawStepFromXMLDocument(oStep):
             
     return sHTML, sOptionHTML
     
-def DrawNode(xeNode, sXPath, oStep):
+def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
+    """
+    Some important notes:
+    1) a node IsEditable if it has the attribute "is_array".  (It's an array, therefore it's contents are 'editable'.)
+    2) a node IsRemovable if it's PARENT IsEditable.  So, we pass IsEditable down to subsequent recursions as IsRemovable.)
+    """
     sHTML = ""
     sNodeName = xeNode.tag
     
@@ -270,15 +275,9 @@ def DrawNode(xeNode, sXPath, oStep):
     
     sOptionTab = xeNode.get("option_tab", "")
     
-    #TODO 4-12-12: this is problematic - there's no easy way in elementtree to reference a parent
-    # this may require iterating the tree again.
-    # or rethink how we know a node is "removable"
-    sIsRemovable = "" #xeNode.PARENT.get("is_array", "")
-    bIsRemovable = catocommon.is_true(sIsRemovable)
-    
     log("-- Label: " + sNodeLabel, 4)
     log("-- Editable: " + sIsEditable + " - " + str(bIsEditable), 4)
-    log("-- Removable: " + sIsRemovable + " - " + str(bIsRemovable), 4)
+    log("-- Removable: " + str(bIsRemovable), 4)
     log("-- Elements: " + str(len(xeNode)), 4)
     log("-- Option Field?: " + sOptionTab, 4)
     
@@ -295,13 +294,13 @@ def DrawNode(xeNode, sXPath, oStep):
         if len(xeNode) == 1 and not bIsEditable:
             log("-- no more children ... drawing ... ", 4)
             #get the first (and only) node
-            xeOnlyChild = xeNode.find("*[1]")
+            xeOnlyChild = xeNode[0] #.find("*[1]")
             
             #call DrawNode just on the off chance it actually has children
             sChildXPath = sXPath + "/" + xeOnlyChild.tag
             # DrawNode returns a tuple, but here we only care about the first value
             # because "editable" nodes shouldn't be options.
-            sNodeHTML, sOptionHTML = DrawNode(xeOnlyChild, sChildXPath, oStep)
+            sNodeHTML, sOptionHTML = DrawNode(xeOnlyChild, sChildXPath, oStep, bIsEditable)
             if sOptionTab:
                 sHTML += sNodeName + "." + sOptionHTML
             else:
@@ -309,8 +308,7 @@ def DrawNode(xeNode, sXPath, oStep):
             
             #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
             if bIsRemovable:
-                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\">"
-                sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
         else: #there is more than one child... business as usual
             log("-- more children ... drawing and drilling down ... ", 4)
             sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
@@ -321,17 +319,14 @@ def DrawNode(xeNode, sXPath, oStep):
             #so, it gets an add link.
             sHTML += "<div class=\"step_header_icons\">" #step header icons
             if bIsEditable:
-                sHTML += "<div class=\"fn_nodearray_add_btn pointer\"" + " step_id=\"" + oStep.ID + "\"" \
-                    " xpath=\"" + sXPath + "\">" \
-                    "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
-                    " alt=\"\" title=\"Add another...\" /></div>"
+                sHTML += "<div class=\"ui-icon ui-icon-plus forceinline fn_nodearray_add_btn pointer\"" + " step_id=\"" + oStep.ID + "\"" \
+                    " xpath=\"" + sXPath + "\"></div>"
     
             #BUT, if this nodes PARENT is editable, that means THIS NODE can be deleted.
             #so, it gets a delete link
             #you can't remove unless there are more than one
             if bIsRemovable:
-                sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\">"
-                sHTML += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
             sHTML += "</div>" #end step header icons
             sHTML += "  </div>" #end header
     
@@ -339,27 +334,29 @@ def DrawNode(xeNode, sXPath, oStep):
                 sChildNodeName = xeChildNode.tag
                 sChildXPath = sXPath + "/" + sChildNodeName
     
-                #here's the magic... are there any children nodes here with the SAME NAME?
-                #if so they need an index on the xpath
-                if len(xeNode.find(sChildNodeName)) > 1:
-                    #since the document won't necessarily be in perfect order,
-                    #we need to keep track of same named nodes and their indexes.
-                    #so, stick each array node up in a lookup table.
-                    #is it already in my lookup table?
+                # here's the magic... are there any children nodes here with the SAME NAME?
+                # if so they need an index on the xpath
+                if len(xeNode.findall(sChildNodeName)) > 1:
+                    # since the document won't necessarily be in perfect order,
+                    # we need to keep track of same named nodes and their indexes.
+                    # so, stick each array node up in a lookup table.
+
+                    # is it already in my lookup table?
                     iLastIndex = 0
                     if dictNodes.has_key(sChildNodeName):
-                        #not there, add it
-                        iLastIndex = 1
+                        # there, increment it and set it
+                        iLastIndex = dictNodes[sChildNodeName] + 1
                         dictNodes[sChildNodeName] = iLastIndex
                     else:
-                        #there, increment it and set it
-                        iLastIndex += 1
+                        # not there, add it
+                        iLastIndex = 1
                         dictNodes[sChildNodeName] = iLastIndex
+
                     sChildXPath = sChildXPath + "[" + str(iLastIndex) + "]"
                     
                 # it's not possible for an 'editable' node to be in the options tab if it's parents aren't,
                 # so here we ignore the options return
-                sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, oStep)
+                sNodeHTML, sBunk = DrawNode(xeChildNode, sChildXPath, oStep, bIsEditable)
                 if sBunk:
                     log("WARNING: This shouldn't have returned 'option' html.", 2)
                 sHTML += sNodeHTML
@@ -369,8 +366,7 @@ def DrawNode(xeNode, sXPath, oStep):
         sHTML += DrawField(xeNode, sXPath, oStep)
         #it may be that these fields themselves are removable
         if bIsRemovable:
-            sHTML += "<span class=\"fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\">"
-            sHTML += "<img style=\"width:10px; height:10px; margin-right: 4px;\" src=\"static/images/icons/fileclose.png\" alt=\"\" title=\"Remove\" /></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
     
     #ok, now that we've drawn it, it might be intended to go on the "options tab".
     #if so, stick it there
@@ -482,6 +478,8 @@ def DrawField(xe, sXPath, oStep):
 
                     for line in f:
                         val = line.strip()
+                        # if the actual node value is empty, the first one in the set is the selected default
+                        if not sNodeValue: sNodeValue = val
                         sHTML += "<option " + SetOption(val, sNodeValue) + " value=\"" + val + "\">" + val + "</option>\n"
                         if val == sNodeValue: bValueWasInData = True
                         
@@ -499,6 +497,8 @@ def DrawField(xe, sXPath, oStep):
                     data = globals()[sDataSet]()
                     if data:
                         for key, val in data.iteritems():
+                            # if the actual node value is empty, the first one in the set is the selected default
+                            if not sNodeValue: sNodeValue = val
                             sHTML += "<option " + SetOption(key, sNodeValue) + " value=\"" + key + "\">" + val + "</option>\n"
                             if key == sNodeValue: bValueWasInData = True
             except Exception:
@@ -508,6 +508,8 @@ def DrawField(xe, sXPath, oStep):
             # data is pipe delimited
             aValues = sDataSet.split('|')
             for sVal in aValues:
+                # if the actual node value is empty, the first one in the set is the selected default
+                if not sNodeValue: sNodeValue = sVal
                 sHTML += "<option " + SetOption(sVal, sNodeValue) + " value=\"" + sVal + "\">" + sVal + "</option>\n"
 
                 if sVal == sNodeValue: bValueWasInData = True
@@ -1693,8 +1695,10 @@ def Subtask(oStep):
             sHTML += "</select></span>\n"
     
         # let's display a div for the parameters
-        sHTML += "<div class=\"subtask_view_parameters pointer\" id=\"stvp_" + sActualTaskID + "\">"
-        sHTML += "<img src=\"static/images/icons/kedit_16.png\" alt=\"Parameters\"> ( click to view parameters )"
+        sHTML += "<div>"
+        sHTML += "<span class=\"subtask_view_parameters_btn pointer\" id=\"stvp_" + sActualTaskID + "\">"
+        sHTML += "<span class=\"ui-icon ui-icon-document forceinline\"></span> ( click to view parameters )</span>"
+        sHTML += "<div class=\"subtask_view_parameters\"></div>"
         sHTML += "</div>"
     
         return sHTML
@@ -1880,7 +1884,7 @@ def NewConnection(oStep):
         xConnType = xd.find("conn_type")
         xCloudName = xd.find("cloud_name")
         sAssetID = ("" if xAsset is None else ("" if xAsset.text is None else xAsset.text))
-        sConnType = ("" if xConnType is None else ("" if xConnType.text is None else xConnType.text))
+        sConnType = ("ssh" if xConnType is None else ("ssh" if xConnType.text is None else xConnType.text))
         sCloudName = ("" if xCloudName is None else ("" if xCloudName.text is None else xCloudName.text))
     
         sHTML = ""

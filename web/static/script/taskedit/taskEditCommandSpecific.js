@@ -52,19 +52,19 @@ $(document).ready(function () {
 //the SUBTASK command
 //this will get the parameters in read only format for each subtask command.
 $(document).ready(function () {
-    $("#steps .subtask_view_parameters").live("click",
+    $("#steps .subtask_view_parameters_btn").live("click",
     function () {
         var task_id = $(this).attr("id").replace(/stvp_/, "");
+        var target = $(this).parent().find(".subtask_view_parameters");
         $.ajax({
             async: false,
             type: "POST",
             url: "taskMethods/wmGetParameters",
             data: '{"sType":"task","sID":"' + task_id + '","bEditable":"false","bSnipValues":"true"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
-                $("#stvp_" + task_id).html(retval.d);
-                $("#stvp_" + task_id).removeClass("pointer");
+            dataType: "html",
+            success: function (response) {
+                target.html(response);
 
                 //have to rebind the tooltips here
                 bindParameterToolTips();

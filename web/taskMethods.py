@@ -1,4 +1,5 @@
 import os
+import re
 import urllib2
 import traceback
 import json
@@ -844,7 +845,7 @@ class taskMethods:
                         "-1," \
                         "0,0," \
                         "'" + func.Name + "'," \
-                        "'" + ET.tostring(xe) + "'" \
+                        "'" + catocommon.tick_slash(ET.tostring(xe)) + "'" \
                         ")"
                     if not self.db.exec_db_noexcep(sSQL):
                         uiCommon.log("Unable to add step." + self.db.error)
@@ -855,7 +856,7 @@ class taskMethods:
                     uiCommon.log("Unable to add step.  No template xml.")
             if sNewStepID:
                 # now... get the newly inserted step and draw it's HTML
-                oNewStep = task.Step.ByIDWithSettings(sNewStepID, sUserID)
+                oNewStep = task.Step.FromIDWithSettings(sNewStepID, sUserID)
                 if oNewStep:
                     sStepHTML += ST.DrawFullStep(oNewStep)
                 else:
@@ -3350,5 +3351,61 @@ class taskMethods:
             else:
                 uiCommon.log("Unable to update task. Missing or invalid task id. [" + sTaskID + "]")
 
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+
+    def wmFnNodeArrayAdd(self):
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sGroupNode = uiCommon.getAjaxArg("sGroupNode")
+
+            # so, let's get the one we want from the XML template for this step... adjust the indexes, and add it.
+            s = task.Step.FromID(sStepID)
+            if not s:
+                uiCommon.log("Unable to get step definition for id [%s]" % sStepID)
+                
+            func = uiCommon.GetTaskFunction(s.FunctionName)
+            if not func:
+                uiCommon.log("Unable to get a Function definition for name [%s]" % s.FunctionName)
+            
+            # validate it
+            # parse the doc from the table
+            xd = func.TemplateXDoc
+            if xd is None:
+                uiCommon.log("Unable to get Function Template.")
+            
+            # get the original "group" node from the xml_template
+            # here's the rub ... the "sGroupNode" from the actual command instance might have xpath indexes > 1... 
+            # but the template DOESN'T!
+            # So, I'm regexing any [#] on the back to a [1]... that value should be in the template.
+            
+            rx = re.compile("\[[0-9]*\]")
+            sTemplateNode = re.sub(rx, "[1]", sGroupNode)
+            
+            xGroupNode = xd.find(sTemplateNode)
+            if xGroupNode is None:
+                uiCommon.log("Error: Unable to add.  Source node not found in Template XML. [" + sTemplateNode + "]")
+            
+            # yeah, this wicked single line aggregates the value of each node
+            sNewXML = "".join(ET.tostring(x) for x in list(xGroupNode))
+            print sNewXML
+            
+            if sNewXML != "":
+                uiCommon.AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sGroupNode, sNewXML)
+
+            return ""
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+
+    def wmFnNodeArrayRemove(self):
+        try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sXPathToDelete = uiCommon.getAjaxArg("sXPathToDelete")
+            
+            if sStepID:
+                if sXPathToDelete:
+                    uiCommon.RemoveNodeFromXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sXPathToDelete)
+            
+            return ""
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
