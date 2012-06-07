@@ -199,9 +199,7 @@ class Registry(object):
                     "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
                     " alt=\"\" title=\"Add another...\" /></span>"
 
-                html += "<span class=\"registry_node_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" id_to_remove=\"" + sGroupID + "\">"
-                html += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                    " alt=\"\" title=\"Remove\" /></span>"
+                html += "<span class=\"ui-icon ui-icon-close forceinline registry_node_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" id_to_remove=\"" + sGroupID + "\" title=\"Remove\"></span>"
 
                 html += "</div>" #end step header icons
 
@@ -278,9 +276,7 @@ class Registry(object):
                 "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/edit_add.png\"" \
                 " alt=\"\" title=\"Add another...\" /></span>"
 
-            html += "<span class=\"registry_node_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" id_to_remove=\"" + sGroupID + "\">"
-            html += "<img style=\"width:10px; height:10px;\" src=\"static/images/icons/fileclose.png\"" \
-                " alt=\"\" title=\"Remove\" /></span>"
+            html += "<span class=\"ui-icon ui-icon-close forceinline registry_node_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" id_to_remove=\"" + sGroupID + "\" title=\"Remove\"></span>"
 
             html += "</div>"
             html += "</div>"

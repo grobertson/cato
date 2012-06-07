@@ -396,8 +396,7 @@ function addDelimitedVar() {
                     " <input type=\"text\" value=\"" + varname + "\" id=\"v" + vid + "_name\"" +
                     " class=\"code var_name var_unique\" />";
     foo += "</span>";
-    foo += "<span class=\"variable_delete_btn\" remove_id=\"v" + vid + "\">" +
-                    "<img src=\"static/images/icons/fileclose.png\" alt=\"\" /></span>";
+    foo += "<span class=\"ui-icon ui-icon-close forceinline variable_delete_btn\" remove_id=\"v" + vid + "\"></span>";
     foo += "<br /><span class=\"variable_detail\">" +
                             "will contain the data from column position: " +
                             " <input type=\"text\" class=\"w100px code\" id=\"v" + vid + "_l_prop\"" +
@@ -471,8 +470,7 @@ function addParsedVar() {
                             "  class=\"code var_name var_unique\" />";
     foo += "</span>";
 
-    foo += "<span class=\"variable_delete_btn\" remove_id=\"v" + vid + "\">" +
-                    "<img src=\"static/images/icons/fileclose.png\" alt=\"\" /></span>";
+    foo += "<span class=\"ui-icon ui-icon-close forceinline variable_delete_btn\" remove_id=\"v" + vid + "\"></span>";
 
     //switch here on the type
     switch (typ) {

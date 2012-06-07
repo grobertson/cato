@@ -80,8 +80,8 @@ $(document).ready(function () {
         var id = "pv" + new Date().getTime();
         var html = "<div id=\"" + id + "\">" +
             "<textarea class=\"param_edit_value\" rows=\"1\"></textarea>" +
-            " <img class=\"param_edit_value_remove_btn pointer\" remove_id=\"" + id + "\"" +
-            " src=\"static/images/icons/fileclose.png\" alt=\"\" /></div>";
+            " <span class=\"ui-icon ui-icon-close forceinline param_edit_value_remove_btn pointer\" remove_id=\"" + id + "\"></span>" +
+            "</div>";
 
         $("#param_edit_values").append(html);
         $("#" + id + " textarea:first").focus();

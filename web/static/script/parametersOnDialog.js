@@ -27,7 +27,7 @@ $(document).ready(function () {
         var output = "";
         output += "<div class=\"task_launch_parameter_value\">";
         output += "<textarea class=\"task_launch_parameter_value_input\" width=\"90%\" rows=\"1\"></textarea>";
-        output += "<img class=\"parameter_dialog_remove_btn\" src=\"static/images/icons/fileclose.png\" alt=\"Remove Value\" />";
+        output += "<span class=\"ui-icon ui-icon-close forceinline parameter_dialog_remove_btn\" title=\"Remove Value\"></span>";
         output += "</div>";
 
         //and add it to the dialog
