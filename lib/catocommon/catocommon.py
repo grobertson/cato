@@ -146,8 +146,10 @@ def is_true(var):
 
 def tick_slash(s):
     """ Prepares string values for string concatenation, or insertion into MySql. """
-    return s.replace("'", "''").replace("\\", "\\\\").replace("%", "%%")
-
+    if s is not None:
+        return s.replace("'", "''").replace("\\", "\\\\").replace("%", "%%")
+    
+    return ""
 
 #this file has a global 'config' that gets populated automatically.
 config = read_config()

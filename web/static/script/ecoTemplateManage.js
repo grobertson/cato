@@ -195,16 +195,16 @@ function ExportEcotemplates() {
         data: '{"sEcotemplateArray":"' + ArrayString + '", "sIncludeTasks":"' + include_tasks + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
+        success: function (response) {
             //the return code might be a filename or an error.
             //if it's valid, it will have a ".xml" in it.
             //otherwise we assume it's an error
-            if (msg.d.indexOf(".xml") > -1) {
+            if (response.indexOf(".xml") > -1) {
                 //developer utility for renaming the file
                 //note: only works with one task at a time.
                 //var filename = RenameBackupFile(msg.d, ArrayString);
                 //the NORMAL way
-                var filename = msg.d;
+                var filename = response;
                 
                 $("#hidSelectedArray").val("");
                 $("#export_dialog").dialog("close");
@@ -221,7 +221,7 @@ function ExportEcotemplates() {
                 showInfo('Export Successful', html, true);
 
             } else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {

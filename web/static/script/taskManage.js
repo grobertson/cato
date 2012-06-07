@@ -362,35 +362,35 @@ function SaveNewTask() {
     });
 }
 
-function RenameBackupFile(src_file_name, otid) {
-	//real simple... call our rename webmethod for the file we just exported
-	
-	//but first, build a new name from the task name.
-	x = $("tr[task_id='" + otid + "']").children()[2];
-	newname = $(x).text().trim().toLowerCase().replace(/ /g, "-");
-	
-	newname = newname + ".csk";
-
-    $.ajax({
-        type: "POST",
-        async: false,
-        url: "taskMethods.asmx/wmRenameFile",
-        data: '{"sExistingName":"' + src_file_name + '","sNewFileName":"' + newname + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (msg) {
-            //the return code might be a filename or an error.
-            //if it's valid, it will have a ".csk" in it.
-            //otherwise we assume it's an error
-            if (msg.d.indexOf(".csk") > -1) {
-            } else {
-                showAlert(msg.d);
-            }
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
-
-	return newname;
-}
+// function RenameBackupFile(src_file_name, otid) {
+	// //real simple... call our rename webmethod for the file we just exported
+// 	
+	// //but first, build a new name from the task name.
+	// x = $("tr[task_id='" + otid + "']").children()[2];
+	// newname = $(x).text().trim().toLowerCase().replace(/ /g, "-");
+// 	
+	// newname = newname + ".csk";
+// 
+    // $.ajax({
+        // type: "POST",
+        // async: false,
+        // url: "taskMethods.asmx/wmRenameFile",
+        // data: '{"sExistingName":"' + src_file_name + '","sNewFileName":"' + newname + '"}',
+        // contentType: "application/json; charset=utf-8",
+        // dataType: "json",
+        // success: function (response) {
+            // //the return code might be a filename or an error.
+            // //if it's valid, it will have a ".csk" in it.
+            // //otherwise we assume it's an error
+            // if (response.indexOf(".csk") > -1) {
+            // } else {
+                // showAlertresponse);
+            // }
+        // },
+        // error: function (response) {
+            // showAlert(response.responseText);
+        // }
+    // });
+// 
+	// return newname;
+// }

@@ -152,6 +152,9 @@ with open("convert.in", 'r') as f_in:
 
             # Try/Catch blocks
             line = line.replace("try", "try:")
+            # fix a false match from the previous line
+            line = line.replace("egistry:", "egistry")
+            
             line = line.replace("catch (Exception ex)", "except Exception:")
             # I often threw "new exceptions" - python doesn't need the extra stuff
             line = line.replace("new Exception", "Exception")

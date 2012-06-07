@@ -287,7 +287,7 @@ function doGetSteps() {
 				validateStep();
 				$("#codeblock_steps_title").text(codeblock_name);
 			} catch (ex) {
-				showAlert(response.d);
+				showAlert(response);
 			}
         },
         error: function (response) {

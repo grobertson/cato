@@ -51,11 +51,9 @@ $(document).ready(function () {
         }
     });
 
-});
-
-function pageLoad() {
     ManagePageLoad();
-}
+	GetItems();
+});
 
 function SaveTag() {
     var bSave = true;
@@ -143,16 +141,16 @@ function DeleteItems() {
         data: '{"sDeleteArray":"' + ArrayString + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (msg) {
-            if (msg.d.length == 0) {
+        success: function (response) {
+            if (response.length == 0) {
                 $("#hidSelectedArray").val("");
                 $("#delete_dialog").dialog("close");
 
                 showInfo('Delete Successful');
 
-                $("[id*='btnSearch']").click();
+                GetItems();
             } else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {

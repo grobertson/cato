@@ -1,3 +1,4 @@
+import os
 import traceback
 import urllib
 import json
@@ -11,6 +12,7 @@ import catouser
 import asset
 import task
 import tag
+import registry
 from settings import settings
 
 # unlike uiCommon, which is used for shared ui elements
@@ -330,6 +332,7 @@ class uiMethods:
                         "<td>" + str((dr["Heartbeat"] if dr["Heartbeat"] else "")) + "</td>" \
                         "<td>" + str((dr["Enabled"] if dr["Enabled"] else "")) + "</td>" \
                         "<td>" + str((dr["mslr"] if dr["mslr"] else "")) + "</td>" \
+                        "<td><span class='ui-icon ui-icon-document forceinline view_component_log' component='" + str((dr["Component"] if dr["Component"] else "")) + "'></span></td>" \
                         "</tr>"
 
             sUserHTML = ""
@@ -374,6 +377,26 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
+    def wmGetProcessLogfile(self):
+        try:
+            component = uiCommon.getAjaxArg("component")
+            logfile = ""
+            if component and uiGlobals.config.has_key("logfiles"):
+                logdir = uiGlobals.config["logfiles"]
+                logfile = "%s/%s.log" % (logdir, component)
+                if os.path.exists(logfile):
+                    with open(logfile, 'r') as f:
+                        f.seek (0, 2)           # Seek @ EOF
+                        fsize = f.tell()        # Get Size
+                        f.seek (max (fsize-102400, 0), 0) # Set pos @ last n chars
+                        tail = f.readlines()       # Read to end
+
+                        return uiCommon.packJSON("".join(tail))
+            
+            return uiCommon.packJSON("Unable to read logfile. [%s]" % logfile)
+        except Exception, ex:
+            return ex.__str__()
+            
     def wmGetLog(self):
         try:
             sObjectID = uiCommon.getAjaxArg("sObjectID")
@@ -1652,3 +1675,97 @@ class uiMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
+    def wmGetRegistry(self):
+        """Return the registry editor, complete html block, to the requestor."""
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            # NOTE: there is only one global registry... id=1
+            # rather than spread that all over the script,if the objectid is "global"
+            # we'll change it to a 1
+            if sObjectID == "global":
+                sObjectID = "1"
+            
+            r = registry.Registry(sObjectID)
+            if not r:
+                return "Unable to get Registry for object id [%s]" % sObjectID
+
+            return r.DrawRegistryEditor()
+
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+
+    def wmAddRegistryNode(self):
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            sXPath = uiCommon.getAjaxArg("sXPath")
+            sName = uiCommon.getAjaxArg("sName")
+
+            # fail on missing values
+            if not sXPath:
+                return "{\"error\" : \"Missing XPath to add to.\"}"
+
+            # fail on empty name
+            if not sName:
+                return False, "{\"info\" : \"Node Name required.\"}"
+
+            r = registry.Registry(sObjectID)
+            if not r:
+                return "Unable to get Registry for object id [%s]" % sObjectID
+
+            result, msg = r.AddNode(sXPath, sName)
+            if not result:
+                return "{\"error\" : \"%s\"}" % msg
+                
+            
+            return "{\"result\" : \"success\"}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+   
+    def wmUpdateRegistryValue(self):
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            sXPath = uiCommon.getAjaxArg("sXPath")
+            sValue = uiCommon.getAjaxArg("sValue")
+            sEncrypt = uiCommon.getAjaxArg("sEncrypt")
+            
+            sValue = uiCommon.unpackJSON(sValue)
+
+            # fail on missing values
+            if not sXPath:
+                return "{\"error\" : \"Missing XPath to update.\"}"
+
+            r = registry.Registry(sObjectID)
+            if not r:
+                return "Unable to get Registry for object id [%s]" % sObjectID
+
+            result, msg = r.SetNodeText(sXPath, sValue, sEncrypt)
+            if not result:
+                return "{\"error\" : \"%s\"}" % msg
+                
+            
+            return "{\"result\" : \"success\"}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+   
+    def wmDeleteRegistryNode(self):
+        try:
+            sObjectID = uiCommon.getAjaxArg("sObjectID")
+            sXPath = uiCommon.getAjaxArg("sXPath")
+
+            # fail on missing values
+            if not sXPath:
+                return "{\"error\" : \"Missing path to remove.\"}"
+
+            r = registry.Registry(sObjectID)
+            if not r:
+                return "Unable to get Registry for object id [%s]" % sObjectID
+
+            result, msg = r.DeleteNode(sXPath)
+            if not result:
+                return "{\"error\" : \"%s\"}" % msg
+                
+            
+            return "{\"result\" : \"success\"}"
+        except Exception:
+            uiCommon.log_nouser(traceback.format_exc(), 0)
+   

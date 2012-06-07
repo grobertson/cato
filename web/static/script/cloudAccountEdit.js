@@ -606,7 +606,7 @@ function DeleteItems() {
 
                 $("#update_success_msg").text("Delete Successful").show().fadeOut(2000);
             } else {
-                showAlert(msg.d);
+                showAlert(response);
             }
         },
         error: function (response) {

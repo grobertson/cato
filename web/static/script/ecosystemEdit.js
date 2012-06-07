@@ -153,7 +153,6 @@ $(document).ready(function () {
 
 });
 function GetDetails() {
-	console.log("getting ecosystem")
 	$.ajax({
 		type : "POST",
 		async : false,
@@ -206,7 +205,7 @@ function tabWasClicked(tab) {
     } else if (tab == "details") {
     	//GetDetails();
         // TODO: Issue #284
-        //GetRegistry(g_eco_id);
+        GetRegistry(g_eco_id);
 
         //temporarily hidden until we enable parameters on ecosystems
         //doGetParams("ecosystem", g_eco_id);
