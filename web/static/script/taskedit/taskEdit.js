@@ -388,32 +388,6 @@ function doEmbeddedStepAdd(func, droptarget) {
     });
 }
 
-function doEmbeddedStepDelete() {
-    var remove_xpath = $("#embedded_step_remove_xpath").val();
-    var parent_id = $("#embedded_step_parent_id").val();
-
-    $("#update_success_msg").text("Updating...").show();
-    $.ajax({
-        async: false,
-        type: "POST",
-        url: "taskMethods/wmRemoveNodeFromStep",
-        data: '{"sRemovePath":"' + remove_xpath + '","sStepID":"' + parent_id + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (response) {
-            //reget the parent step
-            getStep(parent_id, parent_id, true);
-            $("#update_success_msg").text("Update Successful").fadeOut(2000);
-        },
-        error: function (response) {
-            $("#update_success_msg").fadeOut(2000);
-            showAlert(response.responseText);
-        }
-    });
-
-    $("#embedded_step_remove_xpath").val("");
-    $("#embedded_step_parent_id").val("");
-}
 
 function getStep(step_id, target, init) {
     $.ajax({

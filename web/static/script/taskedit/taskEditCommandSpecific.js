@@ -224,7 +224,7 @@ $(document).ready(function () {
             url: "taskMethods/wmFnWaitForTasksAddHandle",
             data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
+            dataType: "text",
             success: function (response) {
                 //go get the step
                 getStep(step_id, step_id, true);
@@ -239,19 +239,11 @@ $(document).ready(function () {
     });
 //End Wait For Task functions
 
-});
-
-
-
-
-
-
-
 
 //FUNCTIONS for adding/deleting key/value pairs on a step.
-$(document).ready(function () {
     $("#steps .fn_pair_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
 
         $("#task_steps").block({ message: null });
         $("#update_success_msg").text("Updating...").show();
@@ -260,10 +252,10 @@ $(document).ready(function () {
             async: false,
             type: "POST",
             url: "taskMethods/wmFnAddPair",
-            data: '{"sStepID":"' + step_id + '"}',
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
+            dataType: "text",
+            success: function (response) {
                 //go get the step
                 getStep(step_id, step_id, true);
                 $("#task_steps").unblock();
@@ -324,10 +316,19 @@ $(document).ready(function () {
         //hide any open pickers
         $("div[id$='_picker']").hide();
     });
+//end adding/deleting key/value pairs on a step.
+
 
 });
 
-//end adding/deleting key/value pairs on a step.
+
+
+
+
+
+
+
+
 
 
 
@@ -366,62 +367,6 @@ $(document).ready(function () {
 
 //End XML Node Array functions
 
-// THE BINDINGS FOR ALL THE VARIOUS REMOVE BUTTONS
-$(document).ready(function () {
-	// CUT THIS DOWN TO ONE NAME
-    $("#steps .fn_if_remove_btn").live("click", function () {
-        doRemoveNode(this)
-    });
-
-    $("#steps .fn_if_removeelse_btn").live("click", function () {
-        doRemoveNode(this)
-    });
-
-    $("#steps .fn_pair_remove_btn").live("click", function () {
-        doRemoveNode(this)
-    });
-
-    $("#steps .fn_var_remove_btn").live("click", function () {
-        doRemoveNode(this)
-    });
-
-    $("#steps .fn_handle_remove_btn").live("click", function () {
-        doRemoveNode(this)
-    });
-
-    $("#steps .fn_nodearray_remove_btn").live("click", function () {
-		doRemoveNode(this)
-    });
-});
-
-// This single function can remove any dynamically generated section from any command.
-// It simply removes a node from the document.
-function doRemoveNode(ctl) {
-    if (confirm("Are you sure?")) {
-        var step_id = $(ctl).attr("step_id");
-        var remove_path = $(ctl).attr("remove_path");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmRemoveNodeFromStep",
-            data: '{"sStepID":"' + step_id + '","sRemovePath":"' + remove_path + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    }
-}
 
 function doAddIfSection(step_id, add_to, idx) {
     $("#task_steps").block({ message: null });

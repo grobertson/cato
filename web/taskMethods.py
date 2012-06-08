@@ -1304,18 +1304,19 @@ class taskMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmFnWaitForTasksAddHandle(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        sAddTo = uiCommon.getAjaxArg("sAddTo")
         try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
             ST.AddToCommandXML(sStepID, sAddTo, "<handle><name input_type=\"text\"></name></handle>")
             return ""
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmFnAddPair(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
         try:
-            ST.AddToCommandXML(sStepID, "", "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
+            ST.AddToCommandXML(sStepID, sAddTo, "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
 
             return ""
         except Exception:

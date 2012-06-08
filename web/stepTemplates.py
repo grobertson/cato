@@ -308,7 +308,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             
             #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
             if bIsRemovable:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
         else: #there is more than one child... business as usual
             log("-- more children ... drawing and drilling down ... ", 4)
             sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
@@ -326,7 +326,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             #so, it gets a delete link
             #you can't remove unless there are more than one
             if bIsRemovable:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
             sHTML += "</div>" #end step header icons
             sHTML += "  </div>" #end header
     
@@ -366,7 +366,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
         sHTML += DrawField(xeNode, sXPath, oStep)
         #it may be that these fields themselves are removable
         if bIsRemovable:
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
     
     #ok, now that we've drawn it, it might be intended to go on the "options tab".
     #if so, stick it there
@@ -853,6 +853,10 @@ def DrawDropZone(oStep, xEmbeddedFunction, sXPath, sLabel, bRequired):
     return sHTML
 
 def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLabel):
+    # the base xpath of this command (will be '' unless this is embedded)
+    # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+    base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+
     sStepID = oStep.ID
     sFunction = oStep.FunctionName
     xd = oStep.FunctionXDoc
@@ -914,7 +918,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         sHTML += "<td class=\"w1pct\" align=\"right\">"
         # can't delete the first one
         if i > 1:
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_pair_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "pair[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
         sHTML += "</td>"
 
         sHTML += "</tr></table>\n"
@@ -922,7 +926,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         i += 1
 
     sHTML += "<div class=\"fn_pair_add_btn pointer\"" \
-        " add_to_id=\"" + sStepID + "_pairs\"" \
+        " add_to_node=\"" + oStep.XPathPrefix + "\"" \
         " step_id=\"" + sStepID + "\">" \
         "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
     sHTML += "</div>"
@@ -1533,8 +1537,9 @@ def RunTask(oStep):
         sHTML += "<br />"
 
         #  asset
+        sAssetField = catocommon.new_guid()
         sHTML += "<input type=\"text\" " + \
-            CommonAttribsWithID(oStep, False, "asset_id", sOTIDField, "hidden") + \
+            CommonAttribsWithID(oStep, False, "asset_id", sAssetField, "hidden") + \
             " value=\"" + sAssetID + "\" />"
     
         sHTML += "Asset: \n"
@@ -1545,14 +1550,14 @@ def RunTask(oStep):
             " class=\"code w75pct\"" \
             " id=\"fn_run_task_assetname_" + sStepID + "\"" + \
             (" disabled=\"disabled\"" if uiCommon.IsGUID(sAssetID) else "") + \
-            " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sOTIDField + "');\"" \
+            " onchange=\"javascript:pushStepFieldChangeVia(this, '" + sAssetField + "');\"" \
             " value=\"" + sAssetName + "\" />\n"
     
         sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_field_clear_btn pointer\" clear_id=\"fn_run_task_assetname_" + sStepID + "\"" \
             " title=\"Clear\"></span>"
     
         sHTML += "<span class=\"ui-icon ui-icon-search forceinline asset_picker_btn pointer\" title=\"Select\"" \
-            " link_to=\"" + sOTIDField + "\"" \
+            " link_to=\"" + sAssetField + "\"" \
             " target_field_id=\"fn_run_task_assetname_" + sStepID + "\"" \
             " step_id=\"" + sStepID + "\"></span>\n"
     
@@ -1736,7 +1741,7 @@ def WaitForTasks(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_handle_remove_btn pointer\" remove_path=\"" + base_xpath + "handle[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "handle[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1746,7 +1751,6 @@ def WaitForTasks(oStep):
     
         sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
             " add_to_node=\"" + oStep.XPathPrefix + "\"" \
-            " add_to_id=\"v" + sStepID + "_handles\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\"></span> ( click to add another )</div>"
         sHTML += "</div>"
@@ -1791,7 +1795,7 @@ def ClearVariable(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1873,7 +1877,7 @@ def SetVariable(oStep):
             sHTML += "<td class=\"w1pct\">"
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
             sHTML += "</td>"
     
             sHTML += "</tr>\n"
@@ -2049,7 +2053,7 @@ def If(oStep):
                 sHTML += "If:<br />"
             else:
                 sHTML += "<div id=\"if_" + sStepID + "_else_" + str(i) + "\" class=\"fn_if_else_section\">"
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_if_remove_btn pointer\" remove_path=\"" + base_xpath + "tests/test[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove this Else If condition.\"></span> "
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "tests/test[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove this Else If condition.\"></span> "
                 sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
     
     
@@ -2080,7 +2084,6 @@ def If(oStep):
     
         # draw an add link.  The rest will happen on the client.
         sHTML += "<div class=\"fn_if_add_btn pointer\"" \
-            " add_to_id=\"if_" + sStepID + "_conditions\"" \
             " add_to_node=\"" + oStep.XPathPrefix + "\"" \
             " step_id=\"" + sStepID + "\"" \
             " next_index=\"" + str(i) + "\">" \
@@ -2092,7 +2095,7 @@ def If(oStep):
         # the final 'else' area
         xElse = xd.find("else", "")
         if xElse is not None:
-            sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\" remove_path=\"" + base_xpath + "else\">" \
+            sHTML += "<span class=\"fn_node_remove_btn pointer\" step_id=\"" + sStepID + "\" remove_path=\"" + base_xpath + "else\">" \
                "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Remove this Else condition.\"></span></span> "
             sHTML += "Else (no 'If' conditions matched):"
 
@@ -2102,7 +2105,6 @@ def If(oStep):
         else:
             # draw an add link.  The rest will happen on the client.
             sHTML += "<div class=\"fn_if_addelse_btn pointer\"" \
-                " add_to_id=\"if_" + sStepID + "_else\"" \
                 " add_to_node=\"" + oStep.XPathPrefix + "\"" \
                 " step_id=\"" + sStepID + "\">" \
                 "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add an Else section.\"></span>( click to add a final 'Else' section )</div>"
@@ -2239,7 +2241,7 @@ def Exists(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_var_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             # if i % 3 == 0 and i >= 3:

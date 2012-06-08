@@ -428,7 +428,10 @@ $(document).ready(function() {
         },
         buttons: {
             'Delete': function() {
-                doEmbeddedStepDelete();
+			    var remove_path = $("#embedded_step_remove_xpath").val();
+			    var step_id = $("#embedded_step_parent_id").val();
+			
+                doRemoveNode(step_id, remove_path);
                 $(this).dialog("close");
             },
             Cancel: function() {
@@ -458,6 +461,16 @@ $(document).ready(function() {
     //////END DIALOGS
 
 
+	// NODE DELETE
+	// this single binding hook up every command node deletion function
+    $("#steps .fn_node_remove_btn").live("click", function () {
+	    if (confirm("Are you sure?")) {
+	        var step_id = $(this).attr("step_id");
+	        var remove_path = $(this).attr("remove_path");
+	
+	        doRemoveNode(step_id, remove_path);
+		}
+    });
 });
 
 function pageLoad() {
@@ -477,6 +490,29 @@ function pageLoad() {
 
 }
 
+// This single function can remove any dynamically generated section from any command.
+// It simply removes a node from the document.
+function doRemoveNode(step_id, remove_path) {
+    $("#task_steps").block({ message: null });
+    $("#update_success_msg").text("Updating...").show();
+
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "taskMethods/wmRemoveNodeFromStep",
+        data: '{"sStepID":"' + step_id + '","sRemovePath":"' + remove_path + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "text",
+        success: function (response) {
+            getStep(step_id, step_id, true);
+            $("#task_steps").unblock();
+            $("#update_success_msg").text("Update Successful").fadeOut(2000);
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 //called in rare cases when the value entered in one field should push it's update through another field.
 //(when the "wired" field is hidden, and the data entry field is visible but not wired.)
