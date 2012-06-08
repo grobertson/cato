@@ -3091,7 +3091,7 @@ proc set_ecosystem_registry {command} {
 	regsub -all "&" $command "&amp;" command
 	set xmldoc [dom parse $command]
 	set root [$xmldoc documentElement]
-	set pairs [$root selectNodes pair]
+	set pairs [$root selectNodes //pair]
 	set output_buf "Added the following key, value pairs to the dataset"
 
 	foreach pair $pairs {

@@ -460,6 +460,40 @@ $(document).ready(function() {
     });
     //////END DIALOGS
 
+	// NODE ADD
+	// This single binding handles all the places where a new content node is added to a step.
+    $("#steps .fn_node_add_btn").live("click", function () {
+    	
+    	// these fully dynamic commands read the section they are gonna add from the original template xml
+		// so, it needs the function name and a template xpath in order to be able to look that up.   	
+    	
+        var step_id = $(this).attr("step_id");
+        var func_name = $(this).attr("function_name");
+        var template_path = $(this).attr("template_path");
+        var add_to = $(this).attr("add_to_node");
+
+        $("#task_steps").block({ message: null });
+        $("#update_success_msg").text("Updating...").show();
+
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "taskMethods/wmFnNodeArrayAdd",
+            data: '{"sStepID":"' + step_id + '","sFunctionName":"' + func_name + '","sTemplateXPath":"' + template_path + '","sAddTo":"' + add_to + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (retval) {
+                //go get the step
+                getStep(step_id, step_id, true);
+                $("#task_steps").unblock();
+                $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
+            },
+            error: function (response) {
+                showAlert(response.responseText);
+            }
+        });
+    });
 
 	// NODE DELETE
 	// this single binding hook up every command node deletion function

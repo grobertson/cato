@@ -33,8 +33,7 @@
 					<on_error input_type="text" />
 					<asset_id input_type="text" />
 					<handle input_type="text" />
-					<parameters>
-					</parameters>
+					<parameters></parameters>
 				</function>
 			</command>
 			<command name="sleep" label="Sleep" description="Sleeps for a selected number of seconds." help="&lt;b&gt;Sleep&lt;/b&gt;&lt;br&gt;Sleep is used to pause task execution for the number of seconds entered." icon="static/images/icons/player_pause_32.png">
@@ -49,9 +48,11 @@
 			</command>
 			<command name="wait_for_tasks" label="Wait For Tasks" description="Waits for one or more Tasks to complete." help="&lt;b&gt;Wait For Task&lt;/b&gt;&lt;p&gt;Waits for one or more processing Tasks to complete.  Enter one or more Task Handles, and the command will wait until all of them have completed processing.&lt;/p&gt;&lt;p&gt;A Task will be considered 'completed' if it is in any of the non-running statuses, including Canceled, Error, and Completed.&lt;/p&gt;&lt;p style='font-style: italic;'&gt;Note: Enter Handle names as text, such as MYHANDLE, not in variable reference syntax [[MYHANDLE]].&lt;/p&gt;" icon="static/images/icons/wait_32.png">
 				<function name="wait_for_tasks">
-					<handle>
-						<name input_type="text" />
-					</handle>
+					<handles>
+						<handle>
+							<name input_type="text" />
+						</handle>
+					</handles>
 				</function>
 			</command>
 			<command name="get_instance_handle" label="Get Task Instance" description="Gets a handle on a running Task Instance." help="&lt;b&gt;Wait For Task&lt;/b&gt;&lt;p&gt;Get a handle on a running Task Instance.  Enter a Task Instance number, and the command will return variable handle exposing all the properties of the running Task.&lt;/p&gt;&lt;p&gt;Note: Enter Handle names as text, such as MYHANDLE, not in variable reference syntax [[MYHANDLE]].&lt;/p&gt;" icon="static/images/icons/get_instance_32.png">
@@ -168,15 +169,15 @@
 				</function>
 			</command>
 			<!--<command name="transfer" label="Transfer" description="File transfer between hosts." help="&lt;b&gt;Transfer&lt;/b&gt; is used to copy a file between two Assets. Required values are: From: Asset, File and To: Asset, File." icon="static/images/icons/transfer_32.png">
-				<function name="transfer">
-					<from_asset input_type="text" />
-					<from_file input_type="text" />
-					<to_asset input_type="text" />
-					<to_file input_type="text" />
-					<mode input_type="select">SCP</mode>
-					<command input_type="select" />
-					<returnvar input_type="text" />
-				</function>
+			<function name="transfer">
+			<from_asset input_type="text" />
+			<from_file input_type="text" />
+			<to_asset input_type="text" />
+			<to_file input_type="text" />
+			<mode input_type="select">SCP</mode>
+			<command input_type="select" />
+			<returnvar input_type="text" />
+			</function>
 			</command>-->
 			<command name="http" label="HTTP" description="Http get to retrieve html data." help="&lt;b&gt;HTTP&lt;/b&gt;&lt;br&gt;The HTTP command can either issue an http get remote url. It will retrieve the resulting html or xml and place that data in the output buffer to be processed into variables.&lt;br&gt;&lt;br&gt;Select either http get or post from the Request Type drop down. Next type in the url text box that is to be issued. Make sure to include the http:// or https:// prefix to the url. &lt;br&gt;&lt;br&gt;Parameters can be added to the Post request type. Click the + icon below the Parameters section to add Key Value pairs that will be sent to the target url. &lt;br&gt;&lt;br&gt;Variables can be populated from the resulting html or xml that is returned from the target webserver. Click the Variables icon to popup the variables management page." icon="static/images/icons/internet_32.png">
 				<function name="http" variables="true" parse_method="2">
@@ -190,18 +191,22 @@
 		<commands>
 			<command name="set_variable" label="Set Variables" description="Sets a variable to a value." help="&lt;b&gt;Set Variable&lt;/b&gt;&lt;br&gt;Set Variable is used to populate a variable with alphanumeric data. It can be used to set multiple variables within the same command. &lt;br&gt;&lt;br&gt;Add the variable name to the Variable: input field. Allowable characters: A-z, 0-9, underscore and dash. To set a specific element in a variable array, use a comma immediately followed by an integer. For example to set the fifth element in the variable array MY_VAR: MY_VAR,5&lt;br&gt;&lt;br&gt;Use the modifier drop down selector to change the data to upper or lower case as the variable is set&lt;br&gt;&lt;br&gt;Enter the data to set the variable to in the Value: entry field. This can be any length with any type of data.&lt;br&gt;&lt;br&gt;To set multiple variables with the same Set Variable command click the plus sign or click to add another text below the last variable added." icon="static/images/icons/bookmark_add_32.png">
 				<function name="set_variable">
-					<variable>
-						<name input_type="text" />
-						<value input_type="text" />
-						<modifier input_type="select">DEFAULT</modifier>
-					</variable>
+					<variables>
+						<variable>
+							<name input_type="text" />
+							<value input_type="text" />
+							<modifier input_type="select">DEFAULT</modifier>
+						</variable>
+					</variables>
 				</function>
 			</command>
 			<command name="clear_variable" label="Clear Variables" description="Removes variables from memory." help="&lt;b&gt;Clear Variables&lt;/b&gt;&lt;br&gt;&lt;br&gt;Clear Variables is used to delete a variable from memory. If the variable is an array the whole array will be cleared. Add additional variables to be cleared by clicking the add link. " icon="static/images/icons/bookmark_delete_32.png">
 				<function name="clear_variable">
-					<variable>
-						<name input_type="text" />
-					</variable>
+					<variables>
+						<variable>
+							<name input_type="text" />
+						</variable>
+					</variables>
 				</function>
 			</command>
 			<command name="parse_text" label="Parse Text" description="Variables to be extracted from text data." help="&lt;b&gt;Parse Text&lt;/b&gt;&lt;br&gt;Parse Text is used when there there are data or variables that need to be further processed into variables or arrays of variables. For instance suppose there is a variable populated with text that needs to be parsed using row and column delimiters. Enter the variable (or multiple variables if required) in the Text to Process: input box and click the Variables icon below. Enter set the row and column delmiters and identify the variables to be populated. " icon="static/images/icons/bookmark_toolbar_32.png">
@@ -219,19 +224,23 @@
 			</command>
 			<command name="set_ecosystem_registry" label="Set Ecosystem Registry" description="Updates a value in an Ecosystem Registry" help="Set Ecosystem Registry is used to update a value in an Ecosystem Registry.&lt;br /&gt;&lt;br /&gt;Useful for saving Task specific state or configuration information between Task runs.&lt;br /&gt;&lt;br /&gt;[[variables]] are permitted." icon="static/images/icons/kexi_32.png">
 				<function name="set_ecosystem_registry">
-					<pair>
-						<key input_type="text" />
-						<value input_type="text" />
-						<mask input_type="checkbox" />
-					</pair>
+					<pairs>
+						<pair>
+							<key input_type="text" />
+							<value input_type="text" />
+							<mask input_type="checkbox" />
+						</pair>
+					</pairs>
 				</function>
 			</command>
 			<command name="exists" label="Exists" description="The Exists command will check one or more variables to ensure they have values" help="&lt;b&gt;Exists&lt;/b&gt;&lt;br /&gt;The Exists command will check one or more variables to ensure they have values&lt;br /&gt;" icon="static/images/icons/exists.png">
 				<function name="exists">
-					<variable>
-						<name input_type="text" />
-						<is_true>0</is_true>
-					</variable>
+					<variables>
+						<variable>
+							<name input_type="text" />
+							<is_true>0</is_true>
+						</variable>
+					</variables>
 					<actions>
 						<negative_action />
 						<positive_action />
@@ -244,8 +253,7 @@
 		<commands>
 			<command name="get_ecosystem_objects" label="Get Ecosystem Objects" description="Retrieves all of the objects for a ecosystem of a given object type. " help="" icon="static/images/icons/database_32.png">
 				<function name="get_ecosystem_objects">
-					<object_type input_type="select" label="Object Type">
-					</object_type>
+					<object_type input_type="select" label="Object Type"></object_type>
 					<cloud_filter label="Cloud Filter" input_type="text" />
 					<result_name label="Result Variable" input_type="text" />
 					<cloud_name label="Cloud Name Variable" input_type="text" />

@@ -196,8 +196,11 @@ update task_step set function_xml =
 replace(function_xml,
 '<function command_type="dataset"',
 '<function name="set_ecosystem_registry"'),
+function_xml = replace(function_xml,
+'<function name="dataset"',
+'<function name="set_ecosystem_registry"'),
 function_name = 'set_ecosystem_registry'
-where function_name = 'dataset';
+where function_name = 'dataset' or function_name = 'set_ecosystem_registry';
 
 
 
@@ -207,8 +210,77 @@ replace(function_xml, '</function>', concat(ifnull(replace(replace(variable_xml,
 where variable_xml is not null
 and function_xml not like '%<step_variables>%';
 
+
 # THIS changes the "command_type" attribute to "name".
 # it wasn't used before but now it is.
 update task_step set function_xml = 
 replace(function_xml, '<function command_type=', '<function name=')
 where function_xml like '<function command_type=%';
+
+
+
+# NOTE: these happen AFTER the command_type->name change, because replace operations 
+# happen here requiring 'name'
+
+# CLEAR VARIABLE
+update task_step set 
+function_xml = replace(function_xml,
+'<function name="clear_variable"><variable>',
+'<function name="clear_variable"><variables><variable>'
+),
+function_xml = replace(function_xml,
+'</variable></function>',
+'</variable></variables></function>'
+)
+where function_name = 'clear_variable';
+
+# SET VARIABLE
+update task_step set 
+function_xml = replace(function_xml,
+'<function name="set_variable"><variable>',
+'<function name="set_variable"><variables><variable>'
+),
+function_xml = replace(function_xml,
+'</variable></function>',
+'</variable></variables></function>'
+)
+where function_name = 'set_variable';
+
+# EXISTS
+update task_step set 
+function_xml = replace(function_xml,
+'<function name="exists"><variable>',
+'<function name="exists"><variables><variable>'
+),
+function_xml = replace(function_xml,
+'</variable></function>',
+'</variable></variables></function>'
+)
+where function_name = 'exists';
+
+# WAIT FOR TASKS
+update task_step set 
+function_xml = replace(function_xml,
+'<function name="wait_for_tasks"><handle>',
+'<function name="wait_for_tasks"><handles><handle>'
+),
+function_xml = replace(function_xml,
+'</handle></function>',
+'</handle></handles></function>'
+)
+where function_name = 'wait_for_tasks';
+
+
+# SET ECOSYSTEM REGISTRY
+update task_step set 
+function_xml = replace(function_xml,
+'<function name="set_ecosystem_registry"><pair>',
+'<function name="set_ecosystem_registry"><pairs><pair>'
+),
+function_xml = replace(function_xml,
+'</pair></function>',
+'</pair></pairs></function>'
+)
+where function_name = 'set_ecosystem_registry';
+
+

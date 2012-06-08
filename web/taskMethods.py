@@ -1266,62 +1266,6 @@ class taskMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
-    def wmFnSetvarAddVar(self):
-        try:
-            sStepID = uiCommon.getAjaxArg("sStepID")
-            sAddTo = uiCommon.getAjaxArg("sAddTo")
-
-            ST.AddToCommandXML(sStepID, sAddTo, "<variable>" \
-                "<name input_type=\"text\"></name>" \
-                "<value input_type=\"text\"></value>" \
-                "<modifier input_type=\"select\">DEFAULT</modifier>" \
-                "</variable>")
-
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnClearvarAddVar(self):
-        try:
-            sStepID = uiCommon.getAjaxArg("sStepID")
-            sAddTo = uiCommon.getAjaxArg("sAddTo")
-
-            ST.AddToCommandXML(sStepID, sAddTo, "<variable><name input_type=\"text\"></name></variable>")
-
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnExistsAddVar(self):
-        try:
-            sStepID = uiCommon.getAjaxArg("sStepID")
-            sAddTo = uiCommon.getAjaxArg("sAddTo")
-
-            ST.AddToCommandXML(sStepID, sAddTo, "<variable><name input_type=\"text\"></name><is_true>0</is_true></variable>")
-
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnWaitForTasksAddHandle(self):
-        try:
-            sStepID = uiCommon.getAjaxArg("sStepID")
-            sAddTo = uiCommon.getAjaxArg("sAddTo")
-            ST.AddToCommandXML(sStepID, sAddTo, "<handle><name input_type=\"text\"></name></handle>")
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnAddPair(self):
-        try:
-            sStepID = uiCommon.getAjaxArg("sStepID")
-            sAddTo = uiCommon.getAjaxArg("sAddTo")
-            ST.AddToCommandXML(sStepID, sAddTo, "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
-
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
     def wmFnIfAddSection(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")

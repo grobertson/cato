@@ -323,7 +323,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             #so, it gets an add link.
             sHTML += "<div class=\"step_header_icons\">" #step header icons
             if bIsEditable:
-                sHTML += "<div class=\"ui-icon ui-icon-plus forceinline fn_nodearray_add_btn pointer\"" + " step_id=\"" + oStep.ID + "\"" \
+                sHTML += "<div class=\"ui-icon ui-icon-plus forceinline fn_node_add_btn pointer\"" + " step_id=\"" + oStep.ID + "\"" \
                     " function_name=\"" + oStep.FunctionName + "\"" \
                     " template_path=\"" + sXPath + "\"" \
                     " add_to_node=\"" + base_xpath + sXPath + "\"" \
@@ -876,7 +876,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
     sHTML += "<div id=\"" + sStepID + "_pairs\">"
 
 
-    xPairs = xd.findall("pair")
+    xPairs = xd.findall("pairs/pair")
     i = 1
     for xe in xPairs:
         sKey = xe.findtext("key")
@@ -886,7 +886,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\"><tr>\n"
         sHTML += "<td class=\"w1pct\">&nbsp;" + sKeyLabel + ":&nbsp;</td>\n"
 
-        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribsWithID(oStep, True, "pair[" + str(i) + "]/key", sElementID, "") + \
+        sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribsWithID(oStep, True, "pairs/pair[" + str(i) + "]/key", sElementID, "") + \
             " validate_as=\"variable\"" \
             " value=\"" + uiCommon.SafeHTML(sKey) + "\"" \
             " help=\"Enter a name.\"" \
@@ -903,7 +903,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         sHTML += "<td class=\"w1pct\">&nbsp;" + sValueLabel + ":&nbsp;</td>"
 
         #  we gotta get the field id first, but don't show the textarea until after
-        sCommonAttribs = CommonAttribsWithID(oStep, True, "pair[" + str(i) + "]/value", sValueFieldID, "w90pct")
+        sCommonAttribs = CommonAttribsWithID(oStep, True, "pairs/pair[" + str(i) + "]/value", sValueFieldID, "w90pct")
 
         sHTML += "<td class=\"w50pct\"><input type=\"text\" " + sCommonAttribs + \
             " value=\"" + uiCommon.SafeHTML(sVal) + "\"" \
@@ -918,7 +918,7 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
             sHTML += "<td>"
 
             sHTML += "&nbsp;Mask?: <input type=\"checkbox\" " + \
-                CommonAttribs(oStep, True, "pair[" + str(i) + "]/mask", "") + " " + SetCheckRadio("1", sMask) + " />\n"
+                CommonAttribs(oStep, True, "pairs/pair[" + str(i) + "]/mask", "") + " " + SetCheckRadio("1", sMask) + " />\n"
 
 
             sHTML += "</td>\n"
@@ -926,15 +926,17 @@ def DrawKeyValueSection(oStep, bShowPicker, bShowMaskOption, sKeyLabel, sValueLa
         sHTML += "<td class=\"w1pct\" align=\"right\">"
         # can't delete the first one
         if i > 1:
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "pair[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "pairs/pair[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
         sHTML += "</td>"
 
         sHTML += "</tr></table>\n"
 
         i += 1
 
-    sHTML += "<div class=\"fn_pair_add_btn pointer\"" \
-        " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+    sHTML += "<div class=\"fn_node_add_btn pointer\"" \
+        " function_name=\"" + oStep.FunctionName + "\"" \
+        " template_path=\"pairs\"" \
+        " add_to_node=\"" + base_xpath + "pairs\"" \
         " step_id=\"" + sStepID + "\">" \
         "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
     sHTML += "</div>"
@@ -1736,12 +1738,12 @@ def WaitForTasks(oStep):
         sHTML += "<div id=\"v" + sStepID + "_handles\">"
         sHTML += "Task Handles:<br />"
     
-        xPairs = xd.findall("handle")
+        xPairs = xd.findall("handles/handle")
         i = 1
         for xe in xPairs:
             sKey = xe.findtext("name", "")
     
-            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "handle[" + str(i) + "]/name", "") + \
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "handles/handle[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Handle name.\"" \
@@ -1749,7 +1751,7 @@ def WaitForTasks(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "handle[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "handles/handle[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1757,8 +1759,10 @@ def WaitForTasks(oStep):
     
             i += 1
     
-        sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
-            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+        sHTML += "<div class=\"fn_node_add_btn pointer\"" \
+            " function_name=\"" + oStep.FunctionName + "\"" \
+            " template_path=\"handles\"" \
+            " add_to_node=\"" + base_xpath + "handles\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\"></span> ( click to add another )</div>"
         sHTML += "</div>"
@@ -1785,7 +1789,7 @@ def ClearVariable(oStep):
         sHTML += "<div id=\"v" + sStepID + "_vars\">"
         sHTML += "Variables to Clear:<br />"
     
-        xPairs = xd.findall("variable")
+        xPairs = xd.findall("variables/variable")
         i = 1
         for xe in xPairs:
             sKey = xe.findtext("name", "")
@@ -1793,9 +1797,9 @@ def ClearVariable(oStep):
             # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
             # hokey, but doing it here because the field update function is global.
             if sKey.strip() != sKey:
-                SetNodeValueinCommandXML(sStepID, base_xpath + "variable[" + str(i) + "]/name", sKey.strip())
+                SetNodeValueinCommandXML(sStepID, base_xpath + "variables/variable[" + str(i) + "]/name", sKey.strip())
     
-            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
+            sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + CommonAttribs(oStep, True, "variables/variable[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Variable name.\"" \
@@ -1803,7 +1807,7 @@ def ClearVariable(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variables/variable[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1811,8 +1815,10 @@ def ClearVariable(oStep):
     
             i += 1
     
-        sHTML += "<div class=\"fn_clearvar_add_btn pointer\"" \
-            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+        sHTML += "<div class=\"fn_node_add_btn pointer\"" \
+            " function_name=\"" + oStep.FunctionName + "\"" \
+            " template_path=\"variables\"" \
+            " add_to_node=\"" + base_xpath + "variables\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"
@@ -1836,7 +1842,7 @@ def SetVariable(oStep):
         sHTML += "<div id=\"v" + sStepID + "_vars\">"
         sHTML += "<table border=\"0\" class=\"w99pct\" cellpadding=\"0\" cellspacing=\"0\">\n"
     
-        xPairs = xd.findall("variable")
+        xPairs = xd.findall("variables/variable")
         i = 1
         for xe in xPairs:
     
@@ -1847,11 +1853,11 @@ def SetVariable(oStep):
             # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
             # hokey, but doing it here because the field update function is global.
             if sKey.strip() != sKey:
-                SetNodeValueinCommandXML(sStepID, base_xpath + "variable[" + str(i) + "]/name", sKey.strip())
+                SetNodeValueinCommandXML(sStepID, base_xpath + "variables/variable[" + str(i) + "]/name", sKey.strip())
     
             sHTML += "<tr>\n"
             sHTML += "<td class=\"w1pct\">&nbsp;Variable:&nbsp;</td>\n"
-            sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
+            sHTML += "<td class=\"w1pct\"><input type=\"text\" " + CommonAttribs(oStep, True, "variables/variable[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Variable name.\"" \
@@ -1860,7 +1866,7 @@ def SetVariable(oStep):
     
             #  we gotta get the field id first, but don't show the textarea until after
             sValueFieldID = catocommon.new_guid()
-            sCommonAttribs = CommonAttribsWithID(oStep, True, "variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
+            sCommonAttribs = CommonAttribsWithID(oStep, True, "variables/variable[" + str(i) + "]/value", sValueFieldID, "w90pct")
     
             sHTML += "<td class=\"w75pct\" style=\"vertical-align: bottom;\"><textarea rows=\"1\" style=\"height: 18px;\" " + sCommonAttribs + \
                 " help=\"Enter a value for the Variable.\"" \
@@ -1872,7 +1878,7 @@ def SetVariable(oStep):
     
             sHTML += "<td class=\"w1pct\">&nbsp;Modifier:&nbsp;</td>"
             sHTML += "<td class=\"w75pct\">"
-            sHTML += "<select " + CommonAttribs(oStep, False, "variable[" + str(i) + "]/modifier", "") + ">\n"
+            sHTML += "<select " + CommonAttribs(oStep, False, "variables/variable[" + str(i) + "]/modifier", "") + ">\n"
             sHTML += "  <option " + SetOption("", sMod) + " value=\"\">--None--</option>\n"
             sHTML += "  <option " + SetOption("TO_UPPER", sMod) + " value=\"TO_UPPER\">UPPERCASE</option>\n"
             sHTML += "  <option " + SetOption("TO_LOWER", sMod) + " value=\"TO_LOWER\">lowercase</option>\n"
@@ -1885,7 +1891,7 @@ def SetVariable(oStep):
             sHTML += "<td class=\"w1pct\">"
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variables/variable[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
             sHTML += "</td>"
     
             sHTML += "</tr>\n"
@@ -1894,8 +1900,10 @@ def SetVariable(oStep):
     
         sHTML += "</table>\n"
     
-        sHTML += "<div class=\"fn_setvar_add_btn pointer\"" \
-            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+        sHTML += "<div class=\"fn_node_add_btn pointer\"" \
+            " function_name=\"" + oStep.FunctionName + "\"" \
+            " template_path=\"variables\"" \
+            " add_to_node=\"" + base_xpath + "variables\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\" />( click to add another )</div>"
         sHTML += "</div>"
@@ -2226,7 +2234,7 @@ def Exists(oStep):
         sHTML += "<div id=\"v" + oStep.ID + "_vars\">"
         sHTML += "Variables to Test:<br />"
     
-        xPairs = xd.findall("variable")
+        xPairs = xd.findall("variables/variable")
         i = 1
         for xe in xPairs:
             sKey = xe.findtext("name", "")
@@ -2235,21 +2243,21 @@ def Exists(oStep):
             # Trac#389 - Make sure variable names are trimmed of whitespace if it exists
             # hokey, but doing it here because the field update function is global.
             if sKey.strip() != sKey:
-                SetNodeValueinCommandXML(oStep.ID, base_xpath + "variable[" + str(i) + "]/name", sKey.strip())
+                SetNodeValueinCommandXML(oStep.ID, base_xpath + "variables/variable[" + str(i) + "]/name", sKey.strip())
     
             sHTML += "&nbsp;&nbsp;&nbsp;<input type=\"text\" " + \
-                CommonAttribs(oStep, True, "variable[" + str(i) + "]/name", "") + \
+                CommonAttribs(oStep, True, "variables/variable[" + str(i) + "]/name", "") + \
                 " validate_as=\"variable\"" \
                 " value=\"" + sKey + "\"" \
                 " help=\"Enter a Variable name.\"" \
                 " />"
     
             sHTML += "&nbsp; Is True:<input type=\"checkbox\" " + \
-                CommonAttribs(oStep, True, "variable[" + str(i) + "]/is_true", "") + " " + SetCheckRadio("1", sIsTrue) + " />\n"
+                CommonAttribs(oStep, True, "variables/variable[" + str(i) + "]/is_true", "") + " " + SetCheckRadio("1", sIsTrue) + " />\n"
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variable[" + str(i) + "]\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + "variables/variable[" + str(i) + "]\" step_id=\"" + oStep.ID + "\" title=\"Remove\"></span>"
     
             # break it every three fields
             # if i % 3 == 0 and i >= 3:
@@ -2257,8 +2265,10 @@ def Exists(oStep):
     
             i += 1
     
-        sHTML += "<div class=\"fn_exists_add_btn pointer\"" \
-            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+        sHTML += "<div class=\"fn_node_add_btn pointer\"" \
+            " function_name=\"" + oStep.FunctionName + "\"" \
+            " template_path=\"variables\"" \
+            " add_to_node=\"" + base_xpath + "variables\"" \
             " step_id=\"" + oStep.ID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another.\"></span>( click to add another )</div>"
         sHTML += "</div>"

@@ -98,7 +98,7 @@ $(document).ready(function () {
 // end SUBTASK and RUN TASK commands
 
 
-//the IF command
+//the IF command has a special add mechanism all to itself.
     $("#steps .fn_if_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
         var idx = $(this).attr("next_index");
@@ -125,153 +125,9 @@ $(document).ready(function () {
 //end IF command
 
 
-//FUNCTIONS for adding/deleting variables on the set_variable AND clear_variable commands.
-    $("#steps .fn_setvar_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnSetvarAddVar",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-
-    $("#steps .fn_clearvar_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnClearvarAddVar",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-//end adding/deleting variables on set_variable AND clear_variable.
-
-//FUNCTIONS for adding variables on the exists commands.
-    $("#steps .fn_exists_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnExistsAddVar",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-//end adding/deleting variables on set_variable AND clear_variable.
-
-//FUNCTIONS for adding and removing handles from the Wait For Task command
-    $("#steps .fn_wft_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnWaitForTasksAddHandle",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-//End Wait For Task functions
-
-
-//FUNCTIONS for adding/deleting key/value pairs on a step.
-    $("#steps .fn_pair_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnAddPair",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-
-    //BUT! Key/Value pairs can appear on lots of different command types
+    //Key/Value pairs can appear on lots of different command types
     //and on each type there is a specific list of relevant lookup values
     //So, switch on the function and popup a picker
-    //the onclick event of 'connection picker' buttons on selected fields
     $("#steps .key_picker_btn").live("click", function (e) {
         //hide any open pickers
         $("div[id$='_picker']").hide();
@@ -316,45 +172,7 @@ $(document).ready(function () {
         //hide any open pickers
         $("div[id$='_picker']").hide();
     });
-//end adding/deleting key/value pairs on a step.
 
-
-//FUNCTIONS for adding and removing xml "node arrays" from any step that might have one.
-    $("#steps .fn_nodearray_add_btn").live("click", function () {
-    	
-    	//THIS ONE is different than the others
-    	// these fully dynamic commands read the section they are gonna add from the original template xml
-
-		// so, it needs the function name and a template xpath in order to be able to look that up.   	
-    	
-        var step_id = $(this).attr("step_id");
-        var func_name = $(this).attr("function_name");
-        var template_path = $(this).attr("template_path");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnNodeArrayAdd",
-            data: '{"sStepID":"' + step_id + '","sFunctionName":"' + func_name + '","sTemplateXPath":"' + template_path + '","sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-//End XML Node Array functions
 });
 
 function doAddIfSection(step_id, add_to, idx) {
