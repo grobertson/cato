@@ -210,7 +210,9 @@ function doGetDetails() {
             //if we got a "resubmit_message"...
             if (instance.resubmit_message)                                            
     			$("#lblResubmitMessage").text(instance.resubmit_message);
-
+    		else
+				$("#lblResubmitMessage").text("");
+				
 			//don't show the cancel button if it's not running
             if (instance.allow_cancel == "false")                                            
     			$("#phCancel").hide();
@@ -270,7 +272,7 @@ function doGetLog() {
         dataType: "json",
         success: function (response) {
             if (response.log)
-            	$("#ltLog").replaceWith(unpackJSON(response.log));
+            	$("#ltLog").html(unpackJSON(response.log));
             	
             if (response.summary)
             	$("#ltSummary").replaceWith(unpackJSON(response.summary));

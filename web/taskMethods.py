@@ -2703,7 +2703,7 @@ class taskMethods:
 
                     # if THIS instance is 'active', show additional warning info on the resubmit confirmation.
                     # and if it's not, don't show the "cancel" button
-                    if dr["task_status"].lower() in "processing,queued,submitted,pending,aborting,queued,staged":
+                    if dr["task_status"].lower() in ["processing","queued","submitted","pending","aborting","queued","staged"]:
                         output["resubmit_message"] = "This Task is currently active.  You have requested to start another instance."
                     else:
                         output["allow_cancel"] = "false"
