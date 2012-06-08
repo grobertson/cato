@@ -253,8 +253,8 @@ function_xml = replace(function_xml,
 '<function name="exists"><variables><variable>'
 ),
 function_xml = replace(function_xml,
-'</variable></function>',
-'</variable></variables></function>'
+'</variable><actions>',
+'</variable></variables><actions>'
 )
 where function_name = 'exists';
 
