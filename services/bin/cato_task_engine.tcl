@@ -101,7 +101,10 @@ proc aws_get_results {result path var_name} {
 proc get_meta {name} {
         set proc_name get_meta
         package require http
-        set tok [::http::geturl http://169.254.169.254/latest/meta-data/$name]
+        set tok [::http::geturl http://169.254.169.254/latest/meta-data/$name -timeout 2000]
+        if {[::http::status $tok] ne "ok"} {
+            error "error"
+        }
         set ip [::http::data $tok]
         ::http::cleanup $tok
         return $ip
@@ -115,10 +118,11 @@ proc get_local_ip {name} {
 }
 proc get_public_ip {} {
         set proc_name get_what_is_ip
-        package require http
-        set tok [::http::geturl http://automation.whatismyip.com/n09230945.asp]
-        set ip [::http::data $tok]
-        ::http::cleanup $tok
+        #package require http
+        #set tok [::http::geturl http://automation.whatismyip.com/n09230945.asp]
+        #set ip [::http::data $tok]
+        #::http::cleanup $tok
+        set ip [exec curl -s http://automation.whatismyip.com/n09230945.asp]
         return $ip
 }
 proc get_ip {pub_or_priv} {
@@ -2782,7 +2786,10 @@ proc if_function {command} {
 	}
 	if {$result == 0} {
 		output "Processing 'Else' condition..." 3
-		set return_command [[$root selectNodes else/function] asXML]
+		set node [$root selectNodes else/function]
+        if {"$return_command" ne ""} {
+            set return_command [$node asXML]
+        }
 	}
 	$xmldoc delete
 	return $return_command
