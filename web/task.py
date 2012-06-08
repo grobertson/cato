@@ -538,7 +538,7 @@ class Task(object):
                 " original_task_id = '" + sOTID + "'," \
                 " version = '" + str(self.Version) + "'," \
                 " task_name = '" + sTaskName + "'," \
-                " task_code = '" + sNewTaskCode + "'," \
+                " task_code = '" + (sNewTaskCode if sNewTaskCode else self.Code) + "'," \
                 " default_version = " + str(iIsDefault) + "," \
                 " task_status = 'Development'," \
                 " created_dt = now()"
