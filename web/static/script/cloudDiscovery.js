@@ -217,7 +217,7 @@ function CheckReady() {
         	msg += 'A Cloud Account is required to use the Discovery page.  An Administrator must first create at least one Cloud Account.<br /><br />';
 
         if ($("#ddlEcosystems").val() == null)
-        	msg += 'At least one Ecosystem must be defined in a Cloud Account before doing Discovery.<br /><br /><a href="ecosystemManage.aspx">Click here</a> to manage Ecosystems.<br /><br />';
+        	msg += 'At least one Ecosystem must be defined in a Cloud Account before doing Discovery.<br /><br /><a href="ecosystemManage">Click here</a> to manage Ecosystems.<br /><br />';
 
         showInfo("Configuration Incomplete", msg, true);
     } else {
@@ -252,7 +252,7 @@ function Save() {
 
     if (ecosystem == null || ecosystem == "") {
         bSave = false;
-        strValidationError += 'At least one Ecosystem is required.<br /><br /><a href="ecosystemManage.aspx">Click here</a> to manage Ecosystems.<br /><br />';
+        strValidationError += 'At least one Ecosystem is required.<br /><br /><a href="ecosystemManage">Click here</a> to manage Ecosystems.<br /><br />';
     }
     if (cloud_id == null || cloud_id == "") {
         bSave = false;

@@ -2856,7 +2856,7 @@ class taskMethods:
                         sCommandText = dr["command_text"]
                         if "run_task" in sCommandText:
                             sInstance = sCommandText.replace("run_task ", "")
-                            sCommandText = "<span class=\"link\" onclick=\"location.href='taskRunLog.aspx?task_instance=" + sInstance + "';\">Jump to Task</span>"
+                            sCommandText = "<span class=\"link\" onclick=\"location.href='taskRunLog?task_instance=" + sInstance + "';\">Jump to Task</span>"
 
                         sLog += uiCommon.FixBreaks(uiCommon.SafeHTML(sCommandText))
                         sLog += "</div>\n"
@@ -3146,8 +3146,9 @@ class taskMethods:
 
                 sHTML = ""
 
-                for dr in dt:
-                    sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">" + dr["conn_name"] + "</div>"
+                if dt:
+                    for dr in dt:
+                        sHTML += "<div class=\"ui-widget-content ui-corner-all value_picker_value\">" + dr["conn_name"] + "</div>"
 
                 return sHTML
             else:

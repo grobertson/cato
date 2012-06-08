@@ -44,6 +44,24 @@
 					<negative_response input_type="text" option_tab="Options" />
 				</function>
 			</command>
+			<command name="read_file" label="Read File" description="Reads a file into variables for processing." help="&lt;b&gt;Read File&lt;/b&gt;&lt;br&gt;Read File will read the contents of a file and process into variables for use in the task." icon="static/extensions/icons/readfile_32.png">
+				<function name="read_file" extension="read_file/read_file.tcl" variables="true" parse_method="2">
+					<filename input_type="text" label="File Name" />
+					<start input_type="text" label="Start Position" />
+					<num_chars input_type="text" label="Number of Characters to Read" />
+				</function>
+			</command>
+			<!--<command name="transfer" label="Transfer" description="File transfer between hosts." help="&lt;b&gt;Transfer&lt;/b&gt; is used to copy a file between two Assets. Required values are: From: Asset, File and To: Asset, File." icon="static/images/icons/transfer_32.png">
+			<function name="transfer">
+			<from_asset input_type="text" />
+			<from_file input_type="text" />
+			<to_asset input_type="text" />
+			<to_file input_type="text" />
+			<mode input_type="select">SCP</mode>
+			<command input_type="select" />
+			<returnvar input_type="text" />
+			</function>
+			</command>-->
 		</commands>
 	</category>
 	<!--<category name="os_compute" label="OS Compute" description="" icon="icons/openstack_32.png">

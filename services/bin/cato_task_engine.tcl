@@ -3844,34 +3844,6 @@ proc process_function {task_name function_name command} {
 		"transfer" {
 			transfer $command
 		}
-		"read_file" {
-			set xmldoc [dom parse $command]
-			set root [$xmldoc documentElement]
-			set filename [$root selectNodes string(filename)]
-			set start [$root selectNodes string(start)]
-			set num_chars [$root selectNodes string(num_chars)]
-			$root delete
-			$xmldoc delete
-			if {[catch {set fp [open $filename]} err_msg]} {
-				error_out "File read error:\012$err_msg" 2204
-			}
-			if {"$start" > ""} {
-				incr $start -1
-			} else {
-				set start 0
-			}	
-			seek $fp $start
-			if {"$num_chars" > ""} {
-				set output_buffer [read $fp $num_chars]
-			} else {
-				set output_buffer [read $fp]
-			}
-			close $fp
-			insert_audit $::STEP_ID  "" "read file $output_buffer" ""
-			if {[lindex $::step_arr($::STEP_ID) 4] > 0} {
-				process_buffer $output_buffer
-			}
-		}
 		"sql_exec" {
 			sql_exec $command
 		}

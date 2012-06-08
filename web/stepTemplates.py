@@ -125,8 +125,7 @@ def DrawFullStep(oStep):
         " title=\"Skip this Step\"></span>"
 # see above TODO        " datafield_id=\"" + sCommentFieldID + "\"" \
 
-    sMainHTML += "            <span class=\"ui-icon ui-icon-close forceinline step_delete_btn\" remove_id=\"" + sStepID + "\">" \
-        " title=\"Delete Step\"></span>"
+    sMainHTML += "            <span class=\"ui-icon ui-icon-close forceinline step_delete_btn\" remove_id=\"" + sStepID + "\" title=\"Delete Step\"></span>"
     sMainHTML += "        </div>"
     sMainHTML += "    </div>"
     sMainHTML += "    <div id=\"step_detail_" + sStepID + "\"" \
@@ -425,7 +424,7 @@ def DrawField(xe, sXPath, oStep):
             " help=\"" + sHelp + "\"" \
             ">" + sNodeValue + "</textarea>"
         #big box button
-        sHTML += "<span class=\"ui-icon ui-icon-pencil big_box_btn pointer\" link_to=\"" + sTextareaID + "\"></span><br />"
+        sHTML += "<span class=\"ui-icon ui-icon-pencil forceinline big_box_btn pointer\" link_to=\"" + sTextareaID + "\"></span><br />"
     elif sInputType == "dropdown":
         # the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
         # there is no "default" datasource... if nothing is available, it draws an empty picker
@@ -523,6 +522,14 @@ def DrawField(xe, sXPath, oStep):
                 sHTML += "<option " + SetOption(sNodeValue, sNodeValue) + " value=\"" + sNodeValue + "\">" + sNodeValue + "</option>\n";            
 
         sHTML += "</select>"
+    elif sInputType == "checkbox":
+        sElementID = catocommon.new_guid() #some special cases below may need this.
+        sHTML += "<label for=\"" + sElementID + "\">" + sNodeLabel + "</label> <input type=\"checkbox\" " + \
+            CommonAttribsWithID(oStep, bRequired, sXPath, sElementID, sCSSClasses) + \
+            " style=\"" + sStyle + "\"" \
+            " help=\"" + sHelp + "\"" \
+            " value=\"" + sNodeValue + "\" />"
+        
     else: #input is the default
         sElementID = catocommon.new_guid() #some special cases below may need this.
         sHTML += sNodeLabel + " <input type=\"text\" " + \
