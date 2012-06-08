@@ -210,7 +210,34 @@ $(document).ready(function () {
     });
 //end adding/deleting variables on set_variable AND clear_variable.
 
+//FUNCTIONS for adding and removing handles from the Wait For Task command
+    $("#steps .fn_wft_add_btn").live("click", function () {
+        var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
 
+        $("#task_steps").block({ message: null });
+        $("#update_success_msg").text("Updating...").show();
+
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "taskMethods/wmFnWaitForTasksAddHandle",
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                //go get the step
+                getStep(step_id, step_id, true);
+                $("#task_steps").unblock();
+                $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
+            },
+            error: function (response) {
+                showAlert(response.responseText);
+            }
+        });
+    });
+//End Wait For Task functions
 
 });
 
@@ -304,36 +331,7 @@ $(document).ready(function () {
 
 
 
-//FUNCTIONS for adding and removing handles from the Wait For Task command
-$(document).ready(function () {
-    $("#steps .fn_wft_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
 
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnWaitForTasksAddHandle",
-            data: '{"sStepID":"' + step_id + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-});
-
-//End Wait For Task functions
 
 
 //FUNCTIONS for adding and removing xml "node arrays" from any step that might have one.

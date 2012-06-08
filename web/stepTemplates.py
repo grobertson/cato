@@ -1711,6 +1711,10 @@ def Subtask(oStep):
 
 def WaitForTasks(oStep):
     try:
+        # the base xpath of this command (will be '' unless this is embedded)
+        # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+        base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+    
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -1732,7 +1736,7 @@ def WaitForTasks(oStep):
     
             # can't delete the first one
             if i > 1:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_handle_remove_btn pointer\" index=\"" + str(i) + "\" step_id=\"" + sStepID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_handle_remove_btn pointer\" remove_path=\"" + base_xpath + "handle[" + str(i) + "]\" step_id=\"" + sStepID + "\"></span>"
     
             # break it every three fields
             if i % 3 == 0 and i >= 3:
@@ -1741,6 +1745,7 @@ def WaitForTasks(oStep):
             i += 1
     
         sHTML += "<div class=\"fn_wft_add_btn pointer\"" \
+            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
             " add_to_id=\"v" + sStepID + "_handles\"" \
             " step_id=\"" + sStepID + "\">" \
             "<span class=\"ui-icon ui-icon-plus forceinline\"></span> ( click to add another )</div>"

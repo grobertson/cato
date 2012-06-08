@@ -396,8 +396,8 @@ function doEmbeddedStepDelete() {
     $.ajax({
         async: false,
         type: "POST",
-        url: "taskMethods/wmDeleteEmbeddedCommand",
-        data: '{"sXPath":"' + remove_xpath + '","sParentID":"' + parent_id + '"}',
+        url: "taskMethods/wmRemoveNodeFromStep",
+        data: '{"sRemovePath":"' + remove_xpath + '","sStepID":"' + parent_id + '"}',
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (response) {

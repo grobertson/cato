@@ -1066,17 +1066,6 @@ class taskMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
         
-    def wmDeleteEmbeddedCommand(self):
-        try:
-            sXPath = uiCommon.getAjaxArg("sXPath")
-            sParentID = uiCommon.getAjaxArg("sParentID")
-
-            ST.RemoveFromCommandXML(sParentID, sXPath)        
-                
-            return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-    
     def wmUpdateStep(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
@@ -1314,35 +1303,11 @@ class taskMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
-    def wmFnVarRemoveVar(self):
-        # NOTE: this function supports both the set_varible AND clear_variable commands
-        try:
-            sStepID = uiCommon.getAjaxArg("sStepID")
-            sRemovePath = uiCommon.getAjaxArg("sRemovePath")
-            if sRemovePath:
-                ST.RemoveFromCommandXML(sStepID, sRemovePath)
-                return ""
-            else:
-                uiCommon.log("Unable to modify step. Invalid remove path.")
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnWaitForTasksRemoveHandle(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        iIndex = uiCommon.getAjaxArg("iIndex")
-        try:
-            if iIndex > 0:
-                ST.RemoveFromCommandXML(sStepID, "handle[" + iIndex + "]")
-                return ""
-            else:
-                uiCommon.log("Unable to modify step. Invalid index.")
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
     def wmFnWaitForTasksAddHandle(self):
         sStepID = uiCommon.getAjaxArg("sStepID")
+        sAddTo = uiCommon.getAjaxArg("sAddTo")
         try:
-            ST.AddToCommandXML(sStepID, "", "<handle><name input_type=\"text\"></name></handle>")
+            ST.AddToCommandXML(sStepID, sAddTo, "<handle><name input_type=\"text\"></name></handle>")
             return ""
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
@@ -1353,19 +1318,6 @@ class taskMethods:
             ST.AddToCommandXML(sStepID, "", "<pair><key input_type=\"text\"></key><value input_type=\"text\"></value></pair>")
 
             return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnRemovePair(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        iIndex = uiCommon.getAjaxArg("iIndex")
-        try:
-            if iIndex > 0:
-                ST.RemoveFromCommandXML(sStepID, "pair[" + iIndex + "]")
-
-                return ""
-            else:
-                uiCommon.log("Unable to modify step. Invalid index.")
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
@@ -1388,26 +1340,6 @@ class taskMethods:
                 uiCommon.log("Unable to modify step. Invalid index.")
 
             return ""
-        except Exception:
-            uiCommon.log_nouser(traceback.format_exc(), 0)
-
-    def wmFnIfRemoveSection(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        sIndex = uiCommon.getAjaxArg("iIndex")
-
-        try:
-            if not uiCommon.IsGUID(sStepID):
-                uiCommon.log("Unable to remove section from step. Invalid or missing Step ID. [" + sStepID + "]")
-
-            if sIndex > "0":
-                ST.RemoveFromCommandXML(sStepID, "tests/test[" + sIndex + "]")
-            elif sIndex == "-1":
-                ST.RemoveFromCommandXML(sStepID, "else[1]")
-            else:
-                uiCommon.log("Unable to modify step. Invalid index.")
-
-            return ""
-
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
