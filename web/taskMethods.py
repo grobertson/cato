@@ -1926,11 +1926,12 @@ class taskMethods:
                         if sPresentAs == "dropdown":
                             # dropdowns get a "selected" indicator
                             sValueToSelect = xDefValues.findtext("value", "")
-                
-                            # find the right one by value and give it the "selected" attribute.
-                            xVal = xTaskParamValues.find("value[. = '" + sValueToSelect + "']")
-                            if xVal is not None:
-                                xVal.attrib["selected"] = "true"
+                            if sValueToSelect:
+                                print sValueToSelect
+                                # find the right one by value and give it the "selected" attribute.
+                                for xVal in xTaskParamValues.findall("value"):
+                                    if xVal.text == sValueToSelect:
+                                        xVal.attrib["selected"] = "true"
                         elif sPresentAs == "list":
                             # first, a list gets ALL the values replaced...
                             xTaskParamValues.clear()
@@ -2703,7 +2704,7 @@ class taskMethods:
 
                     # if THIS instance is 'active', show additional warning info on the resubmit confirmation.
                     # and if it's not, don't show the "cancel" button
-                    if dr["task_status"].lower() in "processing,queued,submitted,pending,aborting,queued,staged":
+                    if dr["task_status"].lower() in ["processing","queued","submitted","pending","aborting","queued","staged"]:
                         output["resubmit_message"] = "This Task is currently active.  You have requested to start another instance."
                     else:
                         output["allow_cancel"] = "false"

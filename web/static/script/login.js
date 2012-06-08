@@ -199,7 +199,9 @@ function Change() {
 	
 	if (pw1 != pw2) {
 		alert("Passwords must match.");
-		reset();
+		$("#new_password").val("");
+		$("#new_password_confirm").val("");
+		$("#new_password").focus();
 		return false;	
 	}
 	Login();
