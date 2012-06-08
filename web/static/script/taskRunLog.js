@@ -189,6 +189,7 @@ function doGetDetails() {
 			$("#hidSubmittedByInstance").val(instance.submitted_by_instance);
 			$("#hidEcosystemID").val(instance.ecosystem_id);
 			$("#hidAccountID").val(instance.account_id);
+			$("#hidDebugLevel").val(instance.debug_level);
 
 			$("#lblTaskInstance").text(instance.task_instance);
 			$("#lblTaskName").text(instance.task_name_label);
