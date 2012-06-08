@@ -2870,12 +2870,11 @@ class taskMethods:
                         sLog += "<div class=\"log_command ui-widget-content ui-corner-all hidden\">\n"
 
                         # the command text might hold special information we want to display differently
-                        sCommandText = dr["command_text"]
-                        if "run_task" in sCommandText:
-                            sInstance = sCommandText.replace("run_task ", "")
-                            sCommandText = "<span class=\"link\" onclick=\"location.href='taskRunLog?task_instance=" + sInstance + "';\">Jump to Task</span>"
-
-                        sLog += uiCommon.FixBreaks(uiCommon.SafeHTML(sCommandText))
+                        if "run_task" in dr["command_text"]:
+                            sInstance = dr["command_text"].replace("run_task ", "")
+                            sLog += "<span class=\"link\" onclick=\"location.href='taskRunLog?task_instance=" + sInstance + "';\">Jump to Task</span>"
+                        else:
+                            sLog += uiCommon.FixBreaks(uiCommon.SafeHTML(dr["command_text"]))
                         sLog += "</div>\n"
 
 
