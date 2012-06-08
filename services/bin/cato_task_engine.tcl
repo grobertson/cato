@@ -876,6 +876,20 @@ proc retrieve_params {sql} {
 	}
 }
 
+proc get_handle_var {var {refresh 1}} {
+	set proc_name get_handle_var
+	
+    set var [string toupper $var]
+    if {[info exists ::HANDLE_ARR($var)]} {
+        if {$refresh == 1} {
+            refresh_handles
+        }
+        set ret $::HANDLE_ARR($var)
+    } else {
+        set ret ""
+    }
+}
+
 proc set_handle_var {var val} {
 	set proc_name set_handle_var
 	
@@ -891,7 +905,7 @@ proc refresh_handles {} {
 		#for each "handle" in some array of handle names
 		output "Refreshing handles..." 1
 		foreach handle $::handle_names {
-			set handle_instance $::HANDLE_ARR(#${handle}.INSTANCE)
+			set handle_instance [get_handle_var "#${handle}.INSTANCE" 0]
 			set sql "select ti.task_status, ti.started_dt, ti.completed_dt, ti.ce_node, ti.pid, 
 				a.asset_id, a.asset_name, ti.task_id, t.task_name, ti.submitted_by, t.version, 
 				t.default_version, ti.submitted_dt
@@ -2569,10 +2583,7 @@ proc replace_variables {the_string} {
 					"#*" {
 						#if the variable name starts with a "#", it's a "handle", and we replace it from a different array
 						#IF it's there...
-						if [info exists ::HANDLE_ARR($variable)] {
-							refresh_handles
-							set subst_var $::HANDLE_ARR($variable)
-						}
+                        set subst_var [get_handle_var $variable]
 					}
 					"@*" {
 						#if the variable name starts with a "@", it's an ecosystem registry var
@@ -5148,6 +5159,7 @@ proc print_globals {} {
 proc wait_for_tasks {} {
 	set proc_name wait_for_tasks
 
+    set wait_loop 5
 	upvar command command
 	regsub -all "&" $command "&amp;" command
 	set xmldoc [dom parse $command]
@@ -5155,7 +5167,7 @@ proc wait_for_tasks {} {
 	set handles [$root selectNodes {//handle}]
 	set handle_set ""
 	foreach the_node $handles {
-		set handle [$the_node selectNodes string(name)]
+		set handle [string toupper [$the_node selectNodes string(name)]]
 		if {"[string index $handle 0]" != "#"} {
 			set handle "#$handle"
 		}
@@ -5165,6 +5177,7 @@ proc wait_for_tasks {} {
 	$xmldoc delete
 
 	lappend finished_status Completed Error Cancelled
+    insert_audit $::STEP_ID  "" "Waiting for the following task handles to complete: $handle_set, will check every $wait_loop seconds." ""
 	refresh_handles
 	while {[llength $handle_set] > 0} {
 		foreach handle $handle_set {
@@ -5188,7 +5201,7 @@ proc wait_for_tasks {} {
 			}
 		}
 		if {[llength $handle_set] > 0} {
-			sleep 5
+			sleep $wait_loop
 		}
 	}
 	insert_audit $::STEP_ID  "" "All task handles have a finished status" ""
