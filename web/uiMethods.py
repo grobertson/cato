@@ -346,7 +346,7 @@ class uiMethods:
                         "<td>" + str((dr["LoadValue"] if dr["LoadValue"] else "")) + "</td>" \
                         "<td>" + str((dr["Heartbeat"] if dr["Heartbeat"] else "")) + "</td>" \
                         "<td>" + str((dr["Enabled"] if dr["Enabled"] else "")) + "</td>" \
-                        "<td>" + str((dr["mslr"] if dr["mslr"] else "")) + "</td>" \
+                        "<td>" + str((dr["mslr"] if dr["mslr"] is not None else "")) + "</td>" \
                         "<td><span class='ui-icon ui-icon-document forceinline view_component_log' component='" + str((dr["Component"] if dr["Component"] else "")) + "'></span></td>" \
                         "</tr>"
 
