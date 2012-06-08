@@ -1926,11 +1926,12 @@ class taskMethods:
                         if sPresentAs == "dropdown":
                             # dropdowns get a "selected" indicator
                             sValueToSelect = xDefValues.findtext("value", "")
-                
-                            # find the right one by value and give it the "selected" attribute.
-                            xVal = xTaskParamValues.find("value[. = '" + sValueToSelect + "']")
-                            if xVal is not None:
-                                xVal.attrib["selected"] = "true"
+                            if sValueToSelect:
+                                print sValueToSelect
+                                # find the right one by value and give it the "selected" attribute.
+                                for xVal in xTaskParamValues.findall("value"):
+                                    if xVal.text == sValueToSelect:
+                                        xVal.attrib["selected"] = "true"
                         elif sPresentAs == "list":
                             # first, a list gets ALL the values replaced...
                             xTaskParamValues.clear()
