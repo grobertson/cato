@@ -578,8 +578,10 @@ proc insert_audit {step_id command log connection} {
 		#regsub -all ($sensitive) $log {*********} log
 		#regsub -all ($sensitive) $command {*********} command
 	}
-        regsub -all "(')" $log "''" log
-        regsub -all "(')" $command "''" command
+    set log [::mysql::escape $log]
+    set command [::mysql::escape $command]
+        #regsub -all "(')" $log "''" log
+        #regsub -all "(')" $command "''" command
 
         if {"$step_id" != ""} {
         set sql "insert into task_instance_log (task_instance, step_id, entered_dt, connection_name, log, command_text) values ($::TASK_INSTANCE,'$step_id', $::getdate,'$connection','$log','$command')"
