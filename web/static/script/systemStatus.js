@@ -69,7 +69,7 @@ function GetData() {
         success: function (response) {
 			$("#processes").html(response.processes);
 			$("#users").html(response.users);
-			$("#messages").html(response.messages);
+			$("#messages").html(unpackJSON(response.messages));
 			
 		    initJtable(true, true);
         },

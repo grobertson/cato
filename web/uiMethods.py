@@ -387,7 +387,7 @@ class uiMethods:
                         "</tr>"
                     
             
-            return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, sMessageHTML)
+            return "{ \"processes\" : \"%s\", \"users\" : \"%s\", \"messages\" : \"%s\" }" % (sProcessHTML, sUserHTML, uiCommon.packJSON(sMessageHTML))
 
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
