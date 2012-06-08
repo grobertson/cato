@@ -1918,7 +1918,8 @@ class taskMethods:
                                 xVal.attrib["selected"] = "true"
                         elif sPresentAs == "list":
                             # first, a list gets ALL the values replaced...
-                            xTaskParamValues.replaceNodes(xDefValues)
+                            xTaskParamValues.clear()
+                            xTaskParamValues.append(xDefValues)
                         else:
                             # IMPORTANT NOTE:
                             # remember... both these XML documents came from wmGetObjectParameterXML...
