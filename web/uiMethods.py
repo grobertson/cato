@@ -464,7 +464,7 @@ class uiMethods:
                     sb.append("[")
                     sb.append("\"%s\", " % (row["log_dt"]))
                     sb.append("\"%s\", " % (uiCommon.packJSON(row["full_name"])))
-                    sb.append("\"%s\"" % (uiCommon.packJSON(row["log_msg"])))
+                    sb.append("\"%s\"" % (uiCommon.packJSON(uiCommon.SafeHTML(row["log_msg"]))))
                     sb.append("]")
                 
                     #the last one doesn't get a trailing comma
