@@ -47,11 +47,9 @@ $(document).ready(function () {
         }
     });
 
-});
 
 //the SUBTASK command
 //this will get the parameters in read only format for each subtask command.
-$(document).ready(function () {
     $("#steps .subtask_view_parameters_btn").live("click",
     function () {
         var task_id = $(this).attr("id").replace(/stvp_/, "");
@@ -74,25 +72,21 @@ $(document).ready(function () {
             }
         });
     });
-});
-
 //end SUBTASK command
+
 
 //the CODEBLOCK command
 //the onclick event of the 'codeblock' elements
-$(document).ready(function () {
     $("#steps .codeblock_goto_btn").live("click", function () {
         cb = $(this).attr("codeblock");
         $("#hidCodeblockName").val(cb);
         doGetSteps();
     });
-});
-
 //end CODEBLOCK command
+
 
 //the SUBTASK and RUN TASK commands
 //the view link
-$(document).ready(function () {
     $("#steps .task_print_btn").live("click", function () {
         var url = "taskPrint.aspx?task_id=" + $(this).attr("task_id");
         openWindow(url, "taskPrint", "location=no,status=no,scrollbars=yes,resizable=yes,width=800,height=700");
@@ -101,33 +95,23 @@ $(document).ready(function () {
     $("#steps .task_open_btn").live("click", function () {
         location.href = "taskEdit?task_id=" + $(this).attr("task_id");
     });
-});
 // end SUBTASK and RUN TASK commands
 
+
 //the IF command
-$(document).ready(function () {
-    $("#steps .fn_if_remove_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var idx = $(this).attr("number");
-
-        doRemoveIfSection(step_id, idx)
-    });
-
-    $("#steps .fn_if_removeelse_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        doRemoveIfSection(step_id, -1)
-    });
-
     $("#steps .fn_if_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
         var idx = $(this).attr("next_index");
+        var add_to = $(this).attr("add_to_node");
 
-        doAddIfSection(step_id, idx);
+        doAddIfSection(step_id, add_to, idx);
     });
 
     $("#steps .fn_if_addelse_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
-        doAddIfSection(step_id, -1);
+        var add_to = $(this).attr("add_to_node");
+
+        doAddIfSection(step_id, add_to, -1);
     });
     $("#steps .compare_templates").live("change", function () {
         // add whatever was selected into the textarea
@@ -138,92 +122,107 @@ $(document).ready(function () {
         // clear the selection
         this.selectedIndex = 0;
     });
-});
-function doAddIfSection(step_id, idx) {
-    $("#task_steps").block({ message: null });
-    $("#update_success_msg").text("Updating...").show();
+//end IF command
 
-    $.ajax({
-        async: false,
-        type: "POST",
-        url: "taskMethods/wmFnIfAddSection",
-        data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (retval) {
-            //go get the step
-            getStep(step_id, step_id, true);
-            $("#task_steps").unblock();
-            $("#update_success_msg").text("Update Successful").fadeOut(2000);
 
-            //hardcoded index for the last "else" section
-            if (idx == -1)
-                doDropZoneEnable($("#if_" + step_id + "_else .step_nested_drop_target"));
-            else
-                doDropZoneEnable($("#if_" + step_id + "_else_" + idx + " .step_nested_drop_target"));
+//FUNCTIONS for adding/deleting variables on the set_variable AND clear_variable commands.
+    $("#steps .fn_setvar_add_btn").live("click", function () {
+        var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
 
-        },
-        error: function (response) {
-            showAlert(response.responseText);
-        }
-    });
-}
-function doRemoveIfSection(step_id, idx) {
-    if (confirm("Are you sure?")) {
         $("#task_steps").block({ message: null });
         $("#update_success_msg").text("Updating...").show();
 
         $.ajax({
             async: false,
             type: "POST",
-            url: "taskMethods/wmFnIfRemoveSection",
-            data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
+            url: "taskMethods/wmFnSetvarAddVar",
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (retval) {
+            dataType: "text",
+            success: function (response) {
+                //go get the step
                 getStep(step_id, step_id, true);
                 $("#task_steps").unblock();
                 $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
             },
             error: function (response) {
                 showAlert(response.responseText);
             }
         });
-    }
+    });
 
-}
-//end IF command
+    $("#steps .fn_clearvar_add_btn").live("click", function () {
+        var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
+
+        $("#task_steps").block({ message: null });
+        $("#update_success_msg").text("Updating...").show();
+
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "taskMethods/wmFnClearvarAddVar",
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "text",
+            success: function (response) {
+                //go get the step
+                getStep(step_id, step_id, true);
+                $("#task_steps").unblock();
+                $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
+            },
+            error: function (response) {
+                showAlert(response.responseText);
+            }
+        });
+    });
+//end adding/deleting variables on set_variable AND clear_variable.
+
+//FUNCTIONS for adding variables on the exists commands.
+    $("#steps .fn_exists_add_btn").live("click", function () {
+        var step_id = $(this).attr("step_id");
+        var add_to = $(this).attr("add_to_node");
+
+        $("#task_steps").block({ message: null });
+        $("#update_success_msg").text("Updating...").show();
+
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "taskMethods/wmFnExistsAddVar",
+            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "text",
+            success: function (response) {
+                //go get the step
+                getStep(step_id, step_id, true);
+                $("#task_steps").unblock();
+                $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
+            },
+            error: function (response) {
+                showAlert(response.responseText);
+            }
+        });
+    });
+//end adding/deleting variables on set_variable AND clear_variable.
+
+
+
+});
+
+
+
+
+
+
 
 
 //FUNCTIONS for adding/deleting key/value pairs on a step.
 $(document).ready(function () {
-    $("#steps .fn_pair_remove_btn").live("click", function () {
-        if (confirm("Are you sure?")) {
-            var step_id = $(this).attr("step_id");
-            var idx = $(this).attr("index");
-
-            $("#task_steps").block({ message: null });
-            $("#update_success_msg").text("Updating...").show();
-
-            $.ajax({
-                async: false,
-                type: "POST",
-                url: "taskMethods/wmFnRemovePair",
-                data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (retval) {
-                    getStep(step_id, step_id, true);
-                    $("#task_steps").unblock();
-                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-                },
-                error: function (response) {
-                    showAlert(response.responseText);
-                }
-            });
-        }
-    });
-
     $("#steps .fn_pair_add_btn").live("click", function () {
         var step_id = $(this).attr("step_id");
 
@@ -303,125 +302,7 @@ $(document).ready(function () {
 
 //end adding/deleting key/value pairs on a step.
 
-//FUNCTIONS for adding/deleting variables on the set_variable AND clear_variable commands.
-$(document).ready(function () {
-    $("#steps .fn_var_remove_btn").live("click", function () {
-        if (confirm("Are you sure?")) {
-            var step_id = $(this).attr("step_id");
-            var remove_path = $(this).attr("remove_path");
 
-            $("#task_steps").block({ message: null });
-            $("#update_success_msg").text("Updating...").show();
-
-            $.ajax({
-                async: false,
-                type: "POST",
-                url: "taskMethods/wmFnVarRemoveVar",
-                data: '{"sStepID":"' + step_id + '","sRemovePath":"' + remove_path + '"}',
-                contentType: "application/json; charset=utf-8",
-                dataType: "text",
-                success: function (response) {
-                    getStep(step_id, step_id, true);
-                    $("#task_steps").unblock();
-                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-                },
-                error: function (response) {
-                    showAlert(response.responseText);
-                }
-            });
-        }
-    });
-
-    $("#steps .fn_setvar_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnSetvarAddVar",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-
-    $("#steps .fn_clearvar_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnClearvarAddVar",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-
-});
-
-//end adding/deleting variables on set_variable AND clear_variable.
-
-//FUNCTIONS for adding variables on the exists commands.
-$(document).ready(function () {
-    $("#steps .fn_exists_add_btn").live("click", function () {
-        var step_id = $(this).attr("step_id");
-        var add_to = $(this).attr("add_to_node");
-
-        $("#task_steps").block({ message: null });
-        $("#update_success_msg").text("Updating...").show();
-
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "taskMethods/wmFnExistsAddVar",
-            data: '{"sStepID":"' + step_id + '", "sAddTo":"' + add_to + '"}',
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function (response) {
-                //go get the step
-                getStep(step_id, step_id, true);
-                $("#task_steps").unblock();
-                $("#update_success_msg").text("Update Successful").fadeOut(2000);
-
-            },
-            error: function (response) {
-                showAlert(response.responseText);
-            }
-        });
-    });
-
-});
-
-//end adding/deleting variables on set_variable AND clear_variable.
 
 //FUNCTIONS for adding and removing handles from the Wait For Task command
 $(document).ready(function () {
@@ -449,33 +330,6 @@ $(document).ready(function () {
                 showAlert(response.responseText);
             }
         });
-    });
-
-    $("#steps .fn_handle_remove_btn").live("click", function () {
-        if (confirm("Are you sure?")) {
-            var step_id = $(this).attr("step_id");
-            var idx = $(this).attr("index");
-
-            $("#task_steps").block({ message: null });
-            $("#update_success_msg").text("Updating...").show();
-
-            $.ajax({
-                async: false,
-                type: "POST",
-                url: "taskMethods/wmFnWaitForTasksRemoveHandle",
-                data: '{"sStepID":"' + step_id + '","iIndex":"' + idx + '"}',
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (retval) {
-                    getStep(step_id, step_id, true);
-                    $("#task_steps").unblock();
-                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-                },
-                error: function (response) {
-                    showAlert(response.responseText);
-                }
-            });
-        }
     });
 });
 
@@ -510,36 +364,96 @@ $(document).ready(function () {
             }
         });
     });
-
-    $("#steps .fn_nodearray_remove_btn").live("click", function () {
-        if (confirm("Are you sure?")) {
-            var step_id = $(this).attr("step_id");
-            var xpath_to_delete = $(this).attr("xpath_to_delete");
-
-            $("#task_steps").block({ message: null });
-            $("#update_success_msg").text("Updating...").show();
-
-            $.ajax({
-                async: false,
-                type: "POST",
-                url: "taskMethods/wmFnNodeArrayRemove",
-                data: '{"sStepID":"' + step_id + '","sXPathToDelete":"' + xpath_to_delete + '"}',
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (retval) {
-                    getStep(step_id, step_id, true);
-                    $("#task_steps").unblock();
-                    $("#update_success_msg").text("Update Successful").fadeOut(2000);
-                },
-                error: function (response) {
-                    showAlert(response.responseText);
-                }
-            });
-        }
-    });
 });
 
 //End XML Node Array functions
+
+// THE BINDINGS FOR ALL THE VARIOUS REMOVE BUTTONS
+$(document).ready(function () {
+	// CUT THIS DOWN TO ONE NAME
+    $("#steps .fn_if_remove_btn").live("click", function () {
+        doRemoveNode(this)
+    });
+
+    $("#steps .fn_if_removeelse_btn").live("click", function () {
+        doRemoveNode(this)
+    });
+
+    $("#steps .fn_pair_remove_btn").live("click", function () {
+        doRemoveNode(this)
+    });
+
+    $("#steps .fn_var_remove_btn").live("click", function () {
+        doRemoveNode(this)
+    });
+
+    $("#steps .fn_handle_remove_btn").live("click", function () {
+        doRemoveNode(this)
+    });
+
+    $("#steps .fn_nodearray_remove_btn").live("click", function () {
+		doRemoveNode(this)
+    });
+});
+
+// This single function can remove any dynamically generated section from any command.
+// It simply removes a node from the document.
+function doRemoveNode(ctl) {
+    if (confirm("Are you sure?")) {
+        var step_id = $(ctl).attr("step_id");
+        var remove_path = $(ctl).attr("remove_path");
+
+        $("#task_steps").block({ message: null });
+        $("#update_success_msg").text("Updating...").show();
+
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "taskMethods/wmRemoveNodeFromStep",
+            data: '{"sStepID":"' + step_id + '","sRemovePath":"' + remove_path + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "text",
+            success: function (response) {
+                getStep(step_id, step_id, true);
+                $("#task_steps").unblock();
+                $("#update_success_msg").text("Update Successful").fadeOut(2000);
+            },
+            error: function (response) {
+                showAlert(response.responseText);
+            }
+        });
+    }
+}
+
+function doAddIfSection(step_id, add_to, idx) {
+    $("#task_steps").block({ message: null });
+    $("#update_success_msg").text("Updating...").show();
+
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: "taskMethods/wmFnIfAddSection",
+        data: '{"sStepID":"' + step_id + '","sAddTo":"' + add_to + '","iIndex":"' + idx + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+            //go get the step
+            getStep(step_id, step_id, true);
+            $("#task_steps").unblock();
+            $("#update_success_msg").text("Update Successful").fadeOut(2000);
+
+            //hardcoded index for the last "else" section
+            if (idx == -1)
+                doDropZoneEnable($("#if_" + step_id + "_else .step_nested_drop_target"));
+            else
+                doDropZoneEnable($("#if_" + step_id + "_else_" + idx + " .step_nested_drop_target"));
+
+        },
+        error: function (response) {
+            showAlert(response.responseText);
+        }
+    });
+}
 
 //FUNCTIONS for dealing with the very specific parameters for a Run Task command
 function ShowRunTaskParameterEdit() {

@@ -308,7 +308,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             
             #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
             if bIsRemovable:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
         else: #there is more than one child... business as usual
             log("-- more children ... drawing and drilling down ... ", 4)
             sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
@@ -326,7 +326,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             #so, it gets a delete link
             #you can't remove unless there are more than one
             if bIsRemovable:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
             sHTML += "</div>" #end step header icons
             sHTML += "  </div>" #end header
     
@@ -366,7 +366,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
         sHTML += DrawField(xeNode, sXPath, oStep)
         #it may be that these fields themselves are removable
         if bIsRemovable:
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" xpath_to_delete=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_nodearray_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
     
     #ok, now that we've drawn it, it might be intended to go on the "options tab".
     #if so, stick it there
@@ -2003,6 +2003,10 @@ def NewConnection(oStep):
 
 def If(oStep):
     try:
+        # the base xpath of this command (will be '' unless this is embedded)
+        # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+        base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+    
         sStepID = oStep.ID
         xd = oStep.FunctionXDoc
     
@@ -2040,7 +2044,7 @@ def If(oStep):
                 sHTML += "If:<br />"
             else:
                 sHTML += "<div id=\"if_" + sStepID + "_else_" + str(i) + "\" class=\"fn_if_else_section\">"
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_if_remove_btn pointer\" number=\"" + str(i) + "\" step_id=\"" + sStepID + "\" title=\"Remove this Else If condition.\"></span> "
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_if_remove_btn pointer\" remove_path=\"" + base_xpath + "tests/test[" + str(i) + "]\" step_id=\"" + sStepID + "\" title=\"Remove this Else If condition.\"></span> "
                 sHTML += "&nbsp;&nbsp;&nbsp;Else If:<br />"
     
     
@@ -2070,7 +2074,12 @@ def If(oStep):
     
     
         # draw an add link.  The rest will happen on the client.
-        sHTML += "<div class=\"fn_if_add_btn pointer\" add_to_id=\"if_" + sStepID + "_conditions\" step_id=\"" + sStepID + "\" next_index=\"" + str(i) + "\"><span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another Else If section.\"></span>( click to add another 'Else If' section )</div>"
+        sHTML += "<div class=\"fn_if_add_btn pointer\"" \
+            " add_to_id=\"if_" + sStepID + "_conditions\"" \
+            " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+            " step_id=\"" + sStepID + "\"" \
+            " next_index=\"" + str(i) + "\">" \
+            "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add another Else If section.\"></span>( click to add another 'Else If' section )</div>"
     
     
         sHTML += "<div id=\"if_" + sStepID + "_else\" class=\"fn_if_else_section\">"
@@ -2078,7 +2087,7 @@ def If(oStep):
         # the final 'else' area
         xElse = xd.find("else", "")
         if xElse is not None:
-            sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\">" \
+            sHTML += "<span class=\"fn_if_removeelse_btn pointer\" step_id=\"" + sStepID + "\" remove_path=\"" + base_xpath + "else\">" \
                "<span class=\"ui-icon ui-icon-close forceinline\" title=\"Remove this Else condition.\"></span></span> "
             sHTML += "Else (no 'If' conditions matched):"
 
@@ -2087,7 +2096,11 @@ def If(oStep):
             sHTML += DrawDropZone(oStep, xEmbeddedFunction, "else", "", True)
         else:
             # draw an add link.  The rest will happen on the client.
-            sHTML += "<div class=\"fn_if_addelse_btn pointer\" add_to_id=\"if_" + sStepID + "_else\" step_id=\"" + sStepID + "\"><span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add an Else section.\"></span>( click to add a final 'Else' section )</div>"
+            sHTML += "<div class=\"fn_if_addelse_btn pointer\"" \
+                " add_to_id=\"if_" + sStepID + "_else\"" \
+                " add_to_node=\"" + oStep.XPathPrefix + "\"" \
+                " step_id=\"" + sStepID + "\">" \
+                "<span class=\"ui-icon ui-icon-plus forceinline\" title=\"Add an Else section.\"></span>( click to add a final 'Else' section )</div>"
     
         sHTML += "</div>"
     

@@ -1370,15 +1370,19 @@ class taskMethods:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
     def wmFnIfAddSection(self):
-        sStepID = uiCommon.getAjaxArg("sStepID")
-        sIndex = uiCommon.getAjaxArg("iIndex")
         try:
+            sStepID = uiCommon.getAjaxArg("sStepID")
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
+            sIndex = uiCommon.getAjaxArg("iIndex")
             if sIndex > "0":
                 # an index > 0 means its one of many 'elif' sections
-                ST.AddToCommandXML(sStepID, "tests", "<test><eval input_type=\"text\" /><action input_type=\"text\" /></test>")
+                if sAddTo:
+                    # add a slash seperator if there's an add to
+                    sAddTo += "/" 
+                ST.AddToCommandXML(sStepID, sAddTo + "tests", "<test><eval input_type=\"text\" /><action input_type=\"text\" /></test>")
             elif sIndex == "-1":
                 # whereas an index of -1 means its the ONLY 'else' section
-                ST.AddToCommandXML(sStepID, "", "<else input_type=\"text\" />")
+                ST.AddToCommandXML(sStepID, sAddTo, "<else input_type=\"text\" />")
             else:
                 # and of course a missing or 0 index is an error
                 uiCommon.log("Unable to modify step. Invalid index.")
@@ -3398,15 +3402,16 @@ class taskMethods:
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
 
-    def wmFnNodeArrayRemove(self):
+    def wmRemoveNodeFromStep(self):
+        # NOTE: this function is capable of removing data from any command.
+        # it is not failsafe - it simply take a path and removes the node.
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            sXPathToDelete = uiCommon.getAjaxArg("sXPathToDelete")
-            
-            if sStepID:
-                if sXPathToDelete:
-                    uiCommon.RemoveNodeFromXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sXPathToDelete)
-            
-            return ""
+            sRemovePath = uiCommon.getAjaxArg("sRemovePath")
+            if sRemovePath:
+                ST.RemoveFromCommandXML(sStepID, sRemovePath)
+                return ""
+            else:
+                uiCommon.log("Unable to modify step. Invalid remove path.")
         except Exception:
             uiCommon.log_nouser(traceback.format_exc(), 0)
