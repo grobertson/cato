@@ -172,7 +172,6 @@ proc gather_account_info {account_id} {
 
     if {![is_guid $account_id]} {
         set sql "select account_id from cloud_account where account_name = '$account_id'"
-        output $sql 
         $::db_query $::CONN $sql
         set row [$::db_fetch $::CONN]
         set ::CLOUD_ACCOUNT [lindex $row 0]
@@ -233,7 +232,7 @@ proc get_eco_tags {var_name params} {
 		}
 	}
 	$::db_query $::CONN $sql
-        set  objects [$::db_query $::CONN $sql -list]
+    set  objects [$::db_query $::CONN $sql -list]
 	set ii 0
         foreach object $objects {
 		incr ii
@@ -243,6 +242,96 @@ proc get_eco_tags {var_name params} {
 	insert_audit $::STEP_ID  "" "$msg" ""
 	return
 
+}
+proc delete_eco_tags {params} {
+	set proc_name delete_eco_tag
+
+	if {"$::ECOSYSTEM_ID" eq ""} {
+		insert_audit $::STEP_ID  "" "DeleteTags for non-AWS instances must be used within an Ecosystem. Skipping" ""
+        return
+    }
+    set resource_list ""
+    foreach {name value} $params {
+        if {[string match "ResourceId.*" $name]} {
+            lappend resource_list $value
+        } elseif {[string match "Tag.*.Key" $name]} {
+            set index [lindex [split $name "."] 1]
+            set keys($index) $value
+        } elseif {[string match "Tag.*.Value" $name]} {
+            set index [lindex [split $name "."] 1]
+            set values($index) $value
+        }
+    }
+    if {"$resource_list" eq ""} {
+		insert_audit $::STEP_ID  "" "DeleteTags resource list is empty. Skipping" ""
+        return
+    }
+    if {![array exists keys]} {
+		insert_audit $::STEP_ID  "" "DeleteTags keys don't exist. Skipping" ""
+        return
+    }
+    foreach resource $resource_list {
+        foreach index [array names keys] {
+            if {![info exists values($index)]} {
+                insert_audit $::STEP_ID  "" "Deleting tag for resource $resource, key $keys($index)" ""
+                set sql "delete from ecosystem_object_tag where ecosystem_id = '$::ECOSYSTEM_ID' and ecosystem_object_id = '$resource' and key_name = '$keys($index)'"
+                $::db_exec $::CONN $sql
+            } else {
+                insert_audit $::STEP_ID  "" "Deleting tag for resource $resource, key $keys($index), value $values($index)" ""
+                set sql "delete from ecosystem_object_tag where ecosystem_id = '$::ECOSYSTEM_ID' and ecosystem_object_id = '$resource' and key_name = '$keys($index)' and value = '$values($index)'"
+                $::db_exec $::CONN $sql
+            }
+        }
+    }
+}
+proc set_eco_tags {params} {
+	set proc_name set_eco_tag
+
+	if {"$::ECOSYSTEM_ID" eq ""} {
+		insert_audit $::STEP_ID  "" "CreateTags for non-AWS instances must be used within an Ecosystem. Skipping" ""
+        return
+    }
+    set resource_list ""
+    foreach {name value} $params {
+        if {[string match "ResourceId.*" $name]} {
+            lappend resource_list $value
+        } elseif {[string match "Tag.*.Key" $name]} {
+            set index [lindex [split $name "."] 1]
+            set keys($index) $value
+        } elseif {[string match "Tag.*.Value" $name]} {
+            set index [lindex [split $name "."] 1]
+            set values($index) $value
+        }
+    }
+    if {"$resource_list" eq ""} {
+		insert_audit $::STEP_ID  "" "CreateTags resource list is empty. Skipping" ""
+        return
+    }
+    if {![array exists keys]} {
+		insert_audit $::STEP_ID  "" "CreateTags keys don't exist. Skipping" ""
+        return
+    }
+    if {![array exists values]} {
+		insert_audit $::STEP_ID  "" "CreateTags values don't exist. Skipping" ""
+        return
+    }
+    foreach resource $resource_list {
+        set sql "select ecosystem_object_id from ecosystem_object where ecosystem_id = '$::ECOSYSTEM_ID' and ecosystem_object_id = '$resource'"
+        $::db_query $::CONN $sql
+        set row [$::db_fetch $::CONN]
+        if {"$row" > ""} {
+            insert_audit $::STEP_ID  "" "$row" ""
+            foreach index [array names keys] {
+                if {![info exists values($index)]} {
+                    insert_audit $::STEP_ID  "" "CreateTags value for key $index named $keys($index) is empty. Skipping" ""
+                    continue
+                }
+                insert_audit $::STEP_ID  "" "Tagging $resource with key $keys($index), value $values($index)" ""
+                set sql "replace into ecosystem_object_tag (ecosystem_id, ecosystem_object_id, key_name, value) values ('$::ECOSYSTEM_ID','$resource', '$keys($index)', '$values($index)')"
+                $::db_exec $::CONN $sql
+            }
+        }
+    }
 }
 proc aws_Generic {product operation path command} {
 	set proc_name aws_Generic
@@ -272,7 +361,13 @@ proc aws_Generic {product operation path command} {
 			get_eco_tags $var_name $params
 			return
 
-		}
+		} elseif {"$operation" == "DeleteTags"} {
+			delete_eco_tags $params
+			return
+		} elseif {"$operation" == "CreateTags"} {
+			set_eco_tags $params
+			return
+        }
 
 		if {"$aws_region" > ""} {
 			if {[array names ::CLOUD_ENDPOINTS "$::CLOUD_TYPE,$aws_region"] == ""} {
@@ -383,22 +478,23 @@ proc register_ecosystem_object {result ecosystem_id object_type path role api_co
 	foreach instance $instances {
 		set sql "insert into ecosystem_object (ecosystem_id, cloud_id, ecosystem_object_id, ecosystem_object_type, added_dt) values ('$ecosystem_id', '$cloud_id', '[$instance asText]','$object_type',$::getdate)"
 		$::db_exec $::CONN $sql
-		if {"$role" > ""} {
-			set the_arg ""
-			lappend the_arg ResourceId.1 [$instance asText] Tag.1.Key cato.role Tag.1.Value $role
-			for {set counter 0} {$counter < 4} {incr counter} {
-				if {[catch {tclcloud::call ec2 \"$region\" CreateTags $the_arg} errMsg]} {
-					if {[string match "*does not exist*" $errMsg]} {
-						output "Waiting five seconds to reattempt tagging"
-						sleep 5
-					} else {
-						break
-					}
-				} else {
-					break
-				}
-			}
-		}
+        ### 2012-06-08 pmd - the following is deprecated
+		#if {"$role" > ""} {
+		#	set the_arg ""
+		#	lappend the_arg ResourceId.1 [$instance asText] Tag.1.Key cato.role Tag.1.Value $role
+		#	for {set counter 0} {$counter < 4} {incr counter} {
+		#		if {[catch {tclcloud::call ec2 \"$region\" CreateTags $the_arg} errMsg]} {
+		#			if {[string match "*does not exist*" $errMsg]} {
+		#				output "Waiting five seconds to reattempt tagging"
+		#				sleep 5
+		#			} else {
+		#				break
+		#			}
+		#		} else {
+		#			break
+		#		}
+		#	}
+		#}
 	}
         $root delete
         $xmldoc delete
@@ -801,7 +897,7 @@ proc get_steps {task_id} {
 			and commented = 0
 		order by codeblock_name, step_order asc"
 
-	output $sql 2
+	output $sql 4
 	$::db_query $::CONN $sql
 	while {[string length [set row [$::db_fetch $::CONN]]] > 0} {
 
