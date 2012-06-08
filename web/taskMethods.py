@@ -3295,20 +3295,18 @@ class taskMethods:
     def wmFnNodeArrayAdd(self):
         try:
             sStepID = uiCommon.getAjaxArg("sStepID")
-            sGroupNode = uiCommon.getAjaxArg("sGroupNode")
+            sFunctionName = uiCommon.getAjaxArg("sFunctionName")
+            sTemplateXPath = uiCommon.getAjaxArg("sTemplateXPath")
+            sAddTo = uiCommon.getAjaxArg("sAddTo")
 
-            # so, let's get the one we want from the XML template for this step... adjust the indexes, and add it.
-            s = task.Step.FromID(sStepID)
-            if not s:
-                uiCommon.log("Unable to get step definition for id [%s]" % sStepID)
-                
-            func = uiCommon.GetTaskFunction(s.FunctionName)
+            func = uiCommon.GetTaskFunction(sFunctionName)
             if not func:
-                uiCommon.log("Unable to get a Function definition for name [%s]" % s.FunctionName)
+                uiCommon.log("Unable to get a Function definition for name [%s]" % sFunctionName)
             
             # validate it
             # parse the doc from the table
             xd = func.TemplateXDoc
+            print ET.tostring(xd)
             if xd is None:
                 uiCommon.log("Unable to get Function Template.")
             
@@ -3318,18 +3316,25 @@ class taskMethods:
             # So, I'm regexing any [#] on the back to a [1]... that value should be in the template.
             
             rx = re.compile("\[[0-9]*\]")
-            sTemplateNode = re.sub(rx, "[1]", sGroupNode)
+            sTemplateNode = re.sub(rx, "[1]", sTemplateXPath)
             
-            xGroupNode = xd.find(sTemplateNode)
+            # this is a little weird... if the sTemplateNode is empty, or is "function"...
+            # that means we want the root node (everything)
+            if sTemplateNode == "" or sTemplateNode == "function":
+                xGroupNode = xd
+            else:
+                xGroupNode = xd.find(sTemplateNode)
+            
             if xGroupNode is None:
                 uiCommon.log("Error: Unable to add.  Source node not found in Template XML. [" + sTemplateNode + "]")
             
             # yeah, this wicked single line aggregates the value of each node
             sNewXML = "".join(ET.tostring(x) for x in list(xGroupNode))
-            print sNewXML
+            uiCommon.log(sNewXML, 4)
             
             if sNewXML != "":
-                uiCommon.AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sGroupNode, sNewXML)
+                ST.AddToCommandXML(sStepID, sAddTo, sNewXML.strip())
+                # uiCommon.AddNodeToXMLColumn("task_step", "function_xml", "step_id = '" + sStepID + "'", sTemplateXPath, sNewXML)
 
             return ""
         except Exception:

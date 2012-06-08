@@ -319,27 +319,18 @@ $(document).ready(function () {
 //end adding/deleting key/value pairs on a step.
 
 
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //FUNCTIONS for adding and removing xml "node arrays" from any step that might have one.
-$(document).ready(function () {
     $("#steps .fn_nodearray_add_btn").live("click", function () {
+    	
+    	//THIS ONE is different than the others
+    	// these fully dynamic commands read the section they are gonna add from the original template xml
+
+		// so, it needs the function name and a template xpath in order to be able to look that up.   	
+    	
         var step_id = $(this).attr("step_id");
-        var xpath = $(this).attr("xpath");
+        var func_name = $(this).attr("function_name");
+        var template_path = $(this).attr("template_path");
+        var add_to = $(this).attr("add_to_node");
 
         $("#task_steps").block({ message: null });
         $("#update_success_msg").text("Updating...").show();
@@ -348,7 +339,7 @@ $(document).ready(function () {
             async: false,
             type: "POST",
             url: "taskMethods/wmFnNodeArrayAdd",
-            data: '{"sStepID":"' + step_id + '","sGroupNode":"' + xpath + '"}',
+            data: '{"sStepID":"' + step_id + '","sFunctionName":"' + func_name + '","sTemplateXPath":"' + template_path + '","sAddTo":"' + add_to + '"}',
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (retval) {
@@ -363,10 +354,8 @@ $(document).ready(function () {
             }
         });
     });
-});
-
 //End XML Node Array functions
-
+});
 
 function doAddIfSection(step_id, add_to, idx) {
     $("#task_steps").block({ message: null });

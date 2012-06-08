@@ -266,6 +266,10 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
     1) a node IsEditable if it has the attribute "is_array".  (It's an array, therefore it's contents are 'editable'.)
     2) a node IsRemovable if it's PARENT IsEditable.  So, we pass IsEditable down to subsequent recursions as IsRemovable.)
     """
+    # the base xpath of this command (will be '' unless this is embedded)
+    # NOTE: do not append the base_path on any CommonAttribs calls, it's done inside that function.
+    base_xpath = (oStep.XPathPrefix + "/" if oStep.XPathPrefix else "")  
+
     sHTML = ""
     sNodeName = xeNode.tag
     
@@ -308,7 +312,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             
             #since we're making it composite, the parents are gonna be off.  Go ahead and draw the delete link here.
             if bIsRemovable:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
         else: #there is more than one child... business as usual
             log("-- more children ... drawing and drilling down ... ", 4)
             sHTML += "<div class=\"ui-widget-content ui-corner-bottom step_group\">" #this section
@@ -320,13 +324,17 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
             sHTML += "<div class=\"step_header_icons\">" #step header icons
             if bIsEditable:
                 sHTML += "<div class=\"ui-icon ui-icon-plus forceinline fn_nodearray_add_btn pointer\"" + " step_id=\"" + oStep.ID + "\"" \
-                    " xpath=\"" + sXPath + "\"></div>"
+                    " function_name=\"" + oStep.FunctionName + "\"" \
+                    " template_path=\"" + sXPath + "\"" \
+                    " add_to_node=\"" + base_xpath + sXPath + "\"" \
+                    " step_id=\"" + oStep.ID + "\">" \
+                    "</div>"
     
             #BUT, if this nodes PARENT is editable, that means THIS NODE can be deleted.
             #so, it gets a delete link
             #you can't remove unless there are more than one
             if bIsRemovable:
-                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+                sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
             sHTML += "</div>" #end step header icons
             sHTML += "  </div>" #end header
     
@@ -366,7 +374,7 @@ def DrawNode(xeNode, sXPath, oStep, bIsRemovable=False):
         sHTML += DrawField(xeNode, sXPath, oStep)
         #it may be that these fields themselves are removable
         if bIsRemovable:
-            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
+            sHTML += "<span class=\"ui-icon ui-icon-close forceinline fn_node_remove_btn pointer\" remove_path=\"" + base_xpath + sXPath + "\" step_id=\"" + oStep.ID + "\"></span>"
     
     #ok, now that we've drawn it, it might be intended to go on the "options tab".
     #if so, stick it there
@@ -417,7 +425,7 @@ def DrawField(xe, sXPath, oStep):
             " help=\"" + sHelp + "\"" \
             ">" + sNodeValue + "</textarea>"
         #big box button
-        sHTML += "<img class=\"big_box_btn pointer\" alt=\"\" src=\"static/images/icons/edit_16.png\" link_to=\"" + sTextareaID + "\" /><br />"
+        sHTML += "<span class=\"ui-icon ui-icon-pencil big_box_btn pointer\" link_to=\"" + sTextareaID + "\"></span><br />"
     elif sInputType == "dropdown":
         # the data source of a drop down can be a) an xml file, b) an internal function or web method or c) an "local" inline list
         # there is no "default" datasource... if nothing is available, it draws an empty picker
