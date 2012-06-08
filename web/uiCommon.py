@@ -717,6 +717,7 @@ def AddTaskInstance(sUserID, sTaskID, sEcosystemID, sAccountID, sAssetID, sParam
             row = db.exec_proc(sSQL)
             if db.error:
                 log("Unable to run task [" + sTaskID + "]." + db.error)
+            db.close()
             
             # this needs fixing, this whole weird result set.
             log("Starting Task [%s] ... Instance is [%s]" % (sTaskID, row[0]["_task_instance"]), 3)
