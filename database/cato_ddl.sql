@@ -206,7 +206,7 @@ CREATE TABLE `ecosystem_object_tag` (
   `ecosystem_object_id` varchar(64) NOT NULL,
   `key_name` varchar(128) NOT NULL,
   `value` varchar(256) NOT NULL,
-  PRIMARY KEY (`ecosystem_id`,`ecosystem_object_id`,`key_name`,`value`)
+  PRIMARY KEY (`ecosystem_id`,`ecosystem_object_id`,`key_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 /*!40101 SET character_set_client = @saved_cs_client */;
