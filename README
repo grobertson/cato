@@ -33,33 +33,10 @@ Cato requires the following major components to be installed and operational
 prior to installation. See the README files in the database, web and services
 directories for specific details and tips for configuration. 
 
-Linux, MySQL 5.1+, Apache, mod_mono, Tcl 8.5+
-
-------------------------------------------
-Building
-------------------------------------------
-
-To build Cato from source, see the README files in the web and services
-directories. 
-
-1. To download source and unpack tarball, perform the following commands:
-
-	wget -O cato.tar.gz https://github.com/cloudsidekick/cato/tarball/master
-	tar -xvzf cato.tar.gz
-	cd cloudsidekick-cato-*
-
-2. View the README file in web and perform the web build instructions
-
-	cd web 
-	vi README
-
-3. View the README file in services and perform the services build
-
-	cd services
-	vi README
+Linux, MySQL 5.1+, Python 2.7, Tcl 8.5+
 
 ------------------------------------------
 Installation
 ------------------------------------------
 
-After performing the web and services build, see the INSTALL file in this directory.
+See the INSTALL file in this directory.
