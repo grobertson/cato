@@ -84,14 +84,11 @@ class Scheduler(catocommon.CatoService):
         start_instances = row[13]
         account_id = row[14]
 
-        self.output(row)
-        self.output(start_dt)
         #print "Number to start = ", start_instances
         if not start_dt:
             start_dt = now
         else:
             start_dt = start_dt + 1
-        self.output(start_dt)
 
         #days = self.split_clean(self.string map(self.day_map, days))
         #months = self.split_clean(months)
@@ -134,10 +131,8 @@ class Scheduler(catocommon.CatoService):
                 having count(*) < %s"""
 
         rows = self.db.select_all(sql, (self.min_depth, self.min_depth))
-        #print rows
         if rows:
             for row in rows:
-                self.output(row)
                 #print "row is"
                 #print row
                 self.expand_this_schedule(row)
@@ -156,9 +151,10 @@ class Scheduler(catocommon.CatoService):
 
         sql = """call addTaskInstance (%s,NULL,%s,%s,%s,%s,%s,%s)"""
         row = self.db.exec_proc(sql, (task_id, schedule_id, debug_level, plan_id, parameter_xml, ecosystem_id, account_id))
+
         ti = row[0]["_task_instance"]
         #print "task instance is " + ti
-        self.output("Started task instance %s for schedule id %s and plan id %s", (ti, schedule_id, plan_id))
+        self.output("Started task instance %s for schedule id %s and plan id %s" % (ti, schedule_id, plan_id))
         sql = """insert into action_plan_history (plan_id, task_id, run_on_dt, action_id, 
                 ecosystem_id, parameter_xml, debug_level, source, schedule_id, task_instance, account_id)
                 values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
@@ -178,7 +174,6 @@ class Scheduler(catocommon.CatoService):
         rows = self.db.select_all(sql)
         if rows:
             for row in rows:
-                #print row
                 self.run_schedule_instance(row)
 
 
