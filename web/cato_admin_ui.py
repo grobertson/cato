@@ -20,6 +20,7 @@ import os
 import sys
 import urllib
 import pickle
+import shelve
 import xml.etree.ElementTree as ET
 
 web_root = os.path.abspath(os.path.dirname(__file__))
@@ -507,7 +508,7 @@ if __name__ != "cato_admin_ui":
     render_plain = web.template.render('templates')
     
     app = web.application(urls, globals(), autoreload=True)
-    session = web.session.Session(app, web.session.DiskStore('%s/sessions' % web_root))
+    session = web.session.Session(app, web.session.ShelfStore(shelve.open('%s/datacache/session.shelf' % web_root)))
     app.add_processor(auth_app_processor)
     app.notfound = notfound
     
