@@ -380,9 +380,10 @@ class taskMethods:
                 return "{\"info\" : \"Unable to delete - no selection.\"}"
                 
             # first we need a list of tasks that will not be deleted
-            sSQL = "select task_name from task t " \
-                    " where t.original_task_id in (" + sDeleteArray + ")" \
-                    " and t.task_id in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)"
+            sSQL = """select task_name from task t
+                    where t.original_task_id in (%s)
+                    and (t.task_id in (select ti.task_id from tv_task_instance ti where ti.task_id = t.task_id)
+                    or t.original_task_id in (select original_task_id from ecotemplate_action))""" % sDeleteArray 
             sTaskNames = self.db.select_csv(sSQL, True)
 
             # list of tasks that will be deleted
@@ -415,7 +416,7 @@ class taskMethods:
                 uiCommon.WriteObjectDeleteLog(uiGlobals.CatoObjectTypes.Task, "Multiple", "Original Task IDs", sDeleteArray)
             
             if len(sTaskNames) > 0:
-                return "{\"info\" : \"Task(s) (" + sTaskNames + ") have history rows and could not be deleted.\"}"
+                return "{\"info\" : \"Task(s) (" + sTaskNames + ") have history rows or are referenced by Ecotemplate Actions and could not be deleted.\"}"
             
             return "{\"result\" : \"success\"}"
             
