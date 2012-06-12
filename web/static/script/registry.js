@@ -320,6 +320,7 @@ function ClearRegistrySelection() {
 
 function GetRegistry(sObjectID) {
     $.ajax({
+        async: false,
         type: "POST",
         url: "uiMethods/wmGetRegistry",
         data: '{"sObjectID":"' + sObjectID + '"}',
