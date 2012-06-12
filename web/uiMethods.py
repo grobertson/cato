@@ -1664,7 +1664,9 @@ class uiMethods:
                             items.append({"type" : "task", "id" : t.ID, "name" : t.Name, "error" : "Unable to create Task. No error available."}) 
                     
 
-
+            else:
+                items.append({"info" : "Unable to create Task from backup XML."})
+                
                 #TODO: for loop for Ecotemplates and Assets will go here, same logic as above
                 # ECOTEMPLATES
                 # ASSETS

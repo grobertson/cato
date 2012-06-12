@@ -384,7 +384,7 @@ class ecoMethods:
                     " t.task_id, t.task_code, t.task_name," \
                     " ea.parameter_defaults as action_param_xml, t.parameter_xml as task_param_xml" \
                     " from ecotemplate_action ea" \
-                    " join task t on ea.original_task_id = t.original_task_id" \
+                    " left outer join task t on ea.original_task_id = t.original_task_id" \
                     " and t.default_version = 1" \
                     " where ea.ecotemplate_id = '" + sEcoTemplateID + "'" \
                     " order by ea.category, ea.action_name"
@@ -414,10 +414,10 @@ class ecoMethods:
             sCategory = (dr["category"] if dr["category"] else "")
             sDesc = (dr["action_desc"] if dr["action_desc"] else "")
             sIcon = ("action_default_48.png" if not dr["action_icon"] else dr["action_icon"])
-            sOriginalTaskID = dr["original_task_id"]
-            sTaskID = dr["task_id"]
+            sOriginalTaskID =(dr["original_task_id"] if dr["original_task_id"] else "")
+            sTaskID = (dr["task_id"] if dr["task_id"] else "")
             sTaskCode = (dr["task_code"] if dr["task_code"] else "")
-            sTaskName = dr["task_name"]
+            sTaskName = (dr["task_name"] if dr["task_name"] else "Missing")
             sVersion = (str(dr["task_version"]) if dr["task_version"] else "")
             sTaskParameterXML = (dr["task_param_xml"] if dr["task_param_xml"] else "")
             # sActionParameterXML = ("" if not dr["action_param_xml"]) else dr["action_param_xml"])
