@@ -416,8 +416,8 @@ class ecoMethods:
             sIcon = ("action_default_48.png" if not dr["action_icon"] else dr["action_icon"])
             sOriginalTaskID =(dr["original_task_id"] if dr["original_task_id"] else "")
             sTaskID = (dr["task_id"] if dr["task_id"] else "")
-            sTaskCode = (dr["task_code"] if dr["task_code"] else "")
-            sTaskName = (dr["task_name"] if dr["task_name"] else "Missing")
+            sTaskCode = (dr["task_code"] if dr["task_code"] else "Error")
+            sTaskName = (dr["task_name"] if dr["task_name"] else "Task no longer exists.")
             sVersion = (str(dr["task_version"]) if dr["task_version"] else "")
             sTaskParameterXML = (dr["task_param_xml"] if dr["task_param_xml"] else "")
             # sActionParameterXML = ("" if not dr["action_param_xml"]) else dr["action_param_xml"])
@@ -515,8 +515,6 @@ class ecoMethods:
                         sHTML += "<option " + (" selected=\"selected\"" if sVersion == str(drVer["version"]) else "") + \
                             " value=\"" + str(drVer["version"]) + "\">" + \
                             str(drVer["version"]) + "</option>\n"
-                else:
-                    return "Unable to continue - Cannot find Version for Task [" + sOriginalTaskID + "]."
 
                 sHTML += "</select>\n"
 
