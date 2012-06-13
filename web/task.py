@@ -837,7 +837,7 @@ class Step(object):
         xStep = ET.fromstring(sStepXML)
         
         #attributes of the <step> node
-        self.ID = str(uuid.uuid4())
+        self.ID = xStep.get("id", str(uuid.uuid4()))
         self.Order = xStep.get("order", 0)
         self.Codeblock = sCodeblockName
         self.Commented = catocommon.is_true(xStep.get("commented", ""))
@@ -854,7 +854,8 @@ class Step(object):
             raise Exception("ERROR: Step [%s] - function xml is empty or cannot be parsed.")
         
         self.FunctionXDoc = xFunc
-        self.FunctionName = xFunc.get("name", "")
+        # command_type is for backwards compatilibity in importing tasks from 1.0.8
+        self.FunctionName = xFunc.get("name", xFunc.get("command_type", ""))
     
     @staticmethod
     def FromRow(dr, task):

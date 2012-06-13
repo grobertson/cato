@@ -67,12 +67,19 @@ def FixIt(xd, node):
         print " - success! New xml is \n%s" % ET.tostring(xd)
 
     print " - updating ..."
-    sql = "update task_step set function_xml = '%s' where step_id = '%s'" % (ET.tostring(xd), this_step)
+    sql = "update task_step set function_xml = '%s' where step_id = '%s'" % (catocommon.tick_slash(ET.tostring(xd)), this_step)
     if not db.exec_db_noexcep(sql):
         print db.error
 
-    print " - removing old school step ..."
+    print " - removing old school step %s..." % old_step
     sql = "delete from task_step where step_id = '%s'" % old_step
+    if not db.exec_db_noexcep(sql):
+        print db.error
+    print " - removing codeblock %s..." % this_step
+    sql = "delete from task_codeblock where codeblock_name = '%s'" % this_step[:32]
+    print sql
+    print db.error
+    print "^^^^^"
     if not db.exec_db_noexcep(sql):
         print db.error
 
