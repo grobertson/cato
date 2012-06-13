@@ -2896,7 +2896,7 @@ proc if_function {command} {
 	if {$result == 0} {
 		output "Processing 'Else' condition..." 3
 		set node [$root selectNodes else/function]
-        if {"$return_command" ne ""} {
+        if {"$node" ne ""} {
             set return_command [$node asXML]
         }
 	}
