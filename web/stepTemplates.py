@@ -2008,6 +2008,7 @@ def NewConnection(oStep):
                 db = catocommon.new_conn()
                 sAssetName = db.select_col_noexcep(sSQL)
                 if not sAssetName:
+                    sAssetName = sAssetID
                     if db.error:
                         uiCommon.log("Unable to look up Asset name." + db.error)
                     else:
