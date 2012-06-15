@@ -733,13 +733,7 @@ class taskMethods:
 
             oStep = ST.GetSingleStep(sStepID, sUserID)
             if oStep is not None:
-                # embedded steps...
-                # if the step_order is -1 and the codeblock_name is a guid, this step is embedded 
-                # within another step
-                if oStep.Order == -1 and uiCommon.IsGUID(oStep.Codeblock):
-                    sStepHTML += "Embedded not yet implemeneted." # sStepHTML += ft.DrawEmbeddedStep(oStep)
-                else:
-                    sStepHTML += ST.DrawFullStep(oStep)
+                sStepHTML += ST.DrawFullStep(oStep)
             else:
                 sStepHTML += "<span class=\"red_text\">ERROR: No data found.<br />This command should be deleted and recreated.<br /><br />ID [" + sStepID + "].</span>"
 

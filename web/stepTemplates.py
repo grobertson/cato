@@ -873,6 +873,7 @@ def DrawDropZone(oStep, xEmbeddedFunction, sXPath, sLabel, bRequired):
         oEmbeddedStep.Function = fn # a function object
         oEmbeddedStep.FunctionName = sFunctionName
         oEmbeddedStep.FunctionXDoc = xEmbeddedFunction
+        oEmbeddedStep.Task = oStep.Task
         # THIS IS CRITICAL - this embedded step ... all fields in it will need an xpath prefix 
         oEmbeddedStep.XPathPrefix = sXPath + "/function"
         
@@ -2352,10 +2353,11 @@ def Codeblock(oStep):
         # and DON'T CRASH if there isn't a list of codeblocks. (sometimes step objects may not have a full task parent)
         if oStep.Task:
             if oStep.Task.Codeblocks:
-                for cb in oStep.Task.Codeblocks:
-                    if sCB == cb:
-                        sHTML += "<span class=\"ui-icon ui-icon-link forceinline codeblock_goto_btn pointer\" title=\"Go To Codeblock\"" \
-                            " codeblock=\"" + sCB + "\"></span>\n"
+                for cb in oStep.Task.Codeblocks.itervalues():
+                    if sCB == cb.Name:
+                        print "match"
+                        sHTML += """<span class=\"ui-icon ui-icon-link forceinline codeblock_goto_btn pointer\" title=\"Go To Codeblock\"
+                            codeblock=\"%s\"></span>\n""" % sCB
                         break
 
     return sHTML
