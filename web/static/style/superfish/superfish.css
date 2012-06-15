@@ -37,6 +37,9 @@
 .sf-menu a img
 {
 	padding-right: 6px;
+	margin-bottom: -16px;
+	padding-bottom: 8px;
+	padding-top: 2px;
 }
 .sf-menu li:hover ul, .sf-menu li.sfHover ul
 {
