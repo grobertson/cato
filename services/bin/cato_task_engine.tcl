@@ -4105,7 +4105,6 @@ proc process_function {task_name function_name command} {
                     } else {
                             log_user 1
                     }
-                    continue
                 }
 		"break_loop" {
 					output "Breaking out of loop" 1
