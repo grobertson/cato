@@ -160,6 +160,20 @@ body
 	z-index: 2;
 	font: normal 12px Arial;
 }
+   
+#userPreferences
+{
+  cursor: pointer; 
+  text-align: right; 
+  margin-right: 8px;
+  line-height: 36px;
+  color: #fff;
+} 
+
+.user_prefs_item{
+  margin-left: 5px;
+  margin-right: 5px;
+}
 
 #left_panel
 {
