@@ -3826,6 +3826,10 @@ proc process_function {task_name function_name command} {
 				output "'EXISTS' Action Full Commmand: {$command}" 6
 			}
 		}
+        "while" {
+        }
+        "loop" {
+        }
 		"if" {
 			set command [replace_variables_all $command]
 			regsub -all "&" $command "&amp;" command
@@ -5472,10 +5476,9 @@ proc for_loop {command task_name} {
 		error_out "FOR LOOP - unable to determine function type." 1657
 	}
 
-	set loop_cmd [replace_variables_all [$action asXML]]
+	set loop_cmd [$action asXML]
 
 	del_xml_root
-
 
 	set loop_var ::runtime_arr($counter,1)
 	set loop_var2 "\$$loop_var"
