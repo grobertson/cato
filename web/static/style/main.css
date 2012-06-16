@@ -405,6 +405,9 @@ td.row
 	border: 1px solid #c5dbec;
 	background: #fcfdfd;
 	color: #222222;
+	line-height: 22px;
+	margin-left: 4px;
+	padding-left: 6px;
 }
 td.row_alt
 {
@@ -462,8 +465,8 @@ td.row_over
 .group_tab
 {
 	padding: 3px 3px 3px 10px;
-	border: 1px solid #d3d3d3;
-	background-color: #c2c2c2;
+	border: 1px solid #D0E0EB;
+	background-color: #EBF7F8;
 	font-weight: normal;
 	font-size: 10pt;
 	color: #555555;
@@ -492,13 +495,14 @@ td.row_over
 {
 	padding: 3px;
 	border: 1px solid #a3a3a3;
-	background-color: #c2c2c2;
+	background-color: #D0E0EB;
 	font-weight: bold;
 	font-size: 10pt;
-	color: #f4f4f4;
+	color: #49708A;
 	outline: none;
 	border-bottom-right-radius: 6px;
 	border-top-right-radius: 6px;
+	margin-top: 6px;
 }
 
 /*"Tags" that show up on the various edit pages.*/
