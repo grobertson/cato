@@ -26,10 +26,15 @@ body
 	/*overflow: auto;*/
 	position: absolute;
 	z-index: 1;
-	top: 39px;
+	top: 45px;
 	left: 200px;
 	right: 2px;
 	padding-left: 10px;
+} 
+
+#content table 
+{
+  margin-top: 6px;
 }
 
 * html #content
@@ -55,7 +60,7 @@ body
 	overflow: auto;
 	position: absolute;
 	z-index: -1;
-	top: 39px;
+	top: 45px;
 	left: 400px;
 	right: 0px;
 	background: #f0f0f0;
